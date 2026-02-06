@@ -1,7 +1,7 @@
 export const otherAlbum = {
   id: "other",
   name: "其他",
-  cover: "https://img.1701701.xyz/api/0_preview/BB/008sgNsfgy1h3i9misp13j30k00dcdnm.webp",
+  cover: "https://p1.music.126.net/r2kF16sXm04bKaYnuZFp_Q==/109951172704469352.jpg",
   artist: "李志",
   songs: [
     { name: "相互想念那就是很美好的事情", src: "https://r1.1701701.xyz/other/相互想念那就是很美好的事情.mp3", lrc: "" },

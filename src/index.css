@@ -220,7 +220,10 @@ body {
 .logo-box {
   width: 28px;
   height: 28px;
-  background: var(--main-color);
+  background-image: url('/logo.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 6px;
 }
 
@@ -443,16 +446,22 @@ body {
 }
 
 .music-grid {
+  --grid-column-gap: 24px;
+  --grid-row-gap: 24px;
+  position: relative;
   display: grid;
   grid-template-columns: repeat(var(--grid-columns, 4), minmax(0, 1fr));
-  gap: 24px;
+  column-gap: var(--grid-column-gap);
+  row-gap: 0;
+  margin-bottom: calc(-1 * var(--grid-row-gap));
   justify-content: flex-start;
 }
 
 .track-card {
   cursor: pointer;
   width: 100%;
-  transition: transform 0.22s ease, opacity 0.22s ease;
+  margin-bottom: var(--grid-row-gap);
+  transition: opacity 0.22s ease;
 }
 
 .album-inline-shell {
@@ -908,7 +917,10 @@ body {
   .music-grid {
     display: grid;
     grid-template-columns: repeat(var(--grid-columns, 4), minmax(0, 1fr));
-    gap: 5px;
+    --grid-column-gap: 5px;
+    --grid-row-gap: 5px;
+    column-gap: var(--grid-column-gap);
+    row-gap: 0;
   }
 
   .track-card {
@@ -2791,7 +2803,10 @@ body {
   .music-grid {
     /* STRICTLY 4 columns */
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 5px;
+    --grid-column-gap: 5px;
+    --grid-row-gap: 5px;
+    column-gap: var(--grid-column-gap);
+    row-gap: 0;
   }
 
   .album-inline-shell {
