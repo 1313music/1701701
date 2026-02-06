@@ -75,6 +75,30 @@ const getSystemTheme = () => {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 };
 
+const toAbsoluteUrl = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+  if (typeof window === 'undefined') return '';
+  try {
+    return new URL(value, window.location.href).href;
+  } catch {
+    return '';
+  }
+};
+
+const buildMediaArtwork = (coverUrl) => {
+  const absoluteCover = toAbsoluteUrl(coverUrl);
+  if (!absoluteCover) return undefined;
+  return [
+    { src: absoluteCover, sizes: '96x96' },
+    { src: absoluteCover, sizes: '128x128' },
+    { src: absoluteCover, sizes: '192x192' },
+    { src: absoluteCover, sizes: '256x256' },
+    { src: absoluteCover, sizes: '384x384' },
+    { src: absoluteCover, sizes: '512x512' }
+  ];
+};
+
 const buildSongSrcSet = (albums) => {
   const set = new Set();
   for (const album of albums) {
@@ -206,6 +230,8 @@ const App = () => {
   // 初始化音频监听
   useEffect(() => {
     const audio = audioRef.current;
+    audio.preload = 'metadata';
+    audio.playsInline = true;
     const updateProgress = () => {
       setCurrentTime(audio.currentTime);
       setProgress((audio.currentTime / audio.duration) * 100 || 0);
@@ -282,6 +308,62 @@ const App = () => {
     if (isPlaying) audioRef.current.play().catch(() => { });
     else audioRef.current.pause();
   }, [isPlaying]);
+
+  // 锁屏媒体信息（歌名/歌手/专辑/封面）
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    if (typeof window === 'undefined' || !('MediaMetadata' in window)) return;
+
+    const mediaSession = navigator.mediaSession;
+    const metadata = {
+      title: currentTrack?.name || '未知歌曲',
+      artist: currentSongInfo?.album?.artist || currentAlbum?.artist || '',
+      album: currentSongInfo?.album?.name || currentAlbum?.name || '',
+      artwork: buildMediaArtwork(
+        currentTrack?.cover || currentSongInfo?.album?.cover || currentAlbum?.cover
+      )
+    };
+
+    try {
+      mediaSession.metadata = new window.MediaMetadata(metadata);
+    } catch {
+      mediaSession.metadata = null;
+    }
+  }, [
+    currentTrack?.name,
+    currentTrack?.cover,
+    currentSongInfo?.album?.artist,
+    currentSongInfo?.album?.name,
+    currentSongInfo?.album?.cover,
+    currentAlbum?.artist,
+    currentAlbum?.name,
+    currentAlbum?.cover
+  ]);
+
+  // 同步锁屏播放状态
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+  }, [isPlaying]);
+
+  // 同步锁屏进度（支持系统进度条）
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    const mediaSession = navigator.mediaSession;
+    if (typeof mediaSession.setPositionState !== 'function') return;
+    if (!Number.isFinite(duration) || duration <= 0) return;
+
+    const safePosition = Math.min(Math.max(currentTime, 0), duration);
+    try {
+      mediaSession.setPositionState({
+        duration,
+        playbackRate: audioRef.current.playbackRate || 1,
+        position: safePosition
+      });
+    } catch {
+      // ignore unsupported/broken implementations
+    }
+  }, [currentTime, duration, currentTrack?.src]);
 
   // 歌词同步
   useEffect(() => {
@@ -449,7 +531,7 @@ const App = () => {
   };
 
 
-  const handlePlayPause = () => setIsPlaying(!isPlaying);
+  const handlePlayPause = () => setIsPlaying((prev) => !prev);
   const handleThemeToggle = (event) => {
     const nextPreference = themePreference === 'dark'
       ? 'light'
@@ -505,6 +587,55 @@ const App = () => {
     setCurrentTrack(currentAlbum.songs[prevIdx]);
     setIsPlaying(true);
   }, [currentAlbum, currentTrack, playMode]);
+
+  // 锁屏控制按钮（播放/暂停/上一首/下一首/进度控制）
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    const mediaSession = navigator.mediaSession;
+
+    const setHandler = (action, handler) => {
+      try {
+        mediaSession.setActionHandler(action, handler);
+      } catch {
+        // ignore unsupported actions
+      }
+    };
+
+    setHandler('play', () => setIsPlaying(true));
+    setHandler('pause', () => setIsPlaying(false));
+    setHandler('previoustrack', () => handlePrev());
+    setHandler('nexttrack', () => handleNext());
+    setHandler('seekbackward', (details) => {
+      const offset = details?.seekOffset ?? 10;
+      const audio = audioRef.current;
+      audio.currentTime = Math.max(audio.currentTime - offset, 0);
+    });
+    setHandler('seekforward', (details) => {
+      const offset = details?.seekOffset ?? 10;
+      const audio = audioRef.current;
+      const maxTime = Number.isFinite(audio.duration) ? audio.duration : Infinity;
+      audio.currentTime = Math.min(audio.currentTime + offset, maxTime);
+    });
+    setHandler('seekto', (details) => {
+      if (typeof details?.seekTime !== 'number') return;
+      const audio = audioRef.current;
+      if (details.fastSeek && typeof audio.fastSeek === 'function') {
+        audio.fastSeek(details.seekTime);
+      } else {
+        audio.currentTime = details.seekTime;
+      }
+    });
+
+    return () => {
+      setHandler('play', null);
+      setHandler('pause', null);
+      setHandler('previoustrack', null);
+      setHandler('nexttrack', null);
+      setHandler('seekbackward', null);
+      setHandler('seekforward', null);
+      setHandler('seekto', null);
+    };
+  }, [handlePrev, handleNext]);
 
   const handleSongEnd = useCallback(() => {
     if (playMode === 'single') {
