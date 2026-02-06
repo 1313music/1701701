@@ -4,19 +4,19 @@ const followItems = [
     {
         title: 'SongSharing',
         subtitle: '一键上传·网易云盘',
-        image: 'https://1701701.xyz/img/xcx.jpg'
+        image: 'https://r2.1701701.xyz/img/xcx.jpg'
     },
     {
         title: '民谣俱乐部',
         subtitle: '获取最新资讯',
-        image: 'https://1701701.xyz/img/gzh.jpg'
+        image: 'https://r2.1701701.xyz/img/gzh.jpg'
     },
 ];
 
 const officialCd = {
     title: '官方专辑',
     subtitle: '购买正版',
-    image: 'https://1701701.xyz/img/zh.jpg',
+    image: 'https://p1.music.126.net/e6J7eFqsAwVFFuctHbXEgg==/109951167945120210.jpg',
     href: 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97'
 };
 

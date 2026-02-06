@@ -923,7 +923,7 @@ const App = () => {
             <div className="video-access-title">视频访问</div>
             <p className="video-access-tip">关注公众号，发送“视频”获取密码。</p>
             <div className="video-access-qr">
-              <img loading="lazy" src="https://1701701.xyz/img/gzh.jpg" alt="公众号二维码" />
+              <img loading="lazy" src="https://r2.1701701.xyz/img/gzh.jpg" alt="公众号二维码" />
             </div>
             <input
               className="video-access-input"

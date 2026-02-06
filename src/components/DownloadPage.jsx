@@ -131,7 +131,7 @@ const DownloadPage = () => {
         <div className="download-page download-v2">
             <section className="download-intro">
                 <div className="download-intro-media">
-                    <img loading="lazy" src="https://1701701.xyz/img/xcx.jpg" alt="SongSharing 小程序二维码" />
+                    <img loading="lazy" src="https://r2.1701701.xyz/img/xcx.jpg" alt="SongSharing 小程序二维码" />
                 </div>
                 <div className="download-intro-body">
                     <div className="download-intro-brand">
