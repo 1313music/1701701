@@ -60,24 +60,6 @@ const AlbumGrid = ({
     const expandedAlbum = expandedIndex >= 0 ? musicAlbums[expandedIndex] : null;
     const panelAlbum = expandedAlbum || cachedPanelAlbum;
     const isPanelOpen = Boolean(expandedAlbum);
-    const isSwitchingPanel = Boolean(
-        wasPanelOpenRef.current &&
-        expandedAlbum &&
-        cachedPanelAlbum &&
-        expandedAlbum.id !== cachedPanelAlbum.id
-    );
-    const previousPanelIndex = useMemo(() => {
-        if (!cachedPanelAlbum) return -1;
-        return musicAlbums.findIndex((album) => album.id === cachedPanelAlbum.id);
-    }, [cachedPanelAlbum, musicAlbums]);
-    const panelFlipDirection = (
-        isSwitchingPanel &&
-        previousPanelIndex >= 0 &&
-        expandedIndex >= 0 &&
-        expandedIndex !== previousPanelIndex
-    )
-        ? (expandedIndex > previousPanelIndex ? 1 : -1)
-        : 1;
     const insertAfterIndex = expandedIndex >= 0
         ? Math.min(musicAlbums.length - 1, Math.floor(expandedIndex / columns) * columns + (columns - 1))
         : -1;
@@ -93,23 +75,14 @@ const AlbumGrid = ({
     };
     const shouldAnimateShellOpen = isPanelOpen && !wasPanelOpenRef.current;
     const panelSwapTransition = {
-        opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1] },
-        rotateY: { duration: 0.34, ease: [0.22, 0.61, 0.36, 1] }
+        opacity: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+        y: { duration: 0.24, ease: [0.22, 1, 0.36, 1] }
     };
     const panelFlipVariants = {
-        enter: ({ enabled, direction }) => (
-            enabled
-                ? { opacity: 0.2, rotateY: -18 * direction }
-                : { opacity: 1, rotateY: 0 }
-        ),
-        center: { opacity: 1, rotateY: 0 },
-        exit: ({ enabled, direction }) => (
-            enabled
-                ? { opacity: 0.2, rotateY: 18 * direction }
-                : { opacity: 1, rotateY: 0 }
-        )
+        enter: { opacity: 0, y: 8 },
+        center: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -8 }
     };
-    const panelFlipCustom = { enabled: isSwitchingPanel, direction: panelFlipDirection };
 
     useEffect(() => {
         if (insertAfterIndex < 0) return;
@@ -168,9 +141,7 @@ const AlbumGrid = ({
                 className="album-inline-shell"
                 style={{
                     overflow: 'hidden',
-                    willChange: 'height, margin-top, margin-bottom',
-                    perspective: '1800px',
-                    perspectiveOrigin: '50% 50%'
+                    willChange: 'height, margin-top, margin-bottom'
                 }}
                 initial={
                     shouldAnimateShellOpen
@@ -184,16 +155,12 @@ const AlbumGrid = ({
                 }}
                 transition={shellTransition}
             >
-                <AnimatePresence mode="wait" initial={false} custom={panelFlipCustom}>
+                <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                         key={panelAlbum.id}
                         className="album-inline-panel"
-                        custom={panelFlipCustom}
                         style={{
-                            willChange: 'opacity, transform',
-                            transformOrigin: '50% 50%',
-                            transformStyle: 'preserve-3d',
-                            backfaceVisibility: 'hidden'
+                            willChange: 'opacity, transform'
                         }}
                         variants={panelFlipVariants}
                         initial="enter"
