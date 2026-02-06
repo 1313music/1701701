@@ -41,7 +41,7 @@ const AboutPage = () => {
     <div className="about-page about-v3">
         <section className="about-v3-hero">
             <div className="about-v3-image">
-                <img loading="lazy" src="https://1701701.xyz/img/aboutbg.jpg" alt="李志" />
+                <img loading="lazy" src="https://r2.1701701.xyz/img/aboutbg.jpg" alt="李志" />
                 <div className="about-v3-overlay">
                     <h3>民谣俱乐部</h3>
                     <p>一个分享李志音乐&视频的网站 | 1701701.xyz</p>
