@@ -280,16 +280,50 @@ const App = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const root = document.documentElement;
+    const displayModeQuery = window.matchMedia('(display-mode: standalone)');
+    const visualViewport = window.visualViewport;
+
     const setVhUnit = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      const viewportHeight = visualViewport?.height || window.innerHeight;
+      const vh = viewportHeight * 0.01;
+      root.style.setProperty('--vh', `${vh}px`);
     };
+
+    const setDisplayModeClass = () => {
+      const isStandalone = displayModeQuery.matches || window.navigator.standalone === true;
+      root.classList.toggle('display-mode-standalone', isStandalone);
+    };
+
     setVhUnit();
+    setDisplayModeClass();
+
     window.addEventListener('resize', setVhUnit);
     window.addEventListener('orientationchange', setVhUnit);
+    window.addEventListener('pageshow', setDisplayModeClass);
+    if (visualViewport) {
+      visualViewport.addEventListener('resize', setVhUnit);
+      visualViewport.addEventListener('scroll', setVhUnit);
+    }
+    if (typeof displayModeQuery.addEventListener === 'function') {
+      displayModeQuery.addEventListener('change', setDisplayModeClass);
+    } else if (typeof displayModeQuery.addListener === 'function') {
+      displayModeQuery.addListener(setDisplayModeClass);
+    }
+
     return () => {
       window.removeEventListener('resize', setVhUnit);
       window.removeEventListener('orientationchange', setVhUnit);
+      window.removeEventListener('pageshow', setDisplayModeClass);
+      if (visualViewport) {
+        visualViewport.removeEventListener('resize', setVhUnit);
+        visualViewport.removeEventListener('scroll', setVhUnit);
+      }
+      if (typeof displayModeQuery.removeEventListener === 'function') {
+        displayModeQuery.removeEventListener('change', setDisplayModeClass);
+      } else if (typeof displayModeQuery.removeListener === 'function') {
+        displayModeQuery.removeListener(setDisplayModeClass);
+      }
     };
   }, []);
 
