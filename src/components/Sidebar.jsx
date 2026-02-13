@@ -41,7 +41,7 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
             <div className="mobile-topbar">
                 <button
                     className={`mobile-menu-btn ${isSidebarOpen ? 'is-open' : ''}`}
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    onClick={() => setIsSidebarOpen((prev) => !prev)}
                     aria-label={isSidebarOpen ? '关闭菜单' : '打开菜单'}
                 >
                     <span className="hamburger" aria-hidden="true">

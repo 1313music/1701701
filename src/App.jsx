@@ -182,22 +182,16 @@ const App = () => {
   const [isVideoAccessGranted, setIsVideoAccessGranted] = useState(() => {
     return readVideoAccessGranted();
   });
+  const [showViewportDebug] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('debugViewport') === '1' || params.get('debug') === '1';
+  });
+  const [viewportDebug, setViewportDebug] = useState(null);
 
   const trackNameRef = useRef(null);
   const audioRef = useRef(new Audio());
   const toastTimerRef = useRef(null);
-  const scrollLockRef = useRef({
-    locked: false,
-    scrollY: 0,
-    bodyOverflow: '',
-    bodyPosition: '',
-    bodyTop: '',
-    bodyLeft: '',
-    bodyRight: '',
-    bodyWidth: '',
-    bodyPaddingRight: '',
-    htmlOverflow: ''
-  });
   const tempPlaylistSet = useMemo(() => new Set(tempPlaylistIds), [tempPlaylistIds]);
   const tempPlaylistItems = useMemo(
     () => tempPlaylistIds.map((id) => SONG_INDEX.get(id)).filter(Boolean),
@@ -281,51 +275,135 @@ const App = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const root = document.documentElement;
-    const displayModeQuery = window.matchMedia('(display-mode: standalone)');
-    const visualViewport = window.visualViewport;
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const isiOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    const browserViewport = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    const standaloneViewport = `${browserViewport}, viewport-fit=cover`;
+    const standaloneThemeColor = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
+    const browserThemeColor = 'transparent';
 
-    const setVhUnit = () => {
-      const viewportHeight = visualViewport?.height || window.innerHeight;
-      const vh = viewportHeight * 0.01;
-      root.style.setProperty('--vh', `${vh}px`);
+    const applyMode = () => {
+      const fallbackStandalone = isiOS && window.navigator.standalone === true;
+      const isStandalone = mediaQuery.matches || fallbackStandalone;
+      root.classList.remove('display-mode-standalone');
+      root.classList.toggle('standalone-fallback', fallbackStandalone && !mediaQuery.matches);
+      root.classList.toggle('standalone-mode', isStandalone);
+      root.classList.toggle('browser-mode', !isStandalone);
+      if (viewportMeta) {
+        viewportMeta.setAttribute('content', isStandalone ? standaloneViewport : browserViewport);
+      }
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', isStandalone ? standaloneThemeColor : browserThemeColor);
+      }
     };
 
-    const setDisplayModeClass = () => {
-      const isStandalone = displayModeQuery.matches || window.navigator.standalone === true;
-      root.classList.toggle('display-mode-standalone', isStandalone);
-    };
-
-    setVhUnit();
-    setDisplayModeClass();
-
-    window.addEventListener('resize', setVhUnit);
-    window.addEventListener('orientationchange', setVhUnit);
-    window.addEventListener('pageshow', setDisplayModeClass);
-    if (visualViewport) {
-      visualViewport.addEventListener('resize', setVhUnit);
-      visualViewport.addEventListener('scroll', setVhUnit);
+    applyMode();
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', applyMode);
+      return () => mediaQuery.removeEventListener('change', applyMode);
     }
-    if (typeof displayModeQuery.addEventListener === 'function') {
-      displayModeQuery.addEventListener('change', setDisplayModeClass);
-    } else if (typeof displayModeQuery.addListener === 'function') {
-      displayModeQuery.addListener(setDisplayModeClass);
+    mediaQuery.addListener(applyMode);
+    return () => mediaQuery.removeListener(applyMode);
+  }, [resolvedTheme]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !showViewportDebug) return;
+
+    const root = document.documentElement;
+    const probe = document.createElement('div');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.position = 'fixed';
+    probe.style.top = '0';
+    probe.style.left = '0';
+    probe.style.width = '0';
+    probe.style.height = '0';
+    probe.style.visibility = 'hidden';
+    probe.style.pointerEvents = 'none';
+    probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+    probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
+    probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+    probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
+    document.body.appendChild(probe);
+
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const isiOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+    let rafId = 0;
+
+    const updateDebug = () => {
+      const vv = window.visualViewport;
+      const viewportMeta = document.querySelector('meta[name="viewport"]')?.getAttribute('content') || '(missing)';
+      const probeStyle = getComputedStyle(probe);
+      const rootStyle = getComputedStyle(root);
+      const safeProbe = `t:${probeStyle.paddingTop} r:${probeStyle.paddingRight} b:${probeStyle.paddingBottom} l:${probeStyle.paddingLeft}`;
+      const safeVars = `layout(t:${(rootStyle.getPropertyValue('--mobile-layout-safe-top') || 'n/a').trim()} b:${(rootStyle.getPropertyValue('--mobile-layout-safe-bottom') || 'n/a').trim()})`;
+      const vvText = vv
+        ? `${Math.round(vv.width)}x${Math.round(vv.height)} top:${Math.round(vv.offsetTop)} left:${Math.round(vv.offsetLeft)} scale:${Number(vv.scale || 1).toFixed(2)}`
+        : 'N/A';
+
+      const fallbackStandalone = isiOS && window.navigator.standalone === true;
+      const isStandalone = mediaQuery.matches || fallbackStandalone;
+
+      setViewportDebug({
+        time: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+        mode: isStandalone ? 'standalone' : 'browser',
+        navStandalone: window.navigator.standalone === true ? 'true' : 'false',
+        viewportMeta,
+        inner: `${window.innerWidth}x${window.innerHeight}`,
+        client: `${root.clientWidth}x${root.clientHeight}`,
+        visualViewport: vvText,
+        scroll: `x:${Math.round(window.scrollX)} y:${Math.round(window.scrollY)}`,
+        safeProbe,
+        safeVars,
+        rootClass: root.className || '(none)'
+      });
+    };
+
+    const requestUpdate = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        updateDebug();
+      });
+    };
+
+    updateDebug();
+
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('orientationchange', requestUpdate);
+    window.addEventListener('pageshow', requestUpdate);
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', requestUpdate);
+      window.visualViewport.addEventListener('scroll', requestUpdate);
+    }
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', requestUpdate);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(requestUpdate);
     }
 
     return () => {
-      window.removeEventListener('resize', setVhUnit);
-      window.removeEventListener('orientationchange', setVhUnit);
-      window.removeEventListener('pageshow', setDisplayModeClass);
-      if (visualViewport) {
-        visualViewport.removeEventListener('resize', setVhUnit);
-        visualViewport.removeEventListener('scroll', setVhUnit);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
       }
-      if (typeof displayModeQuery.removeEventListener === 'function') {
-        displayModeQuery.removeEventListener('change', setDisplayModeClass);
-      } else if (typeof displayModeQuery.removeListener === 'function') {
-        displayModeQuery.removeListener(setDisplayModeClass);
+      window.removeEventListener('resize', requestUpdate);
+      window.removeEventListener('orientationchange', requestUpdate);
+      window.removeEventListener('pageshow', requestUpdate);
+      window.removeEventListener('scroll', requestUpdate);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', requestUpdate);
+        window.visualViewport.removeEventListener('scroll', requestUpdate);
       }
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', requestUpdate);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(requestUpdate);
+      }
+      probe.remove();
     };
-  }, []);
+  }, [showViewportDebug]);
 
   // 收藏列表缓存
   useEffect(() => {
@@ -440,89 +518,14 @@ const App = () => {
     }
   }, [themePreference]);
 
-  // 修改主题色 meta 标签以适配刘海/状态栏，并同步 data-theme
+  // 同步 data-theme / color-scheme
   useEffect(() => {
     if (typeof window === 'undefined') return;
     document.documentElement.setAttribute('data-theme', resolvedTheme);
     document.body.setAttribute('data-theme', resolvedTheme);
-    document.documentElement.style.colorScheme = resolvedTheme;
-    document.body.style.colorScheme = resolvedTheme;
+  }, [resolvedTheme]);
 
-    // 更新 meta theme-color
-    let colorStr;
-    if (isLyricsOpen) {
-      // 全屏播放器打开时，强制状态栏黑色（或深色背景）
-      colorStr = '#000000';
-    } else {
-      colorStr = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
-    }
-
-    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
-      meta.setAttribute('content', colorStr);
-    });
-  }, [isLyricsOpen, resolvedTheme]);
-
-  // 打开浮层时锁定页面滚动，避免滚动条变化导致固定元素跳动
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const shouldLock = isLyricsOpen || isAlbumListOpen || isVideoAccessOpen;
-    const body = document.body;
-    const html = document.documentElement;
-
-    const lockScroll = () => {
-      if (scrollLockRef.current.locked) return;
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-      const scrollbarWidth = window.innerWidth - html.clientWidth;
-
-      scrollLockRef.current = {
-        locked: true,
-        scrollY,
-        bodyOverflow: body.style.overflow,
-        bodyPosition: body.style.position,
-        bodyTop: body.style.top,
-        bodyLeft: body.style.left,
-        bodyRight: body.style.right,
-        bodyWidth: body.style.width,
-        bodyPaddingRight: body.style.paddingRight,
-        htmlOverflow: html.style.overflow
-      };
-
-      html.style.overflow = 'hidden';
-      body.style.overflow = 'hidden';
-      body.style.position = 'fixed';
-      body.style.top = `-${scrollY}px`;
-      body.style.left = '0';
-      body.style.right = '0';
-      body.style.width = '100%';
-      if (scrollbarWidth > 0) {
-        body.style.paddingRight = `${scrollbarWidth}px`;
-      }
-    };
-
-    const unlockScroll = () => {
-      if (!scrollLockRef.current.locked) return;
-      const { scrollY } = scrollLockRef.current;
-      body.style.overflow = scrollLockRef.current.bodyOverflow || '';
-      body.style.position = scrollLockRef.current.bodyPosition || '';
-      body.style.top = scrollLockRef.current.bodyTop || '';
-      body.style.left = scrollLockRef.current.bodyLeft || '';
-      body.style.right = scrollLockRef.current.bodyRight || '';
-      body.style.width = scrollLockRef.current.bodyWidth || '';
-      body.style.paddingRight = scrollLockRef.current.bodyPaddingRight || '';
-      html.style.overflow = scrollLockRef.current.htmlOverflow || '';
-      scrollLockRef.current.locked = false;
-      scrollLockRef.current.scrollY = 0;
-      window.scrollTo(0, scrollY || 0);
-    };
-
-    if (shouldLock) {
-      lockScroll();
-      return () => unlockScroll();
-    }
-
-    unlockScroll();
-    return undefined;
-  }, [isLyricsOpen, isAlbumListOpen, isVideoAccessOpen]);
+  // 已移除滚动锁，避免移动端浏览器滚动卡顿和视口抖动
 
   // 切换到视频库时停止音乐并隐藏播放器
   useEffect(() => {
@@ -955,7 +958,7 @@ const App = () => {
         <div className="video-access-modal" onClick={() => setIsVideoAccessOpen(false)}>
           <div className="video-access-card" onClick={(e) => e.stopPropagation()}>
             <div className="video-access-title">视频访问</div>
-            <p className="video-access-tip">关注公众号，发送“视频”获取密码。</p>
+            <p className="video-access-tip">关注公众号【民谣俱乐部】发送“视频”获取密码。</p>
             <div className="video-access-qr">
               <img loading="lazy" src="https://r2.1701701.xyz/img/gzh.jpg" alt="公众号二维码" />
             </div>
@@ -1005,6 +1008,20 @@ const App = () => {
       >
         <span className="toast-text">{toastMessage}</span>
       </div>
+      {showViewportDebug && viewportDebug && (
+        <div className="viewport-debug-panel" aria-live="polite">
+          <div className="viewport-debug-title">Viewport Debug</div>
+          <div>time: {viewportDebug.time}</div>
+          <div>mode: {viewportDebug.mode} / navigator.standalone: {viewportDebug.navStandalone}</div>
+          <div>meta viewport: {viewportDebug.viewportMeta}</div>
+          <div>inner: {viewportDebug.inner} | client: {viewportDebug.client}</div>
+          <div>visualViewport: {viewportDebug.visualViewport}</div>
+          <div>scroll: {viewportDebug.scroll}</div>
+          <div>safe probe: {viewportDebug.safeProbe}</div>
+          <div>safe vars: {viewportDebug.safeVars}</div>
+          <div>root class: {viewportDebug.rootClass}</div>
+        </div>
+      )}
     </>
   );
 };
