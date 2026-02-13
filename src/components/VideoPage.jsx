@@ -256,6 +256,21 @@ const VideoPage = () => {
         });
 
         dpRef.current = player;
+        const blockContextMenu = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+            }
+        };
+        // DPlayer 内置了自己的右键菜单，这里销毁它并在捕获阶段统一拦截右键事件
+        if (player.contextmenu && typeof player.contextmenu.destroy === 'function') {
+            player.contextmenu.destroy();
+        }
+        container.addEventListener('contextmenu', blockContextMenu, true);
+        if (player.video) {
+            player.video.addEventListener('contextmenu', blockContextMenu, true);
+        }
 
         const isTouchDevice = typeof window !== 'undefined' && (
             'ontouchstart' in window || navigator.maxTouchPoints > 0
@@ -302,6 +317,10 @@ const VideoPage = () => {
         return () => {
             if (hideTimerRef.current) {
                 clearTimeout(hideTimerRef.current);
+            }
+            container.removeEventListener('contextmenu', blockContextMenu, true);
+            if (player.video) {
+                player.video.removeEventListener('contextmenu', blockContextMenu, true);
             }
             if (isTouchDevice) {
                 container.removeEventListener('touchstart', handleInteract);
@@ -430,7 +449,11 @@ const VideoPage = () => {
                                 <div className="video-unsupported">加载中…</div>
                             )}
                             {!isResolving && !resolveError && resolvedUrl && canPlayInline(resolvedUrl, resolvedType) && (
-                                <div ref={playerRef} className="video-player" />
+                                <div
+                                    ref={playerRef}
+                                    className="video-player"
+                                    onContextMenu={(event) => event.preventDefault()}
+                                />
                             )}
                             {!isResolving && !resolveError && resolvedUrl && !canPlayInline(resolvedUrl, resolvedType) && (
                                 <div className="video-unsupported">当前视频链接暂不支持播放。</div>
