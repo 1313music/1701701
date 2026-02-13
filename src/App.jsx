@@ -752,6 +752,11 @@ const App = () => {
       document.documentElement.style.setProperty('--toast-x', `${x}px`);
       document.documentElement.style.setProperty('--toast-y', `${y}px`);
       placement = 'side-right';
+    } else if (placement === 'bottom') {
+      const x = window.innerWidth / 2;
+      const y = Math.max(window.innerHeight - 96, padding);
+      document.documentElement.style.setProperty('--toast-x', `${x}px`);
+      document.documentElement.style.setProperty('--toast-y', `${y}px`);
     } else {
       document.documentElement.style.setProperty('--toast-x', `${window.innerWidth / 2}px`);
       document.documentElement.style.setProperty('--toast-y', `${padding}px`);
@@ -779,6 +784,18 @@ const App = () => {
       isFavorited ? 'tone-remove' : 'tone-add',
       event
     );
+  };
+
+  const addTempSong = (song, anchorOrOptions = { placement: 'bottom' }) => {
+    const id = song?.src;
+    if (!id) return;
+    const isFavorited = tempPlaylistSet.has(id);
+    if (isFavorited) {
+      showToast('已在收藏', 'tone-add', anchorOrOptions);
+      return;
+    }
+    setTempPlaylistIds((prev) => [...prev, id]);
+    showToast('已收藏', 'tone-add', anchorOrOptions);
   };
 
   const clearTempPlaylist = () => setTempPlaylistIds([]);
@@ -935,6 +952,7 @@ const App = () => {
             handlePrev={handlePrev}
             handleNext={handleNext}
             audioRef={audioRef}
+            onAddToFavorites={addTempSong}
           />
 
           <AlbumListOverlay

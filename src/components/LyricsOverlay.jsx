@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Pause, ListMusic } from 'lucide-react';
+import { Play, Pause, ListMusic, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatTime } from '../utils/formatUtils';
 
@@ -22,7 +22,8 @@ const LyricsOverlay = ({
     handlePrev,
     handleNext,
     audioRef,
-    setIsAlbumListOpen
+    setIsAlbumListOpen,
+    onAddToFavorites
 }) => {
     const isDraggingRef = useRef(false);
     const lastTouchRef = useRef(0);
@@ -32,6 +33,93 @@ const LyricsOverlay = ({
     const lyricsWrapRef = useRef(null);
     const lyricsScrollerRef = useRef(null);
     const [centerOffset, setCenterOffset] = useState(0);
+    const mobileSwipeRef = useRef({
+        active: false,
+        ignore: false,
+        startX: 0,
+        startY: 0,
+        startAt: 0
+    });
+    const burstIdRef = useRef(0);
+    const burstTimerRef = useRef([]);
+    const [mobileLikeBursts, setMobileLikeBursts] = useState([]);
+    const [desktopLikeBursts, setDesktopLikeBursts] = useState([]);
+
+    const spawnCoverLikeBurst = (event, setter) => {
+        if (!event?.currentTarget) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = Number.isFinite(event.clientX) ? event.clientX - rect.left : rect.width / 2;
+        const y = Number.isFinite(event.clientY) ? event.clientY - rect.top : rect.height / 2;
+        const id = ++burstIdRef.current;
+        setter((prev) => [...prev, { id, x, y }]);
+        const timerId = window.setTimeout(() => {
+            setter((prev) => prev.filter((item) => item.id !== id));
+            burstTimerRef.current = burstTimerRef.current.filter((item) => item !== timerId);
+        }, 780);
+        burstTimerRef.current.push(timerId);
+    };
+
+    const handleCoverDoubleClick = (event, mode) => {
+        onAddToFavorites?.(currentTrack, { placement: 'bottom' });
+        if (mode === 'mobile') {
+            spawnCoverLikeBurst(event, setMobileLikeBursts);
+            return;
+        }
+        spawnCoverLikeBurst(event, setDesktopLikeBursts);
+    };
+
+    const isMobileViewport = () => {
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth <= 1024;
+    };
+
+    const resetMobileSwipeState = () => {
+        mobileSwipeRef.current.active = false;
+        mobileSwipeRef.current.ignore = false;
+        mobileSwipeRef.current.startX = 0;
+        mobileSwipeRef.current.startY = 0;
+        mobileSwipeRef.current.startAt = 0;
+    };
+
+    const handleOverlayTouchStart = (e) => {
+        if (!isMobileViewport()) return;
+        const touch = e.touches?.[0];
+        if (!touch) return;
+        const target = e.target;
+        const startedInControls = Boolean(
+            target &&
+            typeof target.closest === 'function' &&
+            target.closest('.mobile-player-controls')
+        );
+        mobileSwipeRef.current.active = true;
+        mobileSwipeRef.current.ignore = startedInControls;
+        mobileSwipeRef.current.startX = touch.clientX;
+        mobileSwipeRef.current.startY = touch.clientY;
+        mobileSwipeRef.current.startAt = Date.now();
+    };
+
+    const handleOverlayTouchEnd = (e) => {
+        const state = mobileSwipeRef.current;
+        if (!state.active) return;
+        const touch = e.changedTouches?.[0];
+        const ignore = state.ignore;
+        const startX = state.startX;
+        const startY = state.startY;
+        const startAt = state.startAt;
+        resetMobileSwipeState();
+        if (!touch || ignore || !isMobileViewport()) return;
+
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        const elapsed = Math.max(Date.now() - startAt, 1);
+        const velocityY = deltaY / elapsed;
+        const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
+        const shouldClose = deltaY > 90 || (deltaY > 45 && velocityY > 0.6);
+
+        if (isVerticalSwipe && shouldClose) {
+            setIsLyricsOpen(false);
+        }
+    };
 
     const seekByClientX = (clientX, target) => {
         if (!target || !audioRef.current) return;
@@ -140,6 +228,13 @@ const LyricsOverlay = ({
         ro.observe(node);
         return () => ro.disconnect();
     }, [isLyricsOpen, currentTrack.name]);
+
+    useEffect(() => {
+        return () => {
+            burstTimerRef.current.forEach((timerId) => window.clearTimeout(timerId));
+            burstTimerRef.current = [];
+        };
+    }, []);
     // 使用 Portal 渲染到 body，确保不受父级样式限制（如 overflow, transform 等），实现真正的全屏
     return createPortal(
         <AnimatePresence>
@@ -150,6 +245,9 @@ const LyricsOverlay = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: '100%' }}
                     transition={{ type: 'tween', duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    onTouchStart={handleOverlayTouchStart}
+                    onTouchEnd={handleOverlayTouchEnd}
+                    onTouchCancel={resetMobileSwipeState}
                     style={{
                         '--cover-image': `url(${currentTrack.cover || currentAlbum.cover})`
                     }}
@@ -183,8 +281,21 @@ const LyricsOverlay = ({
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ duration: 0.4 }}
+                                onDoubleClick={(e) => handleCoverDoubleClick(e, 'mobile')}
+                                title="双击添加收藏"
                             >
                                 <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                                <div className="cover-like-burst-layer" aria-hidden="true">
+                                    {mobileLikeBursts.map((burst) => (
+                                        <span
+                                            key={burst.id}
+                                            className="cover-like-heart"
+                                            style={{ left: `${burst.x}px`, top: `${burst.y}px` }}
+                                        >
+                                            <Heart size={38} strokeWidth={1.8} fill="currentColor" />
+                                        </span>
+                                    ))}
+                                </div>
                             </motion.div>
                         </div>
 
@@ -261,8 +372,23 @@ const LyricsOverlay = ({
                     {/* 桌面端内容 */}
                     <div className="desktop-player-content">
                         <div className="album-view">
-                            <div className="xl-cover">
+                            <div
+                                className="xl-cover"
+                                onDoubleClick={(e) => handleCoverDoubleClick(e, 'desktop')}
+                                title="双击添加收藏"
+                            >
                                 <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                                <div className="cover-like-burst-layer" aria-hidden="true">
+                                    {desktopLikeBursts.map((burst) => (
+                                        <span
+                                            key={burst.id}
+                                            className="cover-like-heart"
+                                            style={{ left: `${burst.x}px`, top: `${burst.y}px` }}
+                                        >
+                                            <Heart size={42} strokeWidth={1.8} fill="currentColor" />
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="track-meta" style={{ textAlign: 'center', marginTop: 20 }}>

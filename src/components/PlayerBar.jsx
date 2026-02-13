@@ -17,6 +17,9 @@ const PlayerBar = ({
     isTrackNameOverflowing,
     trackNameRef
 }) => {
+    const ringProgress = Number.isFinite(progress) ? Math.min(Math.max(progress, 0), 100) : 0;
+    const coverRingPath = 'M 10.736 10.736 A 23 23 0 0 1 27 4 H 73 A 23 23 0 0 1 96 27 V 73 A 23 23 0 0 1 73 96 H 27 A 23 23 0 0 1 4 73 V 27 A 23 23 0 0 1 10.736 10.736';
+
     return (
         <>
             <div className="progress-bar-wrapper">
@@ -33,7 +36,18 @@ const PlayerBar = ({
                         className="mini-cover"
                         onClick={() => setIsLyricsOpen(true)}
                     >
-                        <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                        <svg className="mini-cover-ring" viewBox="0 0 100 100" aria-hidden="true">
+                            <path className="mini-cover-ring-track" d={coverRingPath} pathLength="100" />
+                            <path
+                                className="mini-cover-ring-progress"
+                                d={coverRingPath}
+                                pathLength="100"
+                                style={{ strokeDasharray: `${ringProgress} 100` }}
+                            />
+                        </svg>
+                        <div className="mini-cover-media">
+                            <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                        </div>
                     </div>
                     <div className="track-details">
                         <span className="track-name" ref={trackNameRef}>
