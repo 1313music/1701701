@@ -3662,19 +3662,27 @@ body {
   .mobile-control-buttons {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 0 5px;
-    gap: 20px;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    gap: clamp(8px, 2.8vw, 16px);
   }
 
   .mobile-mode-btn {
     background: none;
     border: none;
     color: var(--text-main);
-    padding: 8px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 50%;
+    white-space: nowrap;
     -webkit-appearance: none;
     appearance: none;
     box-shadow: none;
@@ -3689,10 +3697,18 @@ body {
     background: none;
     border: none;
     color: var(--text-main);
-    padding: 8px;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 50%;
+    line-height: 1;
+    white-space: nowrap;
     -webkit-appearance: none;
     appearance: none;
     box-shadow: none;
@@ -3707,14 +3723,16 @@ body {
     background: none;
     border: none;
     color: var(--text-main);
-    width: 60px;
-    height: 60px;
+    width: clamp(52px, 15vw, 60px);
+    height: clamp(52px, 15vw, 60px);
     border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
     -webkit-appearance: none;
     appearance: none;
     box-shadow: none;
@@ -3729,10 +3747,17 @@ body {
     background: none;
     border: none;
     color: var(--text-main);
-    padding: 8px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 50%;
+    white-space: nowrap;
     -webkit-appearance: none;
     appearance: none;
     box-shadow: none;
@@ -3752,6 +3777,7 @@ body {
   .mobile-play-btn svg {
     stroke: none !important;
     stroke-width: 0 !important;
+    flex-shrink: 0;
   }
 }
 
