@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Folder, Play, X, CornerUpLeft } from 'lucide-react';
-import DPlayer from 'dplayer';
-import Hls from 'hls.js';
 import { videoCategories, videoData } from '../data/videoData';
 import SearchHeader from './SearchHeader';
 
@@ -22,7 +20,7 @@ const VideoCard = ({ item, onClick, meta }) => {
     const thumbSrc = !thumbError && item.thumb ? item.thumb : fallbackThumb;
 
     return (
-        <motion.div
+        <Motion.div
             className={`video-card ${item.isFolder || item.folderId ? 'is-folder' : ''}`}
             onClick={onClick}
             initial={{ opacity: 0, y: 8 }}
@@ -46,12 +44,12 @@ const VideoCard = ({ item, onClick, meta }) => {
             </div>
             <div className="video-title">{item.title}</div>
             {meta ? <div className="video-meta">{meta}</div> : null}
-        </motion.div>
+        </Motion.div>
     );
 };
 
 const BackCard = ({ onClick }) => (
-    <motion.div
+    <Motion.div
         className="video-card video-back-card"
         onClick={onClick}
         initial={{ opacity: 0, y: 8 }}
@@ -62,10 +60,10 @@ const BackCard = ({ onClick }) => (
             <CornerUpLeft size={28} />
         </div>
         <div className="video-title">返回上级</div>
-    </motion.div>
+    </Motion.div>
 );
 
-const VideoPage = () => {
+const VideoPage = ({ requestVideoView }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState(videoCategories[0]?.id || '');
     const [folderStack, setFolderStack] = useState([]);
@@ -117,7 +115,7 @@ const VideoPage = () => {
         });
 
         return results;
-    }, [videoCategories, videoData]);
+    }, []);
 
     const searchResults = useMemo(() => {
         if (!isSearching) return [];
@@ -200,7 +198,7 @@ const VideoPage = () => {
                     } else {
                         type = 'hls';
                     }
-                } catch (error) {
+                } catch {
                     url = '';
                     setResolveError('解析播放地址失败');
                 } finally {
@@ -226,36 +224,9 @@ const VideoPage = () => {
         }
         const container = playerRef.current;
         if (!container) return undefined;
-
-        if (typeof window !== 'undefined' && !window.Hls) {
-            window.Hls = Hls;
-        }
-
-        if (dpRef.current) {
-            dpRef.current.destroy();
-            dpRef.current = null;
-        }
-
-        container.innerHTML = '';
-        const player = new DPlayer({
-            container,
-            autoplay: true,
-            preload: 'metadata',
-            theme: '#1d1d1f',
-            video: {
-                url: resolvedUrl,
-                pic: activeVideo.thumb || fallbackThumb,
-                type: resolvedType
-            },
-            pluginOptions: {
-                hls: {
-                    enableWorker: true,
-                    lowLatencyMode: true
-                }
-            }
-        });
-
-        dpRef.current = player;
+        let canceled = false;
+        let player = null;
+        let isTouchDevice = false;
         const blockContextMenu = (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -263,18 +234,6 @@ const VideoPage = () => {
                 event.stopImmediatePropagation();
             }
         };
-        // DPlayer 内置了自己的右键菜单，这里销毁它并在捕获阶段统一拦截右键事件
-        if (player.contextmenu && typeof player.contextmenu.destroy === 'function') {
-            player.contextmenu.destroy();
-        }
-        container.addEventListener('contextmenu', blockContextMenu, true);
-        if (player.video) {
-            player.video.addEventListener('contextmenu', blockContextMenu, true);
-        }
-
-        const isTouchDevice = typeof window !== 'undefined' && (
-            'ontouchstart' in window || navigator.maxTouchPoints > 0
-        );
 
         const showControls = () => {
             container.classList.add('dplayer-controls-visible');
@@ -300,26 +259,92 @@ const VideoPage = () => {
             }
         };
 
-        if (isTouchDevice) {
-            container.classList.add('dplayer-auto-hide');
-            showControls();
-            hasPlayedRef.current = false;
-            player.on('play', () => {
-                hasPlayedRef.current = true;
-                scheduleHide();
-            });
-            player.on('pause', showControls);
-            player.on('ended', showControls);
-            container.addEventListener('touchstart', handleInteract, { passive: true });
-            container.addEventListener('click', handleInteract);
-        }
+        const setupPlayer = async () => {
+            try {
+                const [{ default: DPlayer }, { default: Hls }] = await Promise.all([
+                    import('dplayer'),
+                    import('hls.js/dist/hls.light.mjs')
+                ]);
+                if (canceled) return;
+
+                if (typeof window !== 'undefined' && !window.Hls) {
+                    window.Hls = Hls;
+                }
+
+                if (dpRef.current) {
+                    dpRef.current.destroy();
+                    dpRef.current = null;
+                }
+
+                container.innerHTML = '';
+                player = new DPlayer({
+                    container,
+                    autoplay: true,
+                    preload: 'metadata',
+                    theme: '#1d1d1f',
+                    video: {
+                        url: resolvedUrl,
+                        pic: activeVideo.thumb || fallbackThumb,
+                        type: resolvedType
+                    },
+                    pluginOptions: {
+                        hls: {
+                            enableWorker: true,
+                            lowLatencyMode: true
+                        }
+                    }
+                });
+
+                if (canceled) {
+                    player.destroy();
+                    player = null;
+                    return;
+                }
+
+                dpRef.current = player;
+
+                // DPlayer 内置了自己的右键菜单，这里销毁它并在捕获阶段统一拦截右键事件
+                if (player.contextmenu && typeof player.contextmenu.destroy === 'function') {
+                    player.contextmenu.destroy();
+                }
+                container.addEventListener('contextmenu', blockContextMenu, true);
+                if (player.video) {
+                    player.video.addEventListener('contextmenu', blockContextMenu, true);
+                }
+
+                isTouchDevice = typeof window !== 'undefined' && (
+                    'ontouchstart' in window || navigator.maxTouchPoints > 0
+                );
+
+                if (isTouchDevice) {
+                    container.classList.add('dplayer-auto-hide');
+                    showControls();
+                    hasPlayedRef.current = false;
+                    player.on('play', () => {
+                        hasPlayedRef.current = true;
+                        scheduleHide();
+                    });
+                    player.on('pause', showControls);
+                    player.on('ended', showControls);
+                    container.addEventListener('touchstart', handleInteract, { passive: true });
+                    container.addEventListener('click', handleInteract);
+                }
+            } catch {
+                if (!canceled) {
+                    setResolveError('播放器加载失败');
+                }
+            }
+        };
+
+        setupPlayer();
 
         return () => {
+            canceled = true;
             if (hideTimerRef.current) {
                 clearTimeout(hideTimerRef.current);
             }
             container.removeEventListener('contextmenu', blockContextMenu, true);
-            if (player.video) {
+            if (player?.video) {
                 player.video.removeEventListener('contextmenu', blockContextMenu, true);
             }
             if (isTouchDevice) {
@@ -328,8 +353,12 @@ const VideoPage = () => {
                 container.classList.remove('dplayer-auto-hide');
                 container.classList.remove('dplayer-controls-visible');
             }
-            player.destroy();
-            dpRef.current = null;
+            if (player) {
+                player.destroy();
+            }
+            if (dpRef.current === player) {
+                dpRef.current = null;
+            }
         };
     }, [activeVideo, resolvedUrl, resolvedType, isResolving, resolveError, canPlayInline]);
 
@@ -358,6 +387,10 @@ const VideoPage = () => {
     const handleCardClick = (item) => {
         if (item.isFolder || item.folderId) {
             handleOpenFolder(item);
+            return;
+        }
+        if (typeof requestVideoView === 'function') {
+            requestVideoView(() => setActiveVideo(item));
             return;
         }
         setActiveVideo(item);
@@ -409,14 +442,14 @@ const VideoPage = () => {
 
             <AnimatePresence>
                 {activeVideo && (
-                    <motion.div
+                    <Motion.div
                         className="video-modal"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setActiveVideo(null)}
                     >
-                        <motion.div
+                        <Motion.div
                             className="video-modal-card"
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
@@ -458,8 +491,8 @@ const VideoPage = () => {
                             {!isResolving && !resolveError && resolvedUrl && !canPlayInline(resolvedUrl, resolvedType) && (
                                 <div className="video-unsupported">当前视频链接暂不支持播放。</div>
                             )}
-                        </motion.div>
-                    </motion.div>
+                        </Motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </div>

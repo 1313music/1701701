@@ -1,5 +1,15 @@
 import React from 'react';
-import { Library, Video, Download, Info, Sun, Moon, Monitor } from 'lucide-react';
+import {
+    SunIcon,
+    MoonIcon,
+    MonitorIcon
+} from './icons/AppIcons';
+import {
+    Library,
+    Video,
+    Download,
+    Info
+} from 'lucide-react';
 
 const NavItem = ({ icon, label, active = false, onClick }) => (
     <div className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
@@ -8,7 +18,7 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
     </div>
 );
 
-const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreference = 'dark', systemTheme = 'light', onThemeToggle }) => {
+const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreference = 'system', systemTheme = 'light', onThemeToggle }) => {
     const handleNavClick = (newView) => {
         setIsSidebarOpen(false);
         setView(newView);
@@ -19,21 +29,21 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
         : themePreference === 'dark'
             ? '深色'
             : '浅色';
-    const nextPreference = themePreference === 'dark'
+    const nextPreference = themePreference === 'system'
         ? 'light'
         : themePreference === 'light'
-            ? 'system'
-            : 'dark';
+            ? 'dark'
+            : 'system';
     const nextLabel = nextPreference === 'system'
         ? '系统'
         : nextPreference === 'dark'
             ? '深色'
             : '浅色';
     const ThemeIcon = themePreference === 'system'
-        ? Monitor
+        ? MonitorIcon
         : themePreference === 'dark'
-            ? Moon
-            : Sun;
+            ? MoonIcon
+            : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
 
     return (
@@ -50,7 +60,10 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         <span className="hamburger-line bottom" />
                     </span>
                 </button>
-                <div className="mobile-brand" onClick={() => handleNavClick('library')}>
+                <div
+                    className="mobile-brand"
+                    onClick={() => handleNavClick('library')}
+                >
                     1701701.xyz
                 </div>
                 {onThemeToggle && (
@@ -61,7 +74,7 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         aria-label={themeToggleLabel}
                         title={themeToggleLabel}
                     >
-                        <ThemeIcon size={18} />
+                        <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
                     </button>
                 )}
             </div>
@@ -73,25 +86,25 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
             <div className={`mobile-menu-panel ${isSidebarOpen ? 'show' : ''}`}>
                 <div className="mobile-menu-content">
                     <NavItem
-                        icon={<Library size={20} />}
+                        icon={<Library size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="音乐"
                         active={view === 'library'}
                         onClick={() => handleNavClick('library')}
                     />
                     <NavItem
-                        icon={<Video size={20} />}
+                        icon={<Video size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="视频"
                         active={view === 'video'}
                         onClick={() => handleNavClick('video')}
                     />
                     <NavItem
-                        icon={<Download size={20} />}
+                        icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="下载"
                         active={view === 'download'}
                         onClick={() => handleNavClick('download')}
                     />
                     <NavItem
-                        icon={<Info size={20} />}
+                        icon={<Info size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
                         active={view === 'about'}
                         onClick={() => handleNavClick('about')}
@@ -100,7 +113,10 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
             </div>
 
             <aside className="sidebar">
-                <div className="logo" onClick={() => handleNavClick('library')}>
+                <div
+                    className="logo"
+                    onClick={() => handleNavClick('library')}
+                >
                     <div className="logo-box" />
                     <span>1701701.xyz</span>
                     {onThemeToggle && (
@@ -121,25 +137,25 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
 
                 <div className="nav-group">
                     <NavItem
-                        icon={<Library size={22} />}
+                        icon={<Library size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="音乐"
                         active={view === 'library'}
                         onClick={() => handleNavClick('library')}
                     />
                     <NavItem
-                        icon={<Video size={22} />}
+                        icon={<Video size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="视频"
                         active={view === 'video'}
                         onClick={() => handleNavClick('video')}
                     />
                     <NavItem
-                        icon={<Download size={22} />}
+                        icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="下载"
                         active={view === 'download'}
                         onClick={() => handleNavClick('download')}
                     />
                     <NavItem
-                        icon={<Info size={22} />}
+                        icon={<Info size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
                         active={view === 'about'}
                         onClick={() => handleNavClick('about')}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { SearchIcon, CloseIcon } from './icons/AppIcons';
 
 const SearchHeader = ({
     searchQuery,
@@ -22,7 +22,7 @@ const SearchHeader = ({
             <div className="header-top">
                 {title && <h1>{title}</h1>}
                 <div className="search-box">
-                    <Search size={20} className="search-icon" />
+                    <SearchIcon size={20} className="search-icon" />
                     <input
                         type="text"
                         placeholder={placeholder}
@@ -39,7 +39,7 @@ const SearchHeader = ({
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={() => setSearchQuery('')}
                         >
-                            <X size={16} />
+                            <CloseIcon size={16} />
                         </button>
                     )}
                     {isOpen && searchQuery.trim() && suggestions.length > 0 && (

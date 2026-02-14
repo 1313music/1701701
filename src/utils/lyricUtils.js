@@ -8,7 +8,8 @@ export const parseLyrics = (lrcText) => {
 
     const lines = lrcText.split('\n');
     const result = [];
-    const timeReg = /\[(\d+):(\d+)\.(\d+)?\]/g;
+    // 兼容 [mm:ss]、[mm:ss.x]、[mm:ss.xx]、[mm:ss.xxx]
+    const timeReg = /\[(\d+):(\d+)(?:\.(\d+))?\]/g;
 
     lines.forEach(line => {
         const matches = [...line.matchAll(timeReg)];
@@ -17,10 +18,13 @@ export const parseLyrics = (lrcText) => {
 
         if (text) {
             matches.forEach(match => {
-                const min = parseInt(match[1]);
-                const sec = parseInt(match[2]);
-                const ms = parseInt(match[3] || '0');
-                const time = min * 60 + sec + ms / 1000;
+                const min = Number.parseInt(match[1], 10);
+                const sec = Number.parseInt(match[2], 10);
+                const fraction = match[3];
+                const fractionValue = fraction
+                    ? Number.parseInt(fraction, 10) / (10 ** fraction.length)
+                    : 0;
+                const time = min * 60 + sec + fractionValue;
                 result.push({ time, text });
             });
         }

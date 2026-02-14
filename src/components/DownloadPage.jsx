@@ -18,30 +18,22 @@ const DownloadItem = ({ item }) => {
         }, 2000);
     };
 
-    const handleDownload = async () => {
+    const handleDownload = () => {
         if (status === 'loading') return;
         if (!item?.url) return;
         setStatus('loading');
         try {
-            const response = await fetch(item.url, {
-                mode: 'cors',
-                cache: 'no-cache'
-            });
-            if (!response.ok) throw new Error('download failed');
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
             const anchor = document.createElement('a');
-            anchor.href = blobUrl;
+            anchor.href = item.url;
             anchor.download = item.filename || item.title;
             anchor.rel = 'noopener noreferrer';
             anchor.style.display = 'none';
             document.body.appendChild(anchor);
             anchor.click();
             document.body.removeChild(anchor);
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
             setStatus('done');
             resetLater();
-        } catch (error) {
+        } catch {
             setStatus('error');
             resetLater();
             const anchor = document.createElement('a');
@@ -125,7 +117,7 @@ const DownloadPage = () => {
             map.set(section.title, count);
         });
         return map;
-    }, [downloadSections]);
+    }, []);
 
     return (
         <div className="download-page download-v2">

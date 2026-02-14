@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Heart, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 const AlbumListOverlay = ({
     isOpen,
@@ -17,11 +17,11 @@ const AlbumListOverlay = ({
     onClearTempPlaylist,
     onPlayFavorites
 }) => {
-    if (!album) return null;
-    const safeTempCount = typeof tempPlaylistCount === 'number' ? tempPlaylistCount : 0;
-    const safeTempItems = Array.isArray(tempPlaylistItems) ? tempPlaylistItems : [];
     const [activeTab, setActiveTab] = useState('album');
     const touchStartX = useRef(null);
+    const safeTempCount = typeof tempPlaylistCount === 'number' ? tempPlaylistCount : 0;
+    const safeTempItems = Array.isArray(tempPlaylistItems) ? tempPlaylistItems : [];
+    if (!album) return null;
 
     const handleTouchStart = (event) => {
         touchStartX.current = event.touches[0]?.clientX ?? null;
@@ -40,14 +40,14 @@ const AlbumListOverlay = ({
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <motion.div
+                <Motion.div
                     className="album-list-overlay"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
                 >
-                    <motion.div
+                    <Motion.div
                         className="album-list-panel"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -223,8 +223,8 @@ const AlbumListOverlay = ({
                                 </div>
                             </section>
                         </div>
-                    </motion.div>
-                </motion.div>
+                    </Motion.div>
+                </Motion.div>
             )}
         </AnimatePresence>,
         document.body

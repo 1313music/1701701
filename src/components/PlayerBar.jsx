@@ -1,5 +1,6 @@
 import React from 'react';
-import { Play, Pause, ListMusic, Maximize2 } from 'lucide-react';
+import { Play, Pause, ListMusic } from 'lucide-react';
+import { Maximize2Icon } from './icons/AppIcons';
 
 const PlayerBar = ({
     currentTrack,
@@ -53,7 +54,7 @@ const PlayerBar = ({
                         <span className="track-name" ref={trackNameRef}>
                             {isTrackNameOverflowing && isPlaying ? (
                                 <span className="scrolling-text">
-                                    {currentTrack.name}　　　　{currentTrack.name}
+                                    {currentTrack.name} {' | '} {currentTrack.name}
                                 </span>
                             ) : (
                                 currentTrack.name
@@ -73,20 +74,22 @@ const PlayerBar = ({
                             <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
                         </div>
                         <div className="main-play-btn" onClick={(e) => { e.stopPropagation(); handlePlayPause(); }}>
-                            {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: '4px' }} />}
+                            {isPlaying
+                                ? <Pause size={32} fill="currentColor" />
+                                : <Play size={32} fill="currentColor" style={{ marginLeft: '4px' }} />}
                         </div>
                         <div className="icon-btn skip-forward-btn" onClick={(e) => { e.stopPropagation(); handleNext(); }}>
                             <Play size={20} fill="currentColor" style={{ marginRight: '-8px' }} />
                             <Play size={20} fill="currentColor" />
                         </div>
                         <div className="icon-btn playlist-btn" onClick={(e) => { e.stopPropagation(); setIsAlbumListOpen(true); }}>
-                            <ListMusic size={24} color="currentColor" strokeWidth={2.4} absoluteStrokeWidth />
+                            <ListMusic size={22} strokeWidth={2.4} absoluteStrokeWidth />
                         </div>
                     </div>
                 </div>
 
                 <div className="player-actions">
-                    <Maximize2 size={20} className="icon-btn" onClick={(e) => { e.stopPropagation(); setIsLyricsOpen(true); }} />
+                    <Maximize2Icon size={20} className="icon-btn" onClick={(e) => { e.stopPropagation(); setIsLyricsOpen(true); }} />
                 </div>
             </footer>
         </>

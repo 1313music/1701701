@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Pause, ListMusic, Heart } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { formatTime } from '../utils/formatUtils';
 
 const LyricsOverlay = ({
@@ -235,16 +235,77 @@ const LyricsOverlay = ({
             burstTimerRef.current = [];
         };
     }, []);
+
+    useEffect(() => {
+        if (!isLyricsOpen || typeof window === 'undefined' || typeof document === 'undefined') {
+            return undefined;
+        }
+
+        const { documentElement, body } = document;
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        const previousStyles = {
+            htmlOverflow: documentElement.style.overflow,
+            htmlOverscrollBehavior: documentElement.style.overscrollBehavior,
+            bodyOverflow: body.style.overflow,
+            bodyOverscrollBehavior: body.style.overscrollBehavior,
+            bodyPosition: body.style.position,
+            bodyTop: body.style.top,
+            bodyLeft: body.style.left,
+            bodyRight: body.style.right,
+            bodyWidth: body.style.width
+        };
+
+        documentElement.style.overflow = 'hidden';
+        documentElement.style.overscrollBehavior = 'none';
+        body.style.overflow = 'hidden';
+        body.style.overscrollBehavior = 'none';
+        body.style.position = 'fixed';
+        body.style.top = `-${scrollY}px`;
+        body.style.left = '0';
+        body.style.right = '0';
+        body.style.width = '100%';
+
+        return () => {
+            documentElement.style.overflow = previousStyles.htmlOverflow;
+            documentElement.style.overscrollBehavior = previousStyles.htmlOverscrollBehavior;
+            body.style.overflow = previousStyles.bodyOverflow;
+            body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior;
+            body.style.position = previousStyles.bodyPosition;
+            body.style.top = previousStyles.bodyTop;
+            body.style.left = previousStyles.bodyLeft;
+            body.style.right = previousStyles.bodyRight;
+            body.style.width = previousStyles.bodyWidth;
+            window.scrollTo(0, scrollY);
+        };
+    }, [isLyricsOpen]);
+
+    const isMobileOverlay = isMobileViewport();
+    const overlayInitial = isMobileOverlay
+        ? { y: '100%' }
+        : { opacity: 0, y: '100%' };
+    const overlayAnimate = isMobileOverlay
+        ? { y: 0 }
+        : { opacity: 1, y: 0 };
+    const overlayExit = isMobileOverlay
+        ? {
+            y: '100%',
+            pointerEvents: 'none',
+            transition: { type: 'tween', duration: 0.24, ease: [0.4, 0, 1, 1] }
+        }
+        : { opacity: 0, y: '100%' };
+    const overlayTransition = isMobileOverlay
+        ? { type: 'tween', duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+        : { type: 'tween', duration: 0.35, ease: [0.22, 1, 0.36, 1] };
     // 使用 Portal 渲染到 body，确保不受父级样式限制（如 overflow, transform 等），实现真正的全屏
     return createPortal(
         <AnimatePresence>
             {isLyricsOpen && (
-                <motion.div
+                <Motion.div
                     className="lyrics-overlay mobile-fullscreen-player"
-                    initial={{ opacity: 0, y: '100%' }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: '100%' }}
-                    transition={{ type: 'tween', duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    initial={overlayInitial}
+                    animate={overlayAnimate}
+                    exit={overlayExit}
+                    transition={overlayTransition}
                     onTouchStart={handleOverlayTouchStart}
                     onTouchEnd={handleOverlayTouchEnd}
                     onTouchCancel={resetMobileSwipeState}
@@ -276,7 +337,7 @@ const LyricsOverlay = ({
 
                     <div className="mobile-player-content">
                         <div className="mobile-cover-section">
-                            <motion.div
+                            <Motion.div
                                 className="mobile-xl-cover"
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -296,7 +357,7 @@ const LyricsOverlay = ({
                                         </span>
                                     ))}
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         </div>
 
                         <div className="mobile-track-info">
@@ -463,7 +524,7 @@ const LyricsOverlay = ({
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </Motion.div>
             )}
         </AnimatePresence>,
         document.body
