@@ -30,9 +30,11 @@ const LyricsOverlay = ({
     const [isDragActive, setIsDragActive] = useState(false);
     const mobileTitleRef = useRef(null);
     const [isMobileTitleMarquee, setIsMobileTitleMarquee] = useState(false);
-    const lyricsWrapRef = useRef(null);
-    const lyricsScrollerRef = useRef(null);
-    const [centerOffset, setCenterOffset] = useState(0);
+    const desktopLyricsWrapRef = useRef(null);
+    const desktopLyricsScrollerRef = useRef(null);
+    const mobileLyricsWrapRef = useRef(null);
+    const mobileLyricsScrollerRef = useRef(null);
+    const lyricsManualScrollUntilRef = useRef(0);
     const mobileSwipeRef = useRef({
         active: false,
         ignore: false,
@@ -89,7 +91,7 @@ const LyricsOverlay = ({
         const startedInControls = Boolean(
             target &&
             typeof target.closest === 'function' &&
-            target.closest('.mobile-player-controls')
+            target.closest('.mobile-player-controls, .mobile-lyrics-scroller')
         );
         mobileSwipeRef.current.active = true;
         mobileSwipeRef.current.ignore = startedInControls;
@@ -197,23 +199,50 @@ const LyricsOverlay = ({
         );
     };
 
+    const markLyricsManualScroll = () => {
+        lyricsManualScrollUntilRef.current = Date.now() + 2600;
+    };
+
+    const getActiveLyricsNodes = () => {
+        const useMobile = isMobileViewport();
+        return {
+            scroller: useMobile ? mobileLyricsScrollerRef.current : desktopLyricsScrollerRef.current,
+            wrap: useMobile ? mobileLyricsWrapRef.current : desktopLyricsWrapRef.current
+        };
+    };
+
+    const scrollActiveLyricIntoView = (behavior = 'smooth') => {
+        if (!isLyricsOpen) return;
+        if (Date.now() < lyricsManualScrollUntilRef.current) return;
+        const { scroller, wrap } = getActiveLyricsNodes();
+        if (!scroller || !wrap) return;
+        const active = wrap.querySelector('.lyric-line.active');
+        if (!active) return;
+        const target = active.offsetTop + active.offsetHeight / 2 - scroller.clientHeight / 2;
+        const maxScroll = Math.max(scroller.scrollHeight - scroller.clientHeight, 0);
+        const top = Math.min(Math.max(target, 0), maxScroll);
+        scroller.scrollTo({ top, behavior });
+    };
+
+    useEffect(() => {
+        if (!isLyricsOpen) {
+            lyricsManualScrollUntilRef.current = 0;
+            return;
+        }
+        scrollActiveLyricIntoView('auto');
+    }, [isLyricsOpen, lyrics.length, currentTrack?.src]);
+
+    useEffect(() => {
+        if (!isLyricsOpen) return;
+        const handleResize = () => scrollActiveLyricIntoView('auto');
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isLyricsOpen, currentLyricIndex, lyrics.length, currentTrack?.src]);
+
     useLayoutEffect(() => {
         if (!isLyricsOpen) return;
-        const updateOffset = () => {
-            const scroller = lyricsScrollerRef.current;
-            const wrap = lyricsWrapRef.current;
-            if (!scroller || !wrap) return;
-            const active = wrap.querySelector('.lyric-line.active');
-            if (!active) return;
-            const scrollerHeight = scroller.clientHeight || 0;
-            const activeCenter = active.offsetTop + active.offsetHeight / 2;
-            const offset = scrollerHeight / 2 - activeCenter;
-            setCenterOffset(offset);
-        };
-        updateOffset();
-        window.addEventListener('resize', updateOffset);
-        return () => window.removeEventListener('resize', updateOffset);
-    }, [isLyricsOpen, lyrics.length, currentLyricIndex]);
+        scrollActiveLyricIntoView('smooth');
+    }, [isLyricsOpen, currentLyricIndex, lyrics.length]);
 
     useLayoutEffect(() => {
         if (!isLyricsOpen) return;
@@ -371,19 +400,26 @@ const LyricsOverlay = ({
 
                         <div className="mobile-lyrics-section">
                             {lyrics.length > 0 ? (
-                                <div className="mobile-lyrics-display">
-                                    {lyrics.slice(Math.max(0, currentLyricIndex - 1), currentLyricIndex + 2).map((l, i) => {
-                                        const actualIndex = Math.max(0, currentLyricIndex - 1) + i;
+                                <div
+                                    className="mobile-lyrics-scroller"
+                                    ref={mobileLyricsScrollerRef}
+                                    onWheel={markLyricsManualScroll}
+                                    onPointerDown={markLyricsManualScroll}
+                                    onTouchStart={markLyricsManualScroll}
+                                >
+                                    <div className="mobile-lyrics-wrap" ref={mobileLyricsWrapRef}>
+                                        {lyrics.map((l, i) => {
                                         return (
                                             <div
                                                 key={i}
-                                                className={`mobile-lyric-line ${actualIndex === currentLyricIndex ? 'active' : ''}`}
+                                                className={`mobile-lyric-line lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
                                                 onClick={(e) => { e.stopPropagation(); audioRef.current.currentTime = l.time; }}
                                             >
                                                 {l.text}
                                             </div>
                                         );
                                     })}
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="mobile-no-lyrics">暂无歌词</div>
@@ -497,17 +533,13 @@ const LyricsOverlay = ({
                         <div className="lyrics-view desktop-lyrics">
                             <div
                                 className={`lyrics-scroller ${lyrics.length > 0 ? '' : 'is-empty'}`}
-                                ref={lyricsScrollerRef}
+                                ref={desktopLyricsScrollerRef}
+                                onWheel={markLyricsManualScroll}
+                                onPointerDown={markLyricsManualScroll}
+                                onTouchStart={markLyricsManualScroll}
                             >
                                 {lyrics.length > 0 ? (
-                                    <div
-                                        ref={lyricsWrapRef}
-                                        style={{
-                                            transform: `translateY(${centerOffset}px)`,
-                                            transition: 'transform 0.1s linear',
-                                            willChange: 'transform'
-                                        }}
-                                    >
+                                    <div ref={desktopLyricsWrapRef}>
                                         {lyrics.map((l, i) => (
                                             <div
                                                 key={i}

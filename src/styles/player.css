@@ -340,7 +340,7 @@
     --mini-cover-ring-width: 1.5px;
     padding: var(--mini-cover-ring-width);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    margin-left: -3px;
+    margin-left: 0;
     margin-bottom: 0;
     flex-shrink: 0;
     transition: transform 0.2s ease;
@@ -803,9 +803,11 @@
 .lyrics-scroller {
   height: 70vh;
   width: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
   padding: 0 24px;
+  touch-action: pan-y;
   mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
 }
@@ -1469,6 +1471,18 @@
     font-size: 20px;
   }
 
+  .album-inline-hero-actions {
+    margin-top: 14px;
+    gap: 8px;
+  }
+
+  .album-inline-hero-actions .play-all-btn,
+  .album-inline-fav-all-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
   .album-inline-panel .song-item {
     padding: 10px 12px;
   }
@@ -1534,44 +1548,319 @@
   }
 
   .album-list-overlay {
-    align-items: flex-end;
+    align-items: stretch;
+    justify-content: stretch;
     padding: 0;
   }
 
   .album-list-panel {
     width: 100%;
-    max-height: 75vh;
-    border-radius: 20px 20px 0 0;
+    height: var(--mobile-fullscreen-height);
+    max-height: none;
+    border-radius: 0;
+    border: none;
   }
 
   .album-list-header {
-    padding: 14px 16px;
+    padding: calc(14px + var(--mobile-fullscreen-safe-top)) 16px 12px;
+    border-bottom: none;
+    background: transparent;
+    min-height: 66px;
+  }
+
+  .album-list-header-label {
+    font-size: 18px;
+    letter-spacing: 0.02em;
   }
 
   .album-list-tabs {
     display: flex;
-  }
-
-  .album-list-body {
-    padding: 8px 12px 16px;
-  }
-
-  .album-list-columns {
-    grid-template-columns: 1fr;
-    padding: 10px 12px 16px;
-    touch-action: pan-y;
-  }
-
-  .album-list-column {
+    margin: 0 14px 8px;
+    padding: 3px;
+    gap: 0;
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
+    background: var(--glass-bg);
+    overflow: hidden;
+  }
+
+  .album-list-tab-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / 2);
+    height: calc(100% - 6px);
+    border-radius: 9px;
+    background: #ffffff;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+    transition: transform 0.42s cubic-bezier(0.22, 0.86, 0.22, 1), box-shadow 0.42s ease;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .album-list-tabs[data-active-tab="favorites"] .album-list-tab-slider {
+    transform: translateX(100%);
+  }
+
+  .album-list-tab {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    border: none;
+    min-height: 42px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+  }
+
+  .album-list-tab.active {
+    background: transparent;
+    color: #121214;
+  }
+
+  .album-list-tab:hover {
+    background: transparent;
+    color: var(--text-main);
+  }
+
+  .album-list-tab.active:hover {
+    color: #121214;
+  }
+
+  .album-list-desktop-layout {
     display: none;
   }
 
-  .album-list-columns[data-active-tab="album"] .album-list-album {
+  .album-list-mobile-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    padding: 0 0 calc(12px + var(--mobile-fullscreen-safe-bottom));
+    touch-action: pan-y;
+  }
+
+  .album-list-mobile-pane {
+    border-radius: 0;
+    display: none;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .album-list-mobile-pane.active {
     display: flex;
   }
 
-  .album-list-columns[data-active-tab="favorites"] .album-list-favorites {
+  .album-list-mobile-column {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .album-list-subheader {
+    padding: 10px 14px 10px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--glass-border);
+    background: transparent;
+  }
+
+  .album-list-subheader.is-mobile h4 {
+    display: none;
+  }
+
+  .album-list-subheader.is-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    text-align: center;
+    min-height: 0;
+    padding: 4px 14px 16px;
+    flex-shrink: 0;
+  }
+
+  .album-list-subheader.is-mobile .album-list-info {
+    width: 100%;
+    text-align: center;
+    min-width: 0;
+    flex: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .album-list-subheader.is-mobile p {
+    margin-top: 0;
+  }
+
+  .album-list-mobile-main {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-main);
+    max-width: 100%;
+    padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .album-list-mobile-tip {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text-secondary);
+    max-width: 100%;
+    padding: 0 4px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .album-list-actions {
+    gap: 6px;
+  }
+
+  .album-list-subheader.is-mobile .album-list-actions {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .album-list-mobile-layout .album-play-btn,
+  .album-list-mobile-layout .album-fav-all-btn,
+  .album-list-mobile-layout .fav-play-btn {
+    min-height: 38px;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 10px;
+  }
+
+  .album-list-mobile-layout .temp-clear-btn {
+    min-height: 38px;
+    border-radius: 10px;
+  }
+
+  .album-list-mobile-layout .album-play-btn,
+  .album-list-mobile-layout .fav-play-btn {
+    min-width: 118px;
+    border: none;
+    background: var(--main-color);
+    color: var(--bg-color);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+  }
+
+  .album-list-mobile-layout .album-fav-all-btn,
+  .album-list-mobile-layout .temp-clear-btn {
+    border: 1px solid var(--glass-border);
+    min-width: 102px;
+    padding: 6px 10px;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .album-list-mobile-layout .album-fav-all-btn.active {
+    color: #e05252;
+    border: 1px solid rgba(224, 82, 82, 0.35);
+    background: transparent;
+  }
+
+  .album-list-body {
+    flex: 1;
+    min-height: 0;
+    padding: 2px 0 12px;
+    border-top: none;
+  }
+
+  .album-list-row {
+    position: relative;
+    min-height: 52px;
+    padding: 10px 14px;
+    margin-bottom: 0;
+    border-radius: 0;
+    border-bottom: 1px solid var(--glass-border);
+    background: transparent;
+  }
+
+  .album-list-row > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .album-list-row.is-current-track {
+    margin: 0;
+    border-bottom-color: transparent;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .album-list-row.is-current-track::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 3px;
+    bottom: 3px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.06);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .album-list-row:not(.is-current-track):hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .album-list-row:last-child {
+    border-bottom: none;
+  }
+
+  .album-list-row-name {
+    font-size: 14px;
+  }
+
+  .album-list-row-meta {
+    font-size: 12px;
+  }
+
+  .album-list-fav-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .album-list-close {
+    width: 42px;
+    height: 42px;
+    right: 16px;
+  }
+
+  .album-list-tabs + .album-list-mobile-layout {
+    margin-top: 0;
+    border-top: none;
+  }
+
+  .album-list-mobile-pane[hidden] {
+    display: none !important;
+  }
+
+  .album-list-mobile-pane:not([hidden]) {
     display: flex;
   }
 
@@ -1697,6 +1986,65 @@
   white-space: nowrap;
 }
 
+.song-name-marquee {
+  position: relative;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.song-name-static {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-name-marquee-track {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: max-content;
+}
+
+.song-name-marquee-item {
+  white-space: nowrap;
+}
+
+.song-name-marquee-gap {
+  width: 24px;
+  flex: 0 0 24px;
+}
+
+.song-name-marquee.is-running .song-name-marquee-track {
+  animation: song-name-marquee-scroll var(--song-name-marquee-duration, 10s) linear infinite;
+}
+
+.song-name-measure {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@keyframes song-name-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-1 * var(--song-name-marquee-shift, 0px)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .song-name-marquee.is-running .song-name-marquee-track {
+    animation: none;
+  }
+}
+
 .song-meta {
   margin-left: 8px;
   font-size: 12px;
@@ -1762,8 +2110,11 @@
   border: 1px solid var(--glass-border);
   background: transparent;
   color: var(--text-secondary);
-  padding: 4px 10px;
-  border-radius: 999px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
@@ -1839,10 +2190,93 @@
   color: #121214;
 }
 
-[data-theme='dark'] .album-play-btn,
-[data-theme='dark'] .fav-play-btn {
+[data-theme='light'] .album-play-btn,
+[data-theme='light'] .fav-play-btn {
+  background: #121214;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+[data-theme='light'] .album-play-btn:not(:disabled):hover,
+[data-theme='light'] .fav-play-btn:not(:disabled):hover {
+  background: #121214;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .album-fav-all-btn,
+[data-theme='dark'] .temp-clear-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme='dark'] .album-fav-all-btn.active {
+  border-color: rgba(224, 82, 82, 0.46);
+  color: #ff8f8f;
+}
+
+[data-theme='dark'] .album-play-btn {
   background: #ffffff;
   color: #121214;
+}
+
+[data-theme='dark'] .album-list-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .album-list-row.is-current-track {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .album-list-tabs {
+  background: var(--glass-bg);
+}
+
+@media (max-width: 1024px) {
+  [data-theme='light'] .album-list-tabs {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme='light'] .album-list-tab-slider {
+    background: #121214;
+    border: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+  }
+
+  [data-theme='light'] .album-list-tab.active,
+  [data-theme='light'] .album-list-tab.active:hover {
+    color: #ffffff;
+  }
+
+  [data-theme='light'] .album-list-mobile-layout .album-play-btn,
+  [data-theme='light'] .album-list-mobile-layout .fav-play-btn {
+    background: #121214;
+    color: #ffffff;
+    border: none;
+    box-shadow: none;
+  }
+
+  [data-theme='light'] .album-list-mobile-layout .album-play-btn:hover,
+  [data-theme='light'] .album-list-mobile-layout .fav-play-btn:hover {
+    background: #121214;
+    color: #ffffff;
+    filter: saturate(1.04);
+  }
+
+  [data-theme='dark'] .album-list-subheader {
+    background: transparent;
+  }
+
+  [data-theme='dark'] .album-list-row {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  [data-theme='dark'] .album-list-row.is-current-track {
+    background: transparent;
+  }
+
+  [data-theme='dark'] .album-list-row.is-current-track::before {
+    background: rgba(255, 255, 255, 0.12);
+  }
 }
 
 [data-theme='dark'] * {
@@ -2028,30 +2462,55 @@
 
   .mobile-lyrics-section {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
     min-height: 140px;
     max-height: 360px;
     overflow: hidden;
     position: relative;
     z-index: 3;
+    padding:
+      0
+      calc(20px + var(--mobile-fullscreen-safe-right))
+      0
+      calc(20px + var(--mobile-fullscreen-safe-left));
   }
 
-  .mobile-lyrics-display {
+  .mobile-lyrics-scroller {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
+    padding: 12px 4px;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 14%,
+      black 86%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 14%,
+      black 86%,
+      transparent 100%
+    );
+  }
+
+  .mobile-lyrics-wrap {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 6px;
-    text-align: center;
   }
 
   .mobile-lyric-line {
     font-size: 17px;
     font-weight: 500;
     color: var(--text-secondary);
+    width: 100%;
+    text-align: center;
     padding: 3px 10px;
     border-radius: 6px;
     transition: all 0.3s ease;
@@ -2068,6 +2527,12 @@
   .mobile-no-lyrics {
     font-size: 15px;
     color: var(--text-secondary);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 
   .mobile-player-controls {
@@ -2276,7 +2741,8 @@
       rgba(0, 0, 0, 0.55) 92%,
       transparent 100%
     );
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding: 0 60px;
   }
 }

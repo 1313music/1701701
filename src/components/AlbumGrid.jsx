@@ -4,6 +4,109 @@ import { ChevronUpIcon } from './icons/AppIcons';
 
 const PANEL_EXIT_MS = 280;
 const PANEL_OPEN_TICK_MS = 24;
+const SONG_MARQUEE_GAP = 24;
+const SONG_MARQUEE_MIN_DURATION = 9;
+const SONG_MARQUEE_SPEED = 36;
+
+const getNodeWidth = (node) => {
+    if (!node) return 0;
+    const scrollWidth = Number(node.scrollWidth) || 0;
+    const rectWidth = Number(node.getBoundingClientRect?.().width) || 0;
+    return Math.max(scrollWidth, rectWidth);
+};
+
+const SongNameMarquee = ({ text, allowMarquee }) => {
+    const containerRef = useRef(null);
+    const measureRef = useRef(null);
+    const [layout, setLayout] = useState({
+        overflow: false,
+        shift: 0,
+        duration: 0
+    });
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        let frameId = 0;
+
+        const recalculate = () => {
+            const container = containerRef.current;
+            const measure = measureRef.current;
+            if (!container || !measure) return;
+
+            const containerWidth = container.clientWidth;
+            const textWidth = getNodeWidth(measure);
+            const overflow = textWidth > containerWidth + 2;
+            const shift = overflow ? Math.ceil(textWidth + SONG_MARQUEE_GAP) : 0;
+            const duration = Math.max(
+                SONG_MARQUEE_MIN_DURATION,
+                Number((shift / SONG_MARQUEE_SPEED).toFixed(2))
+            );
+
+            setLayout((previous) => {
+                if (
+                    previous.overflow === overflow
+                    && previous.shift === shift
+                    && Math.abs(previous.duration - duration) < 0.01
+                ) {
+                    return previous;
+                }
+                return { overflow, shift, duration };
+            });
+        };
+
+        const scheduleRecalculate = () => {
+            if (frameId) window.cancelAnimationFrame(frameId);
+            frameId = window.requestAnimationFrame(recalculate);
+        };
+
+        scheduleRecalculate();
+
+        let resizeObserver;
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(scheduleRecalculate);
+            if (containerRef.current) resizeObserver.observe(containerRef.current);
+            if (measureRef.current) resizeObserver.observe(measureRef.current);
+        } else {
+            window.addEventListener('resize', scheduleRecalculate);
+        }
+
+        return () => {
+            if (frameId) window.cancelAnimationFrame(frameId);
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            } else {
+                window.removeEventListener('resize', scheduleRecalculate);
+            }
+        };
+    }, [text]);
+
+    const shouldRun = allowMarquee && layout.overflow;
+    const marqueeStyle = shouldRun
+        ? {
+            '--song-name-marquee-shift': `${layout.shift}px`,
+            '--song-name-marquee-duration': `${layout.duration}s`
+        }
+        : undefined;
+
+    return (
+        <span
+            ref={containerRef}
+            className={`song-name song-name-marquee ${shouldRun ? 'is-running' : ''}`}
+            style={marqueeStyle}
+        >
+            {shouldRun ? (
+                <span className="song-name-marquee-track">
+                    <span className="song-name-marquee-item">{text}</span>
+                    <span className="song-name-marquee-gap" aria-hidden="true" />
+                    <span className="song-name-marquee-item" aria-hidden="true">{text}</span>
+                </span>
+            ) : (
+                <span className="song-name-static">{text}</span>
+            )}
+            <span className="song-name-measure" aria-hidden="true" ref={measureRef}>{text}</span>
+        </span>
+    );
+};
 
 const AlbumGrid = ({
     musicAlbums,
@@ -13,7 +116,8 @@ const AlbumGrid = ({
     isPlaying,
     playSongFromAlbum,
     tempPlaylistSet,
-    onToggleTempSong
+    onToggleTempSong,
+    onToggleAlbumFavorites
 }) => {
     const gridRef = useRef(null);
     const [columns, setColumns] = useState(() => {
@@ -27,6 +131,7 @@ const AlbumGrid = ({
     const [renderedPanelAlbumId, setRenderedPanelAlbumId] = useState(expandedAlbumId || null);
     const [panelPhase, setPanelPhase] = useState(() => (expandedAlbumId ? 'open' : 'closed'));
     const [panelHeight, setPanelHeight] = useState(0);
+    const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
     const panelOpenTimerRef = useRef(null);
@@ -91,6 +196,7 @@ const AlbumGrid = ({
     useEffect(() => {
         clearPanelTimers();
         if (!expandedAlbumId) {
+            setHoveredPanelSongSrc('');
             if (!renderedPanelAlbumIdRef.current) {
                 panelStateTimerRef.current = window.setTimeout(() => {
                     setPanelPhase('closed');
@@ -100,6 +206,7 @@ const AlbumGrid = ({
             }
             panelStateTimerRef.current = window.setTimeout(() => {
                 setPanelPhase('closing');
+                setHoveredPanelSongSrc('');
                 panelExitTimerRef.current = window.setTimeout(() => {
                     setRenderedPanelAlbumId(null);
                     renderedPanelAlbumIdRef.current = null;
@@ -148,8 +255,17 @@ const AlbumGrid = ({
     const isPanelOpen = Boolean(panelAlbum) && panelPhase === 'open';
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
+    const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
+        (song) => song?.src && tempPlaylistSet?.has(song.src)
+    );
     const expandedMarginTop = isMobileLayout ? 8 : 12;
     const expandedMarginBottom = isMobileLayout ? 20 : 30;
+
+    useEffect(() => {
+        if (!panelAlbum) {
+            setHoveredPanelSongSrc('');
+        }
+    }, [panelAlbum]);
 
     useLayoutEffect(() => {
         if (!panelAlbum) return;
@@ -215,9 +331,21 @@ const AlbumGrid = ({
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
                             <p className="album-metadata">{panelAlbum.artist} • {panelAlbum.songs.length} 首歌</p>
-                            <button onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])} className="play-all-btn">
-                                播放全部
-                            </button>
+                            <div className="album-inline-hero-actions">
+                                <button onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])} className="play-all-btn">
+                                    播放全部
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`album-inline-fav-all-btn ${isPanelAlbumFullyFavorited ? 'active' : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onToggleAlbumFavorites?.(panelAlbum.songs, e);
+                                    }}
+                                >
+                                    {isPanelAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
+                                </button>
+                            </div>
                         </div>
                         <button className="album-inline-close" onClick={() => navigateToAlbum(panelAlbum)} aria-label="收起">
                             <ChevronUpIcon size={18} />
@@ -230,9 +358,21 @@ const AlbumGrid = ({
                                 key={song.src}
                                 className={`song-item ${currentTrack.src === song.src ? 'active' : ''}`}
                                 onClick={() => playSongFromAlbum(panelAlbum, song)}
+                                onPointerEnter={() => setHoveredPanelSongSrc(song.src)}
+                                onPointerLeave={() => {
+                                    setHoveredPanelSongSrc((previous) => (
+                                        previous === song.src ? '' : previous
+                                    ));
+                                }}
                             >
                                 <span className="song-num">{i + 1}</span>
-                                <span className="song-name">{song.name}</span>
+                                <SongNameMarquee
+                                    text={song.name}
+                                    allowMarquee={
+                                        currentTrack.src === song.src
+                                        || hoveredPanelSongSrc === song.src
+                                    }
+                                />
                                 <span className="song-actions">
                                     <span className="song-status">
                                         {currentTrack.src === song.src && isPlaying ? (

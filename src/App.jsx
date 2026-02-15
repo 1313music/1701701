@@ -260,17 +260,72 @@ const App = () => {
     showToast('已收藏', 'tone-add', anchorOrOptions);
   };
 
-  const clearTempPlaylist = () => setTempPlaylistIds([]);
+  const toggleAlbumFavorites = useCallback((songs, anchorOrOptions = { placement: 'bottom' }) => {
+    const safeSongs = Array.isArray(songs) ? songs : [];
+    const candidateIds = Array.from(new Set(safeSongs
+      .map((song) => song?.src)
+      .filter(Boolean)));
+    if (candidateIds.length === 0) return;
 
-  const playFavorites = (song) => {
+    const allFavorited = candidateIds.every((id) => tempPlaylistSet.has(id));
+    if (allFavorited) {
+      const removeSet = new Set(candidateIds);
+      setTempPlaylistIds((prev) => prev.filter((id) => !removeSet.has(id)));
+      showToast(
+        candidateIds.length === 1 ? '已取消收藏 1 首' : `已取消收藏 ${candidateIds.length} 首`,
+        'tone-remove',
+        anchorOrOptions
+      );
+      return;
+    }
+
+    const additions = candidateIds.filter((id) => !tempPlaylistSet.has(id));
+    if (additions.length === 0) {
+      showToast('已全部在收藏', 'tone-add', anchorOrOptions);
+      return;
+    }
+
+    setTempPlaylistIds((prev) => [...prev, ...additions]);
+    showToast(
+      additions.length === 1 ? '已收藏 1 首' : `已收藏 ${additions.length} 首`,
+      'tone-add',
+      anchorOrOptions
+    );
+  }, [showToast, tempPlaylistSet]);
+
+  const clearTempPlaylist = useCallback((anchorOrOptions = { placement: 'bottom' }) => {
+    setTempPlaylistIds((prev) => (prev.length === 0 ? prev : []));
+    showToast('已清空收藏', 'tone-remove', anchorOrOptions);
+  }, [showToast]);
+
+  const playFavorites = useCallback((song) => {
     if (!favoriteAlbum || favoriteAlbum.songs.length === 0) return;
+
     const target = song
       ? favoriteAlbum.songs.find((item) => item.src === song.src)
       : favoriteAlbum.songs[0];
+    const nextTrack = target || favoriteAlbum.songs[0];
+
+    const isSameTrack = Boolean(currentTrack?.src) && currentTrack.src === nextTrack.src;
+    const isInFavoritesAlbum = currentAlbum?.id === favoriteAlbum.id;
+
+    // Keep same click behavior as album list rows: second click toggles play/pause.
+    if (song && isInFavoritesAlbum && isSameTrack) {
+      setIsPlaying((prev) => !prev);
+      return;
+    }
+
     setCurrentAlbum(favoriteAlbum);
-    setCurrentTrack(target || favoriteAlbum.songs[0]);
+    setCurrentTrack(nextTrack);
     setIsPlaying(true);
-  };
+  }, [
+    favoriteAlbum,
+    currentTrack?.src,
+    currentAlbum?.id,
+    setCurrentAlbum,
+    setCurrentTrack,
+    setIsPlaying
+  ]);
 
   const navigateToAlbum = (album) => {
     setSelectedAlbum((prev) => (prev && prev.id === album.id ? null : album));
@@ -349,6 +404,7 @@ const App = () => {
                         playSongFromAlbum={playSongFromAlbum}
                         tempPlaylistSet={tempPlaylistSet}
                         onToggleTempSong={toggleTempSong}
+                        onToggleAlbumFavorites={toggleAlbumFavorites}
                       />
                     </>
                   )}
@@ -440,6 +496,7 @@ const App = () => {
                   tempPlaylistCount={tempPlaylistIds.length}
                   tempPlaylistItems={tempPlaylistItems}
                   onToggleTempSong={toggleTempSong}
+                  onToggleAlbumFavorites={toggleAlbumFavorites}
                   onClearTempPlaylist={clearTempPlaylist}
                   onPlayFavorites={playFavorites}
                 />
