@@ -222,6 +222,7 @@
 }
 
 .video-access-card {
+  --video-access-content-width: min(220px, 70vw);
   width: min(420px, 92vw);
   background: var(--bg-color);
   border-radius: 16px;
@@ -244,6 +245,9 @@
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.5;
+  width: var(--video-access-content-width);
+  margin: 0 auto;
+  text-align: center;
 }
 
 .video-access-qr {
@@ -253,7 +257,7 @@
 }
 
 .video-access-qr img {
-  width: min(220px, 70vw);
+  width: var(--video-access-content-width);
   height: auto;
   border-radius: 12px;
   border: 1px solid var(--glass-border);
@@ -262,7 +266,8 @@
 }
 
 .video-access-input {
-  width: 100%;
+  width: var(--video-access-content-width);
+  margin: 0 auto;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   color: var(--text-main);
