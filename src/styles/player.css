@@ -1472,6 +1472,15 @@
     padding: 10px 12px;
   }
 
+  .album-inline-bottom-actions {
+    padding-top: 10px;
+  }
+
+  .album-inline-bottom-close {
+    width: 32px;
+    height: 32px;
+  }
+
   .album-sheet-overlay {
     align-items: flex-end;
     padding: 0;

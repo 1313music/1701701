@@ -721,6 +721,34 @@ body {
   flex-shrink: 0;
 }
 
+.album-inline-bottom-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.album-inline-bottom-close {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.album-inline-bottom-close:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.album-inline-bottom-close:active {
+  transform: scale(0.92);
+}
+
 .album-sheet-overlay {
   position: fixed;
   inset: 0;

@@ -262,6 +262,17 @@ const AlbumGrid = ({
                             </div>
                         ))}
                     </div>
+                    <div className="album-inline-bottom-actions">
+                        <button
+                            type="button"
+                            className="album-inline-bottom-close"
+                            onClick={() => navigateToAlbum(panelAlbum)}
+                            aria-label="收起"
+                            title="收起"
+                        >
+                            <ChevronUpIcon size={18} />
+                        </button>
+                    </div>
                 </div>
             </div>
         );
