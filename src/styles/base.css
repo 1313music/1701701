@@ -644,24 +644,27 @@ body {
 }
 
 .album-inline-close {
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
   width: 32px;
   height: 32px;
-  border-radius: 999px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: absolute;
   right: 0;
   top: 0;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.9;
 }
 
 .album-inline-close:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: transparent;
+  color: var(--text-main);
+  opacity: 1;
 }
 
 .album-inline-close:active {
@@ -728,21 +731,24 @@ body {
 }
 
 .album-inline-bottom-close {
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.9;
 }
 
 .album-inline-bottom-close:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: transparent;
+  color: var(--text-main);
+  opacity: 1;
 }
 
 .album-inline-bottom-close:active {
