@@ -43,6 +43,48 @@ const buildSongIndex = (albums) => {
   return map;
 };
 
+const SITE_URL = 'https://1701701.xyz';
+const SITE_NAME = '1701701.xyz';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
+
+const upsertMetaTag = ({ name, property }, content) => {
+  if (typeof document === 'undefined' || !content) return;
+  const selector = name
+    ? `meta[name="${name}"]`
+    : `meta[property="${property}"]`;
+  let tag = document.head.querySelector(selector);
+  if (!tag) {
+    tag = document.createElement('meta');
+    if (name) tag.setAttribute('name', name);
+    if (property) tag.setAttribute('property', property);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
+};
+
+const upsertLinkTag = (rel, href) => {
+  if (typeof document === 'undefined' || !rel || !href) return;
+  let tag = document.head.querySelector(`link[rel="${rel}"]`);
+  if (!tag) {
+    tag = document.createElement('link');
+    tag.setAttribute('rel', rel);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('href', href);
+};
+
+const upsertJsonLd = (id, payload) => {
+  if (typeof document === 'undefined' || !id || !payload) return;
+  let script = document.getElementById(id);
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = id;
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(payload);
+};
+
 const App = () => {
   const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'about'
   const [musicAlbums, setMusicAlbums] = useState([]);
@@ -195,6 +237,79 @@ const App = () => {
       // ignore storage errors
     }
   }, [tempPlaylistIds]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const seoMap = {
+      library: {
+        title: '李志音乐专辑与播放列表 | 1701701.xyz',
+        description: '收录李志音乐作品，提供专辑浏览、播放列表、歌词与收藏管理。',
+        pageType: 'CollectionPage'
+      },
+      video: {
+        title: '李志现场视频与纪录片 | 1701701.xyz',
+        description: '整理李志相关现场视频、纪录片与演出影像内容。',
+        pageType: 'VideoGallery'
+      },
+      download: {
+        title: '李志音乐资源下载 | 1701701.xyz',
+        description: '提供李志相关资源下载入口与内容汇总。',
+        pageType: 'CollectionPage'
+      },
+      about: {
+        title: '关于本站 | 1701701.xyz',
+        description: '了解本站的内容范围、资源说明与使用说明。',
+        pageType: 'AboutPage'
+      }
+    };
+
+    const currentSeo = seoMap[view] || seoMap.library;
+    const canonicalUrl = `${SITE_URL}/`;
+
+    document.title = currentSeo.title;
+    upsertMetaTag({ name: 'description' }, currentSeo.description);
+    upsertMetaTag({ property: 'og:type' }, 'website');
+    upsertMetaTag({ property: 'og:site_name' }, SITE_NAME);
+    upsertMetaTag({ property: 'og:title' }, currentSeo.title);
+    upsertMetaTag({ property: 'og:description' }, currentSeo.description);
+    upsertMetaTag({ property: 'og:url' }, canonicalUrl);
+    upsertMetaTag({ property: 'og:image' }, DEFAULT_OG_IMAGE);
+    upsertMetaTag({ name: 'twitter:card' }, 'summary_large_image');
+    upsertMetaTag({ name: 'twitter:title' }, currentSeo.title);
+    upsertMetaTag({ name: 'twitter:description' }, currentSeo.description);
+    upsertMetaTag({ name: 'twitter:image' }, DEFAULT_OG_IMAGE);
+    upsertLinkTag('canonical', canonicalUrl);
+
+    const jsonLdPayload = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        url: SITE_URL,
+        inLanguage: 'zh-CN',
+        description: '一个分享李志音乐与视频的网站'
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': currentSeo.pageType,
+        name: currentSeo.title,
+        url: canonicalUrl,
+        inLanguage: 'zh-CN',
+        isPartOf: {
+          '@type': 'WebSite',
+          name: SITE_NAME,
+          url: SITE_URL
+        },
+        about: {
+          '@type': 'Person',
+          name: '李志'
+        },
+        description: currentSeo.description
+      }
+    ];
+    upsertJsonLd('page-seo-jsonld', jsonLdPayload);
+  }, [view]);
 
   const setLyricsOverlayOpen = useCallback((open) => {
     if (open) {

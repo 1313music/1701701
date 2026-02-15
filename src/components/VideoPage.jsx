@@ -11,13 +11,19 @@ const fallbackThumb = `data:image/svg+xml;utf8,${encodeURIComponent(
     '</linearGradient></defs>' +
     '<rect width="640" height="360" fill="url(#g)"/>' +
     '<rect x="40" y="40" width="560" height="280" rx="28" ry="28" fill="rgba(255,255,255,0.08)"/>' +
-    '<text x="50%" y="52%" font-family="Arial, sans-serif" font-size="48" fill="rgba(255,255,255,0.75)" text-anchor="middle">VIDEO</text>' +
+    '<text x="50%" y="50%" font-family="Arial, sans-serif" font-size="44" fill="rgba(255,255,255,0.78)" text-anchor="middle">民谣俱乐部</text>' +
+    '<text x="50%" y="64%" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.6)" text-anchor="middle">1701701.xyz</text>' +
     '</svg>'
 )}`;
 
 const VideoCard = ({ item, onClick, meta }) => {
     const [thumbError, setThumbError] = useState(false);
+    const [thumbLoaded, setThumbLoaded] = useState(false);
     const thumbSrc = !thumbError && item.thumb ? item.thumb : fallbackThumb;
+
+    useEffect(() => {
+        setThumbLoaded(false);
+    }, [thumbSrc]);
 
     return (
         <Motion.div
@@ -28,11 +34,23 @@ const VideoCard = ({ item, onClick, meta }) => {
             transition={{ duration: 0.2 }}
         >
             <div className="video-thumb">
+                <div
+                    className={`video-thumb-placeholder ${thumbLoaded ? 'is-hidden' : ''}`}
+                    aria-hidden="true"
+                >
+                    <span className="video-thumb-placeholder-title">民谣俱乐部</span>
+                    <span className="video-thumb-placeholder-site">1701701.xyz</span>
+                </div>
                 <img
+                    className={`video-thumb-image ${thumbLoaded ? 'is-loaded' : ''}`}
                     src={thumbSrc}
                     alt={item.title}
                     loading="lazy"
-                    onError={() => setThumbError(true)}
+                    onLoad={() => setThumbLoaded(true)}
+                    onError={() => {
+                        setThumbError(true);
+                        setThumbLoaded(false);
+                    }}
                 />
                 <div className="video-thumb-overlay">
                     {item.isFolder || item.folderId ? (

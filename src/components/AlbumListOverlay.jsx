@@ -170,7 +170,11 @@ const AlbumListOverlay = ({
     const [activeTab, setActiveTab] = useState('album');
     const [hoveredAlbumSrc, setHoveredAlbumSrc] = useState('');
     const [hoveredFavoriteSrc, setHoveredFavoriteSrc] = useState('');
-    const touchStartX = useRef(null);
+    const touchGestureRef = useRef({
+        x: null,
+        y: null,
+        fromListBody: false
+    });
     const safeTempCount = typeof tempPlaylistCount === 'number' ? tempPlaylistCount : 0;
     const safeTempItems = Array.isArray(tempPlaylistItems) ? tempPlaylistItems : [];
     const currentTrackSrc = currentTrack?.src || '';
@@ -216,17 +220,60 @@ const AlbumListOverlay = ({
     if (!album) return null;
 
     const handleTouchStart = (event) => {
-        touchStartX.current = event.touches[0]?.clientX ?? null;
+        const touch = event.touches[0];
+        if (!touch) return;
+
+        const target = event.target;
+        const fromListBody = Boolean(
+            target
+            && typeof target.closest === 'function'
+            && target.closest('.album-list-body')
+        );
+
+        touchGestureRef.current = {
+            x: touch.clientX,
+            y: touch.clientY,
+            fromListBody
+        };
     };
 
     const handleTouchEnd = (event) => {
-        if (touchStartX.current == null) return;
-        const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
-        const delta = endX - touchStartX.current;
-        if (Math.abs(delta) > 50) {
-            setActiveTab(delta < 0 ? 'favorites' : 'album');
+        const startX = touchGestureRef.current.x;
+        const startY = touchGestureRef.current.y;
+        const fromListBody = touchGestureRef.current.fromListBody;
+
+        touchGestureRef.current = { x: null, y: null, fromListBody: false };
+        if (startX == null || startY == null) return;
+
+        const endX = event.changedTouches[0]?.clientX ?? startX;
+        const endY = event.changedTouches[0]?.clientY ?? startY;
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        const horizontalThreshold = fromListBody ? 88 : 64;
+        const verticalTolerance = fromListBody ? 20 : 28;
+        const hasEnoughHorizontalDistance = absX >= horizontalThreshold;
+        const isMostlyHorizontal = absX > absY * 1.6;
+        const withinVerticalTolerance = absY <= verticalTolerance;
+
+        if (!hasEnoughHorizontalDistance || !isMostlyHorizontal || !withinVerticalTolerance) {
+            return;
         }
-        touchStartX.current = null;
+
+        if (deltaX < 0 && activeTab !== 'favorites') {
+            setActiveTab('favorites');
+            return;
+        }
+
+        if (deltaX > 0 && activeTab !== 'album') {
+            setActiveTab('album');
+        }
+    };
+
+    const handleTouchCancel = () => {
+        touchGestureRef.current = { x: null, y: null, fromListBody: false };
     };
 
     const getRowClassName = (song) => {
@@ -458,6 +505,9 @@ const AlbumListOverlay = ({
                             role="tablist"
                             aria-label="歌曲列表视图切换"
                             data-active-tab={activeTab}
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={handleTouchEnd}
+                            onTouchCancel={handleTouchCancel}
                         >
                             <span className="album-list-tab-slider" aria-hidden="true" />
                             <button
@@ -496,6 +546,7 @@ const AlbumListOverlay = ({
                             data-active-tab={activeTab}
                             onTouchStart={handleTouchStart}
                             onTouchEnd={handleTouchEnd}
+                            onTouchCancel={handleTouchCancel}
                         >
                             <section
                                 id="album-list-mobile-album"
