@@ -1308,7 +1308,7 @@
   .mobile-menu-panel .nav-item span {
     flex: 1;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .mobile-menu-panel .nav-item::after {
