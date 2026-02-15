@@ -1,8 +1,7 @@
 import React from 'react';
 import {
     SunIcon,
-    MoonIcon,
-    MonitorIcon
+    MoonIcon
 } from './icons/AppIcons';
 import {
     Library,
@@ -18,32 +17,14 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
     </div>
 );
 
-const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreference = 'system', systemTheme = 'light', onThemeToggle }) => {
+const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreference = 'light', onThemeToggle }) => {
     const handleNavClick = (newView) => {
         setIsSidebarOpen(false);
         setView(newView);
     };
-    const resolvedTheme = themePreference === 'system' ? systemTheme : themePreference;
-    const currentLabel = themePreference === 'system'
-        ? `系统（${resolvedTheme === 'dark' ? '深色' : '浅色'}）`
-        : themePreference === 'dark'
-            ? '深色'
-            : '浅色';
-    const nextPreference = themePreference === 'system'
-        ? 'light'
-        : themePreference === 'light'
-            ? 'dark'
-            : 'system';
-    const nextLabel = nextPreference === 'system'
-        ? '系统'
-        : nextPreference === 'dark'
-            ? '深色'
-            : '浅色';
-    const ThemeIcon = themePreference === 'system'
-        ? MonitorIcon
-        : themePreference === 'dark'
-            ? MoonIcon
-            : SunIcon;
+    const currentLabel = themePreference === 'dark' ? '深色' : '浅色';
+    const nextLabel = themePreference === 'dark' ? '浅色' : '深色';
+    const ThemeIcon = themePreference === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
 
     return (

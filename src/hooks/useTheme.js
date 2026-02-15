@@ -9,12 +9,11 @@ const getSystemTheme = () => {
 
 export const useTheme = ({ showToast } = {}) => {
   const [themePreference, setThemePreference] = useState(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
     const stored = window.localStorage.getItem(THEME_PREFERENCE_KEY);
-    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
-    return 'system';
+    if (stored === 'light' || stored === 'dark') return stored;
+    return getSystemTheme();
   });
-  const [systemTheme, setSystemTheme] = useState(() => getSystemTheme());
   const [showViewportDebug] = useState(() => {
     if (typeof window === 'undefined') return false;
     const params = new URLSearchParams(window.location.search);
@@ -22,22 +21,11 @@ export const useTheme = ({ showToast } = {}) => {
   });
   const [viewportDebug, setViewportDebug] = useState(null);
 
-  const resolvedTheme = useMemo(
-    () => (themePreference === 'system' ? systemTheme : themePreference),
-    [systemTheme, themePreference]
-  );
+  const resolvedTheme = useMemo(() => themePreference, [themePreference]);
 
   const handleThemeToggle = useCallback((event) => {
-    const nextPreference = themePreference === 'system'
-      ? 'light'
-      : themePreference === 'light'
-        ? 'dark'
-        : 'system';
-    const message = nextPreference === 'system'
-      ? '跟随系统'
-      : nextPreference === 'dark'
-        ? '深色模式'
-        : '浅色模式';
+    const nextPreference = themePreference === 'dark' ? 'light' : 'dark';
+    const message = nextPreference === 'dark' ? '深色模式' : '浅色模式';
     setThemePreference(nextPreference);
     const anchorEvent = event?.currentTarget ? { currentTarget: event.currentTarget } : null;
     showToast?.(message, 'tone-add', { placement: 'side', anchorEvent });
@@ -176,20 +164,6 @@ export const useTheme = ({ showToast } = {}) => {
   }, [showViewportDebug]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (event) => {
-      setSystemTheme(event.matches ? 'dark' : 'light');
-    };
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-    mediaQuery.addListener(handleChange);
-    return () => mediaQuery.removeListener(handleChange);
-  }, []);
-
-  useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       window.localStorage.setItem(THEME_PREFERENCE_KEY, themePreference);
@@ -206,7 +180,6 @@ export const useTheme = ({ showToast } = {}) => {
 
   return {
     themePreference,
-    systemTheme,
     resolvedTheme,
     showViewportDebug,
     viewportDebug,

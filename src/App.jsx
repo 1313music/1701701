@@ -85,7 +85,6 @@ const App = () => {
 
   const {
     themePreference,
-    systemTheme,
     showViewportDebug,
     viewportDebug,
     handleThemeToggle
@@ -318,7 +317,6 @@ const App = () => {
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
               themePreference={themePreference}
-              systemTheme={systemTheme}
               onThemeToggle={handleThemeToggle}
             />
 
