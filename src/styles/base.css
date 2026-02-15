@@ -35,19 +35,6 @@
   }
 }
 
-@media (display-mode: standalone) {
-  :root {
-    --mobile-layout-safe-top: env(safe-area-inset-top, 0px);
-    --mobile-main-top-safe-offset: env(safe-area-inset-top, 0px);
-    --mobile-layout-safe-bottom: env(safe-area-inset-bottom, 0px);
-    --mobile-player-safe-bottom: env(safe-area-inset-bottom, 0px);
-    --mobile-player-float-offset: 12px;
-    --mobile-main-bottom-padding: calc(98px + env(safe-area-inset-bottom, 0px));
-    --mobile-main-bottom-padding-no-player: calc(18px + env(safe-area-inset-bottom, 0px));
-    --mobile-browser-bottom-gap: 0px;
-  }
-}
-
 :root.standalone-mode,
 :root.standalone-fallback {
   --mobile-layout-safe-top: env(safe-area-inset-top, 0px);

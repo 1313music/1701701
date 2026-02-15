@@ -36,35 +36,72 @@ export const useTheme = ({ showToast } = {}) => {
     const root = document.documentElement;
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
     const isiOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    // In iOS/standalone shells, display-mode can transiently report false during gestures.
+    // Lock standalone for the current session once we detect it at startup.
+    const initialStandalone = mediaQuery.matches || (isiOS && window.navigator.standalone === true);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    const browserViewport = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-    const standaloneViewport = `${browserViewport}, viewport-fit=cover`;
     const standaloneThemeColor = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
     const browserThemeColor = 'transparent';
+    let stabilizeTimer1 = 0;
+    let stabilizeTimer2 = 0;
 
     const applyMode = () => {
       const fallbackStandalone = isiOS && window.navigator.standalone === true;
-      const isStandalone = mediaQuery.matches || fallbackStandalone;
+      const runtimeStandalone = mediaQuery.matches || fallbackStandalone;
+      const isStandalone = initialStandalone || runtimeStandalone;
+      const isFallbackStandalone = !mediaQuery.matches && isStandalone;
       root.classList.remove('display-mode-standalone');
-      root.classList.toggle('standalone-fallback', fallbackStandalone && !mediaQuery.matches);
+      root.classList.toggle('standalone-fallback', isFallbackStandalone);
       root.classList.toggle('standalone-mode', isStandalone);
       root.classList.toggle('browser-mode', !isStandalone);
-      if (viewportMeta) {
-        viewportMeta.setAttribute('content', isStandalone ? standaloneViewport : browserViewport);
-      }
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', isStandalone ? standaloneThemeColor : browserThemeColor);
       }
     };
 
-    applyMode();
+    const stabilizeStandaloneViewport = () => {
+      if (!isiOS) return;
+      const isStandalone = root.classList.contains('standalone-mode') || root.classList.contains('standalone-fallback');
+      if (!isStandalone) return;
+      if (window.scrollY !== 0) return;
+      // iOS PWA occasionally needs one synthetic scroll cycle to settle hit-testing/safe-area layout.
+      window.requestAnimationFrame(() => {
+        window.scrollTo(0, 1);
+        window.scrollTo(0, 0);
+        window.dispatchEvent(new Event('resize'));
+      });
+    };
+
+    const applyModeAndStabilize = () => {
+      applyMode();
+      stabilizeStandaloneViewport();
+      if (stabilizeTimer1) window.clearTimeout(stabilizeTimer1);
+      if (stabilizeTimer2) window.clearTimeout(stabilizeTimer2);
+      stabilizeTimer1 = window.setTimeout(stabilizeStandaloneViewport, 120);
+      stabilizeTimer2 = window.setTimeout(stabilizeStandaloneViewport, 360);
+    };
+
+    applyModeAndStabilize();
+    window.addEventListener('pageshow', applyModeAndStabilize);
+    document.addEventListener('visibilitychange', applyModeAndStabilize);
     if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', applyMode);
-      return () => mediaQuery.removeEventListener('change', applyMode);
+      mediaQuery.addEventListener('change', applyModeAndStabilize);
+      return () => {
+        if (stabilizeTimer1) window.clearTimeout(stabilizeTimer1);
+        if (stabilizeTimer2) window.clearTimeout(stabilizeTimer2);
+        window.removeEventListener('pageshow', applyModeAndStabilize);
+        document.removeEventListener('visibilitychange', applyModeAndStabilize);
+        mediaQuery.removeEventListener('change', applyModeAndStabilize);
+      };
     }
-    mediaQuery.addListener(applyMode);
-    return () => mediaQuery.removeListener(applyMode);
+    mediaQuery.addListener(applyModeAndStabilize);
+    return () => {
+      if (stabilizeTimer1) window.clearTimeout(stabilizeTimer1);
+      if (stabilizeTimer2) window.clearTimeout(stabilizeTimer2);
+      window.removeEventListener('pageshow', applyModeAndStabilize);
+      document.removeEventListener('visibilitychange', applyModeAndStabilize);
+      mediaQuery.removeListener(applyModeAndStabilize);
+    };
   }, [resolvedTheme]);
 
   useEffect(() => {

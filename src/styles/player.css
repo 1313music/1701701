@@ -1031,7 +1031,7 @@
 
   .main-view {
     grid-column: 1;
-    padding: calc(var(--mobile-topbar-height) + 16px + var(--mobile-main-top-safe-offset)) 24px var(--mobile-main-bottom-padding) 24px;
+    padding: calc(var(--mobile-topbar-height) + var(--mobile-layout-safe-top) + 16px) 24px var(--mobile-main-bottom-padding) 24px;
   }
 
   .app-root.no-player .main-view {
@@ -1393,7 +1393,7 @@
   /* Override padding to handle safe areas and strictly fit 3 cols */
   .main-view {
     grid-column: 1;
-    padding: calc(var(--mobile-topbar-height) + 20px + var(--mobile-main-top-safe-offset)) 10px var(--mobile-main-bottom-padding) 10px;
+    padding: calc(var(--mobile-topbar-height) + var(--mobile-layout-safe-top) + 20px) 10px var(--mobile-main-bottom-padding) 10px;
     width: 100%;
   }
 

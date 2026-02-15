@@ -5,11 +5,28 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="transparent" />
+  <script>
+    (function () {
+      try {
+        var root = document.documentElement;
+        var mq = window.matchMedia ? window.matchMedia('(display-mode: standalone)') : null;
+        var mqStandalone = !!(mq && mq.matches);
+        var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        var navStandalone = isiOS && window.navigator.standalone === true;
+        var isStandalone = mqStandalone || navStandalone;
+        root.classList.toggle('standalone-mode', isStandalone);
+        root.classList.toggle('standalone-fallback', isStandalone && !mqStandalone);
+        root.classList.toggle('browser-mode', !isStandalone);
+      } catch (error) {
+        // no-op
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap"
