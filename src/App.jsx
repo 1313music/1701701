@@ -243,8 +243,8 @@ const App = () => {
 
     const seoMap = {
       library: {
-        title: '李志音乐专辑与播放列表 | 1701701.xyz',
-        description: '收录李志音乐作品，提供专辑浏览、播放列表、歌词与收藏管理。',
+        title: '李志音乐 | 1701701.xyz',
+        description: '1701701.xyz 收录李志专辑与歌曲，支持歌词查看、播放列表与收藏管理。',
         pageType: 'CollectionPage'
       },
       video: {
@@ -266,6 +266,9 @@ const App = () => {
 
     const currentSeo = seoMap[view] || seoMap.library;
     const canonicalUrl = `${SITE_URL}/`;
+    const albumListForSeo = Array.isArray(musicAlbums)
+      ? musicAlbums.filter((album) => album?.name).slice(0, 30)
+      : [];
 
     document.title = currentSeo.title;
     upsertMetaTag({ name: 'description' }, currentSeo.description);
@@ -308,8 +311,34 @@ const App = () => {
         description: currentSeo.description
       }
     ];
+
+    if (albumListForSeo.length > 0) {
+      jsonLdPayload.push({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: '李志音乐专辑列表',
+        itemListOrder: 'https://schema.org/ItemListOrderAscending',
+        numberOfItems: albumListForSeo.length,
+        itemListElement: albumListForSeo.map((album, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'MusicAlbum',
+            '@id': `${canonicalUrl}#album-${encodeURIComponent(String(album.id || index + 1))}`,
+            name: album.name,
+            byArtist: {
+              '@type': 'MusicGroup',
+              name: album.artist || '李志'
+            },
+            numTracks: Array.isArray(album.songs) ? album.songs.length : undefined,
+            image: album.cover || undefined,
+            url: canonicalUrl
+          }
+        }))
+      });
+    }
     upsertJsonLd('page-seo-jsonld', jsonLdPayload);
-  }, [view]);
+  }, [view, musicAlbums]);
 
   const setLyricsOverlayOpen = useCallback((open) => {
     if (open) {
