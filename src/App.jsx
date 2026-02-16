@@ -411,7 +411,7 @@ const App = () => {
         },
         jobTitle: 'Singer-Songwriter',
         genre: ['contemporary folk', 'singer-songwriter'],
-        description: '中国大陆民谣音乐人，代表作包括《梵高先生》《这个世界会好吗》《1701》等。',
+        description: '民谣音乐人，代表作包括《梵高先生》《这个世界会好吗》《1701》等。',
         sameAs: LI_ZHI_ENTITY_LINKS,
         knowsAbout: ['李志音乐', 'contemporary folk', 'singer-songwriter', ...researchedReleaseNames.slice(0, 6)]
       },
