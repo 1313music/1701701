@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Pause, ListMusic, Heart } from 'lucide-react';
+import { Play, Pause, ListMusic, Heart, Share2 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { formatTime } from '../utils/formatUtils';
 
@@ -23,7 +23,8 @@ const LyricsOverlay = ({
     handleNext,
     audioRef,
     setIsAlbumListOpen,
-    onAddToFavorites
+    onAddToFavorites,
+    onShare
 }) => {
     const isDraggingRef = useRef(false);
     const lastTouchRef = useRef(0);
@@ -361,7 +362,16 @@ const LyricsOverlay = ({
                                 <path d="m4.486 14.456 32.352 13.938c3.156 1.387 5.552 2.437 8.48 2.437 2.932 0 5.357-1.05 8.484-2.437l32.353-13.938c2.612-1.192 4.485-3.514 4.485-6.42C90.64 3.184 87.085 0 83 0c-2.279 0-5.172 1.325-7.569 2.42L42.845 16.358h4.95L15.21 2.42C12.812 1.325 9.948 0 7.636 0 3.55 0 0 3.184 0 8.036c0 2.906 1.873 5.228 4.486 6.42z"></path>
                             </svg>
                         </button>
-                        <div style={{ flex: 1 }}></div>
+                        <div className="overlay-header-actions">
+                            <button
+                                type="button"
+                                className="overlay-share-btn"
+                                onClick={(e) => onShare?.(e)}
+                                aria-label="分享当前歌曲"
+                            >
+                                <Share2 size={20} strokeWidth={2.2} absoluteStrokeWidth />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="mobile-player-content">

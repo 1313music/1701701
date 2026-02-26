@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, ListMusic } from 'lucide-react';
+import { Play, Pause, ListMusic, Share2 } from 'lucide-react';
 import { Maximize2Icon } from './icons/AppIcons';
 
 const PlayerBar = ({
@@ -15,6 +15,7 @@ const PlayerBar = ({
     handleNext,
     setIsLyricsOpen,
     setIsAlbumListOpen,
+    onShare,
     isTrackNameOverflowing,
     trackNameRef
 }) => {
@@ -49,6 +50,17 @@ const PlayerBar = ({
                         <div className="mini-cover-media">
                             <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
                         </div>
+                        <button
+                            type="button"
+                            className="mini-cover-expand-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsLyricsOpen(true);
+                            }}
+                            aria-label="展开全屏播放器"
+                        >
+                            <Maximize2Icon size={18} />
+                        </button>
                     </div>
                     <div className="track-details">
                         <span className="track-name" ref={trackNameRef}>
@@ -89,7 +101,17 @@ const PlayerBar = ({
                 </div>
 
                 <div className="player-actions">
-                    <Maximize2Icon size={20} className="icon-btn" onClick={(e) => { e.stopPropagation(); setIsLyricsOpen(true); }} />
+                    <button
+                        type="button"
+                        className="icon-btn share-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onShare?.(e);
+                        }}
+                        aria-label="分享当前歌曲"
+                    >
+                        <Share2 size={20} strokeWidth={2.2} absoluteStrokeWidth />
+                    </button>
                 </div>
             </footer>
         </>

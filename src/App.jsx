@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import './index.css';
+import QRCode from 'qrcode';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -107,6 +108,430 @@ const upsertJsonLd = (id, payload) => {
   script.textContent = JSON.stringify(payload);
 };
 
+const copyTextToClipboard = async (text) => {
+  if (!text) return false;
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fallback below
+    }
+  }
+  if (typeof document === 'undefined') return false;
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', 'true');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  textarea.style.pointerEvents = 'none';
+  document.body.appendChild(textarea);
+  textarea.select();
+  let copied = false;
+  try {
+    copied = document.execCommand('copy');
+  } catch {
+    copied = false;
+  }
+  document.body.removeChild(textarea);
+  return copied;
+};
+
+const resolveIsDarkTheme = () => {
+  if (typeof document === 'undefined') return false;
+  const theme = document.documentElement.getAttribute('data-theme');
+  if (theme === 'dark') return true;
+  if (theme === 'light') return false;
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+};
+
+const dataUrlToFile = (dataUrl, filename) => {
+  const [meta, content] = dataUrl.split(',');
+  const mime = meta.match(/data:(.*?);base64/)?.[1] || 'image/png';
+  const binary = atob(content || '');
+  const length = binary.length;
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new File([bytes], filename, { type: mime });
+};
+
+const downloadDataUrl = (dataUrl, filename) => {
+  if (!dataUrl || typeof document === 'undefined') return;
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const isIOSDevice = () => {
+  if (typeof navigator === 'undefined') return false;
+  return /iP(hone|ad|od)/i.test(navigator.userAgent || '');
+};
+
+const openImagePreviewWindow = (dataUrl) => {
+  if (!dataUrl || typeof window === 'undefined') return false;
+  const previewWindow = window.open('', '_blank');
+  if (!previewWindow || !previewWindow.document) return false;
+  const doc = previewWindow.document;
+  doc.title = '分享卡片';
+  const html = doc.documentElement;
+  html.style.height = '100%';
+  doc.body.style.margin = '0';
+  doc.body.style.background = '#05070b';
+  doc.body.style.minHeight = '100%';
+  doc.body.style.display = 'flex';
+  doc.body.style.flexDirection = 'column';
+  doc.body.style.alignItems = 'center';
+  doc.body.style.justifyContent = 'flex-start';
+  doc.body.style.gap = '16px';
+  doc.body.style.padding = '16px 10px 24px';
+  doc.body.style.boxSizing = 'border-box';
+
+  const img = doc.createElement('img');
+  img.src = dataUrl;
+  img.alt = '分享卡片';
+  img.style.width = '100%';
+  img.style.maxWidth = '700px';
+  img.style.maxHeight = 'calc(100vh - 140px)';
+  img.style.height = 'auto';
+  img.style.borderRadius = '14px';
+  img.style.boxShadow = '0 14px 42px rgba(0, 0, 0, 0.45)';
+  img.style.objectFit = 'contain';
+  doc.body.appendChild(img);
+
+  const tip = doc.createElement('div');
+  tip.textContent = '长按图片 -> 存储到“照片”';
+  tip.style.color = '#ffffff';
+  tip.style.background = 'rgba(255, 255, 255, 0.14)';
+  tip.style.border = '1px solid rgba(255, 255, 255, 0.24)';
+  tip.style.borderRadius = '12px';
+  tip.style.padding = '10px 14px';
+  tip.style.font = '700 19px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+  tip.style.lineHeight = '1.3';
+  tip.style.backdropFilter = 'blur(8px)';
+  tip.style.webkitBackdropFilter = 'blur(8px)';
+  tip.style.textAlign = 'center';
+  tip.style.position = 'sticky';
+  tip.style.bottom = '10px';
+  doc.body.appendChild(tip);
+  return true;
+};
+
+const drawRoundedRectPath = (ctx, x, y, width, height, radius) => {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+};
+
+const buildWrappedLines = (ctx, text, maxWidth, maxLines) => {
+  if (!text) return [];
+  const chars = Array.from(text);
+  const lines = [];
+  let currentLine = '';
+  for (const char of chars) {
+    const testLine = currentLine + char;
+    const exceeds = ctx.measureText(testLine).width > maxWidth;
+    if (!exceeds || !currentLine) {
+      currentLine = testLine;
+      continue;
+    }
+    lines.push(currentLine);
+    currentLine = char;
+    if (lines.length >= maxLines) break;
+  }
+  if (currentLine && lines.length < maxLines) {
+    lines.push(currentLine);
+  }
+  if (lines.length === maxLines && chars.length > lines.join('').length) {
+    const last = lines[maxLines - 1] || '';
+    let trimmed = last;
+    while (trimmed.length > 0 && ctx.measureText(`${trimmed}...`).width > maxWidth) {
+      trimmed = trimmed.slice(0, -1);
+    }
+    lines[maxLines - 1] = `${trimmed}...`;
+  }
+  return lines;
+};
+
+const loadCanvasImage = (src) => new Promise((resolve, reject) => {
+  if (!src) {
+    reject(new Error('missing image src'));
+    return;
+  }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => resolve(img);
+  img.onerror = () => reject(new Error('image load failed'));
+  img.src = src;
+});
+
+const drawImageCover = (ctx, image, x, y, width, height) => {
+  if (!image?.width || !image?.height) return;
+  const scale = Math.max(width / image.width, height / image.height);
+  const drawWidth = image.width * scale;
+  const drawHeight = image.height * scale;
+  const drawX = x + (width - drawWidth) / 2;
+  const drawY = y + (height - drawHeight) / 2;
+  ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+};
+
+const clampColorByte = (value) => Math.max(0, Math.min(255, Math.round(value)));
+
+const mixRgb = (from, to, ratio) => ({
+  r: clampColorByte(from.r + (to.r - from.r) * ratio),
+  g: clampColorByte(from.g + (to.g - from.g) * ratio),
+  b: clampColorByte(from.b + (to.b - from.b) * ratio)
+});
+
+const scaleRgb = (rgb, multiplier) => ({
+  r: clampColorByte(rgb.r * multiplier),
+  g: clampColorByte(rgb.g * multiplier),
+  b: clampColorByte(rgb.b * multiplier)
+});
+
+const toHexPart = (value) => clampColorByte(value).toString(16).padStart(2, '0');
+const toHexColor = (rgb) => `#${toHexPart(rgb.r)}${toHexPart(rgb.g)}${toHexPart(rgb.b)}`;
+const toRgbColor = (rgb) => `rgb(${clampColorByte(rgb.r)}, ${clampColorByte(rgb.g)}, ${clampColorByte(rgb.b)})`;
+const toRgbaColor = (rgb, alpha) => `rgba(${clampColorByte(rgb.r)}, ${clampColorByte(rgb.g)}, ${clampColorByte(rgb.b)}, ${alpha})`;
+
+const extractImageTone = (image) => {
+  if (typeof document === 'undefined' || !image?.width || !image?.height) return null;
+  const sampleSize = 24;
+  const sampleCanvas = document.createElement('canvas');
+  sampleCanvas.width = sampleSize;
+  sampleCanvas.height = sampleSize;
+  const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+  if (!sampleCtx) return null;
+
+  try {
+    sampleCtx.drawImage(image, 0, 0, sampleSize, sampleSize);
+    const { data } = sampleCtx.getImageData(0, 0, sampleSize, sampleSize);
+    let red = 0;
+    let green = 0;
+    let blue = 0;
+    let count = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3];
+      if (alpha < 24) continue;
+      red += data[i];
+      green += data[i + 1];
+      blue += data[i + 2];
+      count += 1;
+    }
+
+    if (count === 0) return null;
+    return {
+      r: red / count,
+      g: green / count,
+      b: blue / count
+    };
+  } catch {
+    return null;
+  }
+};
+
+const normalizeAccentTone = (rgb, isDark) => {
+  if (!rgb) return null;
+  const luminance = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+  const target = isDark ? 116 : 150;
+  const ratio = target / Math.max(luminance, 1);
+  const clampedRatio = Math.max(0.68, Math.min(1.42, ratio));
+  return scaleRgb(rgb, clampedRatio);
+};
+
+const createShareCardDataUrl = async ({
+  trackName,
+  albumName,
+  artistName,
+  url,
+  cover
+}) => {
+  if (typeof document === 'undefined' || !url) return '';
+  const isDark = resolveIsDarkTheme();
+  const width = 1080;
+  const height = 1360;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  let coverImage = null;
+  try {
+    coverImage = await loadCanvasImage(cover);
+  } catch {
+    coverImage = null;
+  }
+
+  const defaultAccent = isDark
+    ? { r: 96, g: 146, b: 206 }
+    : { r: 136, g: 170, b: 214 };
+  const sampledAccent = extractImageTone(coverImage);
+  const accent = normalizeAccentTone(sampledAccent || defaultAccent, isDark) || defaultAccent;
+
+  const palette = isDark
+    ? {
+      bg0: toRgbColor(mixRgb(accent, { r: 8, g: 12, b: 18 }, 0.82)),
+      bg1: toRgbColor(mixRgb(accent, { r: 18, g: 26, b: 38 }, 0.58)),
+      surface: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.22), 0.08),
+      sheen: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.54), 0.2),
+      text: '#f6f9ff',
+      subText: 'rgba(229, 236, 248, 0.84)',
+      footer: 'rgba(229, 236, 248, 0.82)',
+      qrDark: '#f6fbff',
+      qrLight: '#0000',
+      coverFallback0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.16)),
+      coverFallback1: toRgbColor(mixRgb(accent, { r: 14, g: 20, b: 30 }, 0.56)),
+      blobA: toRgbaColor(accent, 0.32),
+      blobB: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.28), 0.24),
+      blobC: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.56), 0.2),
+      grain: 'rgba(255, 255, 255, 0.02)'
+    }
+    : {
+      bg0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.8)),
+      bg1: toRgbColor(mixRgb(accent, { r: 238, g: 244, b: 250 }, 0.72)),
+      surface: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.58), 0.34),
+      sheen: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.82), 0.45),
+      text: '#18253a',
+      subText: 'rgba(24, 37, 58, 0.74)',
+      footer: 'rgba(24, 37, 58, 0.7)',
+      qrDark: '#ffffff',
+      qrLight: '#0000',
+      coverFallback0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.48)),
+      coverFallback1: toRgbColor(mixRgb(accent, { r: 214, g: 224, b: 238 }, 0.56)),
+      blobA: toRgbaColor(accent, 0.24),
+      blobB: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.35), 0.24),
+      blobC: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.65), 0.34),
+      grain: 'rgba(0, 0, 0, 0.03)'
+    };
+
+  const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+  bgGradient.addColorStop(0, palette.bg0);
+  bgGradient.addColorStop(1, palette.bg1);
+  ctx.fillStyle = bgGradient;
+  ctx.fillRect(0, 0, width, height);
+
+  const drawGlowBlob = (x, y, radius, color) => {
+    ctx.save();
+    ctx.filter = 'blur(88px)';
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  drawGlowBlob(width * 0.2, height * 0.18, 240, palette.blobA);
+  drawGlowBlob(width * 0.86, height * 0.2, 200, palette.blobB);
+  drawGlowBlob(width * 0.68, height * 0.88, 260, palette.blobC);
+
+  ctx.fillStyle = palette.surface;
+  ctx.fillRect(0, 0, width, height);
+  const topSheen = ctx.createLinearGradient(0, 0, 0, height * 0.56);
+  topSheen.addColorStop(0, palette.sheen);
+  topSheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = topSheen;
+  ctx.fillRect(0, 0, width, height * 0.56);
+
+  ctx.save();
+  for (let i = 0; i < 1400; i += 1) {
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+    const size = Math.random() * 1.6 + 0.4;
+    ctx.fillStyle = palette.grain;
+    ctx.fillRect(x, y, size, size);
+  }
+  ctx.restore();
+
+  const coverSize = 620;
+  const coverX = (width - coverSize) / 2;
+  const coverY = 136;
+
+  if (coverImage) {
+    ctx.save();
+    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 42);
+    ctx.clip();
+    drawImageCover(ctx, coverImage, coverX, coverY, coverSize, coverSize);
+    ctx.restore();
+  } else {
+    const fallbackGrad = ctx.createLinearGradient(coverX, coverY, coverX + coverSize, coverY + coverSize);
+    fallbackGrad.addColorStop(0, palette.coverFallback0);
+    fallbackGrad.addColorStop(1, palette.coverFallback1);
+    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 42);
+    ctx.fillStyle = fallbackGrad;
+    ctx.fill();
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.85)' : '#2e3a52';
+    ctx.font = '700 132px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('♪', coverX + coverSize / 2, coverY + coverSize / 2 + 48);
+  }
+
+  const textWidth = width - 200;
+  let textY = coverY + coverSize + 108;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = palette.text;
+  const titleLineGap = 66;
+  ctx.font = '700 62px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+  const titleLines = buildWrappedLines(ctx, trackName || '未知歌曲', textWidth, 2);
+  for (const line of titleLines) {
+    ctx.fillText(line, width / 2, textY);
+    textY += titleLineGap;
+  }
+
+  const titleBottomY = textY - titleLineGap;
+  const subtitleY = titleBottomY + (titleLines.length > 1 ? 52 : 56);
+  ctx.fillStyle = palette.subText;
+  ctx.font = '600 30px "PingFang SC", "Microsoft YaHei", sans-serif';
+  const subtitleArtist = artistName || '未知歌手';
+  const subtitleAlbum = albumName || '未知专辑';
+  const subtitle = `${subtitleArtist} · ${subtitleAlbum}`;
+  const subtitleLine = buildWrappedLines(ctx, subtitle, width - 300, 1)[0] || subtitle;
+  ctx.fillText(subtitleLine, width / 2, subtitleY);
+
+  const qrSize = 172;
+  const qrX = width - qrSize - 82;
+  const qrY = height - qrSize - 98;
+
+  const qrDataUrl = await QRCode.toDataURL(url, {
+    errorCorrectionLevel: 'M',
+    margin: 2,
+    width: 260,
+    color: {
+      dark: palette.qrDark,
+      light: palette.qrLight
+    }
+  });
+  const qrImage = await loadCanvasImage(qrDataUrl);
+  ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+
+  const infoLeftX = 82;
+  const infoTitleY = qrY + qrSize - 70;
+  const infoBrandY = infoTitleY + 46;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = palette.text;
+  ctx.font = '700 46px "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.fillText('扫一扫播放', infoLeftX, infoTitleY);
+  ctx.fillStyle = palette.footer;
+  ctx.font = '600 34px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.fillText('1701701.xyz', infoLeftX, infoBrandY);
+
+  return canvas.toDataURL('image/png');
+};
+
 const App = () => {
   const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'about'
   const [musicAlbums, setMusicAlbums] = useState([]);
@@ -129,6 +554,11 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hasLyricsOverlayLoaded, setHasLyricsOverlayLoaded] = useState(false);
   const [hasAlbumListOverlayLoaded, setHasAlbumListOverlayLoaded] = useState(false);
+  const [sharePanelData, setSharePanelData] = useState(null);
+  const [shareCardDataUrl, setShareCardDataUrl] = useState('');
+  const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
+  const shareQueryAppliedRef = useRef(false);
+  const shareCardRequestIdRef = useRef(0);
 
   const allSongSrcs = useMemo(() => buildSongSrcSet(musicAlbums), [musicAlbums]);
   const songIndex = useMemo(() => buildSongIndex(musicAlbums), [musicAlbums]);
@@ -501,6 +931,29 @@ const App = () => {
     upsertJsonLd('page-seo-jsonld', jsonLdPayload);
   }, [view, musicAlbums]);
 
+  useEffect(() => {
+    if (shareQueryAppliedRef.current) return;
+    if (musicAlbums.length === 0 || typeof window === 'undefined') return;
+    shareQueryAppliedRef.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const albumId = params.get('albumId');
+    if (!albumId) return;
+    const targetAlbum = musicAlbums.find((album) => String(album.id) === albumId);
+    if (!targetAlbum?.songs?.length) return;
+    let songIndex = Number.parseInt(params.get('song') || '1', 10);
+    if (!Number.isInteger(songIndex) || songIndex < 1 || songIndex > targetAlbum.songs.length) {
+      songIndex = 1;
+    }
+    const timerId = window.setTimeout(() => {
+      setView('library');
+      setSelectedAlbum(targetAlbum);
+      setCurrentAlbum(targetAlbum);
+      setCurrentTrack(targetAlbum.songs[songIndex - 1]);
+      setIsPlaying(false);
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [musicAlbums, setCurrentAlbum, setCurrentTrack, setIsPlaying, setSelectedAlbum, setView]);
+
   const setLyricsOverlayOpen = useCallback((open) => {
     if (open) {
       setHasLyricsOverlayLoaded(true);
@@ -537,6 +990,123 @@ const App = () => {
   const handleVideoAccessSubmit = useCallback(() => {
     submitVideoAccess();
   }, [submitVideoAccess]);
+
+  const buildCurrentSharePayload = useCallback(() => {
+    if (!currentTrack?.src || typeof window === 'undefined') return null;
+    const resolvedAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
+      ? currentSongInfo.album
+      : currentAlbum;
+    if (!resolvedAlbum?.id || !Array.isArray(resolvedAlbum.songs) || resolvedAlbum.songs.length === 0) {
+      return null;
+    }
+    let matchedIndex = resolvedAlbum.songs.findIndex((song) => song.src === currentTrack.src);
+    if (matchedIndex === -1 && currentSongInfo?.song?.src) {
+      matchedIndex = resolvedAlbum.songs.findIndex((song) => song.src === currentSongInfo.song.src);
+    }
+    if (matchedIndex === -1) matchedIndex = 0;
+    const shareTrack = resolvedAlbum.songs[matchedIndex] || currentTrack;
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('albumId', String(resolvedAlbum.id));
+    url.searchParams.set('song', String(matchedIndex + 1));
+    return {
+      title: `${shareTrack.name} - ${resolvedAlbum.artist || '李志'}`,
+      text: shareTrack.name,
+      url: url.toString(),
+      trackName: shareTrack.name,
+      albumName: resolvedAlbum.name,
+      artistName: resolvedAlbum.artist || '李志',
+      cover: shareTrack.cover || resolvedAlbum.cover || ''
+    };
+  }, [currentAlbum, currentSongInfo, currentTrack]);
+
+  const startShareCardGeneration = useCallback((payload) => {
+    if (!payload?.url) return;
+    const requestId = ++shareCardRequestIdRef.current;
+    setIsShareCardGenerating(true);
+    setShareCardDataUrl('');
+    void (async () => {
+      try {
+        const dataUrl = await createShareCardDataUrl(payload);
+        if (shareCardRequestIdRef.current !== requestId) return;
+        setShareCardDataUrl(dataUrl);
+      } catch {
+        if (shareCardRequestIdRef.current !== requestId) return;
+        setShareCardDataUrl('');
+        showToast('分享卡片生成失败', 'tone-remove', { placement: 'bottom' });
+      } finally {
+        if (shareCardRequestIdRef.current === requestId) {
+          setIsShareCardGenerating(false);
+        }
+      }
+    })();
+  }, [showToast]);
+
+  const closeSharePanel = useCallback(() => {
+    shareCardRequestIdRef.current += 1;
+    setSharePanelData(null);
+    setShareCardDataUrl('');
+    setIsShareCardGenerating(false);
+  }, []);
+
+  const handleShareCurrentTrack = useCallback(async (anchorOrOptions) => {
+    const payload = buildCurrentSharePayload();
+    if (!payload) {
+      showToast('当前歌曲暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
+      return;
+    }
+
+    setSharePanelData(payload);
+    startShareCardGeneration(payload);
+  }, [buildCurrentSharePayload, showToast, startShareCardGeneration]);
+
+  const handleCopyShareLink = useCallback(async (anchorOrOptions = { placement: 'side' }) => {
+    if (!sharePanelData?.url) return;
+    const copied = await copyTextToClipboard(sharePanelData.url);
+    showToast(
+      copied ? '分享链接已复制' : '复制失败，请手动复制',
+      copied ? 'tone-add' : 'tone-remove',
+      anchorOrOptions
+    );
+  }, [sharePanelData?.url, showToast]);
+
+  const handleDownloadShareCard = useCallback((anchorOrOptions = { placement: 'side' }) => {
+    if (!shareCardDataUrl) return;
+    downloadDataUrl(shareCardDataUrl, '1701701-share-card.png');
+    showToast('分享卡片已下载', 'tone-add', anchorOrOptions);
+  }, [shareCardDataUrl, showToast]);
+
+  const handleShareCardImage = useCallback(async () => {
+    if (!shareCardDataUrl) return;
+    const file = dataUrlToFile(shareCardDataUrl, `1701701-share-card-${Date.now()}.png`);
+    const canUseSystemShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
+    if (isIOSDevice() && canUseSystemShare) {
+      showToast('在系统菜单选择“存储图像”即可保存到相册', 'tone-add', { placement: 'side' });
+    }
+
+    if (canUseSystemShare) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: sharePanelData?.title || '1701701 分享卡片',
+          text: sharePanelData?.text || ''
+        });
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+      }
+    }
+
+    if (isIOSDevice()) {
+      const opened = openImagePreviewWindow(shareCardDataUrl);
+      if (opened) {
+        showToast('已打开图片，长按可保存到相册', 'tone-add', { placement: 'side' });
+        return;
+      }
+    }
+
+    handleDownloadShareCard({ placement: 'side' });
+  }, [handleDownloadShareCard, shareCardDataUrl, sharePanelData?.text, sharePanelData?.title, showToast]);
 
   const toggleTempSong = (song, event) => {
     const id = song?.src;
@@ -758,6 +1328,7 @@ const App = () => {
               handleNext={handleNext}
               setIsLyricsOpen={setLyricsOverlayOpen}
               setIsAlbumListOpen={setAlbumListOverlayOpen}
+              onShare={handleShareCurrentTrack}
               isTrackNameOverflowing={isTrackNameOverflowing}
               trackNameRef={trackNameRef}
             />
@@ -784,6 +1355,7 @@ const App = () => {
                   handleNext={handleNext}
                   audioRef={audioRef}
                   onAddToFavorites={addTempSong}
+                  onShare={handleShareCurrentTrack}
                 />
               </Suspense>
             )}
@@ -850,6 +1422,61 @@ const App = () => {
                   onClick={handleVideoAccessSubmit}
                 >
                   确认
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {sharePanelData && (
+          <div className="share-panel-backdrop" onClick={closeSharePanel}>
+            <div className="share-panel-card" onClick={(event) => event.stopPropagation()}>
+              <div className="share-panel-header">
+                <div className="share-panel-title">分享歌曲</div>
+                <button
+                  type="button"
+                  className="share-panel-close-btn"
+                  onClick={closeSharePanel}
+                  aria-label="关闭分享面板"
+                >
+                  X
+                </button>
+              </div>
+              <div className="share-panel-meta">{sharePanelData.trackName || sharePanelData.text}</div>
+              <div className="share-panel-card-preview">
+                {isShareCardGenerating && (
+                  <div className="share-card-loading">正在生成分享卡片...</div>
+                )}
+                {!isShareCardGenerating && shareCardDataUrl && (
+                  <img loading="lazy" src={shareCardDataUrl} alt="分享卡片预览" />
+                )}
+                {!isShareCardGenerating && !shareCardDataUrl && (
+                  <div className="share-card-loading">暂未生成分享卡片</div>
+                )}
+              </div>
+              <div className="share-panel-url" title={sharePanelData.url}>
+                {sharePanelData.url}
+              </div>
+              <div className="share-panel-actions">
+                <button
+                  type="button"
+                  className="share-panel-btn ghost"
+                  onClick={(event) => {
+                    handleCopyShareLink({
+                      placement: 'side',
+                      anchorEvent: { currentTarget: event.currentTarget }
+                    });
+                  }}
+                >
+                  复制链接
+                </button>
+                <button
+                  type="button"
+                  className="share-panel-btn primary"
+                  onClick={handleShareCardImage}
+                  disabled={!shareCardDataUrl || isShareCardGenerating}
+                >
+                  分享卡片
                 </button>
               </div>
             </div>
