@@ -879,7 +879,7 @@ const createShareCardDataUrl = async ({
 
   const infoLeftX = cardX;
   const brandText = '1701701.xyz';
-  const tipText = '长按识别播放歌曲';
+  const tipText = '扫码播放歌曲';
   const infoFontSize = 35;
   const infoBlockTop = qrY;
   const infoLineGap = Math.max(14, shareQrSize - infoFontSize * 2);
