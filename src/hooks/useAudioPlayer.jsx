@@ -4,10 +4,14 @@ import { parseLyrics } from '../utils/lyricUtils';
 
 const toAbsoluteUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
-  if (value.startsWith('http://') || value.startsWith('https://')) return value;
-  if (typeof window === 'undefined') return '';
   try {
-    return new URL(value, window.location.href).href;
+    if (typeof window !== 'undefined') {
+      return new URL(value, window.location.href).href;
+    }
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return new URL(value).href;
+    }
+    return '';
   } catch {
     return '';
   }
@@ -100,10 +104,10 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   useEffect(() => {
     if (!currentTrack?.src) return;
     const audio = audioRef.current;
-    if (audio.src !== currentTrack.src) {
-      audio.src = currentTrack.src;
+    const normalizedTrackSrc = toAbsoluteUrl(currentTrack.src);
+    if (normalizedTrackSrc && audio.src !== normalizedTrackSrc) {
+      audio.src = normalizedTrackSrc;
     }
-    if (isPlaying) audio.play().catch(() => { });
 
     let canceled = false;
     const requestId = ++lyricsRequestIdRef.current;
@@ -131,12 +135,17 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     return () => {
       canceled = true;
     };
-  }, [currentTrack, isPlaying]);
+  }, [currentTrack]);
 
   useEffect(() => {
-    if (isPlaying) audioRef.current.play().catch(() => { });
-    else audioRef.current.pause();
-  }, [isPlaying]);
+    const audio = audioRef.current;
+    if (!currentTrack?.src) {
+      audio.pause();
+      return;
+    }
+    if (isPlaying) audio.play().catch(() => { });
+    else audio.pause();
+  }, [currentTrack?.src, isPlaying]);
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;

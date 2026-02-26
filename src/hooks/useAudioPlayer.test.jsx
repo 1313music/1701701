@@ -4,13 +4,28 @@ import { useAudioPlayer } from './useAudioPlayer';
 
 class AudioMock {
   constructor() {
-    this.src = '';
+    this._src = '';
     this.currentTime = 0;
     this.duration = 0;
     this.playbackRate = 1;
     this.preload = '';
     this.playsInline = false;
     this.listeners = new Map();
+  }
+
+  set src(value) {
+    if (!value) {
+      this._src = '';
+      this.currentTime = 0;
+      return;
+    }
+    const base = globalThis.window?.location?.href || 'http://localhost/';
+    this._src = new URL(value, base).href;
+    this.currentTime = 0;
+  }
+
+  get src() {
+    return this._src;
   }
 
   addEventListener(type, listener) {
@@ -109,5 +124,49 @@ describe('useAudioPlayer lyric race', () => {
     await Promise.resolve();
 
     expect(result.current.lyrics[0]?.text).toBe('new lyric');
+  });
+
+  it('keeps playback position when pausing and resuming the same track', async () => {
+    const album = {
+      id: 'album-2',
+      name: 'Album 2',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'https://example.com/音乐.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    await waitFor(() => {
+      expect(result.current.isPlaying).toBe(true);
+    });
+
+    act(() => {
+      result.current.audioRef.current.currentTime = 42;
+      result.current.handlePlayPause();
+    });
+    await waitFor(() => {
+      expect(result.current.isPlaying).toBe(false);
+    });
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    await waitFor(() => {
+      expect(result.current.isPlaying).toBe(true);
+    });
+
+    expect(result.current.audioRef.current.currentTime).toBe(42);
   });
 });
