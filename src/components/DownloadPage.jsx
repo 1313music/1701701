@@ -121,6 +121,10 @@ const DownloadPage = () => {
 
     return (
         <div className="download-page download-v2">
+            <section className="download-priority-note" aria-label="下载说明">
+                <p>本页只提供小程序暂未收录歌曲的下载，更多专辑与歌曲，请在下方小程序内搜索获取。</p>
+            </section>
+
             <section className="download-intro">
                 <div className="download-intro-media">
                     <img loading="lazy" src="https://r2.1701701.xyz/img/xcx.jpg" alt="SongSharing 小程序二维码" />
@@ -131,10 +135,7 @@ const DownloadPage = () => {
                         <p>小程序</p>
                     </div>
                     <div className="download-intro-title">海量曲库 · 智能搜索 · 一键上传</div>
-                    <ul className="download-intro-list">
-                        <li>本页只提供小程序暂未收录歌曲的下载服务。</li>
-                        <li>更多专辑与歌曲，请在小程序内搜索获取。</li>
-                    </ul>
+                    <p className="download-intro-tip">一个帮你一键上传歌曲到网易云音乐云盘的小工具。</p>
                     <div className="download-intro-actions">
                         <a
                             className="download-intro-link"

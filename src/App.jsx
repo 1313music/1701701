@@ -495,7 +495,12 @@ const createShareCardDataUrl = async ({
   const isDark = resolveIsDarkTheme();
   const useManualBlur = shouldUseManualCanvasBlur();
   const width = 1080;
-  const height = 1720;
+  const cardInsetX = 72;
+  const cardTopGap = 80;
+  const cardBodyHeight = 1360;
+  const shareQrSize = 96;
+  const lowerGap = cardTopGap;
+  const height = cardTopGap + cardBodyHeight + lowerGap + shareQrSize + lowerGap;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -584,10 +589,10 @@ const createShareCardDataUrl = async ({
   }
   ctx.restore();
 
-  const cardX = 72;
-  const cardY = 80;
+  const cardX = cardInsetX;
+  const cardY = cardTopGap;
   const cardWidth = width - 144;
-  const cardHeight = 1360;
+  const cardHeight = cardBodyHeight;
   const cardRadius = 58;
 
   ctx.save();
@@ -864,23 +869,25 @@ const createShareCardDataUrl = async ({
     }
   });
   const qrImage = await loadCanvasImage(qrDataUrl);
-  const qrSize = 122;
-  const qrX = cardX + cardWidth - qrSize;
-  const qrY = height - qrSize - 92;
-  ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+  const qrX = cardX + cardWidth - shareQrSize;
+  const qrY = cardY + cardHeight + lowerGap;
+  ctx.drawImage(qrImage, qrX, qrY, shareQrSize, shareQrSize);
 
   const infoLeftX = cardX;
   const brandText = '1701701.xyz';
   const tipText = '长按识别播放歌曲';
-  const qrBottomY = qrY + qrSize;
-  const infoTitleY = qrBottomY;
-  const infoBrandY = infoTitleY - 54;
+  const infoFontSize = 35;
+  const infoBlockTop = qrY;
+  const infoLineGap = Math.max(14, shareQrSize - infoFontSize * 2);
+  const infoBrandY = infoBlockTop;
+  const infoTitleY = infoBrandY + infoFontSize + infoLineGap;
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
   ctx.fillStyle = palette.text;
-  ctx.font = '600 35px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.font = `600 ${infoFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
   ctx.fillText(brandText, infoLeftX, infoBrandY);
   ctx.fillStyle = palette.footer;
-  ctx.font = '600 35px "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.font = `600 ${infoFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
   ctx.fillText(tipText, infoLeftX, infoTitleY);
 
   return canvas.toDataURL('image/png');
