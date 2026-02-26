@@ -14,16 +14,13 @@
     "preview": "./scripts/with-node22.sh vite preview"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
-    "colorthief": "^2.6.0",
     "dplayer": "^1.27.1",
     "framer-motion": "^12.27.5",
     "hls.js": "^1.6.15",
     "lucide-react": "^0.562.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "tailwind-merge": "^3.4.0"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

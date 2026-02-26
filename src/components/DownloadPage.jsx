@@ -5,6 +5,17 @@ const DownloadItem = ({ item }) => {
     const [status, setStatus] = useState('idle');
     const timerRef = useRef(null);
 
+    const triggerDownload = (url, filename) => {
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+    };
+
     useEffect(() => () => {
         if (timerRef.current) {
             clearTimeout(timerRef.current);
@@ -23,27 +34,17 @@ const DownloadItem = ({ item }) => {
         if (!item?.url) return;
         setStatus('loading');
         try {
-            const anchor = document.createElement('a');
-            anchor.href = item.url;
-            anchor.download = item.filename || item.title;
-            anchor.rel = 'noopener noreferrer';
-            anchor.style.display = 'none';
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
+            triggerDownload(item.url, item.filename || item.title);
             setStatus('done');
             resetLater();
         } catch {
             setStatus('error');
             resetLater();
-            const anchor = document.createElement('a');
-            anchor.href = item.url;
-            anchor.download = item.filename || item.title;
-            anchor.rel = 'noopener noreferrer';
-            anchor.style.display = 'none';
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
+            try {
+                triggerDownload(item.url, item.filename || item.title);
+            } catch {
+                // noop
+            }
         }
     };
 
