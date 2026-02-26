@@ -5,7 +5,7 @@ export const jlpAlbum = {
   cover: "https://p2.music.126.net/VRQtcwQGGkNwiGcMLgo-Ng==/109951172265350030.jpg",
   artist: "李志",
   songs: [
-    { name: "南京越来越远", src: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/南京越来越远.mp3", cover: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/njylyy.jpg", lrc: "https://r2.1701701.xyz/lrc/南京越来越远.lrc" },
+    { name: "南京越来越远", src: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/南京越来越远.mp3", cover: "https://p1.music.126.net/L7SYrgl6vT8teZh9RS3JfQ==/109951172357992296.jpg", lrc: "https://r2.1701701.xyz/lrc/南京越来越远.lrc" },
     { name: "下雨", src: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/下雨.mp3", lrc: "", cover: "" },
     { name: "翁庆年的六英镑", src: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/六英镑.mp3", lrc: "", cover: "" },
     { name: "关于郑州的记忆", src: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/关于郑州的记忆.mp3", lrc: "", cover: "" },
@@ -31,7 +31,7 @@ export const jlpAlbum = {
     { name: "和你在一起+李志二次出场(1111)", src: "https://r3.1701701.xyz/1111/和你在一起_LZ二次出场.mp3", lrc: "", cover: "" },
     { name: "杭州(1111)", src: "https://r3.1701701.xyz/1111/杭州.mp3", lrc: "", cover: "" },
     { name: "董卓瑶(1111)", src: "https://r3.1701701.xyz/1111/董卓瑶.mp3", lrc: "", cover: "" },
-    { name: "南京越来越远(1111)", src: "https://r3.1701701.xyz/1111/这谜一样的旅途我已走了很远.mp3", lrc: "", cover: "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/njylyy.jpg" },
+    { name: "南京越来越远(1111)", src: "https://r3.1701701.xyz/1111/这谜一样的旅途我已走了很远.mp3", lrc: "", cover: "https://p1.music.126.net/L7SYrgl6vT8teZh9RS3JfQ==/109951172357992296.jpg" },
     { name: "梵高先生(1111)", src: "https://r3.1701701.xyz/1111/梵高先生.mp3", lrc: "", cover: "" },
     { name: "这个世界会好吗(1111)", src: "https://r3.1701701.xyz/1111/这个世界会好吗.mp3", lrc: "", cover: "" },
     { name: "倒影(1111)", src: "https://r3.1701701.xyz/1111/倒影.mp3", lrc: "", cover: "" },

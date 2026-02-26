@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Pause, ListMusic, Heart, Share2 } from 'lucide-react';
+import { Play, Pause, ListMusic, Heart, Share2, ChevronDown } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { formatTime } from '../utils/formatUtils';
 
@@ -115,11 +115,14 @@ const LyricsOverlay = ({
         const deltaX = touch.clientX - startX;
         const deltaY = touch.clientY - startY;
         const elapsed = Math.max(Date.now() - startAt, 1);
+        const velocityX = deltaX / elapsed;
         const velocityY = deltaY / elapsed;
         const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
-        const shouldClose = deltaY > 90 || (deltaY > 45 && velocityY > 0.6);
+        const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.3;
+        const shouldCloseByDown = deltaY > 90 || (deltaY > 45 && velocityY > 0.6);
+        const shouldCloseByLeft = deltaX < -90 || (deltaX < -50 && velocityX < -0.6);
 
-        if (isVerticalSwipe && shouldClose) {
+        if ((isVerticalSwipe && shouldCloseByDown) || (isHorizontalSwipe && shouldCloseByLeft)) {
             setIsLyricsOpen(false);
         }
     };
@@ -351,16 +354,7 @@ const LyricsOverlay = ({
                             onClick={() => setIsLyricsOpen(false)}
                             aria-label="收起"
                         >
-                            <svg
-                                className="collapse-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 90.64 30.831"
-                                width="24"
-                                height="8"
-                                aria-hidden="true"
-                            >
-                                <path d="m4.486 14.456 32.352 13.938c3.156 1.387 5.552 2.437 8.48 2.437 2.932 0 5.357-1.05 8.484-2.437l32.353-13.938c2.612-1.192 4.485-3.514 4.485-6.42C90.64 3.184 87.085 0 83 0c-2.279 0-5.172 1.325-7.569 2.42L42.845 16.358h4.95L15.21 2.42C12.812 1.325 9.948 0 7.636 0 3.55 0 0 3.184 0 8.036c0 2.906 1.873 5.228 4.486 6.42z"></path>
-                            </svg>
+                            <ChevronDown size={24} strokeWidth={2.2} absoluteStrokeWidth aria-hidden="true" />
                         </button>
                         <div className="overlay-header-actions">
                             <button

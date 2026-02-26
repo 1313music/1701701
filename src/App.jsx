@@ -289,6 +289,137 @@ const drawImageCover = (ctx, image, x, y, width, height) => {
   ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 };
 
+let manualBlurFallbackCache = null;
+const shouldUseManualCanvasBlur = () => {
+  if (manualBlurFallbackCache !== null) return manualBlurFallbackCache;
+  if (typeof document === 'undefined') {
+    manualBlurFallbackCache = true;
+    return manualBlurFallbackCache;
+  }
+  if (isIOSDevice()) {
+    manualBlurFallbackCache = true;
+    return manualBlurFallbackCache;
+  }
+  const probeCanvas = document.createElement('canvas');
+  const probeCtx = probeCanvas.getContext('2d');
+  if (!probeCtx || !('filter' in probeCtx)) {
+    manualBlurFallbackCache = true;
+    return manualBlurFallbackCache;
+  }
+  const originalFilter = probeCtx.filter;
+  probeCtx.filter = 'blur(2px)';
+  manualBlurFallbackCache = probeCtx.filter !== 'blur(2px)';
+  probeCtx.filter = originalFilter;
+  return manualBlurFallbackCache;
+};
+
+const drawManuallyBlurredCover = (ctx, image, x, y, width, height, intensity = 0.06) => {
+  if (typeof document === 'undefined' || !image?.width || !image?.height) {
+    drawImageCover(ctx, image, x, y, width, height);
+    return;
+  }
+
+  const sampleScale = Math.max(0.03, Math.min(0.075, intensity));
+  const sampleWidth = Math.max(32, Math.round(width * sampleScale));
+  const sampleHeight = Math.max(32, Math.round(height * sampleScale));
+
+  const baseCanvas = document.createElement('canvas');
+  baseCanvas.width = sampleWidth;
+  baseCanvas.height = sampleHeight;
+  const baseCtx = baseCanvas.getContext('2d');
+  if (!baseCtx) {
+    drawImageCover(ctx, image, x, y, width, height);
+    return;
+  }
+  baseCtx.clearRect(0, 0, sampleWidth, sampleHeight);
+  baseCtx.imageSmoothingEnabled = true;
+  baseCtx.imageSmoothingQuality = 'high';
+  drawImageCover(baseCtx, image, 0, 0, sampleWidth, sampleHeight);
+
+  const midCanvas = document.createElement('canvas');
+  midCanvas.width = Math.max(16, Math.round(sampleWidth * 0.56));
+  midCanvas.height = Math.max(16, Math.round(sampleHeight * 0.56));
+  const midCtx = midCanvas.getContext('2d');
+  if (!midCtx) {
+    drawImageCover(ctx, image, x, y, width, height);
+    return;
+  }
+  midCtx.imageSmoothingEnabled = true;
+  midCtx.imageSmoothingQuality = 'high';
+  midCtx.drawImage(baseCanvas, 0, 0, midCanvas.width, midCanvas.height);
+
+  const lowCanvas = document.createElement('canvas');
+  lowCanvas.width = Math.max(12, Math.round(sampleWidth * 0.32));
+  lowCanvas.height = Math.max(12, Math.round(sampleHeight * 0.32));
+  const lowCtx = lowCanvas.getContext('2d');
+  if (!lowCtx) {
+    drawImageCover(ctx, image, x, y, width, height);
+    return;
+  }
+  lowCtx.imageSmoothingEnabled = true;
+  lowCtx.imageSmoothingQuality = 'high';
+  lowCtx.drawImage(midCanvas, 0, 0, lowCanvas.width, lowCanvas.height);
+
+  const blurCanvas = document.createElement('canvas');
+  blurCanvas.width = sampleWidth;
+  blurCanvas.height = sampleHeight;
+  const blurCtx = blurCanvas.getContext('2d');
+  if (!blurCtx) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(baseCanvas, x, y, width, height);
+    ctx.restore();
+    return;
+  }
+
+  blurCtx.clearRect(0, 0, sampleWidth, sampleHeight);
+  blurCtx.imageSmoothingEnabled = true;
+  blurCtx.imageSmoothingQuality = 'high';
+  blurCtx.globalAlpha = 1;
+  blurCtx.drawImage(lowCanvas, 0, 0, sampleWidth, sampleHeight);
+  blurCtx.globalAlpha = 0.68;
+  blurCtx.drawImage(midCanvas, 0, 0, sampleWidth, sampleHeight);
+  blurCtx.globalAlpha = 0.22;
+  blurCtx.drawImage(baseCanvas, 0, 0, sampleWidth, sampleHeight);
+
+  const diffuseCanvas = document.createElement('canvas');
+  diffuseCanvas.width = sampleWidth;
+  diffuseCanvas.height = sampleHeight;
+  const diffuseCtx = diffuseCanvas.getContext('2d');
+  if (diffuseCtx) {
+    diffuseCtx.drawImage(blurCanvas, 0, 0);
+    const diffusionOffsets = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]];
+    blurCtx.globalAlpha = 0.08;
+    for (const [dx, dy] of diffusionOffsets) {
+      blurCtx.drawImage(diffuseCanvas, dx, dy, sampleWidth, sampleHeight);
+    }
+  }
+  blurCtx.globalAlpha = 1;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(blurCanvas, x, y, width, height);
+  ctx.restore();
+};
+
+const drawBlurredCover = (ctx, image, x, y, width, height, options = {}) => {
+  const {
+    blur = 40,
+    saturation = 1.2,
+    manualIntensity = 0.06
+  } = options;
+
+  if (!shouldUseManualCanvasBlur()) {
+    ctx.save();
+    ctx.filter = `blur(${blur}px) saturate(${saturation})`;
+    drawImageCover(ctx, image, x, y, width, height);
+    ctx.restore();
+    return;
+  }
+
+  drawManuallyBlurredCover(ctx, image, x, y, width, height, manualIntensity);
+};
+
 const clampColorByte = (value) => Math.max(0, Math.min(255, Math.round(value)));
 
 const mixRgb = (from, to, ratio) => ({
@@ -357,14 +488,14 @@ const normalizeAccentTone = (rgb, isDark) => {
 const createShareCardDataUrl = async ({
   trackName,
   albumName,
-  artistName,
   url,
   cover
 }) => {
   if (typeof document === 'undefined' || !url) return '';
   const isDark = resolveIsDarkTheme();
+  const useManualBlur = shouldUseManualCanvasBlur();
   const width = 1080;
-  const height = 1360;
+  const height = 1720;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -384,150 +515,373 @@ const createShareCardDataUrl = async ({
   const sampledAccent = extractImageTone(coverImage);
   const accent = normalizeAccentTone(sampledAccent || defaultAccent, isDark) || defaultAccent;
 
-  const palette = isDark
-    ? {
-      bg0: toRgbColor(mixRgb(accent, { r: 8, g: 12, b: 18 }, 0.82)),
-      bg1: toRgbColor(mixRgb(accent, { r: 18, g: 26, b: 38 }, 0.58)),
-      surface: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.22), 0.08),
-      sheen: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.54), 0.2),
-      text: '#f6f9ff',
-      subText: 'rgba(229, 236, 248, 0.84)',
-      footer: 'rgba(229, 236, 248, 0.82)',
-      qrDark: '#f6fbff',
-      qrLight: '#0000',
-      coverFallback0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.16)),
-      coverFallback1: toRgbColor(mixRgb(accent, { r: 14, g: 20, b: 30 }, 0.56)),
-      blobA: toRgbaColor(accent, 0.32),
-      blobB: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.28), 0.24),
-      blobC: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.56), 0.2),
-      grain: 'rgba(255, 255, 255, 0.02)'
-    }
-    : {
-      bg0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.8)),
-      bg1: toRgbColor(mixRgb(accent, { r: 238, g: 244, b: 250 }, 0.72)),
-      surface: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.58), 0.34),
-      sheen: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.82), 0.45),
-      text: '#18253a',
-      subText: 'rgba(24, 37, 58, 0.74)',
-      footer: 'rgba(24, 37, 58, 0.7)',
-      qrDark: '#ffffff',
-      qrLight: '#0000',
-      coverFallback0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.48)),
-      coverFallback1: toRgbColor(mixRgb(accent, { r: 214, g: 224, b: 238 }, 0.56)),
-      blobA: toRgbaColor(accent, 0.24),
-      blobB: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.35), 0.24),
-      blobC: toRgbaColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.65), 0.34),
-      grain: 'rgba(0, 0, 0, 0.03)'
-    };
-
-  const bgGradient = ctx.createLinearGradient(0, 0, width, height);
-  bgGradient.addColorStop(0, palette.bg0);
-  bgGradient.addColorStop(1, palette.bg1);
-  ctx.fillStyle = bgGradient;
-  ctx.fillRect(0, 0, width, height);
-
-  const drawGlowBlob = (x, y, radius, color) => {
-    ctx.save();
-    ctx.filter = 'blur(88px)';
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+  const palette = {
+    backdrop: toRgbaColor(mixRgb(accent, { r: 14, g: 22, b: 34 }, 0.72), isDark ? 0.5 : 0.46),
+    vignette: isDark ? 'rgba(3, 6, 10, 0.62)' : 'rgba(8, 14, 24, 0.42)',
+    cardGlassTop: useManualBlur
+      ? (isDark ? 'rgba(246, 251, 255, 0.1)' : 'rgba(248, 252, 255, 0.14)')
+      : (isDark ? 'rgba(246, 251, 255, 0.08)' : 'rgba(248, 252, 255, 0.13)'),
+    cardGlassMid: useManualBlur
+      ? (isDark ? 'rgba(210, 224, 244, 0.055)' : 'rgba(225, 236, 250, 0.075)')
+      : (isDark ? 'rgba(210, 224, 244, 0.07)' : 'rgba(225, 236, 250, 0.12)'),
+    cardGlassBottom: useManualBlur
+      ? (isDark ? 'rgba(24, 34, 48, 0.22)' : 'rgba(152, 172, 198, 0.2)')
+      : (isDark ? 'rgba(24, 34, 48, 0.28)' : 'rgba(152, 172, 198, 0.24)'),
+    cardStrokeTop: useManualBlur ? 'rgba(255, 255, 255, 0.56)' : 'rgba(255, 255, 255, 0.34)',
+    cardStrokeMid: useManualBlur ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.2)',
+    cardStrokeBottom: useManualBlur ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.12)',
+    cardInnerStroke: useManualBlur ? 'rgba(255, 255, 255, 0.095)' : 'rgba(255, 255, 255, 0.09)',
+    cardShadow: isDark ? 'rgba(4, 8, 12, 0.22)' : 'rgba(18, 34, 56, 0.16)',
+    text: '#f7fbff',
+    subText: 'rgba(244, 249, 255, 0.76)',
+    footer: 'rgba(244, 249, 255, 0.8)',
+    controlTrack: 'rgba(244, 249, 255, 0.38)',
+    controlFill: 'rgba(255, 255, 255, 0.95)',
+    qrDark: '#ffffff',
+    qrLight: '#0000',
+    coverFallback0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.2)),
+    coverFallback1: toRgbColor(mixRgb(accent, { r: 12, g: 18, b: 28 }, 0.56)),
+    grain: useManualBlur
+      ? (isDark ? 'rgba(255, 255, 255, 0.006)' : 'rgba(255, 255, 255, 0.005)')
+      : (isDark ? 'rgba(255, 255, 255, 0.018)' : 'rgba(255, 255, 255, 0.014)')
   };
-  drawGlowBlob(width * 0.2, height * 0.18, 240, palette.blobA);
-  drawGlowBlob(width * 0.86, height * 0.2, 200, palette.blobB);
-  drawGlowBlob(width * 0.68, height * 0.88, 260, palette.blobC);
 
-  ctx.fillStyle = palette.surface;
+  if (coverImage) {
+    drawBlurredCover(
+      ctx,
+      coverImage,
+      -width * 0.14,
+      -height * 0.14,
+      width * 1.28,
+      height * 1.28,
+      { blur: 56, saturation: 1.24, manualIntensity: useManualBlur ? 0.026 : 0.055 }
+    );
+  } else {
+    const fallback = ctx.createLinearGradient(0, 0, width, height);
+    fallback.addColorStop(0, toRgbColor(mixRgb(accent, { r: 12, g: 18, b: 30 }, 0.58)));
+    fallback.addColorStop(1, toRgbColor(mixRgb(accent, { r: 32, g: 46, b: 68 }, 0.52)));
+    ctx.fillStyle = fallback;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  ctx.fillStyle = palette.backdrop;
   ctx.fillRect(0, 0, width, height);
-  const topSheen = ctx.createLinearGradient(0, 0, 0, height * 0.56);
-  topSheen.addColorStop(0, palette.sheen);
-  topSheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = topSheen;
-  ctx.fillRect(0, 0, width, height * 0.56);
+
+  const vignette = ctx.createRadialGradient(width * 0.5, height * 0.42, width * 0.18, width * 0.5, height * 0.5, width * 0.88);
+  vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  vignette.addColorStop(0.62, 'rgba(0, 0, 0, 0.14)');
+  vignette.addColorStop(1, palette.vignette);
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, width, height);
 
   ctx.save();
-  for (let i = 0; i < 1400; i += 1) {
+  for (let i = 0; i < 1200; i += 1) {
     const x = Math.random() * width;
     const y = Math.random() * height;
-    const size = Math.random() * 1.6 + 0.4;
+    const size = Math.random() * 1.4 + 0.4;
     ctx.fillStyle = palette.grain;
     ctx.fillRect(x, y, size, size);
   }
   ctx.restore();
 
-  const coverSize = 620;
-  const coverX = (width - coverSize) / 2;
-  const coverY = 136;
+  const cardX = 72;
+  const cardY = 80;
+  const cardWidth = width - 144;
+  const cardHeight = 1360;
+  const cardRadius = 58;
+
+  ctx.save();
+  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+  ctx.clip();
+  if (coverImage) {
+    ctx.save();
+    ctx.globalAlpha = isDark ? 0.42 : 0.36;
+    drawBlurredCover(
+      ctx,
+      coverImage,
+      cardX - width * 0.26,
+      cardY - height * 0.24,
+      width * 1.52,
+      height * 1.52,
+      {
+        blur: isDark ? 46 : 42,
+        saturation: isDark ? 1.3 : 1.24,
+        manualIntensity: useManualBlur ? 0.024 : 0.05
+      }
+    );
+    ctx.restore();
+  }
+  const cardGlass = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+  cardGlass.addColorStop(0, palette.cardGlassTop);
+  cardGlass.addColorStop(0.46, palette.cardGlassMid);
+  cardGlass.addColorStop(1, palette.cardGlassBottom);
+  ctx.fillStyle = cardGlass;
+  ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+  const cardMist = ctx.createRadialGradient(
+    cardX + cardWidth * 0.22,
+    cardY + cardHeight * 0.2,
+    cardWidth * 0.08,
+    cardX + cardWidth * 0.22,
+    cardY + cardHeight * 0.2,
+    cardWidth * 0.62
+  );
+  cardMist.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+  cardMist.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = cardMist;
+  ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+  if (useManualBlur) {
+    const liquidTint = ctx.createLinearGradient(cardX, cardY, cardX + cardWidth, cardY + cardHeight);
+    liquidTint.addColorStop(0, toRgbaColor(mixRgb(accent, { r: 204, g: 232, b: 255 }, 0.4), isDark ? 0.07 : 0.06));
+    liquidTint.addColorStop(0.52, 'rgba(255, 255, 255, 0)');
+    liquidTint.addColorStop(1, toRgbaColor(mixRgb(accent, { r: 128, g: 172, b: 222 }, 0.52), isDark ? 0.08 : 0.06));
+    ctx.fillStyle = liquidTint;
+    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+    const topGlint = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight * 0.28);
+    topGlint.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+    topGlint.addColorStop(0.36, 'rgba(255, 255, 255, 0.08)');
+    topGlint.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = topGlint;
+    ctx.fillRect(cardX, cardY, cardWidth, cardHeight * 0.32);
+
+    const refractionBand = ctx.createLinearGradient(
+      cardX - cardWidth * 0.14,
+      cardY + cardHeight * 0.18,
+      cardX + cardWidth * 1.08,
+      cardY + cardHeight * 0.58
+    );
+    refractionBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    refractionBand.addColorStop(0.42, 'rgba(255, 255, 255, 0.075)');
+    refractionBand.addColorStop(0.5, 'rgba(255, 255, 255, 0.012)');
+    refractionBand.addColorStop(0.58, 'rgba(255, 255, 255, 0.06)');
+    refractionBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = refractionBand;
+    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+    const innerShade = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+    innerShade.addColorStop(0, 'rgba(255, 255, 255, 0.038)');
+    innerShade.addColorStop(0.62, 'rgba(255, 255, 255, 0)');
+    innerShade.addColorStop(1, 'rgba(0, 0, 0, 0.14)');
+    ctx.fillStyle = innerShade;
+    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+  }
+  ctx.restore();
+
+  ctx.save();
+  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+  ctx.shadowColor = palette.cardShadow;
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 10;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+
+  const cardStroke = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+  cardStroke.addColorStop(0, palette.cardStrokeTop);
+  cardStroke.addColorStop(0.42, palette.cardStrokeMid);
+  cardStroke.addColorStop(1, palette.cardStrokeBottom);
+  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+  ctx.strokeStyle = cardStroke;
+  ctx.lineWidth = 1.35;
+  ctx.stroke();
+
+  drawRoundedRectPath(ctx, cardX + 1.8, cardY + 1.8, cardWidth - 3.6, cardHeight - 3.6, cardRadius - 1.8);
+  ctx.strokeStyle = palette.cardInnerStroke;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const coverPadding = 74;
+  const coverX = cardX + coverPadding;
+  const coverY = cardY + 74;
+  const coverSize = cardWidth - coverPadding * 2;
 
   if (coverImage) {
     ctx.save();
-    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 42);
+    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 28);
     ctx.clip();
     drawImageCover(ctx, coverImage, coverX, coverY, coverSize, coverSize);
     ctx.restore();
   } else {
-    const fallbackGrad = ctx.createLinearGradient(coverX, coverY, coverX + coverSize, coverY + coverSize);
-    fallbackGrad.addColorStop(0, palette.coverFallback0);
-    fallbackGrad.addColorStop(1, palette.coverFallback1);
-    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 42);
-    ctx.fillStyle = fallbackGrad;
+    const coverFallback = ctx.createLinearGradient(coverX, coverY, coverX + coverSize, coverY + coverSize);
+    coverFallback.addColorStop(0, palette.coverFallback0);
+    coverFallback.addColorStop(1, palette.coverFallback1);
+    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 28);
+    ctx.fillStyle = coverFallback;
     ctx.fill();
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.85)' : '#2e3a52';
-    ctx.font = '700 132px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.font = '700 130px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('♪', coverX + coverSize / 2, coverY + coverSize / 2 + 48);
+    ctx.fillText('♪', coverX + coverSize / 2, coverY + coverSize / 2 + 44);
   }
 
-  const textWidth = width - 200;
-  let textY = coverY + coverSize + 108;
+  const contentLeft = cardX + 62;
+  const contentRight = cardX + cardWidth - 62;
+  const contentWidth = contentRight - contentLeft;
+  const contentCenterX = cardX + cardWidth / 2;
+  const titleTopSpacing = 102;
+  const subtitleGap = 64;
+  const titleStartY = coverY + coverSize + titleTopSpacing;
+  const subtitleFontSize = 38;
+  const titleText = trackName || '未知歌曲';
+  const titleFontFamily = '"Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+  let titleFontSize = 60;
   ctx.textAlign = 'center';
-  ctx.fillStyle = palette.text;
-  const titleLineGap = 66;
-  ctx.font = '700 62px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
-  const titleLines = buildWrappedLines(ctx, trackName || '未知歌曲', textWidth, 2);
-  for (const line of titleLines) {
-    ctx.fillText(line, width / 2, textY);
-    textY += titleLineGap;
+  ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+  while (titleFontSize > subtitleFontSize && ctx.measureText(titleText).width > contentWidth) {
+    titleFontSize -= 2;
+    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
   }
+  let titleLine = titleText;
+  if (ctx.measureText(titleLine).width > contentWidth) {
+    const chars = Array.from(titleLine);
+    let end = chars.length;
+    while (end > 0 && ctx.measureText(`${chars.slice(0, end).join('')}...`).width > contentWidth) {
+      end -= 1;
+    }
+    titleLine = `${chars.slice(0, Math.max(end, 0)).join('')}...`;
+  }
+  const lastTitleBaselineY = titleStartY;
 
-  const titleBottomY = textY - titleLineGap;
-  const subtitleY = titleBottomY + (titleLines.length > 1 ? 52 : 56);
-  ctx.fillStyle = palette.subText;
-  ctx.font = '600 30px "PingFang SC", "Microsoft YaHei", sans-serif';
-  const subtitleArtist = artistName || '未知歌手';
   const subtitleAlbum = albumName || '未知专辑';
-  const subtitle = `${subtitleArtist} · ${subtitleAlbum}`;
-  const subtitleLine = buildWrappedLines(ctx, subtitle, width - 300, 1)[0] || subtitle;
-  ctx.fillText(subtitleLine, width / 2, subtitleY);
+  const subtitle = subtitleAlbum;
+  const subtitleY = lastTitleBaselineY + subtitleGap;
 
-  const qrSize = 172;
-  const qrX = width - qrSize - 82;
-  const qrY = height - qrSize - 98;
+  ctx.fillStyle = palette.text;
+  ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+  ctx.fillText(titleLine, contentCenterX, titleStartY);
+
+  ctx.fillStyle = palette.subText;
+  ctx.font = `600 ${subtitleFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+  const subtitleLine = buildWrappedLines(ctx, subtitle, contentWidth, 1)[0] || subtitle;
+  ctx.fillText(subtitleLine, contentCenterX, subtitleY);
+
+  const progressSpacing = 84;
+  const progressX = contentLeft + 8;
+  const progressY = subtitleY + progressSpacing;
+  const progressWidth = contentWidth - 16;
+  const playedWidth = progressWidth * 0.5;
+  const knobX = progressX + playedWidth;
+
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 9;
+  ctx.strokeStyle = palette.controlTrack;
+  ctx.beginPath();
+  ctx.moveTo(progressX, progressY);
+  ctx.lineTo(progressX + progressWidth, progressY);
+  ctx.stroke();
+
+  ctx.strokeStyle = palette.controlFill;
+  ctx.beginPath();
+  ctx.moveTo(progressX, progressY);
+  ctx.lineTo(knobX, progressY);
+  ctx.stroke();
+
+  ctx.fillStyle = palette.controlFill;
+  ctx.beginPath();
+  ctx.arc(knobX, progressY, 12.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  const drawPlayGlyph = (x, y, size, direction = 'next') => {
+    const scale = size / 24;
+    ctx.save();
+    ctx.translate(x, y);
+    if (direction === 'prev') {
+      ctx.scale(-1, 1);
+    }
+    ctx.scale(scale, scale);
+    ctx.translate(-12, -12);
+    ctx.beginPath();
+    ctx.moveTo(5, 3);
+    ctx.lineTo(19, 12);
+    ctx.lineTo(5, 21);
+    ctx.closePath();
+    ctx.fillStyle = palette.controlFill;
+    ctx.strokeStyle = palette.controlFill;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const drawSkipIcon = (x, y, size, direction) => {
+    ctx.save();
+    const iconSize = size;
+    const overlap = iconSize * (8 / 20);
+    const spacing = iconSize - overlap;
+    if (direction === 'prev') {
+      drawPlayGlyph(x + spacing / 2, y, iconSize, 'prev');
+      drawPlayGlyph(x - spacing / 2, y, iconSize, 'prev');
+    } else {
+      drawPlayGlyph(x - spacing / 2, y, iconSize, 'next');
+      drawPlayGlyph(x + spacing / 2, y, iconSize, 'next');
+    }
+    ctx.restore();
+  };
+
+  const drawPauseIcon = (x, y, size) => {
+    const scale = size / 24;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.translate(-12, -12);
+    ctx.fillStyle = palette.controlFill;
+    ctx.strokeStyle = palette.controlFill;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 2;
+    drawRoundedRectPath(ctx, 6, 4, 4, 16, 1);
+    ctx.fill();
+    ctx.stroke();
+    drawRoundedRectPath(ctx, 14, 4, 4, 16, 1);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const skipIconSize = 72;
+  const pauseIconSize = 115;
+  const pauseVisualTopOffset = (pauseIconSize * 8) / 24;
+  const controlsY = progressY + progressSpacing + pauseVisualTopOffset;
+  const prevX = cardX + cardWidth * 0.34;
+  const pauseX = cardX + cardWidth * 0.5;
+  const nextX = cardX + cardWidth * 0.66;
+  drawSkipIcon(prevX, controlsY, skipIconSize, 'prev');
+  drawPauseIcon(pauseX, controlsY, pauseIconSize);
+  drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
 
   const qrDataUrl = await QRCode.toDataURL(url, {
     errorCorrectionLevel: 'M',
-    margin: 2,
-    width: 260,
+    margin: 0,
+    width: 320,
     color: {
       dark: palette.qrDark,
       light: palette.qrLight
     }
   });
   const qrImage = await loadCanvasImage(qrDataUrl);
+  const qrSize = 122;
+  const qrX = cardX + cardWidth - qrSize;
+  const qrY = height - qrSize - 92;
   ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
-  const infoLeftX = 82;
-  const infoTitleY = qrY + qrSize - 70;
-  const infoBrandY = infoTitleY + 46;
+  const infoLeftX = cardX;
+  const brandText = '1701701.xyz';
+  const tipText = '长按识别播放歌曲';
+  const qrBottomY = qrY + qrSize;
+  const infoTitleY = qrBottomY;
+  const infoBrandY = infoTitleY - 54;
   ctx.textAlign = 'left';
   ctx.fillStyle = palette.text;
-  ctx.font = '700 46px "PingFang SC", "Microsoft YaHei", sans-serif';
-  ctx.fillText('扫一扫播放', infoLeftX, infoTitleY);
+  ctx.font = '600 35px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.fillText(brandText, infoLeftX, infoBrandY);
   ctx.fillStyle = palette.footer;
-  ctx.font = '600 34px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
-  ctx.fillText('1701701.xyz', infoLeftX, infoBrandY);
+  ctx.font = '600 35px "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.fillText(tipText, infoLeftX, infoTitleY);
 
   return canvas.toDataURL('image/png');
 };
@@ -1081,7 +1435,10 @@ const App = () => {
     const canUseSystemShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
     if (isIOSDevice() && canUseSystemShare) {
-      showToast('在系统菜单选择“存储图像”即可保存到相册', 'tone-add', { placement: 'side' });
+      showToast('在系统菜单选择“保存图像”即可保存到相册', 'tone-add', {
+        placement: 'top',
+        duration: 3800
+      });
     }
 
     if (canUseSystemShare) {
@@ -1439,10 +1796,9 @@ const App = () => {
                   onClick={closeSharePanel}
                   aria-label="关闭分享面板"
                 >
-                  X
+                  ×
                 </button>
               </div>
-              <div className="share-panel-meta">{sharePanelData.trackName || sharePanelData.text}</div>
               <div className="share-panel-card-preview">
                 {isShareCardGenerating && (
                   <div className="share-card-loading">正在生成分享卡片...</div>
@@ -1485,7 +1841,7 @@ const App = () => {
       </div>
 
       <div
-        className={`app-toast ${isToastVisible ? 'show' : ''} ${toastTone} ${toastPlacement.startsWith('side') ? `placement-${toastPlacement}` : ''}`}
+        className={`app-toast ${isToastVisible ? 'show' : ''} ${toastTone} ${toastPlacement !== 'anchor' ? `placement-${toastPlacement}` : ''}`}
         role="status"
         aria-live="polite"
       >

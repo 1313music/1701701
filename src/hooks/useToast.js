@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const DEFAULT_TONE = 'tone-add';
 const DEFAULT_PLACEMENT = 'anchor';
+const DEFAULT_DURATION = 1500;
 
 export const useToast = () => {
   const [toastMessage, setToastMessage] = useState('');
@@ -24,11 +25,15 @@ export const useToast = () => {
 
     let anchorEvent = null;
     let placement = DEFAULT_PLACEMENT;
+    let duration = DEFAULT_DURATION;
     if (anchorOrOptions?.currentTarget) {
       anchorEvent = anchorOrOptions;
     } else if (anchorOrOptions && typeof anchorOrOptions === 'object') {
       placement = anchorOrOptions.placement || DEFAULT_PLACEMENT;
       anchorEvent = anchorOrOptions.anchorEvent || null;
+      if (Number.isFinite(anchorOrOptions.duration)) {
+        duration = Math.max(300, anchorOrOptions.duration);
+      }
     }
 
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
@@ -65,6 +70,11 @@ export const useToast = () => {
         const y = Math.max(window.innerHeight - 96, padding);
         document.documentElement.style.setProperty('--toast-x', `${x}px`);
         document.documentElement.style.setProperty('--toast-y', `${y}px`);
+      } else if (placement === 'top') {
+        const x = window.innerWidth / 2;
+        const y = window.innerWidth <= 1024 ? 88 : 16;
+        document.documentElement.style.setProperty('--toast-x', `${x}px`);
+        document.documentElement.style.setProperty('--toast-y', `${y}px`);
       } else {
         document.documentElement.style.setProperty('--toast-x', `${window.innerWidth / 2}px`);
         document.documentElement.style.setProperty('--toast-y', `${padding}px`);
@@ -78,7 +88,7 @@ export const useToast = () => {
     }
     toastTimerRef.current = setTimeout(() => {
       setIsToastVisible(false);
-    }, 1500);
+    }, duration);
   }, []);
 
   return {
