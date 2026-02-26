@@ -36,6 +36,7 @@ export const useTheme = ({ showToast } = {}) => {
     const root = document.documentElement;
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
     const isiOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+    const isAndroid = /Android/i.test(window.navigator.userAgent || '');
     // In iOS/standalone shells, display-mode can transiently report false during gestures.
     // Lock standalone for the current session once we detect it at startup.
     const initialStandalone = mediaQuery.matches || (isiOS && window.navigator.standalone === true);
@@ -54,6 +55,8 @@ export const useTheme = ({ showToast } = {}) => {
       root.classList.toggle('standalone-fallback', isFallbackStandalone);
       root.classList.toggle('standalone-mode', isStandalone);
       root.classList.toggle('browser-mode', !isStandalone);
+      root.classList.toggle('android-device', isAndroid);
+      root.classList.toggle('android-browser-mode', isAndroid && !isStandalone);
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', isStandalone ? standaloneThemeColor : browserThemeColor);
       }
@@ -100,9 +103,74 @@ export const useTheme = ({ showToast } = {}) => {
       if (stabilizeTimer2) window.clearTimeout(stabilizeTimer2);
       window.removeEventListener('pageshow', applyModeAndStabilize);
       document.removeEventListener('visibilitychange', applyModeAndStabilize);
+      root.classList.remove('android-device');
+      root.classList.remove('android-browser-mode');
       mediaQuery.removeListener(applyModeAndStabilize);
     };
   }, [resolvedTheme]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const root = document.documentElement;
+    const isAndroid = /Android/i.test(window.navigator.userAgent || '');
+    let rafId = 0;
+
+    const updateViewportVars = () => {
+      if (!isAndroid) {
+        root.style.setProperty('--mobile-browser-bottom-gap', '0px');
+        root.style.removeProperty('--mobile-fullscreen-height');
+        return;
+      }
+
+      const vv = window.visualViewport;
+      const viewportHeight = vv?.height ?? window.innerHeight;
+      const offsetTop = vv?.offsetTop ?? 0;
+      const rawBottomGap = Math.max(window.innerHeight - (viewportHeight + offsetTop), 0);
+      const isMobileWidth = window.innerWidth <= 1024;
+      const browserBottomGap = isMobileWidth
+        ? Math.min(Math.round(rawBottomGap), 120)
+        : 0;
+
+      root.style.setProperty('--mobile-fullscreen-height', `${Math.round(viewportHeight)}px`);
+      root.style.setProperty('--mobile-browser-bottom-gap', `${browserBottomGap}px`);
+    };
+
+    const requestUpdate = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        updateViewportVars();
+      });
+    };
+
+    updateViewportVars();
+
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('orientationchange', requestUpdate);
+    window.addEventListener('pageshow', requestUpdate);
+    document.addEventListener('visibilitychange', requestUpdate);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', requestUpdate);
+      window.visualViewport.addEventListener('scroll', requestUpdate);
+    }
+
+    return () => {
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener('resize', requestUpdate);
+      window.removeEventListener('orientationchange', requestUpdate);
+      window.removeEventListener('pageshow', requestUpdate);
+      document.removeEventListener('visibilitychange', requestUpdate);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', requestUpdate);
+        window.visualViewport.removeEventListener('scroll', requestUpdate);
+      }
+      root.style.setProperty('--mobile-browser-bottom-gap', '0px');
+      root.style.removeProperty('--mobile-fullscreen-height');
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !showViewportDebug) return;

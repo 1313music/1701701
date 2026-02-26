@@ -793,6 +793,130 @@
   color: var(--text-main);
 }
 
+.wechat-browser-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 29000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(153, 218, 255, 0.2) 0%, rgba(153, 218, 255, 0) 58%),
+    radial-gradient(120% 120% at 100% 100%, rgba(142, 192, 255, 0.16) 0%, rgba(142, 192, 255, 0) 52%),
+    rgba(8, 12, 20, 0.5);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+
+.wechat-browser-card {
+  width: min(460px, calc(100vw - 40px));
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 48%, rgba(255, 255, 255, 0.42));
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--bg-color) 78%, rgba(255, 255, 255, 0.4)),
+      color-mix(in srgb, var(--bg-color) 66%, rgba(255, 255, 255, 0.14))
+    );
+  backdrop-filter: blur(28px) saturate(1.2);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+  color: var(--text-main);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wechat-browser-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-main);
+}
+
+.wechat-browser-desc {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.wechat-browser-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wechat-browser-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.wechat-browser-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 62%, rgba(255, 255, 255, 0.2));
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.wechat-browser-btn.primary {
+  background: color-mix(in srgb, var(--main-color) 24%, transparent);
+  color: var(--text-main);
+  border-color: color-mix(in srgb, var(--main-color) 36%, var(--glass-border));
+}
+
+.wechat-browser-btn.primary:hover {
+  filter: saturate(1.08);
+  transform: translateY(-1px);
+}
+
+.wechat-browser-btn.ghost {
+  background: color-mix(in srgb, var(--bg-color) 58%, transparent);
+  color: var(--text-main);
+}
+
+@media (max-width: 600px) {
+  .wechat-browser-modal {
+    padding: 16px;
+  }
+
+  .wechat-browser-card {
+    width: min(460px, calc(100vw - 20px));
+    padding: 18px 16px;
+    gap: 12px;
+  }
+
+  .wechat-browser-title {
+    font-size: 18px;
+  }
+
+  .wechat-browser-steps {
+    font-size: 13px;
+  }
+
+  .wechat-browser-actions {
+    flex-direction: column;
+  }
+}
+
 /* 全屏播放页 */
 .lyrics-overlay {
   position: fixed;
@@ -1883,7 +2007,7 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    padding: 0 0 calc(12px + var(--mobile-fullscreen-safe-bottom));
+    padding: 0 0 calc(12px + var(--mobile-fullscreen-safe-bottom) + var(--mobile-browser-bottom-gap));
     touch-action: pan-y;
   }
 
@@ -2586,9 +2710,10 @@
   .mobile-fullscreen-player {
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: auto;
-    min-height: 100%;
+    width: 100%;
+    height: var(--mobile-fullscreen-height);
+    min-height: var(--mobile-fullscreen-height);
+    max-height: var(--mobile-fullscreen-height);
     overflow: hidden;
     background: var(--bg-color);
     backdrop-filter: none;
@@ -2797,9 +2922,14 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
-    padding: 15px calc(20px + var(--mobile-fullscreen-safe-right)) calc(12px + var(--mobile-fullscreen-safe-bottom)) calc(20px + var(--mobile-fullscreen-safe-left));
+    padding: 15px calc(20px + var(--mobile-fullscreen-safe-right)) calc(12px + var(--mobile-fullscreen-safe-bottom) + var(--mobile-browser-bottom-gap)) calc(20px + var(--mobile-fullscreen-safe-left));
     position: relative;
     z-index: 3;
+  }
+
+  :root.android-browser-mode .mobile-player-controls {
+    padding-bottom: calc(12px + var(--mobile-fullscreen-safe-bottom) + var(--mobile-browser-bottom-gap) + 28px);
+    transform: translateY(-24px);
   }
 
 

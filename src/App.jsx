@@ -173,6 +173,11 @@ const isIOSDevice = () => {
   return /iP(hone|ad|od)/i.test(navigator.userAgent || '');
 };
 
+const isWeChatBrowser = () => {
+  if (typeof navigator === 'undefined') return false;
+  return /MicroMessenger/i.test(navigator.userAgent || '');
+};
+
 const openImagePreviewWindow = (dataUrl) => {
   if (!dataUrl || typeof window === 'undefined') return false;
   const previewWindow = window.open('', '_blank');
@@ -918,6 +923,7 @@ const App = () => {
   const [sharePanelData, setSharePanelData] = useState(null);
   const [shareCardDataUrl, setShareCardDataUrl] = useState('');
   const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
+  const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
   const shareQueryAppliedRef = useRef(false);
   const shareCardRequestIdRef = useRef(0);
 
@@ -1050,6 +1056,12 @@ const App = () => {
       // ignore storage errors
     }
   }, [tempPlaylistIds]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isWeChatBrowser()) return;
+    setIsWeChatBrowserHintOpen(true);
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -1408,6 +1420,23 @@ const App = () => {
     setShareCardDataUrl('');
     setIsShareCardGenerating(false);
   }, []);
+
+  const closeWeChatBrowserHint = useCallback(() => {
+    setIsWeChatBrowserHintOpen(false);
+  }, []);
+
+  const handleCopyCurrentPageUrl = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    const copied = await copyTextToClipboard(window.location.href);
+    showToast(
+      copied ? '链接已复制，请在默认浏览器中打开' : '复制失败，请手动复制当前链接',
+      copied ? 'tone-add' : 'tone-remove',
+      { placement: 'bottom' }
+    );
+    if (copied) {
+      closeWeChatBrowserHint();
+    }
+  }, [closeWeChatBrowserHint, showToast]);
 
   const handleShareCurrentTrack = useCallback(async (anchorOrOptions) => {
     const payload = buildCurrentSharePayload();
@@ -1840,6 +1869,46 @@ const App = () => {
                   disabled={!shareCardDataUrl || isShareCardGenerating}
                 >
                   分享卡片
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isWeChatBrowserHintOpen && (
+          <div className="wechat-browser-modal" onClick={closeWeChatBrowserHint}>
+            <div
+              className="wechat-browser-card"
+              onClick={(event) => event.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="wechat-browser-title"
+            >
+              <div className="wechat-browser-title" id="wechat-browser-title">
+                建议使用默认浏览器打开
+              </div>
+              <p className="wechat-browser-desc">
+                当前检测到你正在微信内置浏览器访问，部分功能可能受限。
+              </p>
+              <ol className="wechat-browser-steps">
+                <li>点击右上角“...”菜单。</li>
+                <li>选择“在浏览器打开”或“在默认浏览器打开”。</li>
+                <li>如未看到该选项，可先复制链接后到浏览器粘贴打开。</li>
+              </ol>
+              <div className="wechat-browser-actions">
+                <button
+                  type="button"
+                  className="wechat-browser-btn ghost"
+                  onClick={closeWeChatBrowserHint}
+                >
+                  我知道了
+                </button>
+                <button
+                  type="button"
+                  className="wechat-browser-btn primary"
+                  onClick={handleCopyCurrentPageUrl}
+                >
+                  复制当前链接
                 </button>
               </div>
             </div>
