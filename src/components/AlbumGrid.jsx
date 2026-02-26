@@ -196,9 +196,9 @@ const AlbumGrid = ({
     useEffect(() => {
         clearPanelTimers();
         if (!expandedAlbumId) {
-            setHoveredPanelSongSrc('');
             if (!renderedPanelAlbumIdRef.current) {
                 panelStateTimerRef.current = window.setTimeout(() => {
+                    setHoveredPanelSongSrc('');
                     setPanelPhase('closed');
                     panelStateTimerRef.current = null;
                 }, 0);
@@ -222,6 +222,7 @@ const AlbumGrid = ({
         panelStateTimerRef.current = window.setTimeout(() => {
             const prevRenderedId = renderedPanelAlbumIdRef.current;
             const isSwitchingAlbum = Boolean(prevRenderedId && prevRenderedId !== expandedAlbumId);
+            setHoveredPanelSongSrc('');
             setRenderedPanelAlbumId(expandedAlbumId);
             renderedPanelAlbumIdRef.current = expandedAlbumId;
             if (isSwitchingAlbum) {
@@ -260,12 +261,6 @@ const AlbumGrid = ({
     );
     const expandedMarginTop = isMobileLayout ? 8 : 12;
     const expandedMarginBottom = isMobileLayout ? 20 : 30;
-
-    useEffect(() => {
-        if (!panelAlbum) {
-            setHoveredPanelSongSrc('');
-        }
-    }, [panelAlbum]);
 
     useLayoutEffect(() => {
         if (!panelAlbum) return;

@@ -186,15 +186,24 @@ const AlbumListOverlay = ({
         && albumSongIds.every((id) => tempPlaylistSet?.has(id));
 
     useEffect(() => {
-        if (!isOpen || !albumId) return;
-        setActiveTab('album');
+        if (!isOpen || !albumId || typeof window === 'undefined') return undefined;
+        const resetTabTimer = window.setTimeout(() => {
+            setActiveTab('album');
+        }, 0);
+        return () => {
+            window.clearTimeout(resetTabTimer);
+        };
     }, [isOpen, albumId]);
 
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen || typeof window === 'undefined') return undefined;
+        const clearHoverTimer = window.setTimeout(() => {
             setHoveredAlbumSrc('');
             setHoveredFavoriteSrc('');
-        }
+        }, 0);
+        return () => {
+            window.clearTimeout(clearHoverTimer);
+        };
     }, [isOpen]);
 
     useEffect(() => {

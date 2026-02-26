@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Pause, ListMusic, Heart, Share2, ChevronDown } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -207,15 +207,15 @@ const LyricsOverlay = ({
         lyricsManualScrollUntilRef.current = Date.now() + 2600;
     };
 
-    const getActiveLyricsNodes = () => {
-        const useMobile = isMobileViewport();
+    const getActiveLyricsNodes = useCallback(() => {
+        const useMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
         return {
             scroller: useMobile ? mobileLyricsScrollerRef.current : desktopLyricsScrollerRef.current,
             wrap: useMobile ? mobileLyricsWrapRef.current : desktopLyricsWrapRef.current
         };
-    };
+    }, []);
 
-    const scrollActiveLyricIntoView = (behavior = 'smooth') => {
+    const scrollActiveLyricIntoView = useCallback((behavior = 'smooth') => {
         if (!isLyricsOpen) return;
         if (Date.now() < lyricsManualScrollUntilRef.current) return;
         const { scroller, wrap } = getActiveLyricsNodes();
@@ -226,7 +226,7 @@ const LyricsOverlay = ({
         const maxScroll = Math.max(scroller.scrollHeight - scroller.clientHeight, 0);
         const top = Math.min(Math.max(target, 0), maxScroll);
         scroller.scrollTo({ top, behavior });
-    };
+    }, [getActiveLyricsNodes, isLyricsOpen]);
 
     useEffect(() => {
         if (!isLyricsOpen) {
@@ -234,19 +234,19 @@ const LyricsOverlay = ({
             return;
         }
         scrollActiveLyricIntoView('auto');
-    }, [isLyricsOpen, lyrics.length, currentTrack?.src]);
+    }, [isLyricsOpen, lyrics.length, currentTrack?.src, scrollActiveLyricIntoView]);
 
     useEffect(() => {
         if (!isLyricsOpen) return;
         const handleResize = () => scrollActiveLyricIntoView('auto');
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [isLyricsOpen, currentLyricIndex, lyrics.length, currentTrack?.src]);
+    }, [isLyricsOpen, currentLyricIndex, lyrics.length, currentTrack?.src, scrollActiveLyricIntoView]);
 
     useLayoutEffect(() => {
         if (!isLyricsOpen) return;
         scrollActiveLyricIntoView('smooth');
-    }, [isLyricsOpen, currentLyricIndex, lyrics.length]);
+    }, [isLyricsOpen, currentLyricIndex, lyrics.length, scrollActiveLyricIntoView]);
 
     useLayoutEffect(() => {
         if (!isLyricsOpen) return;

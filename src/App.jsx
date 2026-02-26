@@ -439,8 +439,6 @@ const scaleRgb = (rgb, multiplier) => ({
   b: clampColorByte(rgb.b * multiplier)
 });
 
-const toHexPart = (value) => clampColorByte(value).toString(16).padStart(2, '0');
-const toHexColor = (rgb) => `#${toHexPart(rgb.r)}${toHexPart(rgb.g)}${toHexPart(rgb.b)}`;
 const toRgbColor = (rgb) => `rgb(${clampColorByte(rgb.r)}, ${clampColorByte(rgb.g)}, ${clampColorByte(rgb.b)})`;
 const toRgbaColor = (rgb, alpha) => `rgba(${clampColorByte(rgb.r)}, ${clampColorByte(rgb.g)}, ${clampColorByte(rgb.b)}, ${alpha})`;
 
@@ -857,9 +855,10 @@ const createShareCardDataUrl = async ({
   const pauseIconSize = 115;
   const pauseVisualTopOffset = (pauseIconSize * 8) / 24;
   const controlsY = progressY + progressSpacing + pauseVisualTopOffset;
-  const prevX = cardX + cardWidth * 0.34;
   const pauseX = cardX + cardWidth * 0.5;
-  const nextX = cardX + cardWidth * 0.66;
+  const sideControlOffset = Math.max(168, cardWidth * 0.19);
+  const prevX = pauseX - sideControlOffset;
+  const nextX = pauseX + sideControlOffset;
   drawSkipIcon(prevX, controlsY, skipIconSize, 'prev');
   drawPauseIcon(pauseX, controlsY, pauseIconSize);
   drawSkipIcon(nextX, controlsY, skipIconSize, 'next');

@@ -18,12 +18,9 @@ const fallbackThumb = `data:image/svg+xml;utf8,${encodeURIComponent(
 
 const VideoCard = ({ item, onClick, meta }) => {
     const [thumbError, setThumbError] = useState(false);
-    const [thumbLoaded, setThumbLoaded] = useState(false);
+    const [loadedThumbSrc, setLoadedThumbSrc] = useState('');
     const thumbSrc = !thumbError && item.thumb ? item.thumb : fallbackThumb;
-
-    useEffect(() => {
-        setThumbLoaded(false);
-    }, [thumbSrc]);
+    const thumbLoaded = loadedThumbSrc === thumbSrc;
 
     return (
         <Motion.div
@@ -46,10 +43,10 @@ const VideoCard = ({ item, onClick, meta }) => {
                     src={thumbSrc}
                     alt={item.title}
                     loading="lazy"
-                    onLoad={() => setThumbLoaded(true)}
+                    onLoad={() => setLoadedThumbSrc(thumbSrc)}
                     onError={() => {
                         setThumbError(true);
-                        setThumbLoaded(false);
+                        setLoadedThumbSrc('');
                     }}
                 />
                 <div className="video-thumb-overlay">
