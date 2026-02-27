@@ -17,8 +17,8 @@ const appPackages = [
     title: 'Windows 版',
     icon: Monitor,
     detail: '推荐 Windows 10/11 x64',
-    filename: '1701701-win-x64.zip',
-    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701-win-x64.zip`
+    filename: '1701701-win-x64.exe',
+    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701-win-x64.exe`
   },
   {
     key: 'android',
@@ -29,6 +29,13 @@ const appPackages = [
     href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701-android-release.apk`
   }
 ];
+
+const isValidPackageResponse = (response) => {
+  if (!response?.ok) return false;
+  const contentType = (response.headers.get('content-type') || '').toLowerCase();
+  if (!contentType) return true;
+  return !contentType.includes('text/html');
+};
 
 const iosSteps = [
   '请使用 Safari 打开本站。',
@@ -46,12 +53,9 @@ const AppPage = () => {
     const probeDownloads = async () => {
       const pairs = await Promise.all(
         appPackages.map(async (pkg) => {
-          if (!pkg.href.startsWith('/')) {
-            return [pkg.key, true];
-          }
           try {
             const response = await fetch(pkg.href, { method: 'HEAD', cache: 'no-store' });
-            return [pkg.key, response.ok];
+            return [pkg.key, isValidPackageResponse(response)];
           } catch {
             return [pkg.key, false];
           }

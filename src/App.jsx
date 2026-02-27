@@ -6,7 +6,6 @@ import Sidebar from './components/Sidebar';
 import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
-import IosPwaGuide from './components/IosPwaGuide.jsx';
 
 // Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
@@ -1259,7 +1258,6 @@ const App = () => {
           </div>
         )}
 
-        <IosPwaGuide blocked={isWeChatBrowserHintOpen || isVideoAccessOpen || Boolean(sharePanelData)} />
       </div>
 
       <div
