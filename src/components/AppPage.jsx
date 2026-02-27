@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Monitor, Laptop, Smartphone, Apple } from 'lucide-react';
 
-const DOMAIN_DOWNLOAD_BASE_URL = 'https://1701701.xyz/apps';
+const DOMAIN_DOWNLOAD_BASE_URL = 'https://app.1701701.xyz';
 
 const appPackages = [
   {
@@ -37,6 +37,16 @@ const isValidPackageResponse = (response) => {
   return !contentType.includes('text/html');
 };
 
+const shouldProbeByHead = (url) => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const resolved = new URL(url, window.location.href);
+    return resolved.origin === window.location.origin;
+  } catch {
+    return false;
+  }
+};
+
 const iosSteps = [
   '请使用 Safari 打开本站。',
   '点击底部“共享”按钮。',
@@ -53,6 +63,9 @@ const AppPage = () => {
     const probeDownloads = async () => {
       const pairs = await Promise.all(
         appPackages.map(async (pkg) => {
+          if (!shouldProbeByHead(pkg.href)) {
+            return [pkg.key, true];
+          }
           try {
             const response = await fetch(pkg.href, { method: 'HEAD', cache: 'no-store' });
             return [pkg.key, isValidPackageResponse(response)];
