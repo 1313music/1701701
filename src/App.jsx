@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
+import IosPwaGuide from './components/IosPwaGuide.jsx';
 
 // Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
@@ -20,6 +21,7 @@ const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'))
 const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
 const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
+const AppPage = lazy(() => import('./components/AppPage.jsx'));
 
 const buildSongSrcSet = (albums) => {
   const set = new Set();
@@ -218,7 +220,7 @@ const openImagePreviewWindow = (dataUrl) => {
 };
 
 const App = () => {
-  const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'about'
+  const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'app' | 'about'
   const [musicAlbums, setMusicAlbums] = useState([]);
   const [isMusicLoading, setIsMusicLoading] = useState(true);
   const [musicLoadError, setMusicLoadError] = useState('');
@@ -443,6 +445,20 @@ const App = () => {
           '李志现场音频',
           '李志1701下载',
           '李志梵高先生'
+        ]
+      },
+      app: {
+        title: 'APP 下载 | 1701701.xyz',
+        description: '下载 1701701 的 macOS、Windows 与 Android 客户端，并查看 iOS 添加到主屏幕使用教程。',
+        pageType: 'CollectionPage',
+        keywords: [
+          '1701701 app',
+          '1701701 mac',
+          '1701701 windows',
+          '1701701 android',
+          '1701701 apk',
+          'iOS PWA',
+          '添加到主屏幕'
         ]
       },
       about: {
@@ -1023,6 +1039,13 @@ const App = () => {
                   </Suspense>
                 </div>
               )}
+              {view === 'app' && (
+                <div className="view-panel view-panel-about">
+                  <Suspense fallback={pageLoadingFallback}>
+                    <AppPage />
+                  </Suspense>
+                </div>
+              )}
             </main>
           </div>
         </div>
@@ -1235,6 +1258,8 @@ const App = () => {
             </div>
           </div>
         )}
+
+        <IosPwaGuide blocked={isWeChatBrowserHintOpen || isVideoAccessOpen || Boolean(sharePanelData)} />
       </div>
 
       <div

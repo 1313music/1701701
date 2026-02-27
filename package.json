@@ -11,7 +11,16 @@
     "test:watch": "./scripts/with-node22.sh vitest",
     "coverage": "./scripts/with-node22.sh vitest run --coverage",
     "check": "npm run lint && npm run test && npm run build",
-    "preview": "./scripts/with-node22.sh vite preview"
+    "preview": "./scripts/with-node22.sh vite preview",
+    "desktop:build:mac": "./scripts/with-node22.sh ./scripts/build-desktop.sh mac",
+    "desktop:build:win": "./scripts/with-node22.sh ./scripts/build-desktop.sh win",
+    "desktop:build:all": "./scripts/with-node22.sh ./scripts/build-desktop.sh all",
+    "android:init": "./scripts/with-node22.sh ./scripts/android-shell.sh init",
+    "android:signing:init": "./scripts/with-node22.sh ./scripts/android-signing.sh init",
+    "android:sync": "./scripts/with-node22.sh ./scripts/android-shell.sh sync",
+    "android:open": "./scripts/with-node22.sh ./scripts/android-shell.sh open",
+    "android:apk:debug": "./scripts/with-node22.sh ./scripts/android-shell.sh debug",
+    "android:apk:release": "./scripts/with-node22.sh ./scripts/android-shell.sh release"
   },
   "dependencies": {
     "dplayer": "^1.27.1",

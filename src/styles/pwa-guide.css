@@ -1,0 +1,104 @@
+.ios-pwa-guide {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(106px + env(safe-area-inset-bottom, 0px));
+  z-index: 2600;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  padding: 0 14px;
+}
+
+.ios-pwa-guide-card {
+  width: min(520px, 100%);
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  background: linear-gradient(150deg, rgba(22, 22, 25, 0.96), rgba(14, 14, 17, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+  color: #f7f8fb;
+  pointer-events: auto;
+}
+
+.ios-pwa-guide-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.ios-pwa-guide-steps {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(247, 248, 251, 0.88);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ios-pwa-guide-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ios-pwa-guide-btn {
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.ios-pwa-guide-btn:active {
+  transform: translateY(1px);
+}
+
+.ios-pwa-guide-btn.ghost {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(247, 248, 251, 0.84);
+}
+
+.ios-pwa-guide-btn.primary {
+  background: #f7f8fb;
+  color: #0e1015;
+}
+
+@media (max-width: 768px) {
+  .ios-pwa-guide {
+    bottom: calc(98px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ios-pwa-guide-card {
+    border-radius: 14px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-theme='light'] .ios-pwa-guide-card,
+  :root:not([data-theme='dark']) .ios-pwa-guide-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(245, 247, 252, 0.96));
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    color: #1c1f27;
+  }
+
+  :root[data-theme='light'] .ios-pwa-guide-steps,
+  :root:not([data-theme='dark']) .ios-pwa-guide-steps {
+    color: rgba(28, 31, 39, 0.8);
+  }
+
+  :root[data-theme='light'] .ios-pwa-guide-btn.ghost,
+  :root:not([data-theme='dark']) .ios-pwa-guide-btn.ghost {
+    border-color: rgba(0, 0, 0, 0.14);
+    color: rgba(28, 31, 39, 0.8);
+  }
+
+  :root[data-theme='light'] .ios-pwa-guide-btn.primary,
+  :root:not([data-theme='dark']) .ios-pwa-guide-btn.primary {
+    background: #1c1f27;
+    color: #ffffff;
+  }
+}

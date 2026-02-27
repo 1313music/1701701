@@ -13,6 +13,8 @@ dist-ssr
 *.local
 coverage
 .tmp
+artifacts
+apps/android-shell/node_modules/
 
 # Editor directories and files
 .vscode/*

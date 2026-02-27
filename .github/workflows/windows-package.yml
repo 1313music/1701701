@@ -1,0 +1,78 @@
+name: Build Windows App Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/windows-package.yml'
+      - 'scripts/build-desktop.sh'
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: "Website URL to wrap"
+        required: false
+        default: "https://1701701.xyz"
+      app_name:
+        description: "Desktop app name"
+        required: false
+        default: "1701701"
+      app_version:
+        description: "App version"
+        required: false
+        default: "1.0.0"
+      release_tag:
+        description: "Optional tag name to upload asset to GitHub Release"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Windows package with Pake
+        shell: bash
+        env:
+          APP_URL: ${{ inputs.app_url }}
+          APP_NAME: ${{ inputs.app_name }}
+          APP_VERSION: ${{ inputs.app_version }}
+        run: |
+          ./scripts/build-desktop.sh win
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-package
+          path: artifacts/desktop/**
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Pack release asset
+        if: ${{ inputs.release_tag != '' }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path release-assets -Force | Out-Null
+          Compress-Archive -Path "artifacts/desktop/*" -DestinationPath "release-assets/1701701-win-x64.zip" -Force
+
+      - name: Upload to GitHub Release
+        if: ${{ inputs.release_tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          files: release-assets/1701701-win-x64.zip
+          generate_release_notes: true

@@ -1,0 +1,6 @@
+# Copy this file to signing.properties and fill with your own values.
+# storeFile path is relative to this android directory.
+storeFile=keystore/release.keystore
+storePassword=replace_with_store_password
+keyAlias=release
+keyPassword=replace_with_key_password

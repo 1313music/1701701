@@ -7,6 +7,7 @@ import {
     Library,
     Video,
     Download,
+    Smartphone,
     Info
 } from 'lucide-react';
 
@@ -85,6 +86,12 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         onClick={() => handleNavClick('download')}
                     />
                     <NavItem
+                        icon={<Smartphone size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="APP"
+                        active={view === 'app'}
+                        onClick={() => handleNavClick('app')}
+                    />
+                    <NavItem
                         icon={<Info size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
                         active={view === 'about'}
@@ -134,6 +141,12 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         label="下载"
                         active={view === 'download'}
                         onClick={() => handleNavClick('download')}
+                    />
+                    <NavItem
+                        icon={<Smartphone size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="APP"
+                        active={view === 'app'}
+                        onClick={() => handleNavClick('app')}
                     />
                     <NavItem
                         icon={<Info size={22} strokeWidth={2.4} absoluteStrokeWidth />}
