@@ -76,7 +76,7 @@ build_win() {
 
   ensure_rust
   echo "Building Windows desktop app with Pake..."
-  (cd "$OUTPUT_DIR" && npx --yes pake-cli@3.9.1 "${COMMON_ARGS[@]}" --targets x64 --installer-language zh-CN)
+  (cd "$OUTPUT_DIR" && npx --yes pake-cli@3.9.1 "${COMMON_ARGS[@]}" --targets x64 --installer-language en-US)
 }
 
 case "$TARGET" in
