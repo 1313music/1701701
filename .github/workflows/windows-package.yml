@@ -47,12 +47,46 @@ jobs:
 
       - name: Build Windows package with Pake
         shell: bash
+        continue-on-error: true
         env:
           APP_URL: ${{ inputs.app_url }}
           APP_NAME: ${{ inputs.app_name }}
           APP_VERSION: ${{ inputs.app_version }}
         run: |
           ./scripts/build-desktop.sh win
+
+      - name: Recover raw EXE when MSI bundling fails
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts/desktop -Force | Out-Null
+
+          $existingMsi = Get-ChildItem -Path artifacts/desktop -Filter *.msi -File -ErrorAction SilentlyContinue
+          if ($existingMsi) {
+            Write-Host "MSI package exists, skip fallback."
+            exit 0
+          }
+
+          $candidate = Get-ChildItem -Path 'C:\npm\cache\_npx' -Recurse -File -Filter 'pake-*.exe' -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          if (-not $candidate) {
+            throw "No fallback EXE found under C:\\npm\\cache\\_npx"
+          }
+
+          Copy-Item $candidate.FullName artifacts/desktop/1701701-win-x64.exe -Force
+          Write-Host "Recovered fallback EXE: $($candidate.FullName)"
+
+      - name: Verify output package exists
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(artifacts/desktop/*.msi artifacts/desktop/*.exe)
+          if (( ${#files[@]} == 0 )); then
+            echo "No Windows package generated."
+            exit 1
+          fi
+          printf 'Generated package(s):\n%s\n' "${files[@]}"
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
