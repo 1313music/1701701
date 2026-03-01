@@ -103,12 +103,6 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   useEffect(() => {
     if (!currentTrack?.src) return;
-    const audio = audioRef.current;
-    const normalizedTrackSrc = toAbsoluteUrl(currentTrack.src);
-    if (normalizedTrackSrc && audio.src !== normalizedTrackSrc) {
-      audio.src = normalizedTrackSrc;
-    }
-
     let canceled = false;
     const requestId = ++lyricsRequestIdRef.current;
     const loadLyrics = async () => {
@@ -143,8 +137,15 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       audio.pause();
       return;
     }
-    if (isPlaying) audio.play().catch(() => { });
-    else audio.pause();
+    if (isPlaying) {
+      const normalizedTrackSrc = toAbsoluteUrl(currentTrack.src);
+      if (normalizedTrackSrc && audio.src !== normalizedTrackSrc) {
+        audio.src = normalizedTrackSrc;
+      }
+      audio.play().catch(() => { });
+      return;
+    }
+    audio.pause();
   }, [currentTrack?.src, isPlaying]);
 
   useEffect(() => {

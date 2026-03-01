@@ -20,6 +20,22 @@ npm run build
 npm run check
 ```
 
+## 视频访问口令（可轮换）
+
+视频访问口令支持通过 Vite 环境变量配置：
+
+- 变量名：`VITE_VIDEO_PASSWORD`
+- 未配置时会回退到默认口令（兼容现有行为）
+
+本地开发可在 `.env.local` 中设置：
+
+```bash
+VITE_VIDEO_PASSWORD=your-video-password
+```
+
+Cloudflare Pages（如果在 Cloudflare 上构建）可在项目设置里添加同名环境变量后重新部署。
+说明：这属于前端体验门禁，变量会进入前端构建产物。
+
 ## 桌面版（Win/Mac）
 
 桌面壳使用 Pake，默认加载线上站点 `https://1701701.xyz`，不会影响网页站点运行。

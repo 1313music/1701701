@@ -304,6 +304,20 @@
   object-fit: cover;
 }
 
+.video-access-helper-actions {
+  width: var(--video-access-content-width);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.video-access-helper-actions .video-access-btn {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
 .video-access-input {
   width: var(--video-access-content-width);
   margin: 0 auto;

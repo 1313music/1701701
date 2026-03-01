@@ -6,12 +6,31 @@ import Sidebar from './components/Sidebar';
 import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
+import VideoAccessModal from './components/VideoAccessModal.jsx';
 
 // Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useTheme } from './hooks/useTheme.js';
 import { useToast } from './hooks/useToast.js';
 import { useVideoAccess } from './hooks/useVideoAccess.js';
+import {
+  addFavoriteId,
+  clearFavoriteIds,
+  toggleAlbumFavoritesBySongs,
+  toggleFavoriteId
+} from './utils/favoritesUtils.js';
+import {
+  copyTextToClipboard,
+  dataUrlToFile,
+  downloadDataUrl,
+  isIOSDevice,
+  isWeChatBrowser,
+  openImagePreviewWindow,
+  saveImageToAlbum,
+  upsertJsonLd,
+  upsertLinkTag,
+  upsertMetaTag
+} from './utils/appDomUtils.js';
 import { sanitizeTempPlaylist } from './utils/playlistUtils.js';
 
 const TEMP_PLAYLIST_KEY = 'tempPlaylistIds';
@@ -69,154 +88,9 @@ const KL_EVENT_DATES = [
   '2025-11-13T20:30:00+08:00'
 ];
 const KL_EVENT_URL = 'https://idealivearena.com/event/three-missing-one/';
-
-const upsertMetaTag = ({ name, property }, content) => {
-  if (typeof document === 'undefined' || !content) return;
-  const selector = name
-    ? `meta[name="${name}"]`
-    : `meta[property="${property}"]`;
-  let tag = document.head.querySelector(selector);
-  if (!tag) {
-    tag = document.createElement('meta');
-    if (name) tag.setAttribute('name', name);
-    if (property) tag.setAttribute('property', property);
-    document.head.appendChild(tag);
-  }
-  tag.setAttribute('content', content);
-};
-
-const upsertLinkTag = (rel, href) => {
-  if (typeof document === 'undefined' || !rel || !href) return;
-  let tag = document.head.querySelector(`link[rel="${rel}"]`);
-  if (!tag) {
-    tag = document.createElement('link');
-    tag.setAttribute('rel', rel);
-    document.head.appendChild(tag);
-  }
-  tag.setAttribute('href', href);
-};
-
-const upsertJsonLd = (id, payload) => {
-  if (typeof document === 'undefined' || !id || !payload) return;
-  let script = document.getElementById(id);
-  if (!script) {
-    script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = id;
-    document.head.appendChild(script);
-  }
-  script.textContent = JSON.stringify(payload);
-};
-
-const copyTextToClipboard = async (text) => {
-  if (!text) return false;
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      // fallback below
-    }
-  }
-  if (typeof document === 'undefined') return false;
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.setAttribute('readonly', 'true');
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  textarea.style.pointerEvents = 'none';
-  document.body.appendChild(textarea);
-  textarea.select();
-  let copied = false;
-  try {
-    copied = document.execCommand('copy');
-  } catch {
-    copied = false;
-  }
-  document.body.removeChild(textarea);
-  return copied;
-};
-
-const dataUrlToFile = (dataUrl, filename) => {
-  const [meta, content] = dataUrl.split(',');
-  const mime = meta.match(/data:(.*?);base64/)?.[1] || 'image/png';
-  const binary = atob(content || '');
-  const length = binary.length;
-  const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return new File([bytes], filename, { type: mime });
-};
-
-const downloadDataUrl = (dataUrl, filename) => {
-  if (!dataUrl || typeof document === 'undefined') return;
-  const link = document.createElement('a');
-  link.href = dataUrl;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-const isIOSDevice = () => {
-  if (typeof navigator === 'undefined') return false;
-  return /iP(hone|ad|od)/i.test(navigator.userAgent || '');
-};
-
-const isWeChatBrowser = () => {
-  if (typeof navigator === 'undefined') return false;
-  return /MicroMessenger/i.test(navigator.userAgent || '');
-};
-
-const openImagePreviewWindow = (dataUrl) => {
-  if (!dataUrl || typeof window === 'undefined') return false;
-  const previewWindow = window.open('', '_blank');
-  if (!previewWindow || !previewWindow.document) return false;
-  const doc = previewWindow.document;
-  doc.title = '分享卡片';
-  const html = doc.documentElement;
-  html.style.height = '100%';
-  doc.body.style.margin = '0';
-  doc.body.style.background = '#05070b';
-  doc.body.style.minHeight = '100%';
-  doc.body.style.display = 'flex';
-  doc.body.style.flexDirection = 'column';
-  doc.body.style.alignItems = 'center';
-  doc.body.style.justifyContent = 'flex-start';
-  doc.body.style.gap = '16px';
-  doc.body.style.padding = '16px 10px 24px';
-  doc.body.style.boxSizing = 'border-box';
-
-  const img = doc.createElement('img');
-  img.src = dataUrl;
-  img.alt = '分享卡片';
-  img.style.width = '100%';
-  img.style.maxWidth = '700px';
-  img.style.maxHeight = 'calc(100vh - 140px)';
-  img.style.height = 'auto';
-  img.style.borderRadius = '14px';
-  img.style.boxShadow = '0 14px 42px rgba(0, 0, 0, 0.45)';
-  img.style.objectFit = 'contain';
-  doc.body.appendChild(img);
-
-  const tip = doc.createElement('div');
-  tip.textContent = '长按图片 -> 存储到“照片”';
-  tip.style.color = '#ffffff';
-  tip.style.background = 'rgba(255, 255, 255, 0.14)';
-  tip.style.border = '1px solid rgba(255, 255, 255, 0.24)';
-  tip.style.borderRadius = '12px';
-  tip.style.padding = '10px 14px';
-  tip.style.font = '700 19px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
-  tip.style.lineHeight = '1.3';
-  tip.style.backdropFilter = 'blur(8px)';
-  tip.style.webkitBackdropFilter = 'blur(8px)';
-  tip.style.textAlign = 'center';
-  tip.style.position = 'sticky';
-  tip.style.bottom = '10px';
-  doc.body.appendChild(tip);
-  return true;
-};
+const WECHAT_OFFICIAL_ACCOUNT_NAME = '民谣俱乐部';
+const WECHAT_VIDEO_PASSWORD_KEYWORD = '视频';
+const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://r2.1701701.xyz/img/gzh.jpg';
 
 const App = () => {
   const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'app' | 'about'
@@ -246,6 +120,7 @@ const App = () => {
   const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
   const shareQueryAppliedRef = useRef(false);
   const shareCardRequestIdRef = useRef(0);
+  const tempPlaylistIdsRef = useRef(tempPlaylistIds);
 
   const allSongSrcs = useMemo(() => buildSongSrcSet(musicAlbums), [musicAlbums]);
   const songIndex = useMemo(() => buildSongIndex(musicAlbums), [musicAlbums]);
@@ -355,9 +230,14 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    tempPlaylistIdsRef.current = tempPlaylistIds;
+  }, [tempPlaylistIds]);
+
+  useEffect(() => {
     if (allSongSrcs.size === 0) return;
     setTempPlaylistIds((prev) => {
       const next = sanitizeTempPlaylist(prev, allSongSrcs);
+      tempPlaylistIdsRef.current = next;
       if (
         next.length === prev.length &&
         next.every((id, index) => id === prev[index])
@@ -698,6 +578,41 @@ const App = () => {
     submitVideoAccess();
   }, [submitVideoAccess]);
 
+  const handleVideoPasswordChange = useCallback((value) => {
+    setVideoPassword(value);
+    setVideoPasswordError('');
+  }, [setVideoPassword, setVideoPasswordError]);
+
+  const handleCopyOfficialAccountName = useCallback(async (eventOrOptions) => {
+    const anchorOrOptions = eventOrOptions?.currentTarget
+      ? { placement: 'bottom', anchorEvent: { currentTarget: eventOrOptions.currentTarget } }
+      : (eventOrOptions || { placement: 'bottom' });
+    const copied = await copyTextToClipboard(WECHAT_OFFICIAL_ACCOUNT_NAME);
+    showToast(
+      copied
+        ? `公众号名已复制，去微信搜索“${WECHAT_OFFICIAL_ACCOUNT_NAME}”`
+        : `复制失败，请手动搜索“${WECHAT_OFFICIAL_ACCOUNT_NAME}”`,
+      copied ? 'tone-add' : 'tone-remove',
+      anchorOrOptions
+    );
+  }, [showToast]);
+
+  const handleSaveOfficialAccountQr = useCallback(async (eventOrOptions) => {
+    const anchorOrOptions = eventOrOptions?.currentTarget
+      ? { placement: 'bottom', anchorEvent: { currentTarget: eventOrOptions.currentTarget } }
+      : (eventOrOptions || { placement: 'bottom' });
+    const result = await saveImageToAlbum(WECHAT_OFFICIAL_ACCOUNT_QR_URL, '1701701-gzh-qr.jpg');
+    if (result === 'downloaded') {
+      showToast('二维码下载已开始', 'tone-add', anchorOrOptions);
+      return;
+    }
+    if (result === 'previewed') {
+      showToast('已打开二维码，长按图片可保存到相册', 'tone-add', anchorOrOptions);
+      return;
+    }
+    showToast('保存失败，请长按二维码图片手动保存', 'tone-remove', anchorOrOptions);
+  }, [showToast]);
+
   const buildCurrentSharePayload = useCallback(() => {
     if (!currentTrack?.src || typeof window === 'undefined') return null;
     const resolvedAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
@@ -837,70 +752,61 @@ const App = () => {
     handleDownloadShareCard({ placement: 'side' });
   }, [handleDownloadShareCard, shareCardDataUrl, sharePanelData?.text, sharePanelData?.title, showToast]);
 
-  const toggleTempSong = (song, event) => {
+  const applyTempPlaylistMutation = useCallback((mutator) => {
+    if (typeof mutator !== 'function') return null;
+    const result = mutator(tempPlaylistIdsRef.current);
+    if (!result || !Array.isArray(result.nextIds)) return null;
+    tempPlaylistIdsRef.current = result.nextIds;
+    setTempPlaylistIds(result.nextIds);
+    return result;
+  }, []);
+
+  const toggleTempSong = useCallback((song, event) => {
     const id = song?.src;
     if (!id) return;
-    const isFavorited = tempPlaylistSet.has(id);
-    setTempPlaylistIds((prev) => {
-      if (isFavorited) return prev.filter((item) => item !== id);
-      return [...prev, id];
-    });
+    const result = applyTempPlaylistMutation((prev) => toggleFavoriteId(prev, id));
+    if (!result || result.action === 'noop') return;
     showToast(
-      isFavorited ? '已取消收藏' : '已收藏',
-      isFavorited ? 'tone-remove' : 'tone-add',
+      result.action === 'removed' ? '已取消收藏' : '已收藏',
+      result.action === 'removed' ? 'tone-remove' : 'tone-add',
       event
     );
-  };
+  }, [applyTempPlaylistMutation, showToast]);
 
-  const addTempSong = (song, anchorOrOptions = { placement: 'bottom' }) => {
+  const addTempSong = useCallback((song, anchorOrOptions = { placement: 'bottom' }) => {
     const id = song?.src;
     if (!id) return;
-    const isFavorited = tempPlaylistSet.has(id);
-    if (isFavorited) {
+    const result = applyTempPlaylistMutation((prev) => addFavoriteId(prev, id));
+    if (!result || result.action !== 'added') {
       showToast('已在收藏', 'tone-add', anchorOrOptions);
       return;
     }
-    setTempPlaylistIds((prev) => [...prev, id]);
     showToast('已收藏', 'tone-add', anchorOrOptions);
-  };
+  }, [applyTempPlaylistMutation, showToast]);
 
   const toggleAlbumFavorites = useCallback((songs, anchorOrOptions = { placement: 'bottom' }) => {
-    const safeSongs = Array.isArray(songs) ? songs : [];
-    const candidateIds = Array.from(new Set(safeSongs
-      .map((song) => song?.src)
-      .filter(Boolean)));
-    if (candidateIds.length === 0) return;
-
-    const allFavorited = candidateIds.every((id) => tempPlaylistSet.has(id));
-    if (allFavorited) {
-      const removeSet = new Set(candidateIds);
-      setTempPlaylistIds((prev) => prev.filter((id) => !removeSet.has(id)));
+    const result = applyTempPlaylistMutation((prev) => toggleAlbumFavoritesBySongs(prev, songs));
+    if (!result || result.action === 'noop') return;
+    if (result.action === 'removed') {
       showToast(
-        candidateIds.length === 1 ? '已取消收藏 1 首' : `已取消收藏 ${candidateIds.length} 首`,
+        result.count === 1 ? '已取消收藏 1 首' : `已取消收藏 ${result.count} 首`,
         'tone-remove',
         anchorOrOptions
       );
       return;
     }
 
-    const additions = candidateIds.filter((id) => !tempPlaylistSet.has(id));
-    if (additions.length === 0) {
-      showToast('已全部在收藏', 'tone-add', anchorOrOptions);
-      return;
-    }
-
-    setTempPlaylistIds((prev) => [...prev, ...additions]);
     showToast(
-      additions.length === 1 ? '已收藏 1 首' : `已收藏 ${additions.length} 首`,
+      result.count === 1 ? '已收藏 1 首' : `已收藏 ${result.count} 首`,
       'tone-add',
       anchorOrOptions
     );
-  }, [showToast, tempPlaylistSet]);
+  }, [applyTempPlaylistMutation, showToast]);
 
   const clearTempPlaylist = useCallback((anchorOrOptions = { placement: 'bottom' }) => {
-    setTempPlaylistIds((prev) => (prev.length === 0 ? prev : []));
+    applyTempPlaylistMutation((prev) => clearFavoriteIds(prev));
     showToast('已清空收藏', 'tone-remove', anchorOrOptions);
-  }, [showToast]);
+  }, [applyTempPlaylistMutation, showToast]);
 
   const playFavorites = useCallback((song) => {
     if (!favoriteAlbum || favoriteAlbum.songs.length === 0) return;
@@ -1118,51 +1024,19 @@ const App = () => {
           </>
         )}
 
-        {isVideoAccessOpen && (
-          <div className="video-access-modal" onClick={closeVideoAccessModal}>
-            <div className="video-access-card" onClick={(e) => e.stopPropagation()}>
-              <div className="video-access-title">视频访问</div>
-              <p className="video-access-tip">
-                关注公众号【民谣俱乐部】
-                <br />
-                发送“视频”获取密码。
-              </p>
-              <div className="video-access-qr">
-                <img loading="lazy" src="https://r2.1701701.xyz/img/gzh.jpg" alt="公众号二维码" />
-              </div>
-              <input
-                className="video-access-input"
-                type="password"
-                placeholder="请输入访问密码"
-                value={videoPassword}
-                onChange={(e) => {
-                  setVideoPassword(e.target.value);
-                  setVideoPasswordError('');
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleVideoAccessSubmit();
-                }}
-              />
-              {videoPasswordError && <div className="video-access-error">{videoPasswordError}</div>}
-              <div className="video-access-actions">
-                <button
-                  type="button"
-                  className="video-access-btn ghost"
-                  onClick={closeVideoAccessModal}
-                >
-                  取消
-                </button>
-                <button
-                  type="button"
-                  className="video-access-btn"
-                  onClick={handleVideoAccessSubmit}
-                >
-                  确认
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <VideoAccessModal
+          isOpen={isVideoAccessOpen}
+          onClose={closeVideoAccessModal}
+          officialAccountName={WECHAT_OFFICIAL_ACCOUNT_NAME}
+          keyword={WECHAT_VIDEO_PASSWORD_KEYWORD}
+          qrUrl={WECHAT_OFFICIAL_ACCOUNT_QR_URL}
+          videoPassword={videoPassword}
+          onPasswordChange={handleVideoPasswordChange}
+          videoPasswordError={videoPasswordError}
+          onSubmit={handleVideoAccessSubmit}
+          onCopyOfficialAccountName={handleCopyOfficialAccountName}
+          onSaveOfficialAccountQr={handleSaveOfficialAccountQr}
+        />
 
         {sharePanelData && (
           <div className="share-panel-backdrop" onClick={closeSharePanel}>
@@ -1234,9 +1108,9 @@ const App = () => {
                 当前检测到你正在微信内置浏览器访问，部分功能可能受限。
               </p>
               <ol className="wechat-browser-steps">
-                <li>点击右上角“...”菜单。</li>
-                <li>选择“在浏览器打开”或“在默认浏览器打开”。</li>
-                <li>如未看到该选项，可先复制链接后到浏览器粘贴打开。</li>
+                <li>点击右上角“···”菜单。</li>
+                <li>选择“用默认浏览器打开”。</li>
+                <li>或者复制当前链接到您常用浏览器粘贴打开。</li>
               </ol>
               <div className="wechat-browser-actions">
                 <button
