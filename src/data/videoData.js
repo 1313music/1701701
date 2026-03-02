@@ -589,19 +589,19 @@ export const videoData = {
         { 
             id: 603,   
             title:"李志 2015简单生活节",
-            url:"https://r2.1701701.xyz/李志 2015简单生活节/playlist.m3u8",
+            url:"https://r2.1701701.xyz/simplelife/2015/playlist.m3u8",
             thumb: "https://r2.1701701.xyz/img/jd2015.jpg"
         },
         { 
             id: 604,   
             title:"李志 2016简单生活节",
-            url:"https://r2.1701701.xyz/李志 2016简单生活节/playlist.m3u8",
+            url:"https://r2.1701701.xyz/simplelife/2016/playlist.m3u8",
             thumb: "https://r2.1701701.xyz/img/jd2016.jpg"
         },
         { 
             id: 605,   
             title:"李志 2017简单生活节",
-            url:"https://r2.1701701.xyz/李志 2017简单生活节/playlist.m3u8",
+            url:"https://r2.1701701.xyz/simplelife/2017/playlist.m3u8",
             thumb: "https://r2.1701701.xyz/img/jd2017.jpg"
         },
         { 
