@@ -293,19 +293,19 @@ export const videoData = {
         { 
             id: 406, 
             title: "IMAGINE", 
-            url: "https://r2.1701701.xyz/2011/playlist.m3u8", 
+            url: "https://2011.1701701.xyz/playlist.m3u8", 
             thumb: "https://r2.1701701.xyz/img/2011.jpg"
         },
         { 
             id: 407, 
             title: "108个关键词", 
-            url: "https://r2.1701701.xyz/2012/playlist.m3u8", 
+            url: "https://2012.1701701.xyz/playlist.m3u8", 
             thumb: "https://r2.1701701.xyz/img/2012.jpg"
         },
         { 
             id: 408, 
             title: "北京降噪Ⅳ", 
-            url: "https://r2.1701701.xyz/2016/playlist.m3u8", 
+            url: "https://2016.1701701.xyz/playlist.m3u8", 
             thumb: "https://r2.1701701.xyz/img/2016.jpg"
         },
         { 
@@ -589,19 +589,19 @@ export const videoData = {
         { 
             id: 603,   
             title:"李志 2015简单生活节",
-            url:"https://r2.1701701.xyz/simplelife/2015/playlist.m3u8",
+            url:"https://simplelife.1701701.xyz/2015/playlist.m3u8",
             thumb: "https://r2.1701701.xyz/img/jd2015.jpg"
         },
         { 
             id: 604,   
             title:"李志 2016简单生活节",
-            url:"https://r2.1701701.xyz/simplelife/2016/playlist.m3u8",
+            url:"https://simplelife.1701701.xyz/2016/playlist.m3u8",
             thumb: "https://r2.1701701.xyz/img/jd2016.jpg"
         },
         { 
             id: 605,   
             title:"李志 2017简单生活节",
-            url:"https://r2.1701701.xyz/simplelife/2017/playlist.m3u8",
+            url:"https://simplelife.1701701.xyz/2017/playlist.m3u8",
             thumb: "https://r2.1701701.xyz/img/jd2017.jpg"
         },
         { 
