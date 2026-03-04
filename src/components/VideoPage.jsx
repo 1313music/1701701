@@ -92,8 +92,6 @@ const VideoPage = ({ requestVideoView }) => {
     const [resolvedType, setResolvedType] = useState('auto');
     const playerRef = useRef(null);
     const dpRef = useRef(null);
-    const hideTimerRef = useRef(null);
-    const hasPlayedRef = useRef(false);
     const fallbackTriedRef = useRef(false);
 
     const currentItems = useMemo(() => {
@@ -280,8 +278,8 @@ const VideoPage = ({ requestVideoView }) => {
         if (!container) return undefined;
         let canceled = false;
         let player = null;
-        let isTouchDevice = false;
         let handlePlaybackError = null;
+        let removeTouchToggleGuard = null;
         const blockContextMenu = (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -302,30 +300,6 @@ const VideoPage = ({ requestVideoView }) => {
             return true;
         };
 
-        const showControls = () => {
-            container.classList.add('dplayer-controls-visible');
-        };
-
-        const scheduleHide = () => {
-            if (!isTouchDevice) return;
-            if (hideTimerRef.current) {
-                clearTimeout(hideTimerRef.current);
-            }
-            hideTimerRef.current = setTimeout(() => {
-                if (!player.video || player.video.paused) return;
-                container.classList.remove('dplayer-controls-visible');
-            }, 1800);
-        };
-
-        const handleInteract = () => {
-            showControls();
-            if (player.video && player.video.paused && !hasPlayedRef.current) {
-                player.play();
-            } else if (player.video && !player.video.paused) {
-                scheduleHide();
-            }
-        };
-
         const setupPlayer = async () => {
             try {
                 const [{ default: DPlayer }, { default: Hls }] = await Promise.all([
@@ -344,6 +318,8 @@ const VideoPage = ({ requestVideoView }) => {
                 }
 
                 container.innerHTML = '';
+                container.classList.remove('dplayer-auto-hide');
+                container.classList.remove('dplayer-controls-visible');
                 player = new DPlayer({
                     container,
                     autoplay: true,
@@ -369,6 +345,114 @@ const VideoPage = ({ requestVideoView }) => {
                 }
 
                 dpRef.current = player;
+                const isTouchDevice = typeof window !== 'undefined' && (
+                    'ontouchstart' in window ||
+                    navigator.maxTouchPoints > 0 ||
+                    window.matchMedia?.('(pointer: coarse)')?.matches
+                );
+                if (isTouchDevice && player.controller) {
+                    const videoWrap = container.querySelector('.dplayer-video-wrap');
+                    const controllerMask = container.querySelector('.dplayer-controller-mask');
+                    const controllerRoot = container.querySelector('.dplayer-controller');
+                    const webFullButton = container.querySelector('.dplayer-full-in-icon');
+                    let lastToggleAt = 0;
+                    let hideTimer = null;
+
+                    const clearAutoHide = () => {
+                        if (hideTimer) {
+                            clearTimeout(hideTimer);
+                            hideTimer = null;
+                        }
+                    };
+
+                    const scheduleAutoHide = () => {
+                        clearAutoHide();
+                        if (!player?.controller || !player?.video || player.video.paused) return;
+                        hideTimer = setTimeout(() => {
+                            if (canceled || !player?.controller || !player?.video || player.video.paused) return;
+                            if (typeof player.controller.hide === 'function') {
+                                player.controller.hide();
+                            }
+                        }, 2200);
+                    };
+
+                    const showControls = () => {
+                        if (typeof player.controller.show === 'function') {
+                            player.controller.show();
+                        }
+                        scheduleAutoHide();
+                    };
+
+                    const onPlay = () => scheduleAutoHide();
+                    const onPauseOrEnded = () => {
+                        clearAutoHide();
+                        if (typeof player.controller.show === 'function') {
+                            player.controller.show();
+                        }
+                    };
+                    const onControllerTouchStart = () => clearAutoHide();
+                    const onControllerTouchEnd = () => scheduleAutoHide();
+                    const blockWebFullscreen = (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (typeof event.stopImmediatePropagation === 'function') {
+                            event.stopImmediatePropagation();
+                        }
+                        if (player?.fullScreen?.isFullScreen?.('web')) {
+                            player.fullScreen.cancel('web');
+                        }
+                    };
+
+                    const toggleGuard = (event) => {
+                        if (!player?.controller) return;
+                        const now = Date.now();
+                        const delta = now - lastToggleAt;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (typeof event.stopImmediatePropagation === 'function') {
+                            event.stopImmediatePropagation();
+                        }
+                        if (delta < 260) return;
+                        lastToggleAt = now;
+                        if (typeof player.controller.isShow === 'function' && player.controller.isShow()) {
+                            clearAutoHide();
+                            if (typeof player.controller.hide === 'function') {
+                                player.controller.hide();
+                            }
+                            return;
+                        }
+                        showControls();
+                    };
+
+                    videoWrap?.addEventListener('click', toggleGuard, true);
+                    controllerMask?.addEventListener('click', toggleGuard, true);
+                    controllerRoot?.addEventListener('touchstart', onControllerTouchStart, { passive: true });
+                    controllerRoot?.addEventListener('touchend', onControllerTouchEnd, { passive: true });
+                    webFullButton?.addEventListener('click', blockWebFullscreen, true);
+                    if (webFullButton) {
+                        webFullButton.style.display = 'none';
+                        webFullButton.setAttribute('aria-hidden', 'true');
+                    }
+                    if (typeof player.on === 'function') {
+                        player.on('play', onPlay);
+                        player.on('pause', onPauseOrEnded);
+                        player.on('ended', onPauseOrEnded);
+                    }
+
+                    removeTouchToggleGuard = () => {
+                        clearAutoHide();
+                        videoWrap?.removeEventListener('click', toggleGuard, true);
+                        controllerMask?.removeEventListener('click', toggleGuard, true);
+                        controllerRoot?.removeEventListener('touchstart', onControllerTouchStart);
+                        controllerRoot?.removeEventListener('touchend', onControllerTouchEnd);
+                        webFullButton?.removeEventListener('click', blockWebFullscreen, true);
+                        if (typeof player?.off === 'function') {
+                            player.off('play', onPlay);
+                            player.off('pause', onPauseOrEnded);
+                            player.off('ended', onPauseOrEnded);
+                        }
+                    };
+                }
 
                 handlePlaybackError = () => {
                     if (trySwitchToFallback()) {
@@ -389,24 +473,6 @@ const VideoPage = ({ requestVideoView }) => {
                 if (player.video) {
                     player.video.addEventListener('contextmenu', blockContextMenu, true);
                 }
-
-                isTouchDevice = typeof window !== 'undefined' && (
-                    'ontouchstart' in window || navigator.maxTouchPoints > 0
-                );
-
-                if (isTouchDevice) {
-                    container.classList.add('dplayer-auto-hide');
-                    showControls();
-                    hasPlayedRef.current = false;
-                    player.on('play', () => {
-                        hasPlayedRef.current = true;
-                        scheduleHide();
-                    });
-                    player.on('pause', showControls);
-                    player.on('ended', showControls);
-                    container.addEventListener('touchstart', handleInteract, { passive: true });
-                    container.addEventListener('click', handleInteract);
-                }
             } catch {
                 if (!canceled) {
                     setResolveError('播放器加载失败');
@@ -418,8 +484,9 @@ const VideoPage = ({ requestVideoView }) => {
 
         return () => {
             canceled = true;
-            if (hideTimerRef.current) {
-                clearTimeout(hideTimerRef.current);
+            if (removeTouchToggleGuard) {
+                removeTouchToggleGuard();
+                removeTouchToggleGuard = null;
             }
             container.removeEventListener('contextmenu', blockContextMenu, true);
             if (player && typeof player.off === 'function' && handlePlaybackError) {
@@ -430,12 +497,6 @@ const VideoPage = ({ requestVideoView }) => {
                 if (handlePlaybackError) {
                     player.video.removeEventListener('error', handlePlaybackError);
                 }
-            }
-            if (isTouchDevice) {
-                container.removeEventListener('touchstart', handleInteract);
-                container.removeEventListener('click', handleInteract);
-                container.classList.remove('dplayer-auto-hide');
-                container.classList.remove('dplayer-controls-visible');
             }
             if (player) {
                 player.destroy();

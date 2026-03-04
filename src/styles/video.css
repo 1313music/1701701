@@ -428,46 +428,6 @@
   border-radius: 14px;
 }
 
-.video-player.dplayer-auto-hide .dplayer-controller,
-.video-player.dplayer-auto-hide .dplayer-controller-mask {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s ease;
-}
-
-.video-player.dplayer-auto-hide.dplayer-controls-visible .dplayer-controller,
-.video-player.dplayer-auto-hide.dplayer-controls-visible .dplayer-controller-mask {
-  opacity: 1;
-  visibility: visible;
-}
-
-.video-player.dplayer-auto-hide .dplayer-bezel,
-.video-player.dplayer-auto-hide .dplayer-mobile-play {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.video-player.dplayer-auto-hide.dplayer-controls-visible .dplayer-bezel,
-.video-player.dplayer-auto-hide.dplayer-controls-visible .dplayer-mobile-play {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-.video-player.dplayer-auto-hide.dplayer-loading .dplayer-bezel {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: none;
-}
-
-.video-player.dplayer-auto-hide.dplayer-loading .dplayer-mobile-play {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .video-player.dplayer-loading .dplayer-bezel-icon {
   opacity: 0;
   visibility: hidden;
@@ -534,5 +494,9 @@
 
   .video-modal-title {
     font-size: 16px;
+  }
+
+  .video-player .dplayer-full-in-icon {
+    display: none !important;
   }
 }
