@@ -484,6 +484,21 @@
   gap: 6px;
 }
 
+.video-unsupported-action {
+  margin: 8px auto 0;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-color);
+  color: var(--text-main);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.video-unsupported-action:hover {
+  background: var(--hover-bg);
+}
+
 @media (max-width: 768px) {
   .video-toolbar {
     margin-bottom: 20px;

@@ -4,67 +4,78 @@ export const videoData = {
         { 
             id: 1, 
             title: "逼哥夜話 - 上海", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──上海》.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──上海》/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──上海》.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 2, 
             title: "逼哥夜話 - 寧波 上", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──寧波》上.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──寧波》上/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──寧波》上.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 3, 
             title: "逼哥夜話 - 寧波 下", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──寧波》下.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──寧波》下/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──寧波》下.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 4, 
             title: "逼哥夜話 - 廈門 上", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──廈門》上.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──廈門》上/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──廈門》上.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 5, 
             title: "逼哥夜話 - 廈門 下", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──廈門》下.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──廈門》下/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──廈門》下.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 6, 
             title: "逼哥夜話 - 昆明 上", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──昆明》上.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──昆明》上/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──昆明》上.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 7, 
             title: "逼哥夜話 - 昆明 下", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──昆明》下.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──昆明》下/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──昆明》下.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 8, 
             title: "逼哥夜話 - 贵阳", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──贵阳》.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──贵阳》/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──贵阳》.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 9, 
             title: "逼哥夜話 - 重慶 上", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──重慶》上.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──重慶》上/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──重慶》上.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 10, 
             title: "逼哥夜話 - 重慶 下", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──重慶》下.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──重慶》下/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──重慶》下.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         },
         { 
             id: 11, 
             title: "逼哥夜話 - 香港", 
-            url: "https://b2.1701701.xyz/api/yh/《B哥夜話──香港》.mp4", 
+            url: "https://bgyh.1701701.xyz/yh/《B哥夜話──香港》/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh/《B哥夜話──香港》.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyhfm.png"
         }
     ],
@@ -72,37 +83,43 @@ export const videoData = {
         { 
             id: 201, 
             title: "逼哥夜話 第二季 01 - 深圳", 
-            url: "https://b2.1701701.xyz/api/yh2/01 - 深圳.mp4", 
+            url: "https://bgyh.1701701.xyz/yh2/01 - 深圳/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh2/01 - 深圳.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyh2fm.png"
         },
         { 
             id: 202, 
             title: "逼哥夜話 第二季 02 - 西安", 
-            url: "https://b2.1701701.xyz/api/yh2/02 - 西安.mp4", 
+            url: "https://bgyh.1701701.xyz/yh2/02 - 西安/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh2/02 - 西安.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyh2fm.png"
         },
         { 
             id: 203, 
             title: "逼哥夜話 第二季 03 - 上海", 
-            url: "https://b2.1701701.xyz/api/yh2/03 - 上海.mp4", 
+            url: "https://bgyh.1701701.xyz/yh2/03 - 上海/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh2/03 - 上海.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyh2fm.png"
         },
         { 
             id: 204, 
             title: "逼哥夜話 第二季 04 - 武漢", 
-            url: "https://b2.1701701.xyz/api/yh2/04 - 武漢.mp4", 
+            url: "https://bgyh.1701701.xyz/yh2/04 - 武漢/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh2/04 - 武漢.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyh2fm.png"
         },
         { 
             id: 205, 
             title: "逼哥夜話 第二季 05 - 重慶", 
-            url: "https://b2.1701701.xyz/api/yh2/05 - 重慶.mp4", 
+            url: "https://bgyh.1701701.xyz/yh2/05 - 重慶/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh2/05 - 重慶.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyh2fm.png"
         },
         { 
             id: 206, 
             title: "逼哥夜話 第二季 06 - 北京", 
-            url: "https://b2.1701701.xyz/api/yh2/06 - 北京.mp4", 
+            url: "https://bgyh.1701701.xyz/yh2/06 - 北京/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/yh2/06 - 北京.mp4",
             thumb: "https://r2.1701701.xyz/img/bgyh2fm.png"
         }
     ],
@@ -110,151 +127,176 @@ export const videoData = {
         { 
             id: 301, 
             title: "安徽篇 - 预告", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇 - 预告.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】安徽篇 - 预告/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇 - 预告.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 302, 
             title: "安徽篇01 - 出發吧！還剩333", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇01 - 出發吧！還剩333.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】安徽篇01 - 出發吧！還剩333/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇01 - 出發吧！還剩333.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 303, 
             title: "安徽篇02 - 我是巡演經理，也是道歉專業戶", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇02 - 我是巡演經理，也是道歉專業戶.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】安徽篇02 - 我是巡演經理，也是道歉專業戶/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇02 - 我是巡演經理，也是道歉專業戶.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 304, 
             title: "安徽篇03 - 淮南事變", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇03 - 淮南事變.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】安徽篇03 - 淮南事變/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇03 - 淮南事變.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 305, 
             title: "安徽篇04 - 留給音響師的時間不多了", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇04 - 留給音響師的時間不多了.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】安徽篇04 - 留給音響師的時間不多了/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇04 - 留給音響師的時間不多了.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 306, 
             title: "安徽篇05 - 日落前抵達", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇05 - 日落前抵達.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】安徽篇05 - 日落前抵達/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】安徽篇05 - 日落前抵達.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 307, 
             title: "山東篇01 - 明日復明日", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇01 - 明日復明日.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】山東篇01 - 明日復明日/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇01 - 明日復明日.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 308, 
             title: "山東篇02 - 明日何其多", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇02 - 明日何其多.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】山東篇02 - 明日何其多/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇02 - 明日何其多.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 309, 
             title: "山東篇03 - 自來水公司的口琴手", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇03 - 自來水公司的口琴手.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】山東篇03 - 自來水公司的口琴手/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇03 - 自來水公司的口琴手.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 310, 
             title: "山東篇04 - 是誰還在唱歌", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇04 - 是誰還在唱歌.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】山東篇04 - 是誰還在唱歌/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇04 - 是誰還在唱歌.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 311, 
             title: "山東篇05 - 兩個好吉友", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇05 - 兩個好吉友.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】山東篇05 - 兩個好吉友/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇05 - 兩個好吉友.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 312, 
             title: "山東篇06 - 這個世界會好的", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇06 - 這個世界會好的.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】山東篇06 - 這個世界會好的/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】山東篇06 - 這個世界會好的.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 313, 
             title: "陜寧篇01 - 票！", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇01 - 票！.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇01 - 票！/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇01 - 票！.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 314, 
             title: "陜寧篇02 - 圍城", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇02 - 圍城.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇02 - 圍城/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇02 - 圍城.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 315, 
             title: "陜寧篇03 - 王洪宇", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇03 - 王洪宇.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇03 - 王洪宇/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇03 - 王洪宇.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 316, 
             title: "陜寧篇04 - 這個不好說", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇04 - 這個不好說.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇04 - 這個不好說/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇04 - 這個不好說.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 317, 
             title: "陜寧篇05 - 鍵盤俠", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇05 - 鍵盤俠.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇05 - 鍵盤俠/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇05 - 鍵盤俠.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 318, 
             title: "陜寧篇06 - 再見小村", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇06 - 再見小村.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇06 - 再見小村/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇06 - 再見小村.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 319, 
             title: "陜寧篇07 - 西夏王陵", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇07 - 西夏王陵.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】陜寧篇07 - 西夏王陵/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】陜寧篇07 - 西夏王陵.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 320, 
             title: "雲南篇01 - 整裝再發", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇01 - 整裝再發.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】雲南篇01 - 整裝再發/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇01 - 整裝再發.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 321, 
             title: "雲南篇02 - 我是新來的燈光師，請多關照", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇02 - 我是新來的燈光師，請多關照.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】雲南篇02 - 我是新來的燈光師，請多關照/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇02 - 我是新來的燈光師，請多關照.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 322, 
             title: "雲南篇03 - 一个異類和他的同路人", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇03 - 一个異類和他的同路人.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】雲南篇03 - 一个異類和他的同路人/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇03 - 一个異類和他的同路人.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 323, 
             title: "雲南篇04 - 大理想國", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇04 - 大理想國.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】雲南篇04 - 大理想國/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇04 - 大理想國.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 324, 
             title: "雲南篇05 - 飛", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇05 - 飛.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】雲南篇05 - 飛/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇05 - 飛.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         },
         { 
             id: 325, 
             title: "雲南篇番外 - 荒", 
-            url: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇番外 - 荒.mp4", 
+            url: "https://334.1701701.xyz/李志【我們的叁叁肆】雲南篇番外 - 荒/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/334/李志【我們的叁叁肆】雲南篇番外 - 荒.mp4",
             thumb: "https://r2.1701701.xyz/img/334.jpg"
         }
     ],
@@ -329,73 +371,85 @@ export const videoData = {
         {
             id: 4051,
             title: "01 序曲",
-            url: "https://b2.1701701.xyz/api/dian1/01. 序曲.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/01. 序曲/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/01. 序曲.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4052,
             title: "02 杭州",
-            url: "https://b2.1701701.xyz/api/dian1/02 杭州 家跨年現場.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/02 杭州 家跨年現場/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/02 杭州 家跨年現場.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4053,
             title: "03 尽头",
-            url: "https://b2.1701701.xyz/api/dian1/03.尽头.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/03.尽头/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/03.尽头.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4054,
             title: "04 定西",
-            url: "https://b2.1701701.xyz/api/dian1/04. 定西.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/04. 定西/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/04. 定西.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4055,
             title: "05 春末的南方城市",
-            url: "https://b2.1701701.xyz/api/dian1/05. 春末的南方城市.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/05. 春末的南方城市/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/05. 春末的南方城市.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4056,
             title: "06 黑色信封",
-            url: "https://b2.1701701.xyz/api/dian1/06. 黑色信封.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/06. 黑色信封/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/06. 黑色信封.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4057,
             title: "07 铅笔",
-            url: "https://b2.1701701.xyz/api/dian1/07.铅笔.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/07.铅笔/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/07.铅笔.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4058,
             title: "08 和你在一起",
-            url: "https://b2.1701701.xyz/api/dian1/08. 和你在一起.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/08. 和你在一起/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/08. 和你在一起.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4059,
             title: "09 墙上的向日葵",
-            url: "https://b2.1701701.xyz/api/dian1/09. 墙上的向日葵.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/09. 墙上的向日葵/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/09. 墙上的向日葵.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4060,
             title: "10 大象",
-            url: "https://b2.1701701.xyz/api/dian1/10. 大象.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/10. 大象/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/10. 大象.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4061,
             title: "11 门",
-            url: "https://b2.1701701.xyz/api/dian1/11.门.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/11.门/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/11.门.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
             id: 4062,
             title: "12 回答",
-            url: "https://b2.1701701.xyz/api/dian1/12.回答.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/12.回答/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/12.回答.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         }
     ],
@@ -403,55 +457,64 @@ export const videoData = {
         {
             id: 4091,
             title: "01.相信未来序曲 Intro",
-            url: "https://b2.1701701.xyz/api/dian2/01.相信未来序曲 Intro.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/01.相信未来序曲 Intro/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/01.相信未来序曲 Intro.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4092,
             title: "02.一头偶像 A Piece of Idol",
-            url: "https://b2.1701701.xyz/api/dian2/02.一头偶像 A Piece of Idol.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/02.一头偶像 A Piece of Idol/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/02.一头偶像 A Piece of Idol.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4093,
             title: "03.你好明天 Ciao Tomorrow",
-            url: "https://b2.1701701.xyz/api/dian2/03.你好明天 Ciao Tomorrow.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/03.你好明天 Ciao Tomorrow/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/03.你好明天 Ciao Tomorrow.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4094,
             title: "04.寻找 Seek",
-            url: "https://b2.1701701.xyz/api/dian2/04.寻找 Seek.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/04.寻找 Seek/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/04.寻找 Seek.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4095,
             title: "05.山阴路的夏天 Nanjing Summer Day",
-            url: "https://b2.1701701.xyz/api/dian2/05.山阴路的夏天 Nanjing Summer Day.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/05.山阴路的夏天 Nanjing Summer Day/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/05.山阴路的夏天 Nanjing Summer Day.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4096,
             title: "06.哦吼 Oho",
-            url: "https://b2.1701701.xyz/api/dian2/06.哦吼 Oho.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/06.哦吼 Oho/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/06.哦吼 Oho.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4097,
             title: "07.天空之城 Sky City",
-            url: "https://b2.1701701.xyz/api/dian2/07.天空之城 Sky City.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/07.天空之城 Sky City/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/07.天空之城 Sky City.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4098,
             title: "08.家乡 About Hometown",
-            url: "https://b2.1701701.xyz/api/dian2/08.家乡 About Hometown.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/08.家乡 About Hometown/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/08.家乡 About Hometown.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         },
         {
             id: 4090,
             title: "09.这个世界会好吗 Has Man a Future",
-            url: "https://b2.1701701.xyz/api/dian2/09.这个世界会好吗 Has Man a Future.mp4",
+            url: "https://xxwl.1701701.xyz/dian2/09.这个世界会好吗 Has Man a Future/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian2/09.这个世界会好吗 Has Man a Future.mp4",
             thumb: "https://r2.1701701.xyz/img/dian2.jpg"
         }
     ],
@@ -459,73 +522,85 @@ export const videoData = {
         {
             id: 4101,
             title: "01 看见 2018 相信未来 不插电版",
-            url: "https://b2.1701701.xyz/api/js/01看见 2018相信未来 不插电版.mp4",
+            url: "https://xxwl.1701701.xyz/js/01看见 2018相信未来 不插电版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/01看见 2018相信未来 不插电版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4102,
             title: "02离婚 2018 相信未来 不插电版",
-            url: "https://b2.1701701.xyz/api/js/02离婚 2018 相信未来 不插电版.mp4",
+            url: "https://xxwl.1701701.xyz/js/02离婚 2018 相信未来 不插电版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/02离婚 2018 相信未来 不插电版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4103,
             title: "03关于郑州的回忆 2018相信未来 不插电版",
-            url: "https://b2.1701701.xyz/api/js/03关于郑州的回忆 2018相信未来 不插电版.mp4",
+            url: "https://xxwl.1701701.xyz/js/03关于郑州的回忆 2018相信未来 不插电版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/03关于郑州的回忆 2018相信未来 不插电版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4104,                       
             title: "04鸵鸟 李志 2018相信未来 不插电版",
-            url: "https://b2.1701701.xyz/api/js/04鸵鸟 李志 2018相信未来 不插电版.mp4",
+            url: "https://xxwl.1701701.xyz/js/04鸵鸟 李志 2018相信未来 不插电版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/04鸵鸟 李志 2018相信未来 不插电版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4105,
             title: "05卡夫卡 2018相信未来 不插电版",
-            url: "https://b2.1701701.xyz/api/js/05卡夫卡 2018相信未来 不插电版.mp4",
+            url: "https://xxwl.1701701.xyz/js/05卡夫卡 2018相信未来 不插电版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/05卡夫卡 2018相信未来 不插电版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4106,
             title: "06热河2018 相信未来 不插电版",
-            url: "https://b2.1701701.xyz/api/js/06热河2018 相信未来 不插电版.mp4",
+            url: "https://xxwl.1701701.xyz/js/06热河2018 相信未来 不插电版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/06热河2018 相信未来 不插电版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4107,
             title: "07翁庆年的六英镑 2018 相信未来 爵士版",
-            url: "https://b2.1701701.xyz/api/js/07翁庆年的六英镑 2018 相信未来 爵士版.mp4",
+            url: "https://xxwl.1701701.xyz/js/07翁庆年的六英镑 2018 相信未来 爵士版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/07翁庆年的六英镑 2018 相信未来 爵士版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4108,
             title: "08死人 2018相信未来 爵士版",
-            url: "https://b2.1701701.xyz/api/js/08死人 2018相信未来 爵士版.mp4",
+            url: "https://xxwl.1701701.xyz/js/08死人 2018相信未来 爵士版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/08死人 2018相信未来 爵士版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4109,
             title: "09爱 2018相信未来 爵士版",
-            url: "https://b2.1701701.xyz/api/js/09爱 2018相信未来 爵士版.mp4",
+            url: "https://xxwl.1701701.xyz/js/09爱 2018相信未来 爵士版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/09爱 2018相信未来 爵士版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4110,
             title: "10董卓瑶 2018相信未来 爵士版",
-            url: "https://b2.1701701.xyz/api/js/10董卓瑶 2018相信未来 爵士版.mp4",
+            url: "https://xxwl.1701701.xyz/js/10董卓瑶 2018相信未来 爵士版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/10董卓瑶 2018相信未来 爵士版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4111,
             title: "11一个夜晚 2018相信未来 爵士版",
-            url: "https://b2.1701701.xyz/api/js/11一个夜晚 2018相信未来 爵士版.mp4",
+            url: "https://xxwl.1701701.xyz/js/11一个夜晚 2018相信未来 爵士版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/11一个夜晚 2018相信未来 爵士版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         },
         {
             id: 4112,
             title: "12鼠说 2018 相信未来 爵士版",
-            url: "https://b2.1701701.xyz/api/js/12鼠说 2018 相信未来 爵士版.mp4",
+            url: "https://xxwl.1701701.xyz/js/12鼠说 2018 相信未来 爵士版/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/js/12鼠说 2018 相信未来 爵士版.mp4",
             thumb: "https://r2.1701701.xyz/img/js.jpg"
         }
     ],

@@ -84,6 +84,9 @@ const VideoPage = ({ requestVideoView }) => {
     const [folderStack, setFolderStack] = useState([]);
     const [activeVideo, setActiveVideo] = useState(null);
     const [resolvedUrl, setResolvedUrl] = useState('');
+    const [fallbackUrl, setFallbackUrl] = useState('');
+    const [fallbackType, setFallbackType] = useState('auto');
+    const [sourceAttempt, setSourceAttempt] = useState(0);
     const [isResolving, setIsResolving] = useState(false);
     const [resolveError, setResolveError] = useState('');
     const [resolvedType, setResolvedType] = useState('auto');
@@ -91,6 +94,7 @@ const VideoPage = ({ requestVideoView }) => {
     const dpRef = useRef(null);
     const hideTimerRef = useRef(null);
     const hasPlayedRef = useRef(false);
+    const fallbackTriedRef = useRef(false);
 
     const currentItems = useMemo(() => {
         if (folderStack.length > 0) {
@@ -150,6 +154,44 @@ const VideoPage = ({ requestVideoView }) => {
         []
     );
 
+    const resolvePlayableSource = useCallback(async (rawUrl = '') => {
+        let url = rawUrl || '';
+        let type = 'auto';
+
+        if (!url) {
+            return { url: '', type: 'auto', error: '视频地址为空' };
+        }
+
+        if (/\.m3u8(\?|$)/i.test(url)) {
+            type = 'hls';
+        }
+
+        if (/\.js(\?|$)/i.test(url)) {
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`bad-status-${res.status}`);
+            }
+            const text = await res.text();
+            const trimmed = text.trimStart();
+            if (trimmed.startsWith('#EXTM3U')) {
+                type = 'hls';
+            }
+            const directMatch = text.match(/https?:\/\/[^\s"']+\.m3u8[^\s"']*/i);
+            const quotedMatch = text.match(/['"]([^'"]+\.m3u8[^'"]*)['"]/i);
+            const candidate = directMatch?.[0] || quotedMatch?.[1];
+            if (candidate) {
+                url = /^https?:\/\//i.test(candidate)
+                    ? candidate
+                    : new URL(candidate, url).href;
+                type = 'hls';
+            } else if (!trimmed.startsWith('#EXTM3U')) {
+                return { url: '', type: 'auto', error: '未找到可播放的 m3u8 地址' };
+            }
+        }
+
+        return { url, type, error: '' };
+    }, []);
+
     useEffect(() => {
         if (!activeVideo) return undefined;
         const handleKeyDown = (event) => {
@@ -167,63 +209,60 @@ const VideoPage = ({ requestVideoView }) => {
     useEffect(() => {
         if (!activeVideo) {
             setResolvedUrl('');
+            setFallbackUrl('');
+            setFallbackType('auto');
+            setSourceAttempt(0);
             setResolveError('');
             setIsResolving(false);
             setResolvedType('auto');
+            fallbackTriedRef.current = false;
             return;
         }
 
         let canceled = false;
         const resolveUrl = async () => {
             setResolveError('');
-            setIsResolving(false);
-            let url = activeVideo.url || '';
-            let type = 'auto';
-            if (!url) {
-                setResolveError('视频地址为空');
+            setIsResolving(true);
+            fallbackTriedRef.current = false;
+
+            try {
+                const primary = await resolvePlayableSource(activeVideo.url || '');
+                const backup = activeVideo.backupUrl
+                    ? await resolvePlayableSource(activeVideo.backupUrl)
+                    : { url: '', type: 'auto', error: '' };
+
+                if (canceled) return;
+
+                setFallbackUrl(backup.url || '');
+                setFallbackType(backup.type || 'auto');
+
+                if (primary.url) {
+                    setResolvedUrl(primary.url);
+                    setResolvedType(primary.type);
+                    return;
+                }
+
+                if (backup.url) {
+                    fallbackTriedRef.current = true;
+                    setResolvedUrl(backup.url);
+                    setResolvedType(backup.type);
+                    return;
+                }
+
                 setResolvedUrl('');
                 setResolvedType('auto');
-                return;
-            }
-
-            if (/\.m3u8(\?|$)/i.test(url)) {
-                type = 'hls';
-            }
-
-            if (/\.js(\?|$)/i.test(url)) {
-                setIsResolving(true);
-                try {
-                    const res = await fetch(url);
-                    const text = await res.text();
-                    const trimmed = text.trimStart();
-                    if (trimmed.startsWith('#EXTM3U')) {
-                        type = 'hls';
-                    }
-                    const directMatch = text.match(/https?:\/\/[^\s"']+\.m3u8[^\s"']*/i);
-                    const quotedMatch = text.match(/['"]([^'"]+\.m3u8[^'"]*)['"]/i);
-                    const candidate = directMatch?.[0] || quotedMatch?.[1];
-                    if (candidate) {
-                        url = /^https?:\/\//i.test(candidate)
-                            ? candidate
-                            : new URL(candidate, url).href;
-                        type = 'hls';
-                    } else if (!trimmed.startsWith('#EXTM3U')) {
-                        url = '';
-                        setResolveError('未找到可播放的 m3u8 地址');
-                    } else {
-                        type = 'hls';
-                    }
-                } catch {
-                    url = '';
-                    setResolveError('解析播放地址失败');
-                } finally {
-                    if (!canceled) setIsResolving(false);
+                setResolveError(primary.error || backup.error || '解析播放地址失败');
+            } catch {
+                if (canceled) return;
+                setResolvedUrl('');
+                setResolvedType('auto');
+                setFallbackUrl('');
+                setFallbackType('auto');
+                setResolveError('解析播放地址失败');
+            } finally {
+                if (!canceled) {
+                    setIsResolving(false);
                 }
-            }
-
-            if (!canceled) {
-                setResolvedUrl(url);
-                setResolvedType(type);
             }
         };
 
@@ -231,7 +270,7 @@ const VideoPage = ({ requestVideoView }) => {
         return () => {
             canceled = true;
         };
-    }, [activeVideo]);
+    }, [activeVideo, resolvePlayableSource]);
 
     useEffect(() => {
         if (!activeVideo || isResolving || resolveError || !resolvedUrl || !canPlayInline(resolvedUrl, resolvedType)) {
@@ -242,12 +281,25 @@ const VideoPage = ({ requestVideoView }) => {
         let canceled = false;
         let player = null;
         let isTouchDevice = false;
+        let handlePlaybackError = null;
         const blockContextMenu = (event) => {
             event.preventDefault();
             event.stopPropagation();
             if (typeof event.stopImmediatePropagation === 'function') {
                 event.stopImmediatePropagation();
             }
+        };
+
+        const trySwitchToFallback = () => {
+            if (!fallbackUrl || resolvedUrl === fallbackUrl || fallbackTriedRef.current) {
+                return false;
+            }
+            fallbackTriedRef.current = true;
+            setResolveError('');
+            setResolvedUrl(fallbackUrl);
+            setResolvedType(fallbackType || 'auto');
+            setSourceAttempt((value) => value + 1);
+            return true;
         };
 
         const showControls = () => {
@@ -318,6 +370,17 @@ const VideoPage = ({ requestVideoView }) => {
 
                 dpRef.current = player;
 
+                handlePlaybackError = () => {
+                    if (trySwitchToFallback()) {
+                        return;
+                    }
+                    setResolveError('视频播放失败，请稍后重试');
+                };
+                player.on('error', handlePlaybackError);
+                if (player.video) {
+                    player.video.addEventListener('error', handlePlaybackError);
+                }
+
                 // DPlayer 内置了自己的右键菜单，这里销毁它并在捕获阶段统一拦截右键事件
                 if (player.contextmenu && typeof player.contextmenu.destroy === 'function') {
                     player.contextmenu.destroy();
@@ -359,8 +422,14 @@ const VideoPage = ({ requestVideoView }) => {
                 clearTimeout(hideTimerRef.current);
             }
             container.removeEventListener('contextmenu', blockContextMenu, true);
+            if (player && typeof player.off === 'function' && handlePlaybackError) {
+                player.off('error', handlePlaybackError);
+            }
             if (player?.video) {
                 player.video.removeEventListener('contextmenu', blockContextMenu, true);
+                if (handlePlaybackError) {
+                    player.video.removeEventListener('error', handlePlaybackError);
+                }
             }
             if (isTouchDevice) {
                 container.removeEventListener('touchstart', handleInteract);
@@ -375,7 +444,7 @@ const VideoPage = ({ requestVideoView }) => {
                 dpRef.current = null;
             }
         };
-    }, [activeVideo, resolvedUrl, resolvedType, isResolving, resolveError, canPlayInline]);
+    }, [activeVideo, resolvedUrl, resolvedType, fallbackUrl, fallbackType, sourceAttempt, isResolving, resolveError, canPlayInline]);
 
     useEffect(() => {
         if (activeVideo) return;
@@ -409,6 +478,18 @@ const VideoPage = ({ requestVideoView }) => {
             return;
         }
         setActiveVideo(item);
+    };
+
+    const canSwitchToBackup = Boolean(fallbackUrl);
+    const backupActionLabel = resolvedUrl === fallbackUrl ? '重试备用链接' : '切换备用链接';
+
+    const handleSwitchToBackup = () => {
+        if (!fallbackUrl) return;
+        fallbackTriedRef.current = true;
+        setResolveError('');
+        setResolvedUrl(fallbackUrl);
+        setResolvedType(fallbackType || 'auto');
+        setSourceAttempt((value) => value + 1);
     };
 
     const activeMetaLabel = activeVideo?._pathLabel || activeCategoryMeta?.name || '视频';
@@ -491,7 +572,18 @@ const VideoPage = ({ requestVideoView }) => {
                                 <div className="video-unsupported">解析播放地址中…</div>
                             )}
                             {!isResolving && resolveError && (
-                                <div className="video-unsupported">{resolveError}</div>
+                                <div className="video-unsupported">
+                                    <div>{resolveError}</div>
+                                    {canSwitchToBackup && (
+                                        <button
+                                            type="button"
+                                            className="video-unsupported-action"
+                                            onClick={handleSwitchToBackup}
+                                        >
+                                            {backupActionLabel}
+                                        </button>
+                                    )}
+                                </div>
                             )}
                             {!isResolving && !resolveError && !resolvedUrl && (
                                 <div className="video-unsupported">加载中…</div>
