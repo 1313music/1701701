@@ -453,6 +453,16 @@
   z-index: 1;
 }
 
+.video-stage-credit {
+  margin-top: 2px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
 .video-stage-header {
   display: flex;
   flex-direction: column;

@@ -974,6 +974,7 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     const activeEpisodeProgress = activeWatchIndex >= 0 ? `第 ${activeWatchIndex + 1} / ${watchEpisodes.length} 集` : '';
     const playerContainerKey = `${resolvedVideoKey || activeVideoKey || 'video'}:${sourceAttempt}:${resolveAttempt}`;
     const isWatching = Boolean(activeVideo);
+    const showWangGuoCredit = isWatching && (activeVideo?._categoryId || watchCategory) === 'jlpsq1';
 
     useEffect(() => {
         if (!isWatching) {
@@ -1252,6 +1253,9 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
                                 </button>
                             </div>
                         </div>
+                        {showWangGuoCredit && (
+                            <div className="video-stage-credit">视频来自WANGUO</div>
+                        )}
                     </Motion.section>
                 </div>
             )}
