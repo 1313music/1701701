@@ -1,12 +1,16 @@
 .video-page {
-  --video-section-gap: 16px;
+  --video-section-gap: 24px;
   display: flex;
   flex-direction: column;
   gap: var(--video-section-gap);
 }
 
+.video-page:not(.is-watching) {
+  gap: 0;
+}
+
 .video-page.is-watching {
-  gap: 12px;
+  gap: 24px;
 }
 
 .video-toolbar {
@@ -28,6 +32,14 @@
 
 .video-page .page-header {
   display: block;
+}
+
+.video-page:not(.is-watching) .page-header {
+  margin-bottom: 24px;
+}
+
+.video-page:not(.is-watching) .video-toolbar {
+  margin-bottom: 24px;
 }
 
 .video-tab {
