@@ -1158,10 +1158,6 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
                                 className={`video-watch-sidebar ${stageMainHeight > 0 ? 'is-measured' : ''}`}
                                 style={stageMainHeight > 0 ? { height: `${stageMainHeight}px` } : undefined}
                             >
-                                <div className="video-watch-head">
-                                    <div className="video-watch-current">{watchCategoryMeta?.name || '全部分类'}</div>
-                                    <div className="video-watch-total">{watchEpisodes.length} 集</div>
-                                </div>
                                 <div className="video-watch-episodes">
                                     {watchEpisodes.length === 0 ? (
                                         <div className="video-watch-empty">当前分类暂无可播放视频</div>

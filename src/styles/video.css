@@ -794,7 +794,7 @@
 
 .video-stage-category {
   flex: 0 0 auto;
-  min-width: 176px;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-main);
@@ -1240,7 +1240,7 @@
   }
 
   .video-stage-category {
-    min-width: 148px;
+    min-width: 0;
   }
 
   .video-stage-player .dplayer-full-in-icon {
