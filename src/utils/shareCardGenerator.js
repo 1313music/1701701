@@ -71,9 +71,36 @@ const loadCanvasImage = (src) => new Promise((resolve, reject) => {
   img.src = src;
 });
 
-const drawImageCover = (ctx, image, x, y, width, height) => {
+const getSameOriginCoverMirror = (src) => {
+  if (!src || typeof window === 'undefined') return '';
+  try {
+    const parsed = new URL(src, window.location.origin);
+    if (parsed.hostname !== 'r2.1701701.xyz') return '';
+    if (!parsed.pathname.startsWith('/img/')) return '';
+    return `${window.location.origin}${parsed.pathname}`;
+  } catch {
+    return '';
+  }
+};
+
+const loadCanvasImageWithFallback = async (src) => {
+  if (!src) return null;
+  const candidates = [src, getSameOriginCoverMirror(src)].filter(Boolean);
+  for (const candidate of candidates) {
+    try {
+      // Try direct source first; if CORS blocks, fallback to same-origin mirror.
+      const img = await loadCanvasImage(candidate);
+      if (img) return img;
+    } catch {
+      // continue to next candidate
+    }
+  }
+  return null;
+};
+
+const drawImageCover = (ctx, image, x, y, width, height, zoom = 1) => {
   if (!image?.width || !image?.height) return;
-  const scale = Math.max(width / image.width, height / image.height);
+  const scale = Math.max(width / image.width, height / image.height) * Math.max(1, zoom);
   const drawWidth = image.width * scale;
   const drawHeight = image.height * scale;
   const drawX = x + (width - drawWidth) / 2;
@@ -276,20 +303,22 @@ const normalizeAccentTone = (rgb, isDark) => {
 };
 
 export const createShareCardDataUrl = async ({
+  type = 'music',
   trackName,
   albumName,
   url,
   cover
 }) => {
   if (typeof document === 'undefined' || !url) return '';
+  const isVideoCard = type === 'video';
   const isDark = resolveIsDarkTheme();
   const useManualBlur = shouldUseManualCanvasBlur();
-  const width = 1080;
-  const cardInsetX = 72;
-  const cardTopGap = 80;
-  const cardBodyHeight = 1360;
-  const shareQrSize = 96;
-  const lowerGap = cardTopGap;
+  const width = isVideoCard ? 1600 : 1080;
+  const cardInsetX = isVideoCard ? 64 : 72;
+  const cardTopGap = isVideoCard ? 56 : 80;
+  const cardBodyHeight = isVideoCard ? 760 : 1360;
+  const shareQrSize = isVideoCard ? 86 : 96;
+  const lowerGap = isVideoCard ? 54 : cardTopGap;
   const height = cardTopGap + cardBodyHeight + lowerGap + shareQrSize + lowerGap;
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -298,11 +327,7 @@ export const createShareCardDataUrl = async ({
   if (!ctx) return '';
 
   let coverImage = null;
-  try {
-    coverImage = await loadCanvasImage(cover);
-  } catch {
-    coverImage = null;
-  }
+  coverImage = await loadCanvasImageWithFallback(cover);
 
   const defaultAccent = isDark
     ? { r: 96, g: 146, b: 206 }
@@ -340,7 +365,6 @@ export const createShareCardDataUrl = async ({
       ? (isDark ? 'rgba(255, 255, 255, 0.006)' : 'rgba(255, 255, 255, 0.005)')
       : (isDark ? 'rgba(255, 255, 255, 0.018)' : 'rgba(255, 255, 255, 0.014)')
   };
-
   if (coverImage) {
     drawBlurredCover(
       ctx,
@@ -381,274 +405,376 @@ export const createShareCardDataUrl = async ({
 
   const cardX = cardInsetX;
   const cardY = cardTopGap;
-  const cardWidth = width - 144;
+  const cardWidth = width - cardInsetX * 2;
   const cardHeight = cardBodyHeight;
-  const cardRadius = 58;
+  const cardRadius = isVideoCard ? 42 : 58;
 
-  ctx.save();
-  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
-  ctx.clip();
-  if (coverImage) {
+  if (!isVideoCard) {
     ctx.save();
-    ctx.globalAlpha = isDark ? 0.42 : 0.36;
-    drawBlurredCover(
-      ctx,
-      coverImage,
-      cardX - width * 0.26,
-      cardY - height * 0.24,
-      width * 1.52,
-      height * 1.52,
-      {
-        blur: isDark ? 46 : 42,
-        saturation: isDark ? 1.3 : 1.24,
-        manualIntensity: useManualBlur ? 0.024 : 0.05
-      }
-    );
-    ctx.restore();
-  }
-  const cardGlass = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
-  cardGlass.addColorStop(0, palette.cardGlassTop);
-  cardGlass.addColorStop(0.46, palette.cardGlassMid);
-  cardGlass.addColorStop(1, palette.cardGlassBottom);
-  ctx.fillStyle = cardGlass;
-  ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-  const cardMist = ctx.createRadialGradient(
-    cardX + cardWidth * 0.22,
-    cardY + cardHeight * 0.2,
-    cardWidth * 0.08,
-    cardX + cardWidth * 0.22,
-    cardY + cardHeight * 0.2,
-    cardWidth * 0.62
-  );
-  cardMist.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
-  cardMist.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = cardMist;
-  ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-  if (useManualBlur) {
-    const liquidTint = ctx.createLinearGradient(cardX, cardY, cardX + cardWidth, cardY + cardHeight);
-    liquidTint.addColorStop(0, toRgbaColor(mixRgb(accent, { r: 204, g: 232, b: 255 }, 0.4), isDark ? 0.07 : 0.06));
-    liquidTint.addColorStop(0.52, 'rgba(255, 255, 255, 0)');
-    liquidTint.addColorStop(1, toRgbaColor(mixRgb(accent, { r: 128, g: 172, b: 222 }, 0.52), isDark ? 0.08 : 0.06));
-    ctx.fillStyle = liquidTint;
-    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-    const topGlint = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight * 0.28);
-    topGlint.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-    topGlint.addColorStop(0.36, 'rgba(255, 255, 255, 0.08)');
-    topGlint.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = topGlint;
-    ctx.fillRect(cardX, cardY, cardWidth, cardHeight * 0.32);
-
-    const refractionBand = ctx.createLinearGradient(
-      cardX - cardWidth * 0.14,
-      cardY + cardHeight * 0.18,
-      cardX + cardWidth * 1.08,
-      cardY + cardHeight * 0.58
-    );
-    refractionBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
-    refractionBand.addColorStop(0.42, 'rgba(255, 255, 255, 0.075)');
-    refractionBand.addColorStop(0.5, 'rgba(255, 255, 255, 0.012)');
-    refractionBand.addColorStop(0.58, 'rgba(255, 255, 255, 0.06)');
-    refractionBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = refractionBand;
-    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-    const innerShade = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
-    innerShade.addColorStop(0, 'rgba(255, 255, 255, 0.038)');
-    innerShade.addColorStop(0.62, 'rgba(255, 255, 255, 0)');
-    innerShade.addColorStop(1, 'rgba(0, 0, 0, 0.14)');
-    ctx.fillStyle = innerShade;
-    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-  }
-  ctx.restore();
-
-  ctx.save();
-  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
-  ctx.shadowColor = palette.cardShadow;
-  ctx.shadowBlur = 34;
-  ctx.shadowOffsetY = 10;
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.restore();
-
-  const cardStroke = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
-  cardStroke.addColorStop(0, palette.cardStrokeTop);
-  cardStroke.addColorStop(0.42, palette.cardStrokeMid);
-  cardStroke.addColorStop(1, palette.cardStrokeBottom);
-  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
-  ctx.strokeStyle = cardStroke;
-  ctx.lineWidth = 1.35;
-  ctx.stroke();
-
-  drawRoundedRectPath(ctx, cardX + 1.8, cardY + 1.8, cardWidth - 3.6, cardHeight - 3.6, cardRadius - 1.8);
-  ctx.strokeStyle = palette.cardInnerStroke;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  const coverPadding = 74;
-  const coverX = cardX + coverPadding;
-  const coverY = cardY + 74;
-  const coverSize = cardWidth - coverPadding * 2;
-
-  if (coverImage) {
-    ctx.save();
-    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 28);
+    drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
     ctx.clip();
-    drawImageCover(ctx, coverImage, coverX, coverY, coverSize, coverSize);
+    if (coverImage) {
+      ctx.save();
+      ctx.globalAlpha = isDark ? 0.42 : 0.36;
+      drawBlurredCover(
+        ctx,
+        coverImage,
+        cardX - width * 0.26,
+        cardY - height * 0.24,
+        width * 1.52,
+        height * 1.52,
+        {
+          blur: isDark ? 46 : 42,
+          saturation: isDark ? 1.3 : 1.24,
+          manualIntensity: useManualBlur ? 0.024 : 0.05
+        }
+      );
+      ctx.restore();
+    }
+    const cardGlass = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+    cardGlass.addColorStop(0, palette.cardGlassTop);
+    cardGlass.addColorStop(0.46, palette.cardGlassMid);
+    cardGlass.addColorStop(1, palette.cardGlassBottom);
+    ctx.fillStyle = cardGlass;
+    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+    const cardMist = ctx.createRadialGradient(
+      cardX + cardWidth * 0.22,
+      cardY + cardHeight * 0.2,
+      cardWidth * 0.08,
+      cardX + cardWidth * 0.22,
+      cardY + cardHeight * 0.2,
+      cardWidth * 0.62
+    );
+    cardMist.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+    cardMist.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = cardMist;
+    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+    if (useManualBlur) {
+      const liquidTint = ctx.createLinearGradient(cardX, cardY, cardX + cardWidth, cardY + cardHeight);
+      liquidTint.addColorStop(0, toRgbaColor(mixRgb(accent, { r: 204, g: 232, b: 255 }, 0.4), isDark ? 0.07 : 0.06));
+      liquidTint.addColorStop(0.52, 'rgba(255, 255, 255, 0)');
+      liquidTint.addColorStop(1, toRgbaColor(mixRgb(accent, { r: 128, g: 172, b: 222 }, 0.52), isDark ? 0.08 : 0.06));
+      ctx.fillStyle = liquidTint;
+      ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+      const topGlint = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight * 0.28);
+      topGlint.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+      topGlint.addColorStop(0.36, 'rgba(255, 255, 255, 0.08)');
+      topGlint.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = topGlint;
+      ctx.fillRect(cardX, cardY, cardWidth, cardHeight * 0.32);
+
+      const refractionBand = ctx.createLinearGradient(
+        cardX - cardWidth * 0.14,
+        cardY + cardHeight * 0.18,
+        cardX + cardWidth * 1.08,
+        cardY + cardHeight * 0.58
+      );
+      refractionBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      refractionBand.addColorStop(0.42, 'rgba(255, 255, 255, 0.075)');
+      refractionBand.addColorStop(0.5, 'rgba(255, 255, 255, 0.012)');
+      refractionBand.addColorStop(0.58, 'rgba(255, 255, 255, 0.06)');
+      refractionBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = refractionBand;
+      ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+      const innerShade = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+      innerShade.addColorStop(0, 'rgba(255, 255, 255, 0.038)');
+      innerShade.addColorStop(0.62, 'rgba(255, 255, 255, 0)');
+      innerShade.addColorStop(1, 'rgba(0, 0, 0, 0.14)');
+      ctx.fillStyle = innerShade;
+      ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+    }
     ctx.restore();
-  } else {
-    const coverFallback = ctx.createLinearGradient(coverX, coverY, coverX + coverSize, coverY + coverSize);
-    coverFallback.addColorStop(0, palette.coverFallback0);
-    coverFallback.addColorStop(1, palette.coverFallback1);
-    drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 28);
-    ctx.fillStyle = coverFallback;
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.88)';
-    ctx.font = '700 130px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('♪', coverX + coverSize / 2, coverY + coverSize / 2 + 44);
-  }
 
-  const contentLeft = cardX + 62;
-  const contentRight = cardX + cardWidth - 62;
-  const contentWidth = contentRight - contentLeft;
-  const contentCenterX = cardX + cardWidth / 2;
-  const titleTopSpacing = 102;
-  const subtitleGap = 64;
-  const titleStartY = coverY + coverSize + titleTopSpacing;
-  const subtitleFontSize = 38;
-  const titleText = trackName || '未知歌曲';
-  const titleFontFamily = '"Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
-  let titleFontSize = 60;
-  ctx.textAlign = 'center';
-  ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
-  while (titleFontSize > subtitleFontSize && ctx.measureText(titleText).width > contentWidth) {
-    titleFontSize -= 2;
-    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
-  }
-  let titleLine = titleText;
-  if (ctx.measureText(titleLine).width > contentWidth) {
-    const chars = Array.from(titleLine);
-    let end = chars.length;
-    while (end > 0 && ctx.measureText(`${chars.slice(0, end).join('')}...`).width > contentWidth) {
-      end -= 1;
-    }
-    titleLine = `${chars.slice(0, Math.max(end, 0)).join('')}...`;
-  }
-  const lastTitleBaselineY = titleStartY;
-
-  const subtitleAlbum = albumName || '未知专辑';
-  const subtitle = subtitleAlbum;
-  const subtitleY = lastTitleBaselineY + subtitleGap;
-
-  ctx.fillStyle = palette.text;
-  ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
-  ctx.fillText(titleLine, contentCenterX, titleStartY);
-
-  ctx.fillStyle = palette.subText;
-  ctx.font = `600 ${subtitleFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
-  const subtitleLine = buildWrappedLines(ctx, subtitle, contentWidth, 1)[0] || subtitle;
-  ctx.fillText(subtitleLine, contentCenterX, subtitleY);
-
-  const progressSpacing = 84;
-  const progressX = contentLeft + 8;
-  const progressY = subtitleY + progressSpacing;
-  const progressWidth = contentWidth - 16;
-  const playedWidth = progressWidth * 0.5;
-  const knobX = progressX + playedWidth;
-
-  ctx.lineCap = 'round';
-  ctx.lineWidth = 9;
-  ctx.strokeStyle = palette.controlTrack;
-  ctx.beginPath();
-  ctx.moveTo(progressX, progressY);
-  ctx.lineTo(progressX + progressWidth, progressY);
-  ctx.stroke();
-
-  ctx.strokeStyle = palette.controlFill;
-  ctx.beginPath();
-  ctx.moveTo(progressX, progressY);
-  ctx.lineTo(knobX, progressY);
-  ctx.stroke();
-
-  ctx.fillStyle = palette.controlFill;
-  ctx.beginPath();
-  ctx.arc(knobX, progressY, 12.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  const drawPlayGlyph = (x, y, size, direction = 'next') => {
-    const scale = size / 24;
     ctx.save();
-    ctx.translate(x, y);
-    if (direction === 'prev') {
-      ctx.scale(-1, 1);
-    }
-    ctx.scale(scale, scale);
-    ctx.translate(-12, -12);
-    ctx.beginPath();
-    ctx.moveTo(5, 3);
-    ctx.lineTo(19, 12);
-    ctx.lineTo(5, 21);
-    ctx.closePath();
-    ctx.fillStyle = palette.controlFill;
-    ctx.strokeStyle = palette.controlFill;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.lineWidth = 2;
-    ctx.fill();
+    drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+    ctx.shadowColor = palette.cardShadow;
+    ctx.shadowBlur = 34;
+    ctx.shadowOffsetY = 10;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
-  };
 
-  const drawSkipIcon = (x, y, size, direction) => {
-    ctx.save();
-    const iconSize = size;
-    const overlap = iconSize * (8 / 20);
-    const spacing = iconSize - overlap;
-    if (direction === 'prev') {
-      drawPlayGlyph(x + spacing / 2, y, iconSize, 'prev');
-      drawPlayGlyph(x - spacing / 2, y, iconSize, 'prev');
+    const cardStroke = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+    cardStroke.addColorStop(0, palette.cardStrokeTop);
+    cardStroke.addColorStop(0.42, palette.cardStrokeMid);
+    cardStroke.addColorStop(1, palette.cardStrokeBottom);
+    drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+    ctx.strokeStyle = cardStroke;
+    ctx.lineWidth = 1.35;
+    ctx.stroke();
+
+    drawRoundedRectPath(ctx, cardX + 1.8, cardY + 1.8, cardWidth - 3.6, cardHeight - 3.6, cardRadius - 1.8);
+    ctx.strokeStyle = palette.cardInnerStroke;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  if (isVideoCard) {
+    const posterInset = 0;
+    const posterX = cardX + posterInset;
+    const posterY = cardY + posterInset;
+    const posterWidth = cardWidth - posterInset * 2;
+    const posterHeight = cardHeight - posterInset * 2;
+    const posterRadius = cardRadius;
+
+    if (coverImage) {
+      ctx.save();
+      drawRoundedRectPath(ctx, posterX, posterY, posterWidth, posterHeight, posterRadius);
+      ctx.clip();
+      drawImageCover(ctx, coverImage, posterX, posterY, posterWidth, posterHeight, 1.08);
+
+      const bottomVignette = ctx.createLinearGradient(posterX, posterY + posterHeight * 0.78, posterX, posterY + posterHeight);
+      bottomVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      bottomVignette.addColorStop(1, 'rgba(0, 0, 0, 0.38)');
+      ctx.fillStyle = bottomVignette;
+      ctx.fillRect(posterX, posterY, posterWidth, posterHeight);
+      ctx.restore();
     } else {
-      drawPlayGlyph(x - spacing / 2, y, iconSize, 'next');
-      drawPlayGlyph(x + spacing / 2, y, iconSize, 'next');
+      const posterFallback = ctx.createLinearGradient(posterX, posterY, posterX + posterWidth, posterY + posterHeight);
+      posterFallback.addColorStop(0, palette.coverFallback0);
+      posterFallback.addColorStop(1, palette.coverFallback1);
+      drawRoundedRectPath(ctx, posterX, posterY, posterWidth, posterHeight, posterRadius);
+      ctx.fillStyle = posterFallback;
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = '700 150px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('▶', posterX + posterWidth / 2, posterY + posterHeight / 2 + 48);
     }
-    ctx.restore();
-  };
 
-  const drawPauseIcon = (x, y, size) => {
-    const scale = size / 24;
+    const titleText = trackName || '未知视频';
+    const subtitle = albumName || '视频';
+    const titleFontFamily = '"Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+    const textLeft = posterX + 30;
+    const textBottom = posterY + posterHeight - 34;
+    const textMaxWidth = posterWidth - 150;
+
+    let titleFontSize = 62;
+    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    while (titleFontSize > 38 && ctx.measureText(titleText).width > textMaxWidth) {
+      titleFontSize -= 2;
+      ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    }
+
+    const titleLines = buildWrappedLines(ctx, titleText, textMaxWidth, 2);
+    const titleLineHeight = Math.round(titleFontSize * 1.1);
+    const subtitleFontSize = 34;
+    const subtitleGap = 34;
+    const subtitleBlockHeight = subtitleFontSize + subtitleGap;
+    const titleTopY = textBottom - subtitleBlockHeight - (titleLines.length - 1) * titleLineHeight;
+
+    ctx.textAlign = 'left';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.52)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 2;
+    ctx.fillStyle = 'rgba(250, 252, 255, 0.98)';
+    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    titleLines.forEach((line, index) => {
+      ctx.fillText(line, textLeft, titleTopY + index * titleLineHeight);
+    });
+
+    ctx.fillStyle = 'rgba(240, 246, 255, 0.84)';
+    ctx.font = `600 ${subtitleFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+    const subtitleLine = buildWrappedLines(ctx, subtitle, textMaxWidth, 1)[0] || subtitle;
+    ctx.fillText(subtitleLine, textLeft, textBottom);
+
+    const playCenterX = posterX + posterWidth - 62;
+    const playCenterY = posterY + posterHeight - 64;
+    const playRadius = 34;
     ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-    ctx.translate(-12, -12);
-    ctx.fillStyle = palette.controlFill;
-    ctx.strokeStyle = palette.controlFill;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.42)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 2;
+    ctx.beginPath();
+    ctx.arc(playCenterX, playCenterY, playRadius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(20, 24, 34, 0.32)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.44)';
     ctx.lineWidth = 2;
-    drawRoundedRectPath(ctx, 6, 4, 4, 16, 1);
-    ctx.fill();
-    ctx.stroke();
-    drawRoundedRectPath(ctx, 14, 4, 4, 16, 1);
-    ctx.fill();
     ctx.stroke();
     ctx.restore();
-  };
 
-  const skipIconSize = 72;
-  const pauseIconSize = 115;
-  const pauseVisualTopOffset = (pauseIconSize * 8) / 24;
-  const controlsY = progressY + progressSpacing + pauseVisualTopOffset;
-  const pauseX = cardX + cardWidth * 0.5;
-  const sideControlOffset = Math.max(168, cardWidth * 0.19);
-  const prevX = pauseX - sideControlOffset;
-  const nextX = pauseX + sideControlOffset;
-  drawSkipIcon(prevX, controlsY, skipIconSize, 'prev');
-  drawPauseIcon(pauseX, controlsY, pauseIconSize);
-  drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
+    ctx.beginPath();
+    ctx.moveTo(playCenterX - 8, playCenterY - 11);
+    ctx.lineTo(playCenterX - 8, playCenterY + 11);
+    ctx.lineTo(playCenterX + 12, playCenterY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+  } else {
+    const coverPadding = 74;
+    const coverX = cardX + coverPadding;
+    const coverY = cardY + 74;
+    const coverSize = cardWidth - coverPadding * 2;
+
+    if (coverImage) {
+      ctx.save();
+      drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 28);
+      ctx.clip();
+      drawImageCover(ctx, coverImage, coverX, coverY, coverSize, coverSize);
+      ctx.restore();
+    } else {
+      const coverFallback = ctx.createLinearGradient(coverX, coverY, coverX + coverSize, coverY + coverSize);
+      coverFallback.addColorStop(0, palette.coverFallback0);
+      coverFallback.addColorStop(1, palette.coverFallback1);
+      drawRoundedRectPath(ctx, coverX, coverY, coverSize, coverSize, 28);
+      ctx.fillStyle = coverFallback;
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
+      ctx.font = '700 130px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('♪', coverX + coverSize / 2, coverY + coverSize / 2 + 44);
+    }
+
+    const contentLeft = cardX + 62;
+    const contentRight = cardX + cardWidth - 62;
+    const contentWidth = contentRight - contentLeft;
+    const contentCenterX = cardX + cardWidth / 2;
+    const titleTopSpacing = 102;
+    const subtitleGap = 64;
+    const titleStartY = coverY + coverSize + titleTopSpacing;
+    const subtitleFontSize = 38;
+    const titleText = trackName || '未知歌曲';
+    const titleFontFamily = '"Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
+    let titleFontSize = 60;
+    ctx.textAlign = 'center';
+    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    while (titleFontSize > subtitleFontSize && ctx.measureText(titleText).width > contentWidth) {
+      titleFontSize -= 2;
+      ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    }
+    let titleLine = titleText;
+    if (ctx.measureText(titleLine).width > contentWidth) {
+      const chars = Array.from(titleLine);
+      let end = chars.length;
+      while (end > 0 && ctx.measureText(`${chars.slice(0, end).join('')}...`).width > contentWidth) {
+        end -= 1;
+      }
+      titleLine = `${chars.slice(0, Math.max(end, 0)).join('')}...`;
+    }
+    const lastTitleBaselineY = titleStartY;
+
+    const subtitleAlbum = albumName || '未知专辑';
+    const subtitle = subtitleAlbum;
+    const subtitleY = lastTitleBaselineY + subtitleGap;
+
+    ctx.fillStyle = palette.text;
+    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    ctx.fillText(titleLine, contentCenterX, titleStartY);
+
+    ctx.fillStyle = palette.subText;
+    ctx.font = `600 ${subtitleFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+    const subtitleLine = buildWrappedLines(ctx, subtitle, contentWidth, 1)[0] || subtitle;
+    ctx.fillText(subtitleLine, contentCenterX, subtitleY);
+
+    const progressSpacing = 84;
+    const progressX = contentLeft + 8;
+    const progressY = subtitleY + progressSpacing;
+    const progressWidth = contentWidth - 16;
+    const playedWidth = progressWidth * 0.5;
+    const knobX = progressX + playedWidth;
+
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = palette.controlTrack;
+    ctx.beginPath();
+    ctx.moveTo(progressX, progressY);
+    ctx.lineTo(progressX + progressWidth, progressY);
+    ctx.stroke();
+
+    ctx.strokeStyle = palette.controlFill;
+    ctx.beginPath();
+    ctx.moveTo(progressX, progressY);
+    ctx.lineTo(knobX, progressY);
+    ctx.stroke();
+
+    ctx.fillStyle = palette.controlFill;
+    ctx.beginPath();
+    ctx.arc(knobX, progressY, 12.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    const drawPlayGlyph = (x, y, size, direction = 'next') => {
+      const scale = size / 24;
+      ctx.save();
+      ctx.translate(x, y);
+      if (direction === 'prev') {
+        ctx.scale(-1, 1);
+      }
+      ctx.scale(scale, scale);
+      ctx.translate(-12, -12);
+      ctx.beginPath();
+      ctx.moveTo(5, 3);
+      ctx.lineTo(19, 12);
+      ctx.lineTo(5, 21);
+      ctx.closePath();
+      ctx.fillStyle = palette.controlFill;
+      ctx.strokeStyle = palette.controlFill;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    const drawSkipIcon = (x, y, size, direction) => {
+      ctx.save();
+      const iconSize = size;
+      const overlap = iconSize * (8 / 20);
+      const spacing = iconSize - overlap;
+      if (direction === 'prev') {
+        drawPlayGlyph(x + spacing / 2, y, iconSize, 'prev');
+        drawPlayGlyph(x - spacing / 2, y, iconSize, 'prev');
+      } else {
+        drawPlayGlyph(x - spacing / 2, y, iconSize, 'next');
+        drawPlayGlyph(x + spacing / 2, y, iconSize, 'next');
+      }
+      ctx.restore();
+    };
+
+    const drawPauseIcon = (x, y, size) => {
+      const scale = size / 24;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.translate(-12, -12);
+      ctx.fillStyle = palette.controlFill;
+      ctx.strokeStyle = palette.controlFill;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 2;
+      drawRoundedRectPath(ctx, 6, 4, 4, 16, 1);
+      ctx.fill();
+      ctx.stroke();
+      drawRoundedRectPath(ctx, 14, 4, 4, 16, 1);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    const skipIconSize = 72;
+    const pauseIconSize = 115;
+    const pauseVisualTopOffset = (pauseIconSize * 8) / 24;
+    const controlsY = progressY + progressSpacing + pauseVisualTopOffset;
+    const pauseX = cardX + cardWidth * 0.5;
+    const sideControlOffset = Math.max(168, cardWidth * 0.19);
+    const prevX = pauseX - sideControlOffset;
+    const nextX = pauseX + sideControlOffset;
+    drawSkipIcon(prevX, controlsY, skipIconSize, 'prev');
+    drawPauseIcon(pauseX, controlsY, pauseIconSize);
+    drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
+  }
 
   const qrDataUrl = await QRCode.toDataURL(url, {
     errorCorrectionLevel: 'M',
@@ -666,8 +792,8 @@ export const createShareCardDataUrl = async ({
 
   const infoLeftX = cardX;
   const brandText = '1701701.xyz';
-  const tipText = '扫码播放歌曲';
-  const infoFontSize = 35;
+  const tipText = isVideoCard ? '扫码观看视频' : '扫码播放歌曲';
+  const infoFontSize = isVideoCard ? 30 : 35;
   const infoBlockTop = qrY;
   const infoLineGap = Math.max(14, shareQrSize - infoFontSize * 2);
   const infoBrandY = infoBlockTop;

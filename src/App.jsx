@@ -119,6 +119,7 @@ const App = () => {
   const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
   const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
   const shareQueryAppliedRef = useRef(false);
+  const viewQueryAppliedRef = useRef(false);
   const shareCardRequestIdRef = useRef(0);
   const tempPlaylistIdsRef = useRef(tempPlaylistIds);
 
@@ -574,6 +575,17 @@ const App = () => {
     setView(nextView);
   }, [stopPlaybackForVideo]);
 
+  useEffect(() => {
+    if (viewQueryAppliedRef.current || typeof window === 'undefined') return;
+    viewQueryAppliedRef.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const queryView = String(params.get('view') || '').trim();
+    if (!queryView) return;
+    const availableViews = new Set(['library', 'video', 'download', 'about', 'app']);
+    if (!availableViews.has(queryView)) return;
+    handleViewChange(queryView);
+  }, [handleViewChange]);
+
   const handleVideoAccessSubmit = useCallback(() => {
     submitVideoAccess();
   }, [submitVideoAccess]);
@@ -631,6 +643,8 @@ const App = () => {
     url.searchParams.set('albumId', String(resolvedAlbum.id));
     url.searchParams.set('song', String(matchedIndex + 1));
     return {
+      type: 'music',
+      panelTitle: '分享歌曲',
       title: `${shareTrack.name} - ${resolvedAlbum.artist || '李志'}`,
       text: shareTrack.name,
       url: url.toString(),
@@ -672,6 +686,13 @@ const App = () => {
     setIsShareCardGenerating(false);
   }, []);
 
+  const openSharePanel = useCallback((payload) => {
+    if (!payload?.url) return false;
+    setSharePanelData(payload);
+    startShareCardGeneration(payload);
+    return true;
+  }, [startShareCardGeneration]);
+
   const closeWeChatBrowserHint = useCallback(() => {
     setIsWeChatBrowserHintOpen(false);
   }, []);
@@ -691,14 +712,17 @@ const App = () => {
 
   const handleShareCurrentTrack = useCallback(async (anchorOrOptions) => {
     const payload = buildCurrentSharePayload();
-    if (!payload) {
+    if (!openSharePanel(payload)) {
       showToast('当前歌曲暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
       return;
     }
+  }, [buildCurrentSharePayload, openSharePanel, showToast]);
 
-    setSharePanelData(payload);
-    startShareCardGeneration(payload);
-  }, [buildCurrentSharePayload, showToast, startShareCardGeneration]);
+  const handleShareVideo = useCallback((payload, anchorOrOptions) => {
+    if (!openSharePanel(payload)) {
+      showToast('当前视频暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
+    }
+  }, [openSharePanel, showToast]);
 
   const handleCopyShareLink = useCallback(async (anchorOrOptions = { placement: 'side' }) => {
     if (!sharePanelData?.url) return;
@@ -926,7 +950,7 @@ const App = () => {
               {view === 'video' && (
                 <div className="view-panel view-panel-video">
                   <Suspense fallback={pageLoadingFallback}>
-                    <VideoPage requestVideoView={requestVideoView} />
+                    <VideoPage requestVideoView={requestVideoView} onShareVideo={handleShareVideo} />
                   </Suspense>
                 </div>
               )}
@@ -1040,9 +1064,12 @@ const App = () => {
 
         {sharePanelData && (
           <div className="share-panel-backdrop" onClick={closeSharePanel}>
-            <div className="share-panel-card" onClick={(event) => event.stopPropagation()}>
+            <div
+              className={`share-panel-card ${sharePanelData.type === 'video' ? 'is-video' : ''}`}
+              onClick={(event) => event.stopPropagation()}
+            >
               <div className="share-panel-header">
-                <div className="share-panel-title">分享歌曲</div>
+                <div className="share-panel-title">{sharePanelData.panelTitle || '分享内容'}</div>
                 <button
                   type="button"
                   className="share-panel-close-btn"
@@ -1052,7 +1079,7 @@ const App = () => {
                   ×
                 </button>
               </div>
-              <div className="share-panel-card-preview">
+              <div className={`share-panel-card-preview ${sharePanelData.type === 'video' ? 'is-video' : ''}`}>
                 {isShareCardGenerating && (
                   <div className="share-card-loading">正在生成分享卡片...</div>
                 )}

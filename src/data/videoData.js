@@ -1,5 +1,35 @@
 // 视频数据 - 从video.js中分离出来的完整视频数据
 export const videoData = {
+    jlpsq1: [ // 吉隆坡叁缺壹 -> jlpsq1
+        { id: 8001, title: "01-开场-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/01-开场-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8002, title: "02-黑色信封-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/02-黑色信封-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8003, title: "03-定西-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/03-定西-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8004, title: "04-南方春末的城市-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/04-南方春末的城市-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8005, title: "05-中场休息①-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/05-中场休息①-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8006, title: "06-天空之城-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/06-天空之城-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8007, title: "07-关于郑州的记忆-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/07-关于郑州的记忆-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8008, title: "08-苍井空-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/08-苍井空-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8009, title: "09-秋天的老狼-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/09-秋天的老狼-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8010, title: "10-铅笔-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/10-铅笔-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8011, title: "11-鸵鸟&&墙上的向日葵-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/11-鸵鸟&&墙上的向日葵-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8012, title: "12-鼠说-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/12-鼠说-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8013, title: "13-翁庆年的六英镑-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/13-翁庆年的六英镑-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8014, title: "14-中场休息②-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/14-中场休息②-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8015, title: "15-万晓利出场-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/15-万晓利出场-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8016, title: "16-孤独鸟&&陀螺-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/16-孤独鸟&&陀螺-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8017, title: "17-和你在一起-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/17-和你在一起-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8018, title: "18-杭州&&董卓瑶-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/18-杭州&&董卓瑶-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8019, title: "19-南京越来越远-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/19-离南京越来越远-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8020, title: "20-中场休息③-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/20-中场休息③-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8021, title: "21-梵高先生-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/21-梵高先生-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8022, title: "22-这个世界会好吗-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/22-这个世界会好吗-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8023, title: "23-倒影-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/23-倒影-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8024, title: "24-下雨-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/24-下雨-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8025, title: "25-被禁忌的游戏&&来了-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/25-被禁忌的游戏&&来了-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8026, title: "26-忽然-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/26-忽然-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8027, title: "27-热河-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/27-热河-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" },
+        { id: 8028, title: "28-山阴路的夏天&&致谢-吉隆坡•叁缺壹1112", url: "https://jlp.1701701.xyz/m3u8/28-山阴路的夏天&&致谢-吉隆坡•叁缺壹1112/index.m3u8", thumb: "https://r2.1701701.xyz/img/JLPSQ1.jpg" }
+    ],
    bgyh: [ // 逼哥夜話 -> bgyh
         { 
             id: 1, 
@@ -378,8 +408,8 @@ export const videoData = {
         {
             id: 4052,
             title: "02 杭州",
-            url: "https://xxwl.1701701.xyz/dian1/02 杭州 家跨年現場/playlist.m3u8",
-            backupUrl: "https://b2.1701701.xyz/api/dian1/02 杭州 家跨年現場.mp4",
+            url: "https://xxwl.1701701.xyz/dian1/02 杭州 “家”跨年現場/playlist.m3u8",
+            backupUrl: "https://b2.1701701.xyz/api/dian1/02 杭州 “家”跨年現場.mp4",
             thumb: "https://r2.1701701.xyz/img/dsygxy.jpg"
         },
         {
@@ -757,6 +787,7 @@ export const videoData = {
 
 // 分类列表
 export const videoCategories = [
+    { id: 'jlpsq1', name: '吉隆坡叁缺壹', icon: '#icon-video' },
     { id: 'knxy', name: '跨年音乐会', icon: '#icon-film' },
     { id: 'bgyh', name: '逼哥夜話', icon: '#icon-microphone' },
     { id: 'bgyh2', name: '逼哥夜話第二季', icon: '#icon-microphone' },

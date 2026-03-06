@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Folder, Play, X, CornerUpLeft } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { motion as Motion } from 'framer-motion';
+import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { videoCategories, videoData } from '../data/videoData';
 import SearchHeader from './SearchHeader';
 
@@ -16,11 +16,14 @@ const fallbackThumb = `data:image/svg+xml;utf8,${encodeURIComponent(
     '</svg>'
 )}`;
 
+const buildVideoKey = (item = {}) => `${item.id ?? ''}::${item.title ?? ''}::${item.url ?? ''}`;
+
 const VideoCard = ({ item, onClick, meta }) => {
     const [thumbError, setThumbError] = useState(false);
     const [loadedThumbSrc, setLoadedThumbSrc] = useState('');
-    const thumbSrc = !thumbError && item.thumb ? item.thumb : fallbackThumb;
-    const thumbLoaded = loadedThumbSrc === thumbSrc;
+    const hasThumb = Boolean(item.thumb) && !thumbError;
+    const thumbSrc = hasThumb ? item.thumb : '';
+    const thumbLoaded = hasThumb && loadedThumbSrc === thumbSrc;
 
     return (
         <Motion.div
@@ -30,32 +33,40 @@ const VideoCard = ({ item, onClick, meta }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
         >
-            <div className="video-thumb">
-                <div
-                    className={`video-thumb-placeholder ${thumbLoaded ? 'is-hidden' : ''}`}
-                    aria-hidden="true"
-                >
-                    <span className="video-thumb-placeholder-title">民谣俱乐部</span>
-                    <span className="video-thumb-placeholder-site">1701701.xyz</span>
-                </div>
-                <img
-                    className={`video-thumb-image ${thumbLoaded ? 'is-loaded' : ''}`}
-                    src={thumbSrc}
-                    alt={item.title}
-                    loading="lazy"
-                    onLoad={() => setLoadedThumbSrc(thumbSrc)}
-                    onError={() => {
-                        setThumbError(true);
-                        setLoadedThumbSrc('');
-                    }}
-                />
-                <div className="video-thumb-overlay">
-                    {item.isFolder || item.folderId ? (
-                        <Folder size={26} />
-                    ) : (
-                        <Play size={28} fill="currentColor" />
-                    )}
-                </div>
+            <div className={`video-thumb ${!hasThumb ? 'no-thumb' : ''}`}>
+                {hasThumb ? (
+                    <>
+                        <div
+                            className={`video-thumb-placeholder ${thumbLoaded ? 'is-hidden' : ''}`}
+                            aria-hidden="true"
+                        >
+                            <span className="video-thumb-placeholder-title">加载中</span>
+                        </div>
+                        <img
+                            className={`video-thumb-image ${thumbLoaded ? 'is-loaded' : ''}`}
+                            src={thumbSrc}
+                            alt={item.title}
+                            loading="lazy"
+                            onLoad={() => setLoadedThumbSrc(thumbSrc)}
+                            onError={() => {
+                                setThumbError(true);
+                                setLoadedThumbSrc('');
+                            }}
+                        />
+                        <div className="video-thumb-overlay">
+                            {item.isFolder || item.folderId ? (
+                                <Folder size={26} />
+                            ) : (
+                                <Play size={28} fill="currentColor" />
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <div className="video-thumb-text-only">
+                        <span className="video-thumb-text-main">民谣俱乐部</span>
+                        <span className="video-thumb-text-site">1701701.xyz</span>
+                    </div>
+                )}
             </div>
             <div className="video-title">{item.title}</div>
             {meta ? <div className="video-meta">{meta}</div> : null}
@@ -78,21 +89,34 @@ const BackCard = ({ onClick }) => (
     </Motion.div>
 );
 
-const VideoPage = ({ requestVideoView }) => {
+const VideoPage = ({ requestVideoView, onShareVideo }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState(videoCategories[0]?.id || '');
+    const [watchCategory, setWatchCategory] = useState(videoCategories[0]?.id || '');
     const [folderStack, setFolderStack] = useState([]);
     const [activeVideo, setActiveVideo] = useState(null);
     const [resolvedUrl, setResolvedUrl] = useState('');
     const [fallbackUrl, setFallbackUrl] = useState('');
     const [fallbackType, setFallbackType] = useState('auto');
     const [sourceAttempt, setSourceAttempt] = useState(0);
+    const [resolveAttempt, setResolveAttempt] = useState(0);
     const [isResolving, setIsResolving] = useState(false);
     const [resolveError, setResolveError] = useState('');
     const [resolvedType, setResolvedType] = useState('auto');
+    const [resolvedVideoKey, setResolvedVideoKey] = useState('');
     const playerRef = useRef(null);
+    const stageMainRef = useRef(null);
     const dpRef = useRef(null);
+    const activeVideoKeyRef = useRef('');
+    const activeEpisodeRef = useRef(null);
+    const stageCategoriesRef = useRef(null);
     const fallbackTriedRef = useRef(false);
+    const shareQueryAppliedRef = useRef(false);
+    const [stageMainHeight, setStageMainHeight] = useState(0);
+    const [stageCategoriesScrollState, setStageCategoriesScrollState] = useState({
+        canLeft: false,
+        canRight: false
+    });
 
     const currentItems = useMemo(() => {
         if (folderStack.length > 0) {
@@ -134,6 +158,25 @@ const VideoPage = ({ requestVideoView }) => {
         return results;
     }, []);
 
+    const allVideoMap = useMemo(() => {
+        const map = new Map();
+        allVideos.forEach((item) => {
+            map.set(buildVideoKey(item), item);
+        });
+        return map;
+    }, [allVideos]);
+
+    const categoryVideoCounts = useMemo(() => {
+        const counts = {};
+        videoCategories.forEach((cat) => {
+            counts[cat.id] = 0;
+        });
+        allVideos.forEach((item) => {
+            counts[item._categoryId] = (counts[item._categoryId] || 0) + 1;
+        });
+        return counts;
+    }, [allVideos]);
+
     const searchResults = useMemo(() => {
         if (!isSearching) return [];
         const term = searchQuery.trim().toLowerCase();
@@ -142,9 +185,83 @@ const VideoPage = ({ requestVideoView }) => {
 
     const displayedItems = isSearching ? searchResults : currentItems;
 
+    const normalizeVideoItem = useCallback((item) => {
+        if (!item) return item;
+        return allVideoMap.get(buildVideoKey(item)) || item;
+    }, [allVideoMap]);
+
+    const activeVideoKey = activeVideo ? buildVideoKey(activeVideo) : '';
+
+    useLayoutEffect(() => {
+        activeVideoKeyRef.current = activeVideoKey;
+    }, [activeVideoKey]);
+
+    const watchEpisodes = useMemo(() => {
+        if (!watchCategory) return [];
+        return allVideos.filter((item) => item._categoryId === watchCategory);
+    }, [allVideos, watchCategory]);
+
+    const watchEpisodeGroups = useMemo(() => {
+        const groups = [];
+        const groupMap = new Map();
+
+        watchEpisodes.forEach((item) => {
+            const segments = String(item._pathLabel || '')
+                .split(' / ')
+                .map((segment) => segment.trim())
+                .filter(Boolean);
+            const relativePath = segments.slice(1).join(' / ');
+            const groupKey = relativePath || '__direct__';
+
+            if (!groupMap.has(groupKey)) {
+                const group = {
+                    key: groupKey,
+                    label: relativePath || '直出',
+                    isDirect: !relativePath,
+                    items: []
+                };
+                groupMap.set(groupKey, group);
+                groups.push(group);
+            }
+
+            groupMap.get(groupKey).items.push(item);
+        });
+
+        return groups;
+    }, [watchEpisodes]);
+
+    const watchEpisodeGroupByKey = useMemo(() => {
+        const map = new Map();
+        watchEpisodeGroups.forEach((group) => {
+            group.items.forEach((item) => {
+                map.set(buildVideoKey(item), group.key);
+            });
+        });
+        return map;
+    }, [watchEpisodeGroups]);
+
+    const activeWatchIndex = useMemo(() => {
+        if (!activeVideoKey) return -1;
+        return watchEpisodes.findIndex((item) => buildVideoKey(item) === activeVideoKey);
+    }, [activeVideoKey, watchEpisodes]);
+
+    const activeWatchGroupKey = watchEpisodeGroupByKey.get(activeVideoKey) || '';
+
+    const [expandedWatchGroups, setExpandedWatchGroups] = useState(() => new Set(['__direct__']));
+
+    const prevWatchEpisode = activeWatchIndex > 0 ? watchEpisodes[activeWatchIndex - 1] : null;
+    const nextWatchEpisode = activeWatchIndex >= 0 && activeWatchIndex < watchEpisodes.length - 1
+        ? watchEpisodes[activeWatchIndex + 1]
+        : null;
+
     const activeCategoryMeta = useMemo(
         () => videoCategories.find((cat) => cat.id === activeCategory),
         [activeCategory]
+    );
+
+    const watchCategoryMeta = useMemo(
+        () => videoCategories.find((cat) => cat.id === watchCategory),
+        [watchCategory]
     );
 
     const canPlayInline = useCallback(
@@ -196,13 +313,163 @@ const VideoPage = ({ requestVideoView }) => {
             if (event.key === 'Escape') setActiveVideo(null);
         };
         document.addEventListener('keydown', handleKeyDown);
-        const prevOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
-            document.body.style.overflow = prevOverflow;
         };
     }, [activeVideo]);
+
+    useEffect(() => {
+        if (!activeVideo) return;
+        const nextCategoryId = activeVideo._categoryId || activeCategory;
+        if (nextCategoryId) {
+            setWatchCategory((prev) => (prev === nextCategoryId ? prev : nextCategoryId));
+        }
+    }, [activeVideo, activeCategory]);
+
+    useEffect(() => {
+        if (shareQueryAppliedRef.current || typeof window === 'undefined') return;
+        if (allVideos.length === 0) return;
+        shareQueryAppliedRef.current = true;
+
+        const params = new URLSearchParams(window.location.search);
+        const viewParam = params.get('view');
+        if (viewParam && viewParam !== 'video') return;
+        const videoId = params.get('videoId');
+        if (!videoId) return;
+
+        const matched = allVideos.find((item) => String(item.id) === videoId);
+        const nextVideo = normalizeVideoItem(matched);
+        if (!nextVideo) return;
+
+        const nextCategoryId = nextVideo._categoryId;
+        if (nextCategoryId) {
+            setActiveCategory(nextCategoryId);
+            setWatchCategory(nextCategoryId);
+        }
+        setFolderStack([]);
+        setActiveVideo(nextVideo);
+    }, [allVideos, normalizeVideoItem]);
+
+    useEffect(() => {
+        const availableGroupKeys = new Set(watchEpisodeGroups.map((group) => group.key));
+
+        setExpandedWatchGroups((prev) => {
+            const next = new Set();
+            prev.forEach((key) => {
+                if (availableGroupKeys.has(key)) {
+                    next.add(key);
+                }
+            });
+            if (availableGroupKeys.has('__direct__')) {
+                next.add('__direct__');
+            }
+            if (activeWatchGroupKey && availableGroupKeys.has(activeWatchGroupKey)) {
+                next.add(activeWatchGroupKey);
+            }
+
+            const isSameSize = next.size === prev.size;
+            if (isSameSize) {
+                let same = true;
+                for (const key of prev) {
+                    if (!next.has(key)) {
+                        same = false;
+                        break;
+                    }
+                }
+                if (same) {
+                    return prev;
+                }
+            }
+
+            return next;
+        });
+    }, [watchEpisodeGroups, activeWatchGroupKey]);
+
+    useEffect(() => {
+        if (!activeVideo) return undefined;
+        const isEditableTarget = (target) => (
+            target instanceof HTMLElement &&
+            Boolean(target.closest('input, textarea, [contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"]'))
+        );
+
+        const handlePlaybackHotkey = (event) => {
+            if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+            if (isEditableTarget(event.target)) return;
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+            const video = dpRef.current?.video;
+            if (!video) return;
+
+            const currentTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+            const duration = Number.isFinite(video.duration) ? video.duration : Number.POSITIVE_INFINITY;
+            const delta = event.key === 'ArrowLeft' ? -10 : 10;
+            const nextTime = Math.min(Math.max(currentTime + delta, 0), duration);
+
+            if (nextTime === currentTime) return;
+            video.currentTime = nextTime;
+            if (video.paused && typeof video.play === 'function') {
+                void video.play().catch(() => {});
+            }
+            event.preventDefault();
+        };
+
+        document.addEventListener('keydown', handlePlaybackHotkey);
+        return () => {
+            document.removeEventListener('keydown', handlePlaybackHotkey);
+        };
+    }, [activeVideo]);
+
+    useEffect(() => {
+        if (!activeVideo) return undefined;
+        const handleEpisodeHotkey = (event) => {
+            if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+            if (event.key === '[' && prevWatchEpisode) {
+                event.preventDefault();
+                setActiveVideo(prevWatchEpisode);
+            }
+            if (event.key === ']' && nextWatchEpisode) {
+                event.preventDefault();
+                setActiveVideo(nextWatchEpisode);
+            }
+        };
+        document.addEventListener('keydown', handleEpisodeHotkey);
+        return () => {
+            document.removeEventListener('keydown', handleEpisodeHotkey);
+        };
+    }, [activeVideo, prevWatchEpisode, nextWatchEpisode]);
+
+    useEffect(() => {
+        if (!activeVideo || !activeEpisodeRef.current) return;
+        activeEpisodeRef.current.scrollIntoView({ block: 'nearest' });
+    }, [activeVideo, activeVideoKey, watchCategory, activeWatchGroupKey, expandedWatchGroups]);
+
+    useEffect(() => {
+        if (!activeVideo) {
+            setStageMainHeight(0);
+            return undefined;
+        }
+        const mainNode = stageMainRef.current;
+        if (!mainNode) return undefined;
+
+        const updateHeight = () => {
+            const nextHeight = Math.round(mainNode.getBoundingClientRect().height);
+            setStageMainHeight((prev) => (Math.abs(prev - nextHeight) < 2 ? prev : nextHeight));
+        };
+
+        updateHeight();
+
+        let observer;
+        if (typeof ResizeObserver !== 'undefined') {
+            observer = new ResizeObserver(() => updateHeight());
+            observer.observe(mainNode);
+        }
+
+        window.addEventListener('resize', updateHeight);
+        return () => {
+            observer?.disconnect();
+            window.removeEventListener('resize', updateHeight);
+        };
+    }, [activeVideo, resolvedUrl, resolveError, isResolving]);
 
     useEffect(() => {
         if (!activeVideo) {
@@ -210,15 +477,23 @@ const VideoPage = ({ requestVideoView }) => {
             setFallbackUrl('');
             setFallbackType('auto');
             setSourceAttempt(0);
+            setResolveAttempt(0);
             setResolveError('');
             setIsResolving(false);
             setResolvedType('auto');
+            setResolvedVideoKey('');
             fallbackTriedRef.current = false;
             return;
         }
 
         let canceled = false;
+        const targetVideoKey = buildVideoKey(activeVideo);
         const resolveUrl = async () => {
+            setResolvedUrl('');
+            setResolvedType('auto');
+            setFallbackUrl('');
+            setFallbackType('auto');
+            setResolvedVideoKey('');
             setResolveError('');
             setIsResolving(true);
             fallbackTriedRef.current = false;
@@ -237,6 +512,7 @@ const VideoPage = ({ requestVideoView }) => {
                 if (primary.url) {
                     setResolvedUrl(primary.url);
                     setResolvedType(primary.type);
+                    setResolvedVideoKey(targetVideoKey);
                     return;
                 }
 
@@ -244,11 +520,13 @@ const VideoPage = ({ requestVideoView }) => {
                     fallbackTriedRef.current = true;
                     setResolvedUrl(backup.url);
                     setResolvedType(backup.type);
+                    setResolvedVideoKey(targetVideoKey);
                     return;
                 }
 
                 setResolvedUrl('');
                 setResolvedType('auto');
+                setResolvedVideoKey('');
                 setResolveError(primary.error || backup.error || '解析播放地址失败');
             } catch {
                 if (canceled) return;
@@ -256,6 +534,7 @@ const VideoPage = ({ requestVideoView }) => {
                 setResolvedType('auto');
                 setFallbackUrl('');
                 setFallbackType('auto');
+                setResolvedVideoKey('');
                 setResolveError('解析播放地址失败');
             } finally {
                 if (!canceled) {
@@ -268,10 +547,17 @@ const VideoPage = ({ requestVideoView }) => {
         return () => {
             canceled = true;
         };
-    }, [activeVideo, resolvePlayableSource]);
+    }, [activeVideo, resolvePlayableSource, resolveAttempt]);
 
     useEffect(() => {
-        if (!activeVideo || isResolving || resolveError || !resolvedUrl || !canPlayInline(resolvedUrl, resolvedType)) {
+        if (
+            !activeVideo ||
+            resolvedVideoKey !== activeVideoKey ||
+            isResolving ||
+            resolveError ||
+            !resolvedUrl ||
+            !canPlayInline(resolvedUrl, resolvedType)
+        ) {
             return undefined;
         }
         const container = playerRef.current;
@@ -280,6 +566,8 @@ const VideoPage = ({ requestVideoView }) => {
         let player = null;
         let handlePlaybackError = null;
         let removeTouchToggleGuard = null;
+        const effectVideoKey = activeVideoKey;
+        const isStalePlayerEvent = () => canceled || activeVideoKeyRef.current !== effectVideoKey;
         const blockContextMenu = (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -289,6 +577,9 @@ const VideoPage = ({ requestVideoView }) => {
         };
 
         const trySwitchToFallback = () => {
+            if (isStalePlayerEvent()) {
+                return false;
+            }
             if (!fallbackUrl || resolvedUrl === fallbackUrl || fallbackTriedRef.current) {
                 return false;
             }
@@ -306,7 +597,7 @@ const VideoPage = ({ requestVideoView }) => {
                     import('dplayer'),
                     import('hls.js/dist/hls.light.mjs')
                 ]);
-                if (canceled) return;
+                if (isStalePlayerEvent()) return;
 
                 if (typeof window !== 'undefined' && !window.Hls) {
                     window.Hls = Hls;
@@ -338,7 +629,7 @@ const VideoPage = ({ requestVideoView }) => {
                     }
                 });
 
-                if (canceled) {
+                if (isStalePlayerEvent()) {
                     player.destroy();
                     player = null;
                     return;
@@ -455,6 +746,9 @@ const VideoPage = ({ requestVideoView }) => {
                 }
 
                 handlePlaybackError = () => {
+                    if (isStalePlayerEvent()) {
+                        return;
+                    }
                     if (trySwitchToFallback()) {
                         return;
                     }
@@ -474,7 +768,7 @@ const VideoPage = ({ requestVideoView }) => {
                     player.video.addEventListener('contextmenu', blockContextMenu, true);
                 }
             } catch {
-                if (!canceled) {
+                if (!isStalePlayerEvent()) {
                     setResolveError('播放器加载失败');
                 }
             }
@@ -505,7 +799,19 @@ const VideoPage = ({ requestVideoView }) => {
                 dpRef.current = null;
             }
         };
-    }, [activeVideo, resolvedUrl, resolvedType, fallbackUrl, fallbackType, sourceAttempt, isResolving, resolveError, canPlayInline]);
+    }, [
+        activeVideo,
+        activeVideoKey,
+        resolvedVideoKey,
+        resolvedUrl,
+        resolvedType,
+        fallbackUrl,
+        fallbackType,
+        sourceAttempt,
+        isResolving,
+        resolveError,
+        canPlayInline
+    ]);
 
     useEffect(() => {
         if (activeVideo) return;
@@ -529,16 +835,22 @@ const VideoPage = ({ requestVideoView }) => {
         setFolderStack((prev) => prev.slice(0, -1));
     };
 
+    const handleOpenVideo = useCallback((item) => {
+        const nextVideo = normalizeVideoItem(item);
+        if (!nextVideo) return;
+        if (typeof requestVideoView === 'function') {
+            requestVideoView(() => setActiveVideo(nextVideo));
+            return;
+        }
+        setActiveVideo(nextVideo);
+    }, [normalizeVideoItem, requestVideoView]);
+
     const handleCardClick = (item) => {
         if (item.isFolder || item.folderId) {
             handleOpenFolder(item);
             return;
         }
-        if (typeof requestVideoView === 'function') {
-            requestVideoView(() => setActiveVideo(item));
-            return;
-        }
-        setActiveVideo(item);
+        handleOpenVideo(item);
     };
 
     const canSwitchToBackup = Boolean(fallbackUrl);
@@ -550,13 +862,167 @@ const VideoPage = ({ requestVideoView }) => {
         setResolveError('');
         setResolvedUrl(fallbackUrl);
         setResolvedType(fallbackType || 'auto');
+        setResolvedVideoKey(activeVideoKey);
         setSourceAttempt((value) => value + 1);
     };
 
+    const handleReloadVideo = () => {
+        if (!activeVideo) return;
+        fallbackTriedRef.current = false;
+        setResolvedUrl('');
+        setResolvedType('auto');
+        setResolvedVideoKey('');
+        setResolveError('');
+        setSourceAttempt((value) => value + 1);
+        setResolveAttempt((value) => value + 1);
+    };
+
+    const handleSelectWatchCategory = (categoryId) => {
+        setWatchCategory(categoryId);
+    };
+
+    const updateStageCategoriesScrollState = useCallback(() => {
+        const node = stageCategoriesRef.current;
+        if (!node) {
+            setStageCategoriesScrollState((prev) => (
+                prev.canLeft || prev.canRight ? { canLeft: false, canRight: false } : prev
+            ));
+            return;
+        }
+
+        const maxScrollLeft = Math.max(0, node.scrollWidth - node.clientWidth);
+        const next = {
+            canLeft: node.scrollLeft > 2,
+            canRight: maxScrollLeft - node.scrollLeft > 2
+        };
+
+        setStageCategoriesScrollState((prev) => (
+            prev.canLeft === next.canLeft && prev.canRight === next.canRight ? prev : next
+        ));
+    }, []);
+
+    const handleStageCategoriesWheel = (event) => {
+        const node = stageCategoriesRef.current;
+        if (!node || node.scrollWidth <= node.clientWidth) return;
+
+        const absX = Math.abs(event.deltaX);
+        const absY = Math.abs(event.deltaY);
+        const delta = absX > absY ? event.deltaX : event.deltaY;
+        if (!delta) return;
+
+        const prevScrollLeft = node.scrollLeft;
+        node.scrollLeft += delta;
+        if (node.scrollLeft !== prevScrollLeft) {
+            event.preventDefault();
+        }
+    };
+
+    const handleScrollStageCategories = (direction) => {
+        const node = stageCategoriesRef.current;
+        if (!node) return;
+
+        const step = Math.max(220, Math.round(node.clientWidth * 0.58));
+        node.scrollBy({ left: direction * step, behavior: 'smooth' });
+    };
+
+    const handleToggleWatchGroup = (groupKey) => {
+        setExpandedWatchGroups((prev) => {
+            const next = new Set(prev);
+            if (next.has(groupKey)) {
+                next.delete(groupKey);
+            } else {
+                next.add(groupKey);
+            }
+            return next;
+        });
+    };
+
+    const handleSelectWatchEpisode = (item) => {
+        const nextVideo = normalizeVideoItem(item);
+        if (!nextVideo) return;
+        setActiveVideo(nextVideo);
+    };
+
+    const handleShareCurrentVideo = (event) => {
+        if (typeof onShareVideo !== 'function' || !activeVideo || typeof window === 'undefined') return;
+
+        const shareUrl = new URL(window.location.origin + window.location.pathname);
+        shareUrl.searchParams.set('view', 'video');
+        shareUrl.searchParams.set('videoId', String(activeVideo.id || ''));
+        if (activeVideo._categoryId) {
+            shareUrl.searchParams.set('videoCategory', String(activeVideo._categoryId));
+        }
+
+        const categoryLabel = watchCategoryMeta?.name || activeVideo._categoryName || '视频';
+        onShareVideo({
+            type: 'video',
+            panelTitle: '分享视频',
+            title: `${activeVideo.title} - ${categoryLabel}`,
+            text: activeVideo.title,
+            url: shareUrl.toString(),
+            trackName: activeVideo.title,
+            albumName: categoryLabel,
+            artistName: '1701701.xyz',
+            cover: activeVideo.thumb || ''
+        }, event?.currentTarget ? {
+            placement: 'bottom',
+            anchorEvent: { currentTarget: event.currentTarget }
+        } : undefined);
+    };
+
     const activeMetaLabel = activeVideo?._pathLabel || activeCategoryMeta?.name || '视频';
+    const activeEpisodeProgress = activeWatchIndex >= 0 ? `第 ${activeWatchIndex + 1} / ${watchEpisodes.length} 集` : '';
+    const playerContainerKey = `${resolvedVideoKey || activeVideoKey || 'video'}:${sourceAttempt}:${resolveAttempt}`;
+    const isWatching = Boolean(activeVideo);
+
+    useEffect(() => {
+        if (!isWatching) {
+            setStageCategoriesScrollState((prev) => (
+                prev.canLeft || prev.canRight ? { canLeft: false, canRight: false } : prev
+            ));
+            return undefined;
+        }
+
+        const node = stageCategoriesRef.current;
+        if (!node) return undefined;
+
+        updateStageCategoriesScrollState();
+        node.addEventListener('scroll', updateStageCategoriesScrollState, { passive: true });
+        window.addEventListener('resize', updateStageCategoriesScrollState);
+
+        let observer;
+        if (typeof ResizeObserver !== 'undefined') {
+            observer = new ResizeObserver(() => updateStageCategoriesScrollState());
+            observer.observe(node);
+        }
+
+        return () => {
+            node.removeEventListener('scroll', updateStageCategoriesScrollState);
+            window.removeEventListener('resize', updateStageCategoriesScrollState);
+            observer?.disconnect();
+        };
+    }, [isWatching, watchCategory, updateStageCategoriesScrollState]);
+
+    const renderVideoGrid = () => (
+        showBackCard || displayedItems.length > 0 ? (
+            <div className="video-grid">
+                {showBackCard && <BackCard onClick={handleBackFolder} />}
+                {displayedItems.map((item) => (
+                    <VideoCard
+                        key={item.id}
+                        item={item}
+                        onClick={() => handleCardClick(item)}
+                        meta={isSearching ? item._pathLabel : ''}
+                    />
+                ))}
+            </div>
+        ) : (
+            <div className="video-empty">暂无视频内容</div>
+        )
+    );
 
     return (
-        <div className="video-page">
+        <div className={`video-page ${isWatching ? 'is-watching' : ''}`}>
             <SearchHeader
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -565,104 +1031,236 @@ const VideoPage = ({ requestVideoView }) => {
                 placeholder="搜索视频、分类..."
             />
 
-            <div className="video-toolbar">
-                <div className="video-tabs" role="tablist" aria-label="视频分类">
-                    {videoCategories.map((cat) => (
-                        <button
-                            key={cat.id}
-                            type="button"
-                            className={`video-tab ${activeCategory === cat.id ? 'active' : ''}`}
-                            onClick={() => handleSelectCategory(cat.id)}
-                            aria-pressed={activeCategory === cat.id}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            {isSearching && renderVideoGrid()}
 
-            {showBackCard || displayedItems.length > 0 ? (
-                <div className="video-grid">
-                    {showBackCard && <BackCard onClick={handleBackFolder} />}
-                    {displayedItems.map((item) => (
-                        <VideoCard
-                            key={item.id}
-                            item={item}
-                            onClick={() => handleCardClick(item)}
-                            meta={isSearching ? item._pathLabel : ''}
-                        />
-                    ))}
+            {!isSearching && !isWatching && (
+                <div className="video-toolbar">
+                    <div className="video-tabs" role="tablist" aria-label="视频分类">
+                        {videoCategories.map((cat) => (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                className={`video-tab ${activeCategory === cat.id ? 'active' : ''}`}
+                                onClick={() => handleSelectCategory(cat.id)}
+                                aria-pressed={activeCategory === cat.id}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            ) : (
-                <div className="video-empty">暂无视频内容</div>
             )}
 
-            <AnimatePresence>
-                {activeVideo && (
-                    <Motion.div
-                        className="video-modal"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setActiveVideo(null)}
+            {isWatching && (
+                <div className="video-inline-stage is-active">
+                    <Motion.section
+                        className="video-stage-card video-stage-theme-minimal"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
                     >
-                        <Motion.div
-                            className="video-modal-card"
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: 20, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            onClick={(event) => event.stopPropagation()}
-                        >
-                            <div className="video-modal-header">
-                                <div>
-                                    <div className="video-modal-title">{activeVideo.title}</div>
-                                    <div className="video-modal-meta">{activeMetaLabel}</div>
+                        <div className="video-stage-header">
+                            <div className="video-stage-header-top">
+                                <div className="video-stage-title">{activeVideo.title}</div>
+                                <div className="video-stage-actions">
+                                    <button
+                                        type="button"
+                                        className="video-stage-share-btn"
+                                        onClick={handleShareCurrentVideo}
+                                        aria-label="分享当前视频"
+                                    >
+                                        <Share2 size={18} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="video-stage-close"
+                                        onClick={() => setActiveVideo(null)}
+                                        aria-label="收起播放器"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="video-stage-meta">
+                                <span>{activeMetaLabel}</span>
+                                {activeEpisodeProgress ? (
+                                    <span className="video-stage-progress-chip">{activeEpisodeProgress}</span>
+                                ) : null}
+                            </div>
+                        </div>
+
+                        <div className="video-stage-layout">
+                            <div className="video-stage-main" ref={stageMainRef}>
+                                <div className="video-stage-media-shell">
+                                    {isResolving && (
+                                        <div className="video-unsupported video-unsupported-inline">解析播放地址中…</div>
+                                    )}
+                                    {!isResolving && resolveError && (
+                                        <div className="video-unsupported video-unsupported-inline">
+                                            <div>{resolveError}</div>
+                                            <div className="video-unsupported-actions">
+                                                {canSwitchToBackup && (
+                                                    <button
+                                                        type="button"
+                                                        className="video-unsupported-action"
+                                                        onClick={handleSwitchToBackup}
+                                                    >
+                                                        {backupActionLabel}
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="video-unsupported-action"
+                                                    onClick={handleReloadVideo}
+                                                    disabled={isResolving}
+                                                >
+                                                    重新加载
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {!isResolving && !resolveError && !resolvedUrl && (
+                                        <div className="video-unsupported video-unsupported-inline">加载中…</div>
+                                    )}
+                                    {!isResolving && !resolveError && resolvedUrl && canPlayInline(resolvedUrl, resolvedType) && (
+                                        <div
+                                            key={playerContainerKey}
+                                            ref={playerRef}
+                                            className="video-stage-player"
+                                            onContextMenu={(event) => event.preventDefault()}
+                                        />
+                                    )}
+                                    {!isResolving && !resolveError && resolvedUrl && !canPlayInline(resolvedUrl, resolvedType) && (
+                                        <div className="video-unsupported video-unsupported-inline">当前视频链接暂不支持播放。</div>
+                                    )}
+                                </div>
+                                <div className="video-stage-main-controls">
+                                    <button
+                                        type="button"
+                                        className="video-stage-nav-btn"
+                                        onClick={() => handleSelectWatchEpisode(prevWatchEpisode)}
+                                        disabled={!prevWatchEpisode}
+                                    >
+                                        上一集
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="video-stage-nav-btn"
+                                        onClick={() => handleSelectWatchEpisode(nextWatchEpisode)}
+                                        disabled={!nextWatchEpisode}
+                                    >
+                                        下一集
+                                    </button>
+                                </div>
+                            </div>
+
+                            <aside
+                                className={`video-watch-sidebar ${stageMainHeight > 0 ? 'is-measured' : ''}`}
+                                style={stageMainHeight > 0 ? { height: `${stageMainHeight}px` } : undefined}
+                            >
+                                <div className="video-watch-head">
+                                    <div className="video-watch-current">{watchCategoryMeta?.name || '全部分类'}</div>
+                                    <div className="video-watch-total">{watchEpisodes.length} 集</div>
+                                </div>
+                                <div className="video-watch-episodes">
+                                    {watchEpisodes.length === 0 ? (
+                                        <div className="video-watch-empty">当前分类暂无可播放视频</div>
+                                    ) : (
+                                        watchEpisodeGroups.map((group) => {
+                                            const isExpanded = group.isDirect || expandedWatchGroups.has(group.key);
+
+                                            return (
+                                                <section key={`watch-group-${group.key}`} className="video-watch-group">
+                                                    {!group.isDirect && (
+                                                        <button
+                                                            type="button"
+                                                            className={`video-watch-group-toggle ${isExpanded ? 'is-expanded' : ''}`}
+                                                            onClick={() => handleToggleWatchGroup(group.key)}
+                                                            aria-expanded={isExpanded}
+                                                        >
+                                                            <span className="video-watch-group-label">{group.label}</span>
+                                                            <span className="video-watch-group-count">{group.items.length} 集</span>
+                                                            <ChevronDown size={14} className="video-watch-group-icon" />
+                                                        </button>
+                                                    )}
+
+                                                    {isExpanded && (
+                                                        <div className={`video-watch-group-items ${group.isDirect ? 'is-direct' : ''}`}>
+                                                            {group.items.map((item, index) => {
+                                                                const itemKey = buildVideoKey(item);
+                                                                const isActiveEpisode = itemKey === activeVideoKey;
+
+                                                                return (
+                                                                    <button
+                                                                        key={`watch-episode-${item.id}-${index}`}
+                                                                        type="button"
+                                                                        className={`video-watch-episode ${isActiveEpisode ? 'active' : ''}`}
+                                                                        onClick={() => handleSelectWatchEpisode(item)}
+                                                                        ref={isActiveEpisode ? activeEpisodeRef : null}
+                                                                    >
+                                                                        <span className="video-watch-episode-index">
+                                                                            {String(index + 1).padStart(2, '0')}
+                                                                        </span>
+                                                                        <span className="video-watch-episode-texts">
+                                                                            <span className="video-watch-episode-title">{item.title}</span>
+                                                                        </span>
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </section>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </aside>
+                            <div className="video-stage-categories-wrap">
+                                <button
+                                    type="button"
+                                    className="video-stage-categories-nav"
+                                    onClick={() => handleScrollStageCategories(-1)}
+                                    disabled={!stageCategoriesScrollState.canLeft}
+                                    aria-label="向左查看分类"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <div
+                                    className="video-stage-categories"
+                                    role="tablist"
+                                    aria-label="看片分类"
+                                    ref={stageCategoriesRef}
+                                    onWheel={handleStageCategoriesWheel}
+                                >
+                                    {videoCategories.map((cat) => (
+                                        <button
+                                            key={`watch-${cat.id}`}
+                                            type="button"
+                                            className={`video-stage-category ${watchCategory === cat.id ? 'active' : ''}`}
+                                            onClick={() => handleSelectWatchCategory(cat.id)}
+                                            aria-pressed={watchCategory === cat.id}
+                                        >
+                                            <span>{cat.name}</span>
+                                            <span className="video-stage-category-count">{categoryVideoCounts[cat.id] || 0}</span>
+                                        </button>
+                                    ))}
                                 </div>
                                 <button
                                     type="button"
-                                    className="video-modal-close"
-                                    onClick={() => setActiveVideo(null)}
-                                    aria-label="关闭"
+                                    className="video-stage-categories-nav"
+                                    onClick={() => handleScrollStageCategories(1)}
+                                    disabled={!stageCategoriesScrollState.canRight}
+                                    aria-label="向右查看分类"
                                 >
-                                    <X size={20} />
+                                    <ChevronRight size={16} />
                                 </button>
                             </div>
+                        </div>
+                    </Motion.section>
+                </div>
+            )}
 
-                            {isResolving && (
-                                <div className="video-unsupported">解析播放地址中…</div>
-                            )}
-                            {!isResolving && resolveError && (
-                                <div className="video-unsupported">
-                                    <div>{resolveError}</div>
-                                    {canSwitchToBackup && (
-                                        <button
-                                            type="button"
-                                            className="video-unsupported-action"
-                                            onClick={handleSwitchToBackup}
-                                        >
-                                            {backupActionLabel}
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-                            {!isResolving && !resolveError && !resolvedUrl && (
-                                <div className="video-unsupported">加载中…</div>
-                            )}
-                            {!isResolving && !resolveError && resolvedUrl && canPlayInline(resolvedUrl, resolvedType) && (
-                                <div
-                                    ref={playerRef}
-                                    className="video-player"
-                                    onContextMenu={(event) => event.preventDefault()}
-                                />
-                            )}
-                            {!isResolving && !resolveError && resolvedUrl && !canPlayInline(resolvedUrl, resolvedType) && (
-                                <div className="video-unsupported">当前视频链接暂不支持播放。</div>
-                            )}
-                        </Motion.div>
-                    </Motion.div>
-                )}
-            </AnimatePresence>
+            {!isSearching && !isWatching && renderVideoGrid()}
         </div>
     );
 };
