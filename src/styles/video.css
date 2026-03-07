@@ -322,49 +322,42 @@
   text-align: center;
 }
 
-.video-access-helper {
+.video-access-copy-hint {
   width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
   align-items: center;
 }
 
-.video-access-helper-row {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  max-width: min(360px, 86vw);
-}
-
-.video-access-tip {
+.video-access-copy-line {
   margin: 0;
-  text-align: center;
-}
-
-.video-access-tip-label {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 16px;
-  line-height: 1.45;
-  font-weight: 500;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.video-access-tip-highlight {
   color: var(--text-main);
   font-size: 16px;
   line-height: 1.45;
   font-weight: 800;
   letter-spacing: 0.01em;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .video-access-qr {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
+  align-items: center;
+  width: fit-content;
+  margin: 0 auto;
   padding: 4px 0 2px;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.video-access-qr:hover {
+  opacity: 0.96;
+}
+
+.video-access-qr:active {
+  transform: scale(0.985);
 }
 
 .video-access-qr img {
@@ -374,34 +367,6 @@
   border: 1px solid var(--glass-border);
   background: #ffffff;
   object-fit: cover;
-}
-
-.video-access-helper-actions {
-  display: flex;
-  justify-content: center;
-}
-
-.video-access-copy-btn {
-  flex: 0 0 auto;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border);
-  background: color-mix(in srgb, var(--glass-bg) 55%, transparent);
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  opacity: 0.92;
-  transition: opacity 0.2s ease, background 0.2s ease;
-}
-
-.video-access-copy-btn:hover,
-.video-access-copy-btn:active {
-  opacity: 1;
-  background: color-mix(in srgb, var(--hover-bg) 45%, var(--glass-bg));
-  color: var(--text-main);
 }
 
 .video-access-input {

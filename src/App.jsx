@@ -596,8 +596,16 @@ const App = () => {
 
   const handleCopyOfficialAccountName = useCallback(async (eventOrOptions) => {
     const anchorOrOptions = eventOrOptions?.currentTarget
-      ? { placement: 'bottom', anchorEvent: { currentTarget: eventOrOptions.currentTarget } }
-      : (eventOrOptions || { placement: 'bottom' });
+      ? {
+        placement: 'bottom',
+        anchorEvent: { currentTarget: eventOrOptions.currentTarget },
+        duration: 3200
+      }
+      : {
+        placement: 'bottom',
+        duration: 3200,
+        ...(eventOrOptions || {})
+      };
     const copied = await copyTextToClipboard(WECHAT_OFFICIAL_ACCOUNT_NAME);
     showToast(
       copied

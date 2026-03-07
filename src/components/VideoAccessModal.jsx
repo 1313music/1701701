@@ -17,24 +17,19 @@ const VideoAccessModal = ({
   return (
     <div className="video-access-modal" onClick={onClose}>
       <div className="video-access-card" onClick={(event) => event.stopPropagation()}>
-        <p className="video-access-tip-label">关注公众号【{officialAccountName}】</p>
-        <div className="video-access-qr">
+        <div className="video-access-copy-hint">
+          <p className="video-access-copy-line">关注公众号【{officialAccountName}】</p>
+          <p className="video-access-copy-line">发送【{keyword}】获取访问密码</p>
+        </div>
+        <button
+          type="button"
+          className="video-access-qr"
+          onClick={onCopyOfficialAccountName}
+          aria-label={`复制公众号名 ${officialAccountName}`}
+          title={`复制公众号名 ${officialAccountName}`}
+        >
           <img loading="lazy" src={qrUrl} alt="公众号二维码" />
-        </div>
-        <div className="video-access-helper">
-          <div className="video-access-helper-row">
-            <button
-              type="button"
-              className="video-access-copy-btn"
-              onClick={onCopyOfficialAccountName}
-            >
-              扫码关注 或 点击一键复制名称
-            </button>
-          </div>
-          <p className="video-access-tip">
-            <span className="video-access-tip-highlight">发送【{keyword}】获取访问密码</span>
-          </p>
-        </div>
+        </button>
         <input
           className="video-access-input"
           type="password"
