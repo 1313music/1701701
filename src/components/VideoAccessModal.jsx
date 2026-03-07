@@ -10,8 +10,7 @@ const VideoAccessModal = ({
   onPasswordChange,
   videoPasswordError,
   onSubmit,
-  onCopyOfficialAccountName,
-  onSaveOfficialAccountQr
+  onCopyOfficialAccountName
 }) => {
   if (!isOpen) return null;
 
@@ -34,13 +33,6 @@ const VideoAccessModal = ({
             onClick={onCopyOfficialAccountName}
           >
             一键复制公众号名
-          </button>
-          <button
-            type="button"
-            className="video-access-btn ghost"
-            onClick={onSaveOfficialAccountQr}
-          >
-            保存二维码到相册
           </button>
         </div>
         <input

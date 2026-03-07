@@ -26,7 +26,6 @@ import {
   isIOSDevice,
   isWeChatBrowser,
   openImagePreviewWindow,
-  saveImageToAlbum,
   upsertJsonLd,
   upsertLinkTag,
   upsertMetaTag
@@ -609,22 +608,6 @@ const App = () => {
     );
   }, [showToast]);
 
-  const handleSaveOfficialAccountQr = useCallback(async (eventOrOptions) => {
-    const anchorOrOptions = eventOrOptions?.currentTarget
-      ? { placement: 'bottom', anchorEvent: { currentTarget: eventOrOptions.currentTarget } }
-      : (eventOrOptions || { placement: 'bottom' });
-    const result = await saveImageToAlbum(WECHAT_OFFICIAL_ACCOUNT_QR_URL, '1701701-gzh-qr.jpg');
-    if (result === 'downloaded') {
-      showToast('二维码下载已开始', 'tone-add', anchorOrOptions);
-      return;
-    }
-    if (result === 'previewed') {
-      showToast('已打开二维码，长按图片可保存到相册', 'tone-add', anchorOrOptions);
-      return;
-    }
-    showToast('保存失败，请长按二维码图片手动保存', 'tone-remove', anchorOrOptions);
-  }, [showToast]);
-
   const buildCurrentSharePayload = useCallback(() => {
     if (!currentTrack?.src || typeof window === 'undefined') return null;
     const resolvedAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
@@ -1059,7 +1042,6 @@ const App = () => {
           videoPasswordError={videoPasswordError}
           onSubmit={handleVideoAccessSubmit}
           onCopyOfficialAccountName={handleCopyOfficialAccountName}
-          onSaveOfficialAccountQr={handleSaveOfficialAccountQr}
         />
 
         {sharePanelData && (
