@@ -310,6 +310,7 @@
 
 .video-access-card {
   --video-access-content-width: min(220px, 70vw);
+  --video-access-qr-size: min(196px, 62vw);
   width: min(420px, 92vw);
   background: var(--bg-color);
   border-radius: 16px;
@@ -361,7 +362,7 @@
 }
 
 .video-access-qr img {
-  width: var(--video-access-content-width);
+  width: var(--video-access-qr-size);
   height: auto;
   border-radius: 12px;
   border: 1px solid var(--glass-border);

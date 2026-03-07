@@ -599,11 +599,11 @@ const App = () => {
       ? {
         placement: 'bottom',
         anchorEvent: { currentTarget: eventOrOptions.currentTarget },
-        duration: 3200
+        duration: 6000
       }
       : {
         placement: 'bottom',
-        duration: 3200,
+        duration: 6000,
         ...(eventOrOptions || {})
       };
     const copied = await copyTextToClipboard(WECHAT_OFFICIAL_ACCOUNT_NAME);

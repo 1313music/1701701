@@ -18,7 +18,7 @@ const VideoAccessModal = ({
     <div className="video-access-modal" onClick={onClose}>
       <div className="video-access-card" onClick={(event) => event.stopPropagation()}>
         <div className="video-access-copy-hint">
-          <p className="video-access-copy-line">关注公众号【{officialAccountName}】</p>
+          <p className="video-access-copy-line">关注【{officialAccountName}】公众号</p>
           <p className="video-access-copy-line">发送【{keyword}】获取访问密码</p>
         </div>
         <button
