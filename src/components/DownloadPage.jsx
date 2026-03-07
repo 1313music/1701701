@@ -128,7 +128,7 @@ const DownloadPage = () => {
 
             <section className="download-intro">
                 <div className="download-intro-media">
-                    <img loading="lazy" src="https://r2.1701701.xyz/img/xcx.jpg" alt="SongSharing 小程序二维码" />
+                    <img loading="lazy" src="https://p1.music.126.net/h1WFXzKQ6qpjB1STRsD5Qg==/109951172851448634.jpg" alt="SongSharing 小程序二维码" />
                 </div>
                 <div className="download-intro-body">
                     <div className="download-intro-brand">

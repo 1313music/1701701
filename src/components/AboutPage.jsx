@@ -4,7 +4,7 @@ const followItems = [
     {
         title: 'SongSharing',
         subtitle: '一键上传·网易云盘',
-        image: 'https://r2.1701701.xyz/img/xcx.jpg'
+        image: 'https://p1.music.126.net/h1WFXzKQ6qpjB1STRsD5Qg==/109951172851448634.jpg'
     },
     {
         title: '民谣俱乐部',
@@ -41,7 +41,7 @@ const AboutPage = () => {
     <div className="about-page about-v3">
         <section className="about-v3-hero">
             <div className="about-v3-image">
-                <img loading="lazy" src="https://r2.1701701.xyz/img/aboutbg.jpg" alt="李志" />
+                <img loading="lazy" src="https://p1.music.126.net/9zu8MA2HIIbkwpR5WbeiHg==/109951172851439998.jpg" alt="李志" />
                 <div className="about-v3-overlay">
                     <p>一个分享李志音乐&视频的网站 | 1701701.xyz</p>
                 </div>
