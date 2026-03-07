@@ -17,11 +17,9 @@ const VideoAccessModal = ({
   return (
     <div className="video-access-modal" onClick={onClose}>
       <div className="video-access-card" onClick={(event) => event.stopPropagation()}>
-        <div className="video-access-title">视频访问</div>
         <p className="video-access-tip">
-          关注公众号【{officialAccountName}】
-          <br />
-          发送“{keyword}”获取密码。
+          <span className="video-access-tip-label">先关注公众号【{officialAccountName}】</span>
+          <span className="video-access-tip-highlight">发送“{keyword}”获取访问密码</span>
         </p>
         <div className="video-access-qr">
           <img loading="lazy" src={qrUrl} alt="公众号二维码" />
