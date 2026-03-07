@@ -89,7 +89,7 @@ const KL_EVENT_DATES = [
 const KL_EVENT_URL = 'https://idealivearena.com/event/three-missing-one/';
 const WECHAT_OFFICIAL_ACCOUNT_NAME = '民谣俱乐部';
 const WECHAT_VIDEO_PASSWORD_KEYWORD = '视频';
-const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://r2.1701701.xyz/img/gzh.jpg';
+const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg';
 
 const App = () => {
   const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'app' | 'about'

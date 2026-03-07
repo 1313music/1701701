@@ -9,7 +9,7 @@ const followItems = [
     {
         title: '民谣俱乐部',
         subtitle: '获取最新资讯',
-        image: 'https://r2.1701701.xyz/img/gzh.jpg'
+        image: 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg'
     },
 ];
 
