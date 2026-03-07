@@ -19,7 +19,7 @@ const VideoAccessModal = ({
       <div className="video-access-card" onClick={(event) => event.stopPropagation()}>
         <div className="video-access-copy-hint">
           <p className="video-access-copy-line">关注【{officialAccountName}】公众号</p>
-          <p className="video-access-copy-line">发送【{keyword}】获取访问密码</p>
+          <p className="video-access-copy-line">发送【{keyword}】获取视频密码</p>
         </div>
         <button
           type="button"
@@ -33,7 +33,7 @@ const VideoAccessModal = ({
         <input
           className="video-access-input"
           type="password"
-          placeholder="请输入访问密码"
+          placeholder="请输入视频密码"
           value={videoPassword}
           onChange={(event) => onPasswordChange(event.target.value)}
           onKeyDown={(event) => {
