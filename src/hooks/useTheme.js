@@ -115,25 +115,78 @@ export const useTheme = ({ showToast } = {}) => {
     const root = document.documentElement;
     const isAndroid = /Android/i.test(window.navigator.userAgent || '');
     let rafId = 0;
+    let probe = null;
+
+    const readInsetValue = (value) => {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
+    };
+
+    const clearViewportVars = () => {
+      root.style.setProperty('--mobile-browser-bottom-gap', '0px');
+      root.style.removeProperty('--mobile-fullscreen-height');
+      root.style.removeProperty('--mobile-layout-safe-top');
+      root.style.removeProperty('--mobile-main-top-safe-offset');
+      root.style.removeProperty('--mobile-layout-safe-bottom');
+      root.style.removeProperty('--mobile-player-safe-bottom');
+      root.style.removeProperty('--mobile-fullscreen-safe-top');
+      root.style.removeProperty('--mobile-fullscreen-safe-right');
+      root.style.removeProperty('--mobile-fullscreen-safe-bottom');
+      root.style.removeProperty('--mobile-fullscreen-safe-left');
+    };
+
+    if (isAndroid) {
+      probe = document.createElement('div');
+      probe.setAttribute('aria-hidden', 'true');
+      probe.style.position = 'fixed';
+      probe.style.top = '0';
+      probe.style.left = '0';
+      probe.style.width = '0';
+      probe.style.height = '0';
+      probe.style.visibility = 'hidden';
+      probe.style.pointerEvents = 'none';
+      probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+      probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
+      probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+      probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
+      document.body.appendChild(probe);
+    }
 
     const updateViewportVars = () => {
       if (!isAndroid) {
-        root.style.setProperty('--mobile-browser-bottom-gap', '0px');
-        root.style.removeProperty('--mobile-fullscreen-height');
+        clearViewportVars();
         return;
       }
 
       const vv = window.visualViewport;
       const viewportHeight = vv?.height ?? window.innerHeight;
-      const offsetTop = vv?.offsetTop ?? 0;
+      const offsetTop = Math.max(vv?.offsetTop ?? 0, 0);
       const rawBottomGap = Math.max(window.innerHeight - (viewportHeight + offsetTop), 0);
       const isMobileWidth = window.innerWidth <= 1024;
       const browserBottomGap = isMobileWidth
         ? Math.min(Math.round(rawBottomGap), 120)
         : 0;
+      const probeStyle = probe ? window.getComputedStyle(probe) : null;
+      const safeTopInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingTop)) : 0;
+      const safeRightInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingRight)) : 0;
+      const safeBottomInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingBottom)) : 0;
+      const safeLeftInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingLeft)) : 0;
+      const isStandalone = root.classList.contains('standalone-mode') || root.classList.contains('standalone-fallback');
+      const measuredTopInset = Math.max(Math.round(offsetTop), safeTopInset);
+      // Some Android PWAs/WebViews render under the status bar while env()/visualViewport still report 0.
+      const fallbackTopInset = isStandalone && isMobileWidth && measuredTopInset === 0 ? 24 : 0;
+      const safeTop = Math.max(measuredTopInset, fallbackTopInset);
 
       root.style.setProperty('--mobile-fullscreen-height', `${Math.round(viewportHeight)}px`);
       root.style.setProperty('--mobile-browser-bottom-gap', `${browserBottomGap}px`);
+      root.style.setProperty('--mobile-layout-safe-top', `${safeTop}px`);
+      root.style.setProperty('--mobile-main-top-safe-offset', `${safeTop}px`);
+      root.style.setProperty('--mobile-layout-safe-bottom', `${safeBottomInset}px`);
+      root.style.setProperty('--mobile-player-safe-bottom', `${safeBottomInset}px`);
+      root.style.setProperty('--mobile-fullscreen-safe-top', `${safeTop}px`);
+      root.style.setProperty('--mobile-fullscreen-safe-right', `${safeRightInset}px`);
+      root.style.setProperty('--mobile-fullscreen-safe-bottom', `${safeBottomInset}px`);
+      root.style.setProperty('--mobile-fullscreen-safe-left', `${safeLeftInset}px`);
     };
 
     const requestUpdate = () => {
@@ -167,8 +220,10 @@ export const useTheme = ({ showToast } = {}) => {
         window.visualViewport.removeEventListener('resize', requestUpdate);
         window.visualViewport.removeEventListener('scroll', requestUpdate);
       }
-      root.style.setProperty('--mobile-browser-bottom-gap', '0px');
-      root.style.removeProperty('--mobile-fullscreen-height');
+      if (probe) {
+        probe.remove();
+      }
+      clearViewportVars();
     };
   }, []);
 
