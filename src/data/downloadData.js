@@ -1,76 +1,26 @@
+import { jlpAlbum } from './jlp.js';
+
+const buildDownloadItem = ({ name, src }) => ({
+  title: name,
+  url: src,
+  filename: src.split('/').pop() || `${name}.mp3`
+});
+
+const kualaLumpurDownloadItems = jlpAlbum.songs
+  .filter(
+    ({ src }) =>
+      src === "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/南京越来越远.mp3" ||
+      src.startsWith("https://jlp.1701701.xyz/mp3/")
+  )
+  .map(buildDownloadItem);
+
 export const downloadSections = [
   {
     "title": "叁缺壹吉隆坡站",
     "groups": [
       {
         "title": "THREE MISSING ONE TOUR IN KUALA LUMPUR MALAYSIA",
-        "items": [
-          {
-            "title": "南京越来越远",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/南京越来越远.mp3",
-            "filename": "南京越来越远.mp3"
-          },
-          {
-            "title": "下雨",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/下雨.mp3",
-            "filename": "下雨.mp3"
-          },
-          {
-            "title": "翁庆年的六英镑",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/六英镑.mp3",
-            "filename": "六英镑.mp3"
-          },
-          {
-            "title": "关于郑州的记忆",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/关于郑州的记忆.mp3",
-            "filename": "关于郑州的记忆.mp3"
-          },
-          {
-            "title": "和你在一起",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/和你在一起.mp3",
-            "filename": "和你在一起.mp3"
-          },
-          {
-            "title": "天空之城",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/天空之城.mp3",
-            "filename": "天空之城.mp3"
-          },
-          {
-            "title": "定西",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/定西 .mp3",
-            "filename": "定西 .mp3"
-          },
-          {
-            "title": "杭州",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/杭州.mp3",
-            "filename": "杭州.mp3"
-          },
-          {
-            "title": "梵高先生",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/梵高先生.mp3",
-            "filename": "梵高先生.mp3"
-          },
-          {
-            "title": "米店",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/米店.mp3",
-            "filename": "米店.mp3"
-          },
-          {
-            "title": "苍井空",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/苍井空.mp3",
-            "filename": "苍井空.mp3"
-          },
-          {
-            "title": "这个世界会好吗",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/这个世界会好吗.mp3",
-            "filename": "这个世界会好吗.mp3"
-          },
-          {
-            "title": "鼠说",
-            "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/叁缺壹吉隆坡站/鼠说.mp3",
-            "filename": "鼠说.mp3"
-          }
-        ]
+        "items": kualaLumpurDownloadItems
       },
       {
         "title": "11月11日现场（来自了了）",
