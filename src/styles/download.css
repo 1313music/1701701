@@ -291,11 +291,20 @@
   text-align: center;
 }
 
+.download-page.download-v2 .download-intro-top {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+}
+
 .download-page.download-v2 .download-intro-media {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  grid-column: 2;
+  justify-self: center;
 }
 
 .download-page.download-v2 .download-intro-media img {
@@ -352,12 +361,15 @@
   margin-top: 12px;
   display: flex;
   justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .download-page.download-v2 .download-intro-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid var(--glass-border);
@@ -367,6 +379,14 @@
   font-size: 12px;
   text-decoration: none;
   transition: all 0.2s ease;
+}
+
+.download-page.download-v2 button.download-intro-link {
+  cursor: pointer;
+}
+
+.download-page.download-v2 .download-intro-page-share {
+  order: 2;
 }
 
 .download-page.download-v2 .download-intro-link:hover {
@@ -476,10 +496,6 @@
 }
 
 @media (max-width: 1024px) {
-  .download-page.download-v2 .download-intro {
-    grid-template-columns: 1fr;
-  }
-
   .download-page.download-v2 .download-intro-body {
     text-align: center;
     align-items: center;
@@ -502,6 +518,24 @@
 @media (max-width: 640px) {
   .download-page.download-v2 .download-intro {
     padding: 16px;
+  }
+
+  .download-page.download-v2 .download-intro-top {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 12px;
+  }
+
+  .download-page.download-v2 .download-intro-media {
+    grid-column: 1;
+  }
+
+  .download-page.download-v2 .download-intro-actions .download-intro-link:first-child {
+    order: 1;
+  }
+
+  .download-page.download-v2 .download-intro-media {
+    justify-self: center;
   }
 
   .download-page.download-v2 .download-intro-media img {

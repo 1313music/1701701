@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Monitor, Laptop, Smartphone, Apple } from 'lucide-react';
+import { Monitor, Laptop, Smartphone, Apple, Share2 } from 'lucide-react';
 
 const DOMAIN_DOWNLOAD_BASE_URL = 'https://app.1701701.xyz';
 
@@ -54,7 +54,7 @@ const iosSteps = [
   '点击右上角“添加”完成安装。'
 ];
 
-const AppPage = () => {
+const AppPage = ({ onCopyPageLink }) => {
   const [statusMap, setStatusMap] = useState({});
 
   useEffect(() => {
@@ -93,7 +93,23 @@ const AppPage = () => {
   return (
     <div className="app-download-page">
       <section className="app-download-hero">
-        <div className="app-download-hero-tag">APP</div>
+        <div className="app-download-hero-top">
+          <div className="app-download-hero-tag">APP</div>
+          {typeof onCopyPageLink === 'function' && (
+            <button
+              type="button"
+              className="app-download-hero-share"
+              onClick={(event) => onCopyPageLink({
+                placement: 'bottom',
+                anchorEvent: { currentTarget: event.currentTarget }
+              })}
+              aria-label="分享 APP 页"
+            >
+              <Share2 size={16} strokeWidth={2.2} absoluteStrokeWidth />
+              分享本页
+            </button>
+          )}
+        </div>
         <h1>客户端下载</h1>
         <p>
           可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。

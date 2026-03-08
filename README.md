@@ -20,6 +20,18 @@ npm run build
 npm run check
 ```
 
+## 页面直达路径
+
+线上站点支持以下直达地址：
+
+- `https://1701701.xyz/`
+- `https://1701701.xyz/video`
+- `https://1701701.xyz/download`
+- `https://1701701.xyz/app`
+- `https://1701701.xyz/about`
+
+说明：项目使用单页应用路由，Cloudflare Pages 通过 `public/_redirects` 将这些路径统一回退到首页入口。
+
 ## 视频访问口令（可轮换）
 
 视频访问口令支持通过 Vite 环境变量配置：

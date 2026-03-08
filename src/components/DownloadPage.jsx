@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { Share2, BookOpen } from 'lucide-react';
 import { downloadSections } from '../data/downloadData';
 
 const DownloadItem = ({ item }) => {
@@ -107,7 +108,7 @@ const DownloadGroup = ({ group }) => {
     );
 };
 
-const DownloadPage = () => {
+const DownloadPage = ({ onCopyPageLink }) => {
     const sectionStats = useMemo(() => {
         const map = new Map();
         downloadSections.forEach((section) => {
@@ -119,6 +120,13 @@ const DownloadPage = () => {
         });
         return map;
     }, []);
+    const handleCopyPageLink = (event) => {
+        if (typeof onCopyPageLink !== 'function') return;
+        onCopyPageLink({
+            placement: 'bottom',
+            anchorEvent: { currentTarget: event.currentTarget }
+        });
+    };
 
     return (
         <div className="download-page download-v2">
@@ -127,8 +135,10 @@ const DownloadPage = () => {
             </section>
 
             <section className="download-intro">
-                <div className="download-intro-media">
-                    <img loading="lazy" src="https://p1.music.126.net/h1WFXzKQ6qpjB1STRsD5Qg==/109951172851448634.jpg" alt="SongSharing 小程序二维码" />
+                <div className="download-intro-top">
+                    <div className="download-intro-media">
+                        <img loading="lazy" src="https://p1.music.126.net/h1WFXzKQ6qpjB1STRsD5Qg==/109951172851448634.jpg" alt="SongSharing 小程序二维码" />
+                    </div>
                 </div>
                 <div className="download-intro-body">
                     <div className="download-intro-brand">
@@ -144,8 +154,20 @@ const DownloadPage = () => {
                             target="_blank"
                             rel="noreferrer"
                         >
+                            <BookOpen size={15} strokeWidth={2.2} absoluteStrokeWidth />
                             使用指南
                         </a>
+                        {typeof onCopyPageLink === 'function' && (
+                            <button
+                                type="button"
+                                className="download-intro-link download-intro-page-share"
+                                onClick={handleCopyPageLink}
+                                aria-label="分享下载页"
+                            >
+                                <Share2 size={15} strokeWidth={2.2} absoluteStrokeWidth />
+                                分享本页
+                            </button>
+                        )}
                     </div>
                 </div>
             </section>

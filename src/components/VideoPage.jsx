@@ -332,8 +332,6 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
         shareQueryAppliedRef.current = true;
 
         const params = new URLSearchParams(window.location.search);
-        const viewParam = params.get('view');
-        if (viewParam && viewParam !== 'video') return;
         const videoId = params.get('videoId');
         if (!videoId) return;
 
@@ -946,8 +944,7 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     const handleShareCurrentVideo = (event) => {
         if (typeof onShareVideo !== 'function' || !activeVideo || typeof window === 'undefined') return;
 
-        const shareUrl = new URL(window.location.origin + window.location.pathname);
-        shareUrl.searchParams.set('view', 'video');
+        const shareUrl = new URL('/video', window.location.origin);
         shareUrl.searchParams.set('videoId', String(activeVideo.id || ''));
         if (activeVideo._categoryId) {
             shareUrl.searchParams.set('videoCategory', String(activeVideo._categoryId));

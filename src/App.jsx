@@ -39,6 +39,21 @@ const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
 const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
+const VIEW_PATHS = Object.freeze({
+  library: '/',
+  video: '/video',
+  download: '/download',
+  app: '/app',
+  about: '/about'
+});
+const VIEW_QUERY_KEYS = Object.freeze({
+  library: ['albumId', 'song'],
+  video: ['videoId', 'videoCategory'],
+  download: [],
+  app: [],
+  about: []
+});
+const AVAILABLE_VIEWS = new Set(Object.keys(VIEW_PATHS));
 
 const buildSongSrcSet = (albums) => {
   const set = new Set();
@@ -60,6 +75,46 @@ const buildSongIndex = (albums) => {
     }
   }
   return map;
+};
+
+const normalizePathname = (pathname = '/') => {
+  if (!pathname) return '/';
+  const normalized = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  if (normalized.length === 1) return normalized;
+  return normalized.replace(/\/+$/, '') || '/';
+};
+
+const getPathForView = (view) => VIEW_PATHS[view] || VIEW_PATHS.library;
+
+const getViewFromPathname = (pathname = '/') => {
+  const normalized = normalizePathname(pathname);
+  const matched = Object.entries(VIEW_PATHS).find(([, path]) => path === normalized);
+  return matched ? matched[0] : null;
+};
+
+const getCanonicalSearchForView = (view, search = '') => {
+  const params = new URLSearchParams(search);
+  params.delete('view');
+  const nextParams = new URLSearchParams();
+
+  for (const key of VIEW_QUERY_KEYS[view] || []) {
+    const value = params.get(key);
+    if (value) {
+      nextParams.set(key, value);
+    }
+  }
+
+  const nextSearch = nextParams.toString();
+  return nextSearch ? `?${nextSearch}` : '';
+};
+
+const resolveViewFromLocation = (locationLike) => {
+  if (!locationLike) return 'library';
+  const pathnameView = getViewFromPathname(locationLike.pathname);
+  if (pathnameView) return pathnameView;
+  const params = new URLSearchParams(locationLike.search || '');
+  const queryView = String(params.get('view') || '').trim();
+  return AVAILABLE_VIEWS.has(queryView) ? queryView : 'library';
 };
 
 const SITE_URL = 'https://1701701.xyz';
@@ -92,7 +147,12 @@ const WECHAT_VIDEO_PASSWORD_KEYWORD = '密码';
 const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg';
 
 const App = () => {
-  const [view, setView] = useState('library'); // 'library' | 'video' | 'download' | 'app' | 'about'
+  const [view, setView] = useState(() => (
+    typeof window === 'undefined' ? 'library' : resolveViewFromLocation(window.location)
+  )); // 'library' | 'video' | 'download' | 'app' | 'about'
+  const [locationSearch, setLocationSearch] = useState(() => (
+    typeof window === 'undefined' ? '' : window.location.search
+  ));
   const [musicAlbums, setMusicAlbums] = useState([]);
   const [isMusicLoading, setIsMusicLoading] = useState(true);
   const [musicLoadError, setMusicLoadError] = useState('');
@@ -117,8 +177,6 @@ const App = () => {
   const [shareCardDataUrl, setShareCardDataUrl] = useState('');
   const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
   const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
-  const shareQueryAppliedRef = useRef(false);
-  const viewQueryAppliedRef = useRef(false);
   const shareCardRequestIdRef = useRef(0);
   const tempPlaylistIdsRef = useRef(tempPlaylistIds);
 
@@ -349,7 +407,7 @@ const App = () => {
     };
 
     const currentSeo = seoMap[view] || seoMap.library;
-    const canonicalUrl = `${SITE_URL}/`;
+    const canonicalUrl = new URL(getPathForView(view), SITE_URL).toString();
     const keywordsContent = Array.isArray(currentSeo.keywords)
       ? currentSeo.keywords.join(',')
       : '';
@@ -489,7 +547,7 @@ const App = () => {
       }
     ];
 
-    if (albumListForSeo.length > 0) {
+    if (view === 'library' && albumListForSeo.length > 0) {
       jsonLdPayload.push({
         '@context': 'https://schema.org',
         '@type': 'ItemList',
@@ -519,10 +577,8 @@ const App = () => {
   }, [view, musicAlbums]);
 
   useEffect(() => {
-    if (shareQueryAppliedRef.current) return;
-    if (musicAlbums.length === 0 || typeof window === 'undefined') return;
-    shareQueryAppliedRef.current = true;
-    const params = new URLSearchParams(window.location.search);
+    if (musicAlbums.length === 0) return;
+    const params = new URLSearchParams(locationSearch);
     const albumId = params.get('albumId');
     if (!albumId) return;
     const targetAlbum = musicAlbums.find((album) => String(album.id) === albumId);
@@ -539,7 +595,7 @@ const App = () => {
       setIsPlaying(false);
     }, 0);
     return () => window.clearTimeout(timerId);
-  }, [musicAlbums, setCurrentAlbum, setCurrentTrack, setIsPlaying, setSelectedAlbum, setView]);
+  }, [locationSearch, musicAlbums, setCurrentAlbum, setCurrentTrack, setIsPlaying, setSelectedAlbum]);
 
   const setLyricsOverlayOpen = useCallback((open) => {
     if (open) {
@@ -565,24 +621,54 @@ const App = () => {
     setAlbumListOverlayOpen(false);
   }, [pausePlayback, setLyricsOverlayOpen, setAlbumListOverlayOpen]);
 
-  const handleViewChange = useCallback((nextView) => {
-    if (nextView === 'video') {
-      stopPlaybackForVideo();
-      setView('video');
+  const syncUrlForView = useCallback((nextView, historyMode = 'push') => {
+    if (typeof window === 'undefined' || historyMode === 'skip') return;
+    const url = new URL(window.location.href);
+    url.pathname = getPathForView(nextView);
+    url.search = getCanonicalSearchForView(nextView, window.location.search);
+    url.hash = '';
+
+    const nextRelativeUrl = `${url.pathname}${url.search}${url.hash}`;
+    const currentRelativeUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (nextRelativeUrl === currentRelativeUrl) {
+      setLocationSearch(url.search);
       return;
     }
-    setView(nextView);
-  }, [stopPlaybackForVideo]);
+
+    if (historyMode === 'replace') {
+      window.history.replaceState(null, '', nextRelativeUrl);
+    } else {
+      window.history.pushState(null, '', nextRelativeUrl);
+    }
+
+    setLocationSearch(url.search);
+  }, []);
+
+  const handleViewChange = useCallback((nextView, options = {}) => {
+    const resolvedView = AVAILABLE_VIEWS.has(nextView) ? nextView : 'library';
+    const historyMode = options.historyMode || 'push';
+
+    if (resolvedView === 'video') {
+      stopPlaybackForVideo();
+    }
+    setView((prev) => (prev === resolvedView ? prev : resolvedView));
+    syncUrlForView(resolvedView, historyMode);
+  }, [stopPlaybackForVideo, syncUrlForView]);
 
   useEffect(() => {
-    if (viewQueryAppliedRef.current || typeof window === 'undefined') return;
-    viewQueryAppliedRef.current = true;
-    const params = new URLSearchParams(window.location.search);
-    const queryView = String(params.get('view') || '').trim();
-    if (!queryView) return;
-    const availableViews = new Set(['library', 'video', 'download', 'about', 'app']);
-    if (!availableViews.has(queryView)) return;
-    handleViewChange(queryView);
+    if (typeof window === 'undefined') return undefined;
+
+    handleViewChange(resolveViewFromLocation(window.location), { historyMode: 'replace' });
+
+    const handlePopState = () => {
+      handleViewChange(resolveViewFromLocation(window.location), { historyMode: 'replace' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [handleViewChange]);
 
   const handleVideoAccessSubmit = useCallback(() => {
@@ -630,7 +716,7 @@ const App = () => {
     }
     if (matchedIndex === -1) matchedIndex = 0;
     const shareTrack = resolvedAlbum.songs[matchedIndex] || currentTrack;
-    const url = new URL(window.location.origin + window.location.pathname);
+    const url = new URL(getPathForView('library'), window.location.origin);
     url.searchParams.set('albumId', String(resolvedAlbum.id));
     url.searchParams.set('song', String(matchedIndex + 1));
     return {
@@ -714,6 +800,16 @@ const App = () => {
       showToast('当前视频暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
     }
   }, [openSharePanel, showToast]);
+
+  const handleCopySpecificPageUrl = useCallback(async (url, successMessage, anchorOrOptions) => {
+    if (!url) return;
+    const copied = await copyTextToClipboard(url);
+    showToast(
+      copied ? successMessage : '复制失败，请手动复制',
+      copied ? 'tone-add' : 'tone-remove',
+      anchorOrOptions || { placement: 'bottom' }
+    );
+  }, [showToast]);
 
   const handleCopyShareLink = useCallback(async (anchorOrOptions = { placement: 'side' }) => {
     if (!sharePanelData?.url) return;
@@ -948,7 +1044,13 @@ const App = () => {
               {view === 'download' && (
                 <div className="view-panel view-panel-download">
                   <Suspense fallback={pageLoadingFallback}>
-                    <DownloadPage />
+                    <DownloadPage
+                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                        new URL(getPathForView('download'), SITE_URL).toString(),
+                        '下载页链接已复制',
+                        anchorOrOptions
+                      )}
+                    />
                   </Suspense>
                 </div>
               )}
@@ -962,7 +1064,13 @@ const App = () => {
               {view === 'app' && (
                 <div className="view-panel view-panel-about">
                   <Suspense fallback={pageLoadingFallback}>
-                    <AppPage />
+                    <AppPage
+                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                        new URL(getPathForView('app'), SITE_URL).toString(),
+                        'APP 页链接已复制',
+                        anchorOrOptions
+                      )}
+                    />
                   </Suspense>
                 </div>
               )}
