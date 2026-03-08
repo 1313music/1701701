@@ -8,9 +8,9 @@ const appPackages = [
     key: 'mac',
     title: 'macOS 版',
     icon: Laptop,
-    detail: '适配 Apple Silicon 与 Intel',
-    filename: '1701701-mac-universal.zip',
-    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701-mac-universal.zip`
+    detail: '无法验证请至系统设置-隐私与安全性-安全性-仍要打开',
+    filename: '1701701.dmg',
+    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701.dmg`
   },
   {
     key: 'win',
