@@ -25,6 +25,7 @@ APP_ICON="${APP_ICON:-$ROOT_DIR/public/logo.png}"
 APP_VERSION="${APP_VERSION:-1.0.0}"
 APP_WIDTH="${APP_WIDTH:-1280}"
 APP_HEIGHT="${APP_HEIGHT:-860}"
+MAC_PACKAGE_FORMAT="${MAC_PACKAGE_FORMAT:-dmg}"
 
 COMMON_ARGS=(
   "$APP_URL"
@@ -64,8 +65,20 @@ build_mac() {
   fi
 
   ensure_rust
-  echo "Building macOS desktop app with Pake..."
-  (cd "$OUTPUT_DIR" && PAKE_CREATE_APP=1 npx --yes pake-cli@3.9.1 "${COMMON_ARGS[@]}" --targets universal --hide-title-bar)
+  case "$MAC_PACKAGE_FORMAT" in
+    dmg)
+      echo "Building macOS desktop app installer (DMG) with Pake..."
+      (cd "$OUTPUT_DIR" && npx --yes pake-cli@3.9.1 "${COMMON_ARGS[@]}" --targets universal --hide-title-bar)
+      ;;
+    app)
+      echo "Building macOS desktop app bundle (.app) with Pake..."
+      (cd "$OUTPUT_DIR" && PAKE_CREATE_APP=1 npx --yes pake-cli@3.9.1 "${COMMON_ARGS[@]}" --targets universal --hide-title-bar)
+      ;;
+    *)
+      echo "MAC_PACKAGE_FORMAT 仅支持 'dmg' 或 'app'，当前值：$MAC_PACKAGE_FORMAT"
+      return 1
+      ;;
+  esac
 }
 
 build_win() {
@@ -75,7 +88,7 @@ build_win() {
   fi
 
   ensure_rust
-  echo "Building Windows desktop app with Pake..."
+  echo "Building Windows desktop app installer (MSI) with Pake..."
   (cd "$OUTPUT_DIR" && npx --yes pake-cli@3.9.1 "${COMMON_ARGS[@]}" --targets x64 --installer-language en-US)
 }
 
