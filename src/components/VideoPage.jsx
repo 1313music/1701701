@@ -114,6 +114,7 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     const fallbackTriedRef = useRef(false);
     const shareQueryAppliedRef = useRef(false);
     const escapeCloseBlockedUntilRef = useRef(0);
+    const fullscreenSessionPendingRef = useRef(false);
     const [stageMainHeight, setStageMainHeight] = useState(0);
     const [stageCategoriesScrollState, setStageCategoriesScrollState] = useState({
         canLeft: false,
@@ -202,6 +203,17 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
         // WKWebView may forward the same Escape key that exits fullscreen back to the page.
         escapeCloseBlockedUntilRef.current = Date.now() + durationMs;
     }, []);
+
+    const markFullscreenSessionPending = useCallback(() => {
+        fullscreenSessionPendingRef.current = true;
+    }, []);
+
+    const markFullscreenSessionEnded = useCallback((durationMs = 700) => {
+        if (fullscreenSessionPendingRef.current) {
+            blockEscapeClose(durationMs);
+        }
+        fullscreenSessionPendingRef.current = false;
+    }, [blockEscapeClose]);
 
     const watchEpisodes = useMemo(() => {
         if (!watchCategory) return [];
@@ -317,15 +329,30 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     useEffect(() => {
         if (!activeVideo) {
             escapeCloseBlockedUntilRef.current = 0;
+            fullscreenSessionPendingRef.current = false;
             return undefined;
         }
         const handleKeyDown = (event) => {
             if (event.key !== 'Escape' || event.defaultPrevented) return;
+            const safeInvoke = (callback) => {
+                try {
+                    callback?.();
+                } catch {
+                    // Some WebKit fullscreen APIs throw in embedded WebViews.
+                }
+            };
 
             const player = dpRef.current;
-            if (isPlayerInWebFullscreen(player)) {
-                blockEscapeClose();
+            const isWebFullscreen = isPlayerInWebFullscreen(player);
+            const isBrowserFullscreen = isPlayerInBrowserFullscreen(player);
+            if (isWebFullscreen || isBrowserFullscreen || fullscreenSessionPendingRef.current) {
+                blockEscapeClose(850);
+                fullscreenSessionPendingRef.current = false;
+                player?.fullScreen?.cancel?.('browser');
                 player?.fullScreen?.cancel?.('web');
+                const video = player?.video;
+                safeInvoke(() => video?.webkitSetPresentationMode?.('inline'));
+                safeInvoke(() => video?.webkitExitFullscreen?.());
                 event.preventDefault();
                 return;
             }
@@ -663,17 +690,24 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
 
                 dpRef.current = player;
                 const bindFullscreenExitGuard = () => {
-                    const markEscapeHandled = () => blockEscapeClose();
+                    const markEscapeHandled = () => markFullscreenSessionEnded();
                     const handleDocumentFullscreenChange = () => {
-                        if (!isPlayerInBrowserFullscreen(player)) {
+                        if (isPlayerInBrowserFullscreen(player)) {
+                            markFullscreenSessionPending();
+                        } else {
                             markEscapeHandled();
                         }
                     };
                     const handleVideoPresentationModeChange = () => {
-                        if (!isVideoNativeFullscreen(player?.video)) {
+                        if (isVideoNativeFullscreen(player?.video)) {
+                            markFullscreenSessionPending();
+                        } else {
                             markEscapeHandled();
                         }
                     };
+                    const markEnter = () => markFullscreenSessionPending();
+                    const browserFullButton = container.querySelector('.dplayer-full-icon');
+                    const webFullButton = container.querySelector('.dplayer-full-in-icon');
 
                     document.addEventListener('fullscreenchange', handleDocumentFullscreenChange);
                     document.addEventListener('webkitfullscreenchange', handleDocumentFullscreenChange);
@@ -681,8 +715,14 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
                     document.addEventListener('msfullscreenchange', handleDocumentFullscreenChange);
                     document.addEventListener('MSFullscreenChange', handleDocumentFullscreenChange);
                     if (typeof player.on === 'function') {
+                        player.on('fullscreen', markEnter);
+                        player.on('webfullscreen', markEnter);
+                        player.on('fullscreen_cancel', markEscapeHandled);
                         player.on('webfullscreen_cancel', markEscapeHandled);
                     }
+                    browserFullButton?.addEventListener('click', markEnter, true);
+                    webFullButton?.addEventListener('click', markEnter, true);
+                    player.video?.addEventListener('webkitbeginfullscreen', markEnter);
                     player.video?.addEventListener('webkitendfullscreen', markEscapeHandled);
                     player.video?.addEventListener('webkitpresentationmodechanged', handleVideoPresentationModeChange);
 
@@ -693,8 +733,14 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
                         document.removeEventListener('msfullscreenchange', handleDocumentFullscreenChange);
                         document.removeEventListener('MSFullscreenChange', handleDocumentFullscreenChange);
                         if (typeof player?.off === 'function') {
+                            player.off('fullscreen', markEnter);
+                            player.off('webfullscreen', markEnter);
+                            player.off('fullscreen_cancel', markEscapeHandled);
                             player.off('webfullscreen_cancel', markEscapeHandled);
                         }
+                        browserFullButton?.removeEventListener('click', markEnter, true);
+                        webFullButton?.removeEventListener('click', markEnter, true);
+                        player?.video?.removeEventListener('webkitbeginfullscreen', markEnter);
                         player?.video?.removeEventListener('webkitendfullscreen', markEscapeHandled);
                         player?.video?.removeEventListener('webkitpresentationmodechanged', handleVideoPresentationModeChange);
                     };
@@ -879,7 +925,8 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
         isResolving,
         resolveError,
         canPlayInline,
-        blockEscapeClose
+        markFullscreenSessionEnded,
+        markFullscreenSessionPending
     ]);
 
     useEffect(() => {
