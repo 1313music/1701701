@@ -399,6 +399,8 @@ body {
 }
 
 .view-panel-library .page-header {
+  position: relative;
+  z-index: 30;
   animation: library-search-enter 0.56s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
   will-change: opacity, transform, filter;
 }
