@@ -4,6 +4,7 @@ import { ChevronUpIcon } from './icons/AppIcons';
 
 const PANEL_EXIT_MS = 280;
 const PANEL_OPEN_TICK_MS = 24;
+const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
@@ -132,6 +133,7 @@ const AlbumGrid = ({
     const [panelPhase, setPanelPhase] = useState(() => (expandedAlbumId ? 'open' : 'closed'));
     const [panelHeight, setPanelHeight] = useState(0);
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
+    const [isIntroActive, setIsIntroActive] = useState(true);
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
     const panelOpenTimerRef = useRef(null);
@@ -243,6 +245,16 @@ const AlbumGrid = ({
         clearPanelTimers();
     }, [clearPanelTimers]);
 
+    useEffect(() => {
+        const timerId = window.setTimeout(() => {
+            setIsIntroActive(false);
+        }, LIBRARY_INTRO_DURATION_MS);
+
+        return () => {
+            window.clearTimeout(timerId);
+        };
+    }, []);
+
     const renderedPanelIndex = useMemo(
         () => (renderedPanelAlbumId ? musicAlbums.findIndex((album) => album.id === renderedPanelAlbumId) : -1),
         [renderedPanelAlbumId, musicAlbums]
@@ -285,7 +297,10 @@ const AlbumGrid = ({
         items.push(
             <div
                 key={`card-${album.id}`}
-                className={`track-card ${isAlbumPlaying ? 'is-playing' : ''}`}
+                className={`track-card ${isAlbumPlaying ? 'is-playing' : ''} ${isIntroActive ? 'intro-active' : ''}`}
+                style={{
+                    '--card-enter-delay': `${120 + Math.min(index, 11) * 42}ms`
+                }}
                 onClick={() => navigateToAlbum(album)}
             >
                 <div className="card-cover-container">

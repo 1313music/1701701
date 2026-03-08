@@ -215,6 +215,8 @@ body {
   .player-bar,
   .progress-bar-wrapper,
   .view-panel,
+  .page-header,
+  .track-card,
   .album-inline-shell,
   .album-inline-panel {
     transition: none !important;
@@ -388,6 +390,40 @@ body {
     opacity: 0;
     transform: translateY(10px) scale(0.992);
     filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.view-panel-library .page-header {
+  animation: library-search-enter 0.56s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes library-search-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.99);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes library-card-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.965);
+    filter: blur(12px);
+  }
+  65% {
+    opacity: 1;
   }
   100% {
     opacity: 1;
@@ -571,6 +607,12 @@ body {
   width: 100%;
   margin-bottom: var(--grid-row-gap);
   transition: opacity 0.22s ease;
+}
+
+.track-card.intro-active {
+  opacity: 0;
+  animation: library-card-enter 0.56s cubic-bezier(0.22, 1, 0.36, 1) var(--card-enter-delay, 0ms) both;
+  will-change: opacity, transform, filter;
 }
 
 .album-inline-shell {
