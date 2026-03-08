@@ -8,7 +8,7 @@ const appPackages = [
     key: 'mac',
     title: 'macOS 版',
     icon: Laptop,
-    detail: '无法验证请至系统设置-隐私与安全性-安全性-仍要打开',
+    detail: '无法验证:系统设置-隐私与安全性-安全性-仍要打开',
     filename: '1701701.dmg',
     href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701.dmg`
   },
