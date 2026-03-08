@@ -30,6 +30,18 @@ const buildMediaArtwork = (coverUrl) => {
   ];
 };
 
+const isIOSDevice = () => {
+  if (typeof navigator === 'undefined') return false;
+  const userAgent = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  const maxTouchPoints = navigator.maxTouchPoints || 0;
+
+  return (
+    /iPad|iPhone|iPod/i.test(userAgent) ||
+    (platform === 'MacIntel' && maxTouchPoints > 1)
+  );
+};
+
 export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [currentTrack, setCurrentTrack] = useState(() => musicAlbums[0]?.songs?.[0]);
   const [currentAlbum, setCurrentAlbum] = useState(() => musicAlbums[0] || null);
@@ -45,6 +57,11 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const audioRef = useRef(new Audio());
   const lyricsRequestIdRef = useRef(0);
   const lastTimelineRef = useRef({ time: 0, progress: 0 });
+  const playbackContextRef = useRef({
+    currentAlbum: null,
+    currentTrack: null,
+    playMode: 'loop'
+  });
 
   const currentSongInfo = useMemo(() => (
     currentTrack?.src ? songIndex.get(currentTrack.src) : null
@@ -202,56 +219,68 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   }, [currentTime, duration, currentTrack?.src]);
 
   useEffect(() => {
+    playbackContextRef.current = {
+      currentAlbum,
+      currentTrack,
+      playMode
+    };
+  }, [currentAlbum, currentTrack, playMode]);
+
+  useEffect(() => {
     if (!trackNameRef.current) return;
     const isOverflowing = trackNameRef.current.scrollWidth > trackNameRef.current.clientWidth;
     setIsTrackNameOverflowing(isOverflowing);
   }, [currentTrack, isPlaying]);
 
   const handleNext = useCallback(() => {
-    if (!currentAlbum?.songs?.length || !currentTrack?.src) return;
-    const idx = currentAlbum.songs.findIndex((song) => song.src === currentTrack.src);
+    const { currentAlbum: activeAlbum, currentTrack: activeTrack, playMode: activePlayMode } = playbackContextRef.current;
+    if (!activeAlbum?.songs?.length || !activeTrack?.src) return;
+    const idx = activeAlbum.songs.findIndex((song) => song.src === activeTrack.src);
     let nextIdx;
 
-    if (playMode === 'shuffle') {
-      if (currentAlbum.songs.length <= 1) {
+    if (activePlayMode === 'shuffle') {
+      if (activeAlbum.songs.length <= 1) {
         nextIdx = 0;
       } else {
         do {
-          nextIdx = Math.floor(Math.random() * currentAlbum.songs.length);
+          nextIdx = Math.floor(Math.random() * activeAlbum.songs.length);
         } while (nextIdx === idx);
       }
     } else {
-      nextIdx = (idx + 1) % currentAlbum.songs.length;
+      nextIdx = (idx + 1) % activeAlbum.songs.length;
     }
 
-    setCurrentTrack(currentAlbum.songs[nextIdx]);
+    setCurrentTrack(activeAlbum.songs[nextIdx]);
     setIsPlaying(true);
-  }, [currentAlbum, currentTrack, playMode]);
+  }, []);
 
   const handlePrev = useCallback(() => {
-    if (!currentAlbum?.songs?.length || !currentTrack?.src) return;
-    const idx = currentAlbum.songs.findIndex((song) => song.src === currentTrack.src);
+    const { currentAlbum: activeAlbum, currentTrack: activeTrack, playMode: activePlayMode } = playbackContextRef.current;
+    if (!activeAlbum?.songs?.length || !activeTrack?.src) return;
+    const idx = activeAlbum.songs.findIndex((song) => song.src === activeTrack.src);
     let prevIdx;
 
-    if (playMode === 'shuffle') {
-      if (currentAlbum.songs.length <= 1) {
+    if (activePlayMode === 'shuffle') {
+      if (activeAlbum.songs.length <= 1) {
         prevIdx = 0;
       } else {
         do {
-          prevIdx = Math.floor(Math.random() * currentAlbum.songs.length);
+          prevIdx = Math.floor(Math.random() * activeAlbum.songs.length);
         } while (prevIdx === idx);
       }
     } else {
-      prevIdx = (idx - 1 + currentAlbum.songs.length) % currentAlbum.songs.length;
+      prevIdx = (idx - 1 + activeAlbum.songs.length) % activeAlbum.songs.length;
     }
 
-    setCurrentTrack(currentAlbum.songs[prevIdx]);
+    setCurrentTrack(activeAlbum.songs[prevIdx]);
     setIsPlaying(true);
-  }, [currentAlbum, currentTrack, playMode]);
+  }, []);
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
     const mediaSession = navigator.mediaSession;
+    const hasMultipleTracks = (currentAlbum?.songs?.length || 0) > 1;
+    const preferTrackControlsOnLockScreen = isIOSDevice() && hasMultipleTracks;
 
     const setHandler = (action, handler) => {
       try {
@@ -263,19 +292,30 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
     setHandler('play', () => setIsPlaying(true));
     setHandler('pause', () => setIsPlaying(false));
-    setHandler('previoustrack', () => handlePrev());
-    setHandler('nexttrack', () => handleNext());
-    setHandler('seekbackward', (details) => {
-      const offset = details?.seekOffset ?? 10;
-      const audio = audioRef.current;
-      audio.currentTime = Math.max(audio.currentTime - offset, 0);
-    });
-    setHandler('seekforward', (details) => {
-      const offset = details?.seekOffset ?? 10;
-      const audio = audioRef.current;
-      const maxTime = Number.isFinite(audio.duration) ? audio.duration : Infinity;
-      audio.currentTime = Math.min(audio.currentTime + offset, maxTime);
-    });
+    if (hasMultipleTracks) {
+      setHandler('previoustrack', () => handlePrev());
+      setHandler('nexttrack', () => handleNext());
+    } else {
+      setHandler('previoustrack', null);
+      setHandler('nexttrack', null);
+    }
+
+    if (preferTrackControlsOnLockScreen) {
+      setHandler('seekbackward', null);
+      setHandler('seekforward', null);
+    } else {
+      setHandler('seekbackward', (details) => {
+        const offset = details?.seekOffset ?? 10;
+        const audio = audioRef.current;
+        audio.currentTime = Math.max(audio.currentTime - offset, 0);
+      });
+      setHandler('seekforward', (details) => {
+        const offset = details?.seekOffset ?? 10;
+        const audio = audioRef.current;
+        const maxTime = Number.isFinite(audio.duration) ? audio.duration : Infinity;
+        audio.currentTime = Math.min(audio.currentTime + offset, maxTime);
+      });
+    }
     setHandler('seekto', (details) => {
       if (typeof details?.seekTime !== 'number') return;
       const audio = audioRef.current;
@@ -295,7 +335,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       setHandler('seekforward', null);
       setHandler('seekto', null);
     };
-  }, [handleNext, handlePrev]);
+  }, [currentAlbum?.songs?.length, handleNext, handlePrev]);
 
   const handleSongEnd = useCallback(() => {
     if (playMode === 'single') {
