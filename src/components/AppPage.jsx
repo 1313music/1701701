@@ -93,8 +93,8 @@ const AppPage = ({ onCopyPageLink }) => {
   return (
     <div className="app-download-page">
       <section className="app-download-hero">
-        <div className="app-download-hero-top">
-          <div className="app-download-hero-tag">APP</div>
+        <div className="app-download-hero-header">
+          <h1>客户端下载</h1>
           {typeof onCopyPageLink === 'function' && (
             <button
               type="button"
@@ -110,7 +110,6 @@ const AppPage = ({ onCopyPageLink }) => {
             </button>
           )}
         </div>
-        <h1>客户端下载</h1>
         <p>
           可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。
         </p>
