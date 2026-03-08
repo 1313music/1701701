@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { motion as Motion } from 'framer-motion';
 import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { videoCategories, videoData } from '../data/videoData';
+import { isPlayerInBrowserFullscreen, isPlayerInWebFullscreen, isVideoNativeFullscreen } from '../utils/videoFullscreenUtils';
 import SearchHeader from './SearchHeader';
 
 const fallbackThumb = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -112,6 +113,7 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     const stageCategoriesRef = useRef(null);
     const fallbackTriedRef = useRef(false);
     const shareQueryAppliedRef = useRef(false);
+    const escapeCloseBlockedUntilRef = useRef(0);
     const [stageMainHeight, setStageMainHeight] = useState(0);
     const [stageCategoriesScrollState, setStageCategoriesScrollState] = useState({
         canLeft: false,
@@ -195,6 +197,11 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     useLayoutEffect(() => {
         activeVideoKeyRef.current = activeVideoKey;
     }, [activeVideoKey]);
+
+    const blockEscapeClose = useCallback((durationMs = 500) => {
+        // WKWebView may forward the same Escape key that exits fullscreen back to the page.
+        escapeCloseBlockedUntilRef.current = Date.now() + durationMs;
+    }, []);
 
     const watchEpisodes = useMemo(() => {
         if (!watchCategory) return [];
@@ -308,15 +315,35 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     }, []);
 
     useEffect(() => {
-        if (!activeVideo) return undefined;
+        if (!activeVideo) {
+            escapeCloseBlockedUntilRef.current = 0;
+            return undefined;
+        }
         const handleKeyDown = (event) => {
-            if (event.key === 'Escape') setActiveVideo(null);
+            if (event.key !== 'Escape' || event.defaultPrevented) return;
+
+            const player = dpRef.current;
+            if (isPlayerInWebFullscreen(player)) {
+                blockEscapeClose();
+                player?.fullScreen?.cancel?.('web');
+                event.preventDefault();
+                return;
+            }
+
+            if (
+                isPlayerInBrowserFullscreen(player) ||
+                Date.now() < escapeCloseBlockedUntilRef.current
+            ) {
+                return;
+            }
+
+            setActiveVideo(null);
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [activeVideo]);
+    }, [activeVideo, blockEscapeClose]);
 
     useEffect(() => {
         if (!activeVideo) return;
@@ -563,6 +590,7 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
         let canceled = false;
         let player = null;
         let handlePlaybackError = null;
+        let removeFullscreenExitGuard = null;
         let removeTouchToggleGuard = null;
         const effectVideoKey = activeVideoKey;
         const isStalePlayerEvent = () => canceled || activeVideoKeyRef.current !== effectVideoKey;
@@ -634,6 +662,44 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
                 }
 
                 dpRef.current = player;
+                const bindFullscreenExitGuard = () => {
+                    const markEscapeHandled = () => blockEscapeClose();
+                    const handleDocumentFullscreenChange = () => {
+                        if (!isPlayerInBrowserFullscreen(player)) {
+                            markEscapeHandled();
+                        }
+                    };
+                    const handleVideoPresentationModeChange = () => {
+                        if (!isVideoNativeFullscreen(player?.video)) {
+                            markEscapeHandled();
+                        }
+                    };
+
+                    document.addEventListener('fullscreenchange', handleDocumentFullscreenChange);
+                    document.addEventListener('webkitfullscreenchange', handleDocumentFullscreenChange);
+                    document.addEventListener('mozfullscreenchange', handleDocumentFullscreenChange);
+                    document.addEventListener('msfullscreenchange', handleDocumentFullscreenChange);
+                    document.addEventListener('MSFullscreenChange', handleDocumentFullscreenChange);
+                    if (typeof player.on === 'function') {
+                        player.on('webfullscreen_cancel', markEscapeHandled);
+                    }
+                    player.video?.addEventListener('webkitendfullscreen', markEscapeHandled);
+                    player.video?.addEventListener('webkitpresentationmodechanged', handleVideoPresentationModeChange);
+
+                    return () => {
+                        document.removeEventListener('fullscreenchange', handleDocumentFullscreenChange);
+                        document.removeEventListener('webkitfullscreenchange', handleDocumentFullscreenChange);
+                        document.removeEventListener('mozfullscreenchange', handleDocumentFullscreenChange);
+                        document.removeEventListener('msfullscreenchange', handleDocumentFullscreenChange);
+                        document.removeEventListener('MSFullscreenChange', handleDocumentFullscreenChange);
+                        if (typeof player?.off === 'function') {
+                            player.off('webfullscreen_cancel', markEscapeHandled);
+                        }
+                        player?.video?.removeEventListener('webkitendfullscreen', markEscapeHandled);
+                        player?.video?.removeEventListener('webkitpresentationmodechanged', handleVideoPresentationModeChange);
+                    };
+                };
+                removeFullscreenExitGuard = bindFullscreenExitGuard();
                 const isTouchDevice = typeof window !== 'undefined' && (
                     'ontouchstart' in window ||
                     navigator.maxTouchPoints > 0 ||
@@ -776,6 +842,10 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
 
         return () => {
             canceled = true;
+            if (removeFullscreenExitGuard) {
+                removeFullscreenExitGuard();
+                removeFullscreenExitGuard = null;
+            }
             if (removeTouchToggleGuard) {
                 removeTouchToggleGuard();
                 removeTouchToggleGuard = null;
@@ -808,7 +878,8 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
         sourceAttempt,
         isResolving,
         resolveError,
-        canPlayInline
+        canPlayInline,
+        blockEscapeClose
     ]);
 
     useEffect(() => {
