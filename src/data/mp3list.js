@@ -38,7 +38,9 @@ export const musicAlbums = [
       { name: "卡夫卡", src: "https://r2.1701701.xyz/mp3/被禁忌的游戏/05.卡夫卡.mp3", lrc: "https://r2.1701701.xyz/lrc/被禁忌的游戏/05.卡夫卡.lrc" },
       { name: "被禁忌的游戏", src: "https://r2.1701701.xyz/mp3/被禁忌的游戏/06.被禁忌的游戏.mp3", lrc: "https://r2.1701701.xyz/lrc/被禁忌的游戏/06.被禁忌的游戏.lrc" },
       { name: "罗庄的冬天", src: "https://r2.1701701.xyz/mp3/被禁忌的游戏/07.罗庄的冬天.mp3", lrc: "https://r2.1701701.xyz/lrc/被禁忌的游戏/07.罗庄的冬天.lrc" },
-      { name: "红色气球", src: "https://r2.1701701.xyz/mp3/被禁忌的游戏/08.红色气球.mp3", lrc: "https://r2.1701701.xyz/lrc/被禁忌的游戏/08.红色气球.lrc" }
+      { name: "红色气球", src: "https://r2.1701701.xyz/mp3/被禁忌的游戏/08.红色气球.mp3", lrc: "https://r2.1701701.xyz/lrc/被禁忌的游戏/08.红色气球.lrc" },
+      { name: "青春", src: "https://r2.1701701.xyz/mp3/被禁忌的游戏/09.青春.mp3", lrc: "https://r2.1701701.xyz/lrc/被禁忌的游戏/09.青春.lrc" }
+
     ]
   },
   {
