@@ -131,9 +131,7 @@ const AppPage = ({ onCopyPageLink }) => {
                 <a
                   className="app-download-btn"
                   href={pkg.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  download
+                  download={pkg.filename}
                 >
                   立即下载
                 </a>

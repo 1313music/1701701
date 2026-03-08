@@ -1,0 +1,14 @@
+/1701701.dmg
+  Content-Type: application/x-apple-diskimage
+  Content-Disposition: attachment; filename="1701701.dmg"
+  X-Content-Type-Options: nosniff
+
+/1701701-win-x64.exe
+  Content-Type: application/octet-stream
+  Content-Disposition: attachment; filename="1701701-win-x64.exe"
+  X-Content-Type-Options: nosniff
+
+/1701701-android-release.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="1701701-android-release.apk"
+  X-Content-Type-Options: nosniff
