@@ -787,8 +787,8 @@ export const videoData = {
 
 // 分类列表
 export const videoCategories = [
-    { id: 'jlpsq1', name: '吉隆坡叁缺壹', icon: '#icon-video' },
     { id: 'knxy', name: '跨年音乐会', icon: '#icon-film' },
+    { id: 'jlpsq1', name: '吉隆坡叁缺壹', icon: '#icon-video' },
     { id: 'bgyh', name: '逼哥夜話', icon: '#icon-microphone' },
     { id: 'bgyh2', name: '逼哥夜話第二季', icon: '#icon-microphone' },
     { id: 'wmsss', name: '我們的叁叁肆', icon: '#icon-clapperboard' },

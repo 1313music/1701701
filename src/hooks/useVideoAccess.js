@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 const DEFAULT_VIDEO_PASSWORD = '1701701xyz';
 const VIDEO_PASSWORD = String(import.meta.env.VITE_VIDEO_PASSWORD || DEFAULT_VIDEO_PASSWORD).trim();
 const VIDEO_ACCESS_KEY = 'videoAccessGranted';
-const VIDEO_ACCESS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const VIDEO_ACCESS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const persistVideoAccessGrant = () => {
   if (typeof window === 'undefined') return;

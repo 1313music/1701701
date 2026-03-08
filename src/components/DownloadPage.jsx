@@ -97,13 +97,13 @@ const DownloadGroup = ({ group }) => {
                 <span>{group.title}</span>
                 <span className="download-group-arrow">›</span>
             </button>
-            {open && (
+            <div className="download-group-panel" aria-hidden={!open}>
                 <div className="download-group-body">
                     {group.items.map((item) => (
                         <DownloadItem key={`${item.title}-${item.url}`} item={item} />
                     ))}
                 </div>
-            )}
+            </div>
         </div>
     );
 };

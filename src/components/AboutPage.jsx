@@ -8,7 +8,7 @@ const followItems = [
     },
     {
         title: '民谣俱乐部',
-        subtitle: '获取最新资讯',
+        subtitle: '关注我们',
         image: 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg'
     },
 ];
