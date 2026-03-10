@@ -7,6 +7,7 @@ import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
+import CommentPage from './components/CommentPage.jsx';
 
 // Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
@@ -44,14 +45,16 @@ const VIEW_PATHS = Object.freeze({
   video: '/video',
   download: '/download',
   app: '/app',
-  about: '/about'
+  about: '/about',
+  comment: '/comment'
 });
 const VIEW_QUERY_KEYS = Object.freeze({
   library: ['albumId', 'song'],
   video: ['videoId', 'videoCategory'],
   download: [],
   app: [],
-  about: []
+  about: [],
+  comment: []
 });
 const AVAILABLE_VIEWS = new Set(Object.keys(VIEW_PATHS));
 
@@ -120,6 +123,7 @@ const resolveViewFromLocation = (locationLike) => {
 const SITE_URL = 'https://1701701.xyz';
 const SITE_NAME = '1701701.xyz';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
+const WALINE_SERVER_URL = import.meta.env.VITE_WALINE_SERVER_URL || 'https://hello.1701701.xyz';
 const LI_ZHI_ENTITY_LINKS = [
   'https://musicbrainz.org/artist/e54bc357-19aa-4e1f-9795-3346e486d5db',
   'https://en.wikipedia.org/wiki/Li_Zhi_(singer)'
@@ -1072,6 +1076,11 @@ const App = () => {
                       )}
                     />
                   </Suspense>
+                </div>
+              )}
+              {view === 'comment' && (
+                <div className="view-panel view-panel-comment">
+                  <CommentPage serverURL={WALINE_SERVER_URL} />
                 </div>
               )}
             </main>

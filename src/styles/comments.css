@@ -1,0 +1,230 @@
+.comment-section {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.08);
+  --comment-field-bg: rgba(255, 255, 255, 0.05);
+  --comment-field-border: rgba(255, 255, 255, 0.14);
+  --comment-label-bg: rgba(255, 255, 255, 0.09);
+  --comment-popup-bg: rgba(18, 18, 20, 0.98);
+  --waline-font-size: 0.95rem;
+  --waline-theme-color: var(--text-main);
+  --waline-active-color: var(--text-main);
+  --waline-color: var(--text-main);
+  --waline-bg-color: transparent;
+  --waline-bg-color-light: var(--hover-bg);
+  --waline-bg-color-hover: var(--hover-bg);
+  --waline-border-color: var(--glass-border);
+  --waline-info-bg-color: var(--glass-bg);
+  --waline-info-color: var(--text-secondary);
+  --waline-bq-color: var(--hover-bg);
+  --waline-code-bg-color: rgba(0, 0, 0, 0.32);
+  --waline-avatar-radius: 12px;
+  --waline-box-shadow: none;
+}
+
+[data-theme='light'] .comment-section {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.08);
+  --comment-field-bg: rgba(15, 23, 42, 0.04);
+  --comment-field-border: rgba(15, 23, 42, 0.16);
+  --comment-label-bg: rgba(15, 23, 42, 0.08);
+  --comment-popup-bg: rgba(255, 255, 255, 0.98);
+}
+
+.comment-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.comment-section-title {
+  font-size: 20px;
+  font-weight: 650;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.comment-section-subtitle {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.comment-section-body {
+  min-height: 220px;
+}
+
+.comment-section-empty {
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+.comment-page {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.comment-hero {
+  width: 100%;
+  display: block;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.12);
+}
+
+.comment-section [data-waline] * {
+  box-sizing: border-box;
+}
+
+.comment-section .wl-panel,
+.comment-section .wl-editor {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.comment-section .wl-panel {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.comment-section .wl-editor {
+  padding: 0;
+  margin: 12px 0 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.comment-section .wl-header {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0;
+  margin: 6px 0 14px;
+  border-bottom: none !important;
+}
+
+.comment-section .wl-header-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 1px solid var(--comment-field-border);
+  border-radius: 14px;
+  background: var(--comment-field-bg);
+  overflow: hidden;
+  margin: 0;
+  box-shadow: none;
+  border-bottom: none !important;
+}
+
+.comment-section .wl-header-item:not(:last-child) {
+  border-bottom: none !important;
+}
+
+.comment-section .wl-header label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.comment-section .wl-header input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  padding: 12px 16px;
+  font-size: 0.9em;
+  width: 100%;
+  min-width: 0;
+}
+
+.comment-section .wl-header input::placeholder {
+  color: var(--text-secondary);
+}
+
+.comment-section .wl-input {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.comment-section [data-waline] .wl-textarea,
+.comment-section [data-waline] textarea {
+  background: var(--comment-field-bg) !important;
+  border: 1px solid var(--comment-field-border) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.comment-section .wl-footer {
+  margin: 10px 0 0 !important;
+  padding: 0 !important;
+}
+
+.comment-section .wl-header::after,
+.comment-section .wl-header-item::after,
+.comment-section .wl-header label::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 580px) {
+  .comment-section .wl-header {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.comment-section .wl-btn {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.comment-section .wl-btn.primary {
+  border-color: var(--text-main);
+  background: var(--text-main);
+  color: var(--bg-color);
+}
+
+.comment-section .wl-action {
+  color: var(--text-secondary);
+}
+
+.comment-section .wl-comment {
+  gap: 14px;
+}
+
+.comment-section .wl-actions .wl-action[title="Markdown Guide"],
+.comment-section .wl-actions .wl-action[aria-label="Markdown is supported"],
+.comment-section .wl-actions .wl-action[title="GIF"],
+.comment-section .wl-actions .wl-action[aria-label="GIF"],
+.comment-section .wl-actions .wl-action[title="表情包"],
+.comment-section .wl-actions .wl-action[aria-label="表情包"] {
+  display: none;
+}
+
+.comment-section .wl-emoji-popup {
+  background: var(--comment-popup-bg) !important;
+  border: 1px solid var(--comment-field-border) !important;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.18);
+  z-index: 60;
+  backdrop-filter: blur(8px);
+}

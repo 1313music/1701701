@@ -8,7 +8,8 @@ import {
     Video,
     Download,
     Smartphone,
-    Info
+    Info,
+    MessageSquareMore
 } from 'lucide-react';
 
 const NavItem = ({ icon, label, active = false, onClick }) => (
@@ -92,6 +93,12 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         onClick={() => handleNavClick('app')}
                     />
                     <NavItem
+                        icon={<MessageSquareMore size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="留言"
+                        active={view === 'comment'}
+                        onClick={() => handleNavClick('comment')}
+                    />
+                    <NavItem
                         icon={<Info size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
                         active={view === 'about'}
@@ -147,6 +154,12 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         label="APP"
                         active={view === 'app'}
                         onClick={() => handleNavClick('app')}
+                    />
+                    <NavItem
+                        icon={<MessageSquareMore size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="留言"
+                        active={view === 'comment'}
+                        onClick={() => handleNavClick('comment')}
                     />
                     <NavItem
                         icon={<Info size={22} strokeWidth={2.4} absoluteStrokeWidth />}

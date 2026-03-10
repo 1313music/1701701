@@ -23,6 +23,7 @@
     "android:apk:release": "./scripts/with-node22.sh ./scripts/android-shell.sh release"
   },
   "dependencies": {
+    "@waline/client": "^3.8.0",
     "dplayer": "^1.27.1",
     "framer-motion": "^12.27.5",
     "hls.js": "^1.6.15",
