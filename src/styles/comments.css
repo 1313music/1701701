@@ -1,12 +1,13 @@
 .comment-section {
   margin-top: 24px;
-  padding: 24px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.08);
-  --comment-field-bg: rgba(255, 255, 255, 0.05);
+  padding: 20px 10px 10px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  --comment-field-bg: rgba(255, 255, 255, 0.018);
   --comment-field-border: rgba(255, 255, 255, 0.14);
+  --comment-field-placeholder: rgba(255, 255, 255, 0.48);
   --comment-label-bg: rgba(255, 255, 255, 0.09);
   --comment-popup-bg: rgba(18, 18, 20, 0.98);
   --waline-font-size: 0.95rem;
@@ -26,11 +27,12 @@
 }
 
 [data-theme='light'] .comment-section {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.08);
-  --comment-field-bg: rgba(15, 23, 42, 0.04);
-  --comment-field-border: rgba(15, 23, 42, 0.16);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  --comment-field-bg: rgba(15, 23, 42, 0.02);
+  --comment-field-border: rgba(15, 23, 42, 0.2);
+  --comment-field-placeholder: rgba(15, 23, 42, 0.42);
   --comment-label-bg: rgba(15, 23, 42, 0.08);
   --comment-popup-bg: rgba(255, 255, 255, 0.98);
 }
@@ -58,6 +60,8 @@
 
 .comment-section-body {
   min-height: 220px;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .comment-section-empty {
@@ -105,29 +109,33 @@
 }
 
 .comment-section .wl-header {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
   padding: 0;
-  margin: 6px 0 14px;
+  margin: 2px 0 18px;
   border-bottom: none !important;
 }
 
 .comment-section .wl-header-item {
   display: flex;
+  flex: 1 1 0 !important;
   align-items: center;
   position: relative;
+  width: auto !important;
+  max-width: none;
+  min-width: 0;
+  min-height: 46px;
   border: 1px solid var(--comment-field-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--comment-field-bg);
   overflow: hidden;
   margin: 0;
   box-shadow: none;
-  border-bottom: none !important;
 }
 
 .comment-section .wl-header-item:not(:last-child) {
-  border-bottom: none !important;
+  border-bottom: 1px solid var(--comment-field-border) !important;
 }
 
 .comment-section .wl-header label {
@@ -146,14 +154,14 @@
   background: transparent;
   border: none;
   color: var(--text-main);
-  padding: 12px 16px;
-  font-size: 0.9em;
+  padding: 12px 14px;
+  font-size: 0.92em;
   width: 100%;
   min-width: 0;
 }
 
 .comment-section .wl-header input::placeholder {
-  color: var(--text-secondary);
+  color: var(--comment-field-placeholder);
 }
 
 .comment-section .wl-input {
@@ -167,11 +175,30 @@
 .comment-section [data-waline] textarea {
   background: var(--comment-field-bg) !important;
   border: 1px solid var(--comment-field-border) !important;
-  border-radius: 14px !important;
-  padding: 14px 16px !important;
+  border-radius: 10px !important;
+  padding: 14px 14px !important;
   box-shadow: none !important;
   width: 100% !important;
   margin: 0 !important;
+}
+
+.comment-section [data-waline] .wl-textarea::placeholder,
+.comment-section [data-waline] textarea::placeholder {
+  color: var(--comment-field-placeholder) !important;
+}
+
+.comment-section .wl-header-item:focus-within,
+.comment-section [data-waline] .wl-textarea:focus,
+.comment-section [data-waline] textarea:focus {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+[data-theme='light'] .comment-section .wl-header-item:focus-within,
+[data-theme='light'] .comment-section [data-waline] .wl-textarea:focus,
+[data-theme='light'] .comment-section [data-waline] textarea:focus {
+  border-color: rgba(15, 23, 42, 0.32) !important;
+  background: rgba(15, 23, 42, 0.03) !important;
 }
 
 .comment-section .wl-footer {
@@ -184,13 +211,6 @@
 .comment-section .wl-header label::after {
   content: none !important;
   display: none !important;
-}
-
-@media (max-width: 580px) {
-  .comment-section .wl-header {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
 }
 
 .comment-section .wl-btn {
@@ -227,4 +247,15 @@
   box-shadow: 0 18px 30px rgba(0, 0, 0, 0.18);
   z-index: 60;
   backdrop-filter: blur(8px);
+}
+
+@media (max-width: 760px) {
+  .comment-section {
+    padding: 16px 6px 8px;
+  }
+
+  .comment-section .wl-header {
+    flex-direction: column;
+    gap: 10px;
+  }
 }

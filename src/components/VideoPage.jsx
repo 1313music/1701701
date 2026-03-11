@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { motion as Motion } from 'framer-motion';
-import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageCircle } from 'lucide-react';
 import { videoCategories, videoData } from '../data/videoData';
 import { isPlayerInBrowserFullscreen, isPlayerInWebFullscreen, isVideoNativeFullscreen } from '../utils/videoFullscreenUtils';
 import SearchHeader from './SearchHeader';
+import CommentSection from './CommentSection.jsx';
 
 const fallbackThumb = `data:image/svg+xml;utf8,${encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">' +
@@ -90,7 +91,7 @@ const BackCard = ({ onClick }) => (
     </Motion.div>
 );
 
-const VideoPage = ({ requestVideoView, onShareVideo }) => {
+const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState(videoCategories[0]?.id || '');
     const [watchCategory, setWatchCategory] = useState(videoCategories[0]?.id || '');
@@ -101,6 +102,7 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
     const [fallbackType, setFallbackType] = useState('auto');
     const [sourceAttempt, setSourceAttempt] = useState(0);
     const [resolveAttempt, setResolveAttempt] = useState(0);
+    const [isCommentDrawerOpen, setIsCommentDrawerOpen] = useState(false);
     const [isResolving, setIsResolving] = useState(false);
     const [resolveError, setResolveError] = useState('');
     const [resolvedType, setResolvedType] = useState('auto');
@@ -1085,11 +1087,31 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
         } : undefined);
     };
 
+    const handleOpenVideoComment = () => {
+        if (!canOpenCommentDrawer) return;
+        setIsCommentDrawerOpen((prev) => !prev);
+    };
+
+    const currentVideoCommentPath = activeVideo
+        ? `video:${activeVideo._categoryId || watchCategory || 'default'}:${encodeURIComponent(String(activeVideo.id || ''))}:${encodeURIComponent(activeVideo.url || activeVideo.title || '')}`
+        : '';
+    const canOpenCommentDrawer = Boolean(commentServerURL && currentVideoCommentPath);
+
     const activeMetaLabel = activeVideo?._pathLabel || activeCategoryMeta?.name || '视频';
     const activeEpisodeProgress = activeWatchIndex >= 0 ? `第 ${activeWatchIndex + 1} / ${watchEpisodes.length} 集` : '';
     const playerContainerKey = `${resolvedVideoKey || activeVideoKey || 'video'}:${sourceAttempt}:${resolveAttempt}`;
     const isWatching = Boolean(activeVideo);
     const showWangGuoCredit = isWatching && (activeVideo?._categoryId || watchCategory) === 'jlpsq1';
+
+    useEffect(() => {
+        if (!activeVideo) {
+            setIsCommentDrawerOpen(false);
+        }
+    }, [activeVideo]);
+
+    useEffect(() => {
+        setIsCommentDrawerOpen(false);
+    }, [activeVideoKey]);
 
     useEffect(() => {
         if (!isWatching) {
@@ -1175,199 +1197,265 @@ const VideoPage = ({ requestVideoView, onShareVideo }) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <div className="video-stage-header">
-                            <div className="video-stage-header-top">
-                                <div className="video-stage-title">{activeVideo.title}</div>
-                                <div className="video-stage-actions">
-                                    <button
-                                        type="button"
-                                        className="video-stage-share-btn"
-                                        onClick={handleShareCurrentVideo}
-                                        aria-label="分享当前视频"
-                                    >
-                                        <Share2 size={18} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="video-stage-close"
-                                        onClick={() => setActiveVideo(null)}
-                                        aria-label="收起播放器"
-                                    >
-                                        <X size={20} />
-                                    </button>
+                            <div className="video-stage-header">
+                                <div className="video-stage-header-top">
+                                    <div className="video-stage-title">{activeVideo.title}</div>
+                                    <div className="video-stage-actions">
+                                        <button
+                                            type="button"
+                                            className="video-stage-close"
+                                            onClick={() => setActiveVideo(null)}
+                                            aria-label="收起播放器"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="video-stage-meta">
+                                    <span>{activeMetaLabel}</span>
+                                    {activeEpisodeProgress ? (
+                                        <span className="video-stage-progress-chip">{activeEpisodeProgress}</span>
+                                    ) : null}
                                 </div>
                             </div>
-                            <div className="video-stage-meta">
-                                <span>{activeMetaLabel}</span>
-                                {activeEpisodeProgress ? (
-                                    <span className="video-stage-progress-chip">{activeEpisodeProgress}</span>
-                                ) : null}
-                            </div>
-                        </div>
 
-                        <div className="video-stage-layout">
-                            <div className="video-stage-main" ref={stageMainRef}>
-                                <div className="video-stage-media-shell">
-                                    {isResolving && (
-                                        <div className="video-unsupported video-unsupported-inline">解析播放地址中…</div>
-                                    )}
-                                    {!isResolving && resolveError && (
-                                        <div className="video-unsupported video-unsupported-inline">
-                                            <div>{resolveError}</div>
-                                            <div className="video-unsupported-actions">
-                                                {canSwitchToBackup && (
+                            <div className="video-stage-layout">
+                                <div className="video-stage-main" ref={stageMainRef}>
+                                    <div className="video-stage-media-shell">
+                                        {isResolving && (
+                                            <div className="video-unsupported video-unsupported-inline">解析播放地址中…</div>
+                                        )}
+                                        {!isResolving && resolveError && (
+                                            <div className="video-unsupported video-unsupported-inline">
+                                                <div>{resolveError}</div>
+                                                <div className="video-unsupported-actions">
+                                                    {canSwitchToBackup && (
+                                                        <button
+                                                            type="button"
+                                                            className="video-unsupported-action"
+                                                            onClick={handleSwitchToBackup}
+                                                        >
+                                                            {backupActionLabel}
+                                                        </button>
+                                                    )}
                                                     <button
                                                         type="button"
                                                         className="video-unsupported-action"
-                                                        onClick={handleSwitchToBackup}
+                                                        onClick={handleReloadVideo}
+                                                        disabled={isResolving}
                                                     >
-                                                        {backupActionLabel}
+                                                        重新加载
                                                     </button>
-                                                )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {!isResolving && !resolveError && !resolvedUrl && (
+                                            <div className="video-unsupported video-unsupported-inline">加载中…</div>
+                                        )}
+                                        {!isResolving && !resolveError && resolvedUrl && canPlayInline(resolvedUrl, resolvedType) && (
+                                            <div
+                                                key={playerContainerKey}
+                                                ref={playerRef}
+                                                className="video-stage-player"
+                                                onContextMenu={(event) => event.preventDefault()}
+                                            />
+                                        )}
+                                        {!isResolving && !resolveError && resolvedUrl && !canPlayInline(resolvedUrl, resolvedType) && (
+                                            <div className="video-unsupported video-unsupported-inline">当前视频链接暂不支持播放。</div>
+                                        )}
+                                    </div>
+                                    <div className="video-stage-main-controls">
+                                        <div className="video-stage-main-controls-nav">
+                                            <button
+                                                type="button"
+                                                className="video-stage-nav-btn"
+                                                onClick={() => handleSelectWatchEpisode(prevWatchEpisode)}
+                                                disabled={!prevWatchEpisode}
+                                                aria-label="上一集"
+                                                title="上一集"
+                                            >
+                                                <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-6px' }} />
+                                                <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="video-stage-nav-btn"
+                                                onClick={() => handleSelectWatchEpisode(nextWatchEpisode)}
+                                                disabled={!nextWatchEpisode}
+                                                aria-label="下一集"
+                                                title="下一集"
+                                            >
+                                                <Play size={20} fill="currentColor" style={{ marginRight: '-6px' }} />
+                                                <Play size={20} fill="currentColor" />
+                                            </button>
+                                        </div>
+                                        <div className="video-stage-main-controls-actions">
+                                            <button
+                                                type="button"
+                                                className="video-stage-comment-btn"
+                                                onClick={handleOpenVideoComment}
+                                                aria-label="打开评论页"
+                                                disabled={!canOpenCommentDrawer}
+                                            >
+                                                <MessageCircle size={18} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="video-stage-share-btn"
+                                                onClick={handleShareCurrentVideo}
+                                                aria-label="分享当前视频"
+                                            >
+                                                <Share2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <aside
+                                    className={`video-watch-sidebar ${stageMainHeight > 0 ? 'is-measured' : ''}`}
+                                    style={stageMainHeight > 0 ? { height: `${stageMainHeight}px` } : undefined}
+                                >
+                                    <div className="video-watch-episodes">
+                                        {watchEpisodes.length === 0 ? (
+                                            <div className="video-watch-empty">当前分类暂无可播放视频</div>
+                                        ) : (
+                                            watchEpisodeGroups.map((group) => {
+                                                const isExpanded = group.isDirect || expandedWatchGroups.has(group.key);
+
+                                                return (
+                                                    <section key={`watch-group-${group.key}`} className="video-watch-group">
+                                                        {!group.isDirect && (
+                                                            <button
+                                                                type="button"
+                                                                className={`video-watch-group-toggle ${isExpanded ? 'is-expanded' : ''}`}
+                                                                onClick={() => handleToggleWatchGroup(group.key)}
+                                                                aria-expanded={isExpanded}
+                                                            >
+                                                                <span className="video-watch-group-label">{group.label}</span>
+                                                                <span className="video-watch-group-count">{group.items.length} 集</span>
+                                                                <ChevronDown size={14} className="video-watch-group-icon" />
+                                                            </button>
+                                                        )}
+
+                                                        {isExpanded && (
+                                                            <div className={`video-watch-group-items ${group.isDirect ? 'is-direct' : ''}`}>
+                                                                {group.items.map((item, index) => {
+                                                                    const itemKey = buildVideoKey(item);
+                                                                    const isActiveEpisode = itemKey === activeVideoKey;
+
+                                                                    return (
+                                                                        <button
+                                                                            key={`watch-episode-${item.id}-${index}`}
+                                                                            type="button"
+                                                                            className={`video-watch-episode ${isActiveEpisode ? 'active' : ''}`}
+                                                                            onClick={() => handleSelectWatchEpisode(item)}
+                                                                            ref={isActiveEpisode ? activeEpisodeRef : null}
+                                                                        >
+                                                                            <span className="video-watch-episode-index">
+                                                                                {String(index + 1).padStart(2, '0')}
+                                                                            </span>
+                                                                            <span className="video-watch-episode-texts">
+                                                                                <span className="video-watch-episode-title">{item.title}</span>
+                                                                            </span>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </section>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </aside>
+                                <div className="video-stage-categories-wrap">
+                                    <button
+                                        type="button"
+                                        className="video-stage-categories-nav"
+                                        onClick={() => handleScrollStageCategories(-1)}
+                                        disabled={!stageCategoriesScrollState.canLeft}
+                                        aria-label="向左查看分类"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <div
+                                        className="video-stage-categories"
+                                        role="tablist"
+                                        aria-label="看片分类"
+                                        ref={stageCategoriesRef}
+                                        onWheel={handleStageCategoriesWheel}
+                                    >
+                                        {videoCategories.map((cat) => (
+                                            <button
+                                                key={`watch-${cat.id}`}
+                                                type="button"
+                                                className={`video-stage-category ${watchCategory === cat.id ? 'active' : ''}`}
+                                                onClick={() => handleSelectWatchCategory(cat.id)}
+                                                aria-pressed={watchCategory === cat.id}
+                                            >
+                                                <span>{cat.name}</span>
+                                                <span className="video-stage-category-count">{categoryVideoCounts[cat.id] || 0}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="video-stage-categories-nav"
+                                        onClick={() => handleScrollStageCategories(1)}
+                                        disabled={!stageCategoriesScrollState.canRight}
+                                        aria-label="向右查看分类"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                            <AnimatePresence>
+                                {isCommentDrawerOpen && canOpenCommentDrawer ? (
+                                    <>
+                                        <Motion.button
+                                            type="button"
+                                            className="video-comment-backdrop"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            onClick={() => setIsCommentDrawerOpen(false)}
+                                            aria-label="关闭视频评论抽屉"
+                                        />
+                                        <Motion.aside
+                                            className="video-comment-drawer"
+                                            initial={{ x: '100%' }}
+                                            animate={{ x: 0 }}
+                                            exit={{ x: '100%' }}
+                                            transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                                            onClick={(event) => event.stopPropagation()}
+                                        >
+                                            <div className="video-comment-drawer-header">
+                                                <div className="video-comment-drawer-texts">
+                                                    <h3>视频评论</h3>
+                                                    <p>{activeVideo.title}</p>
+                                                </div>
                                                 <button
                                                     type="button"
-                                                    className="video-unsupported-action"
-                                                    onClick={handleReloadVideo}
-                                                    disabled={isResolving}
+                                                    className="video-comment-close"
+                                                    onClick={() => setIsCommentDrawerOpen(false)}
+                                                    aria-label="关闭视频评论抽屉"
                                                 >
-                                                    重新加载
+                                                    <X size={18} />
                                                 </button>
                                             </div>
-                                        </div>
-                                    )}
-                                    {!isResolving && !resolveError && !resolvedUrl && (
-                                        <div className="video-unsupported video-unsupported-inline">加载中…</div>
-                                    )}
-                                    {!isResolving && !resolveError && resolvedUrl && canPlayInline(resolvedUrl, resolvedType) && (
-                                        <div
-                                            key={playerContainerKey}
-                                            ref={playerRef}
-                                            className="video-stage-player"
-                                            onContextMenu={(event) => event.preventDefault()}
-                                        />
-                                    )}
-                                    {!isResolving && !resolveError && resolvedUrl && !canPlayInline(resolvedUrl, resolvedType) && (
-                                        <div className="video-unsupported video-unsupported-inline">当前视频链接暂不支持播放。</div>
-                                    )}
-                                </div>
-                                <div className="video-stage-main-controls">
-                                    <button
-                                        type="button"
-                                        className="video-stage-nav-btn"
-                                        onClick={() => handleSelectWatchEpisode(prevWatchEpisode)}
-                                        disabled={!prevWatchEpisode}
-                                    >
-                                        上一集
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="video-stage-nav-btn"
-                                        onClick={() => handleSelectWatchEpisode(nextWatchEpisode)}
-                                        disabled={!nextWatchEpisode}
-                                    >
-                                        下一集
-                                    </button>
-                                </div>
-                            </div>
-
-                            <aside
-                                className={`video-watch-sidebar ${stageMainHeight > 0 ? 'is-measured' : ''}`}
-                                style={stageMainHeight > 0 ? { height: `${stageMainHeight}px` } : undefined}
-                            >
-                                <div className="video-watch-episodes">
-                                    {watchEpisodes.length === 0 ? (
-                                        <div className="video-watch-empty">当前分类暂无可播放视频</div>
-                                    ) : (
-                                        watchEpisodeGroups.map((group) => {
-                                            const isExpanded = group.isDirect || expandedWatchGroups.has(group.key);
-
-                                            return (
-                                                <section key={`watch-group-${group.key}`} className="video-watch-group">
-                                                    {!group.isDirect && (
-                                                        <button
-                                                            type="button"
-                                                            className={`video-watch-group-toggle ${isExpanded ? 'is-expanded' : ''}`}
-                                                            onClick={() => handleToggleWatchGroup(group.key)}
-                                                            aria-expanded={isExpanded}
-                                                        >
-                                                            <span className="video-watch-group-label">{group.label}</span>
-                                                            <span className="video-watch-group-count">{group.items.length} 集</span>
-                                                            <ChevronDown size={14} className="video-watch-group-icon" />
-                                                        </button>
-                                                    )}
-
-                                                    {isExpanded && (
-                                                        <div className={`video-watch-group-items ${group.isDirect ? 'is-direct' : ''}`}>
-                                                            {group.items.map((item, index) => {
-                                                                const itemKey = buildVideoKey(item);
-                                                                const isActiveEpisode = itemKey === activeVideoKey;
-
-                                                                return (
-                                                                    <button
-                                                                        key={`watch-episode-${item.id}-${index}`}
-                                                                        type="button"
-                                                                        className={`video-watch-episode ${isActiveEpisode ? 'active' : ''}`}
-                                                                        onClick={() => handleSelectWatchEpisode(item)}
-                                                                        ref={isActiveEpisode ? activeEpisodeRef : null}
-                                                                    >
-                                                                        <span className="video-watch-episode-index">
-                                                                            {String(index + 1).padStart(2, '0')}
-                                                                        </span>
-                                                                        <span className="video-watch-episode-texts">
-                                                                            <span className="video-watch-episode-title">{item.title}</span>
-                                                                        </span>
-                                                                    </button>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </section>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </aside>
-                            <div className="video-stage-categories-wrap">
-                                <button
-                                    type="button"
-                                    className="video-stage-categories-nav"
-                                    onClick={() => handleScrollStageCategories(-1)}
-                                    disabled={!stageCategoriesScrollState.canLeft}
-                                    aria-label="向左查看分类"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <div
-                                    className="video-stage-categories"
-                                    role="tablist"
-                                    aria-label="看片分类"
-                                    ref={stageCategoriesRef}
-                                    onWheel={handleStageCategoriesWheel}
-                                >
-                                    {videoCategories.map((cat) => (
-                                        <button
-                                            key={`watch-${cat.id}`}
-                                            type="button"
-                                            className={`video-stage-category ${watchCategory === cat.id ? 'active' : ''}`}
-                                            onClick={() => handleSelectWatchCategory(cat.id)}
-                                            aria-pressed={watchCategory === cat.id}
-                                        >
-                                            <span>{cat.name}</span>
-                                            <span className="video-stage-category-count">{categoryVideoCounts[cat.id] || 0}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                                <button
-                                    type="button"
-                                    className="video-stage-categories-nav"
-                                    onClick={() => handleScrollStageCategories(1)}
-                                    disabled={!stageCategoriesScrollState.canRight}
-                                    aria-label="向右查看分类"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        </div>
+                                            <div className="video-comment-drawer-body">
+                                                <CommentSection
+                                                    serverURL={commentServerURL}
+                                                    path={currentVideoCommentPath}
+                                                    title=""
+                                                    subtitle=""
+                                                />
+                                            </div>
+                                        </Motion.aside>
+                                    </>
+                                ) : null}
+                            </AnimatePresence>
                         {showWangGuoCredit && (
                             <div className="video-stage-credit">视频来自WANGUO</div>
                         )}

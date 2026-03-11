@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, ListMusic, Share2 } from 'lucide-react';
+import { Play, Pause, ListMusic, Share2, Heart, MessageCircle } from 'lucide-react';
 import { Maximize2Icon } from './icons/AppIcons';
 
 const PlayerBar = ({
@@ -15,6 +15,9 @@ const PlayerBar = ({
     handleNext,
     setIsLyricsOpen,
     setIsAlbumListOpen,
+    onToggleFavorite,
+    isCurrentTrackFavorited,
+    onOpenComments,
     onShare,
     isTrackNameOverflowing,
     trackNameRef
@@ -101,6 +104,28 @@ const PlayerBar = ({
                 </div>
 
                 <div className="player-actions">
+                    <button
+                        type="button"
+                        className={`icon-btn favorite-btn ${isCurrentTrackFavorited ? 'active' : ''}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleFavorite?.(currentTrack, e);
+                        }}
+                        aria-label={isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲'}
+                    >
+                        <Heart size={20} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
+                    </button>
+                    <button
+                        type="button"
+                        className="icon-btn comment-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenComments?.();
+                        }}
+                        aria-label="查看当前歌曲评论"
+                    >
+                        <MessageCircle size={20} strokeWidth={2.2} absoluteStrokeWidth />
+                    </button>
                     <button
                         type="button"
                         className="icon-btn share-btn"

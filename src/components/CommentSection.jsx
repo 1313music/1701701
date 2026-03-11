@@ -5,6 +5,16 @@ import '@waline/client/style';
 const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', subtitle = '' }) => {
   const containerRef = useRef(null);
   const walineRef = useRef(null);
+  const syncTimerRef = useRef(null);
+  const observerRef = useRef(null);
+
+  const getHeaderText = (labelText, input) => {
+    if (labelText) return labelText;
+    const fieldName = (input?.getAttribute('name') || '').toLowerCase();
+    if (fieldName.includes('nick')) return '昵称';
+    if (fieldName.includes('mail') || fieldName.includes('email')) return '邮箱';
+    return '';
+  };
 
   const syncHeaderPlaceholders = () => {
     const root = containerRef.current;
@@ -13,18 +23,18 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     headerItems.forEach((item) => {
       const label = item.querySelector('label');
       const input = item.querySelector('input');
-      if (!label || !input) return;
-      const text = label.textContent?.trim();
+      if (!input) return;
+      const text = getHeaderText(label?.textContent?.trim(), input);
       if (!text) return;
-      if (!input.placeholder) {
-        input.placeholder = text;
-      }
+      input.placeholder = text;
       input.setAttribute('aria-label', text);
     });
-    const textarea = root.querySelector('textarea');
-    if (textarea) {
-      textarea.placeholder = '音乐和心情都可以留在这里';
-    }
+    const textareas = root.querySelectorAll('textarea');
+    textareas.forEach((textarea) => {
+      if (!textarea.placeholder) {
+        textarea.placeholder = '音乐和心情都可以留在这里';
+      }
+    });
   };
 
   const scheduleHeaderSync = () => {
@@ -32,7 +42,13 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     if (typeof window !== 'undefined' && window.requestAnimationFrame) {
       window.requestAnimationFrame(syncHeaderPlaceholders);
     }
-    setTimeout(syncHeaderPlaceholders, 120);
+    if (syncTimerRef.current) {
+      clearTimeout(syncTimerRef.current);
+    }
+    syncTimerRef.current = setTimeout(() => {
+      syncTimerRef.current = null;
+      syncHeaderPlaceholders();
+    }, 120);
   };
 
   useEffect(() => {
@@ -41,6 +57,7 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       el: containerRef.current,
       serverURL,
       path,
+      meta: ['nick', 'mail'],
       lang: 'zh-CN',
       locale: {
         comment: '留言',
@@ -56,8 +73,25 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       ]
     });
     scheduleHeaderSync();
+    if (typeof MutationObserver !== 'undefined') {
+      observerRef.current = new MutationObserver(() => {
+        scheduleHeaderSync();
+      });
+      observerRef.current.observe(containerRef.current, {
+        childList: true,
+        subtree: true
+      });
+    }
 
     return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
       if (walineRef.current?.destroy) {
         walineRef.current.destroy();
       }
@@ -73,12 +107,14 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
 
   return (
     <section className="comment-section">
-      <div className="comment-section-header">
-        <div>
-          <h2 className="comment-section-title">{title}</h2>
-          {subtitle ? <p className="comment-section-subtitle">{subtitle}</p> : null}
+      {title || subtitle ? (
+        <div className="comment-section-header">
+          <div>
+            {title ? <h2 className="comment-section-title">{title}</h2> : null}
+            {subtitle ? <p className="comment-section-subtitle">{subtitle}</p> : null}
+          </div>
         </div>
-      </div>
+      ) : null}
       {!serverURL ? (
         <div className="comment-section-empty">未配置评论服务地址</div>
       ) : (

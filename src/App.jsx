@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import { ChevronUp } from 'lucide-react';
 import './index.css';
 
 // Components
@@ -38,12 +39,14 @@ const LyricsOverlay = lazy(() => import('./components/LyricsOverlay.jsx'));
 const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'));
 const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
 const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
+const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
 const VIEW_PATHS = Object.freeze({
   library: '/',
   video: '/video',
   download: '/download',
+  gallery: '/gallery',
   app: '/app',
   about: '/about',
   comment: '/comment'
@@ -52,6 +55,7 @@ const VIEW_QUERY_KEYS = Object.freeze({
   library: ['albumId', 'song'],
   video: ['videoId', 'videoCategory'],
   download: [],
+  gallery: [],
   app: [],
   about: [],
   comment: []
@@ -153,7 +157,7 @@ const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwX
 const App = () => {
   const [view, setView] = useState(() => (
     typeof window === 'undefined' ? 'library' : resolveViewFromLocation(window.location)
-  )); // 'library' | 'video' | 'download' | 'app' | 'about'
+  )); // 'library' | 'video' | 'download' | 'gallery' | 'app' | 'about' | 'comment'
   const [locationSearch, setLocationSearch] = useState(() => (
     typeof window === 'undefined' ? '' : window.location.search
   ));
@@ -174,6 +178,7 @@ const App = () => {
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
   const [isAlbumListOpen, setIsAlbumListOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [hasLyricsOverlayLoaded, setHasLyricsOverlayLoaded] = useState(false);
   const [hasAlbumListOverlayLoaded, setHasAlbumListOverlayLoaded] = useState(false);
@@ -181,6 +186,8 @@ const App = () => {
   const [shareCardDataUrl, setShareCardDataUrl] = useState('');
   const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
   const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [lyricsCommentRequestId, setLyricsCommentRequestId] = useState(0);
   const shareCardRequestIdRef = useRef(0);
   const tempPlaylistIdsRef = useRef(tempPlaylistIds);
 
@@ -386,6 +393,17 @@ const App = () => {
           '李志现场音频',
           '李志1701下载',
           '李志梵高先生'
+        ]
+      },
+      gallery: {
+        title: '图库 | 1701701.xyz',
+        description: '前端图库展示页，默认读取 B2 图库索引并以瀑布流展示已发布图片。',
+        pageType: 'CollectionPage',
+        keywords: [
+          '图库',
+          '图片瀑布流',
+          'B2 图床',
+          '图床展示'
         ]
       },
       app: {
@@ -610,6 +628,13 @@ const App = () => {
     setIsLyricsOpen(false);
   }, []);
 
+  const openCurrentTrackComments = useCallback(() => {
+    if (!currentTrack?.src) return;
+    setHasLyricsOverlayLoaded(true);
+    setLyricsCommentRequestId((prev) => prev + 1);
+    setIsLyricsOpen(true);
+  }, [currentTrack?.src]);
+
   const setAlbumListOverlayOpen = useCallback((open) => {
     if (open) {
       setHasAlbumListOverlayLoaded(true);
@@ -674,6 +699,35 @@ const App = () => {
       window.removeEventListener('popstate', handlePopState);
     };
   }, [handleViewChange]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    let frameId = 0;
+    const updateVisibility = () => {
+      frameId = 0;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+      const shouldShow = scrollTop > 280;
+      setShowBackToTop((prev) => (prev === shouldShow ? prev : shouldShow));
+    };
+
+    const handleScroll = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(updateVisibility);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (frameId) window.cancelAnimationFrame(frameId);
+    };
+  }, []);
+
+  const handleBackToTop = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleVideoAccessSubmit = useCallback(() => {
     submitVideoAccess();
@@ -989,13 +1043,15 @@ const App = () => {
   return (
     <>
       <div className={`app-root ${view === 'video' ? 'no-player' : ''}`}>
-        <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+        <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
           <div className="app-layout">
             <Sidebar
               view={view}
               setView={handleViewChange}
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
+              isSidebarCollapsed={isSidebarCollapsed}
+              setIsSidebarCollapsed={setIsSidebarCollapsed}
               themePreference={themePreference}
               onThemeToggle={handleThemeToggle}
             />
@@ -1041,7 +1097,11 @@ const App = () => {
               {view === 'video' && (
                 <div className="view-panel view-panel-video">
                   <Suspense fallback={pageLoadingFallback}>
-                    <VideoPage requestVideoView={requestVideoView} onShareVideo={handleShareVideo} />
+                    <VideoPage
+                      requestVideoView={requestVideoView}
+                      onShareVideo={handleShareVideo}
+                      commentServerURL={WALINE_SERVER_URL}
+                    />
                   </Suspense>
                 </div>
               )}
@@ -1055,6 +1115,13 @@ const App = () => {
                         anchorOrOptions
                       )}
                     />
+                  </Suspense>
+                </div>
+              )}
+              {view === 'gallery' && (
+                <div className="view-panel view-panel-gallery">
+                  <Suspense fallback={pageLoadingFallback}>
+                    <GalleryDisplayPage />
                   </Suspense>
                 </div>
               )}
@@ -1087,6 +1154,18 @@ const App = () => {
           </div>
         </div>
 
+        {showBackToTop && (
+          <button
+            type="button"
+            className={`back-to-top-btn ${view === 'video' ? 'is-no-player' : ''}`}
+            onClick={handleBackToTop}
+            aria-label="返回顶部"
+            title="返回顶部"
+          >
+            <ChevronUp size={18} strokeWidth={2.4} absoluteStrokeWidth />
+          </button>
+        )}
+
         {view !== 'video' && isLibraryReady && (
           <>
             <PlayerBar
@@ -1102,6 +1181,9 @@ const App = () => {
               handleNext={handleNext}
               setIsLyricsOpen={setLyricsOverlayOpen}
               setIsAlbumListOpen={setAlbumListOverlayOpen}
+              onToggleFavorite={toggleTempSong}
+              isCurrentTrackFavorited={tempPlaylistSet.has(currentTrack?.src)}
+              onOpenComments={openCurrentTrackComments}
               onShare={handleShareCurrentTrack}
               isTrackNameOverflowing={isTrackNameOverflowing}
               trackNameRef={trackNameRef}
@@ -1128,7 +1210,12 @@ const App = () => {
                   handlePrev={handlePrev}
                   handleNext={handleNext}
                   audioRef={audioRef}
+                  currentSongInfo={currentSongInfo}
+                  commentServerURL={WALINE_SERVER_URL}
                   onAddToFavorites={addTempSong}
+                  onToggleFavorite={toggleTempSong}
+                  isCurrentTrackFavorited={tempPlaylistSet.has(currentTrack?.src)}
+                  openCommentRequestId={lyricsCommentRequestId}
                   onShare={handleShareCurrentTrack}
                 />
               </Suspense>

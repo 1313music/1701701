@@ -7,6 +7,9 @@ import {
     Library,
     Video,
     Download,
+    Images,
+    ChevronLeft,
+    ChevronRight,
     Smartphone,
     Info,
     MessageSquareMore
@@ -19,15 +22,26 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
     </div>
 );
 
-const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreference = 'light', onThemeToggle }) => {
+const Sidebar = ({
+    view,
+    setView,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    isSidebarCollapsed = false,
+    setIsSidebarCollapsed,
+    themePreference = 'light',
+    onThemeToggle
+}) => {
     const handleNavClick = (newView) => {
         setIsSidebarOpen(false);
         setView(newView);
     };
+    const isGalleryActive = view === 'gallery';
     const currentLabel = themePreference === 'dark' ? '深色' : '浅色';
     const nextLabel = themePreference === 'dark' ? '浅色' : '深色';
     const ThemeIcon = themePreference === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
+    const sidebarToggleLabel = isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏';
 
     return (
         <>
@@ -81,6 +95,12 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         onClick={() => handleNavClick('video')}
                     />
                     <NavItem
+                        icon={<Images size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="图库"
+                        active={isGalleryActive}
+                        onClick={() => handleNavClick('gallery')}
+                    />
+                    <NavItem
                         icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="下载"
                         active={view === 'download'}
@@ -107,27 +127,29 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                 </div>
             </div>
 
-            <aside className="sidebar">
+            <aside className={`sidebar ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
                 <div
                     className="logo"
                     onClick={() => handleNavClick('library')}
                 >
                     <div className="logo-box" />
-                    <span>1701701.xyz</span>
-                    {onThemeToggle && (
-                        <button
-                            type="button"
-                            className="sidebar-theme-toggle"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                onThemeToggle(event);
-                            }}
-                            aria-label={themeToggleLabel}
-                            title={themeToggleLabel}
-                        >
-                            <ThemeIcon size={16} />
-                        </button>
-                    )}
+                    <span className="logo-text">1701701.xyz</span>
+                    <div className="sidebar-logo-actions">
+                        {onThemeToggle && (
+                            <button
+                                type="button"
+                                className="sidebar-theme-toggle"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    onThemeToggle(event);
+                                }}
+                                aria-label={themeToggleLabel}
+                                title={themeToggleLabel}
+                            >
+                                <ThemeIcon size={20} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="nav-group">
@@ -142,6 +164,12 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         label="视频"
                         active={view === 'video'}
                         onClick={() => handleNavClick('video')}
+                    />
+                    <NavItem
+                        icon={<Images size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="图库"
+                        active={isGalleryActive}
+                        onClick={() => handleNavClick('gallery')}
                     />
                     <NavItem
                         icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}
@@ -168,6 +196,23 @@ const Sidebar = ({ view, setView, isSidebarOpen, setIsSidebarOpen, themePreferen
                         onClick={() => handleNavClick('about')}
                     />
                 </div>
+                <button
+                    type="button"
+                    className="sidebar-edge-toggle"
+                    onClick={() => {
+                        if (setIsSidebarCollapsed) {
+                            setIsSidebarCollapsed((prev) => !prev);
+                        }
+                    }}
+                    aria-label={sidebarToggleLabel}
+                    title={sidebarToggleLabel}
+                >
+                    {isSidebarCollapsed ? (
+                        <ChevronRight size={16} />
+                    ) : (
+                        <ChevronLeft size={16} />
+                    )}
+                </button>
             </aside>
         </>
     );
