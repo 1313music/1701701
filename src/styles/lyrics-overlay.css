@@ -803,6 +803,7 @@
     background: rgba(6, 8, 12, 0.48);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    z-index: 10020;
   }
 
   .song-comment-drawer {
@@ -810,6 +811,7 @@
     max-width: none;
     border-left: none;
     box-shadow: none;
+    z-index: 10030;
     padding:
       calc(12px + var(--mobile-fullscreen-safe-top))
       calc(14px + var(--mobile-fullscreen-safe-right))

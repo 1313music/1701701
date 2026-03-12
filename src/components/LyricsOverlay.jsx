@@ -58,6 +58,12 @@ const LyricsOverlay = ({
         startY: 0,
         startAt: 0
     });
+    const commentDrawerSwipeRef = useRef({
+        active: false,
+        startX: 0,
+        startY: 0,
+        startAt: 0
+    });
     const burstIdRef = useRef(0);
     const burstTimerRef = useRef([]);
     const [mobileLikeBursts, setMobileLikeBursts] = useState([]);
@@ -99,6 +105,13 @@ const LyricsOverlay = ({
         mobileSwipeRef.current.startX = 0;
         mobileSwipeRef.current.startY = 0;
         mobileSwipeRef.current.startAt = 0;
+    };
+
+    const resetCommentDrawerSwipeState = () => {
+        commentDrawerSwipeRef.current.active = false;
+        commentDrawerSwipeRef.current.startX = 0;
+        commentDrawerSwipeRef.current.startY = 0;
+        commentDrawerSwipeRef.current.startAt = 0;
     };
 
     const handleOverlayTouchStart = (e) => {
@@ -303,18 +316,24 @@ const LyricsOverlay = ({
         canOpenCommentDrawer
         && latestCommentRequestId > dismissedCommentRequestId
         && openCommentRequestTrackSrc === currentTrackSrc
-        && openCommentRequestTrackChangeId === trackChangeId
-        && openCommentRequestViewContextId === playerOverlayContextId
     );
     const hasManualCommentDrawerOpen = (
         manualCommentDrawerContextKey !== ''
         && manualCommentDrawerContextKey === currentCommentDrawerContextKey
+        && (isLyricsOpen || !isMobileOverlay)
     );
     const hasOverlayCommentDrawerOpen = (
         hasMatchingCommentRequest
         && openCommentRequestMode !== 'standalone'
         && isLyricsOpen
-        && openCommentRequestOverlaySessionId === lyricsOverlaySessionId
+        && (
+            isMobileOverlay
+            || (
+                openCommentRequestTrackChangeId === trackChangeId
+                && openCommentRequestViewContextId === playerOverlayContextId
+                && openCommentRequestOverlaySessionId === lyricsOverlaySessionId
+            )
+        )
     );
     const hasStandaloneCommentDrawerOpen = (
         hasMatchingCommentRequest
@@ -354,8 +373,44 @@ const LyricsOverlay = ({
         openCommentDrawer();
     }, [canOpenCommentDrawer, closeCommentDrawer, isCommentDrawerOpen, openCommentDrawer]);
 
-    const shouldRenderCommentDrawer = isCommentDrawerOpen && canOpenCommentDrawer;
+    const shouldRenderCommentDrawer = (
+        isCommentDrawerOpen
+        && canOpenCommentDrawer
+        && (isLyricsOpen || !isMobileOverlay)
+    );
     const shouldLockViewport = isLyricsOpen || (!isMobileOverlay && shouldRenderCommentDrawer);
+
+    const handleCommentDrawerTouchStart = useCallback((event) => {
+        if (!isMobileViewport()) return;
+        const touch = event.touches?.[0];
+        if (!touch) return;
+        commentDrawerSwipeRef.current.active = true;
+        commentDrawerSwipeRef.current.startX = touch.clientX;
+        commentDrawerSwipeRef.current.startY = touch.clientY;
+        commentDrawerSwipeRef.current.startAt = Date.now();
+    }, []);
+
+    const handleCommentDrawerTouchEnd = useCallback((event) => {
+        const state = commentDrawerSwipeRef.current;
+        if (!state.active) return;
+        const touch = event.changedTouches?.[0];
+        const startX = state.startX;
+        const startY = state.startY;
+        const startAt = state.startAt;
+        resetCommentDrawerSwipeState();
+        if (!touch || !isMobileViewport()) return;
+
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        const elapsed = Math.max(Date.now() - startAt, 1);
+        const velocityX = deltaX / elapsed;
+        const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
+        const shouldCloseByRight = deltaX > 88 || (deltaX > 42 && velocityX > 0.58);
+
+        if (isHorizontalSwipe && shouldCloseByRight) {
+            closeCommentDrawer();
+        }
+    }, [closeCommentDrawer]);
 
     useEffect(() => {
         if (!shouldLockViewport || typeof window === 'undefined' || typeof document === 'undefined') {
@@ -416,334 +471,349 @@ const LyricsOverlay = ({
     const overlayTransition = isMobileOverlay
         ? { type: 'tween', duration: 0.3, ease: [0.22, 1, 0.36, 1] }
         : { type: 'tween', duration: 0.35, ease: [0.22, 1, 0.36, 1] };
+    const commentDrawerInitial = { x: '100%' };
+    const commentDrawerAnimate = { x: 0 };
+    const commentDrawerExit = { x: '100%' };
+    const commentDrawerTransition = { type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] };
     // 使用 Portal 渲染到 body，确保不受父级样式限制（如 overflow, transform 等），实现真正的全屏
     return createPortal(
-        <AnimatePresence>
-            {isLyricsOpen && (
-                <Motion.div
-                    className={`lyrics-overlay mobile-fullscreen-player ${isCommentDrawerOpen ? 'comment-drawer-open' : ''}`}
-                    initial={overlayInitial}
-                    animate={overlayAnimate}
-                    exit={overlayExit}
-                    transition={overlayTransition}
-                    onTouchStart={handleOverlayTouchStart}
-                    onTouchEnd={handleOverlayTouchEnd}
-                    onTouchCancel={resetMobileSwipeState}
-                    style={{
-                        '--cover-image': `url(${currentTrack.cover || currentAlbum.cover})`
-                    }}
-                >
-                    <div className="noise-overlay"></div>
+        <>
+            <AnimatePresence>
+                {isLyricsOpen && (
+                    <Motion.div
+                        className={`lyrics-overlay mobile-fullscreen-player ${isCommentDrawerOpen ? 'comment-drawer-open' : ''}`}
+                        initial={overlayInitial}
+                        animate={overlayAnimate}
+                        exit={overlayExit}
+                        transition={overlayTransition}
+                        onTouchStart={handleOverlayTouchStart}
+                        onTouchEnd={handleOverlayTouchEnd}
+                        onTouchCancel={resetMobileSwipeState}
+                        style={{
+                            '--cover-image': `url(${currentTrack.cover || currentAlbum.cover})`
+                        }}
+                    >
+                        <div className="noise-overlay"></div>
 
-                    <div className="overlay-header">
-                        <button
-                            className="close-btn"
-                            onClick={() => setIsLyricsOpen(false)}
-                            aria-label="收起"
-                        >
-                            <ChevronDown size={24} strokeWidth={2.2} absoluteStrokeWidth aria-hidden="true" />
-                        </button>
-                        <div className="overlay-header-actions">
+                        <div className="overlay-header">
                             <button
-                                type="button"
-                                className="overlay-share-btn"
-                                onClick={(e) => onShare?.(e)}
-                                aria-label="分享当前歌曲"
+                                className="close-btn"
+                                onClick={() => setIsLyricsOpen(false)}
+                                aria-label="收起"
                             >
-                                <Share2 size={20} strokeWidth={2.2} absoluteStrokeWidth />
+                                <ChevronDown size={24} strokeWidth={2.2} absoluteStrokeWidth aria-hidden="true" />
                             </button>
-                        </div>
-                    </div>
-
-                    <div className="mobile-player-content">
-                        <div className="mobile-cover-section">
-                            <Motion.div
-                                className="mobile-xl-cover"
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ duration: 0.4 }}
-                                onDoubleClick={(e) => handleCoverDoubleClick(e, 'mobile')}
-                                title="双击添加收藏"
-                            >
-                                <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
-                                <div className="cover-like-burst-layer" aria-hidden="true">
-                                    {mobileLikeBursts.map((burst) => (
-                                        <span
-                                            key={burst.id}
-                                            className="cover-like-heart"
-                                            style={{ left: `${burst.x}px`, top: `${burst.y}px` }}
-                                        >
-                                            <Heart size={38} strokeWidth={1.8} fill="currentColor" />
-                                        </span>
-                                    ))}
-                                </div>
-                            </Motion.div>
-                        </div>
-
-                        <div className="mobile-track-info">
-                            <h1
-                                className={`mobile-track-name ${isMobileTitleMarquee ? 'is-marquee' : ''}`}
-                                ref={mobileTitleRef}
-                            >
-                                <span data-text={currentTrack.name}>{currentTrack.name}</span>
-                            </h1>
-                        </div>
-
-                        <div className="mobile-lyrics-section">
-                            {lyrics.length > 0 ? (
-                                <div
-                                    className="mobile-lyrics-scroller"
-                                    ref={mobileLyricsScrollerRef}
-                                    onWheel={markLyricsManualScroll}
-                                    onPointerDown={markLyricsManualScroll}
-                                    onTouchStart={markLyricsManualScroll}
+                            <div className="overlay-header-actions">
+                                <button
+                                    type="button"
+                                    className="overlay-share-btn"
+                                    onClick={(e) => onShare?.(e)}
+                                    aria-label="分享当前歌曲"
                                 >
-                                    <div className="mobile-lyrics-wrap" ref={mobileLyricsWrapRef}>
-                                        {lyrics.map((l, i) => {
-                                        return (
-                                            <div
-                                                key={i}
-                                                className={`mobile-lyric-line lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
-                                                onClick={(e) => { e.stopPropagation(); audioRef.current.currentTime = l.time; }}
+                                    <Share2 size={20} strokeWidth={2.2} absoluteStrokeWidth />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mobile-player-content">
+                            <div className="mobile-cover-section">
+                                <Motion.div
+                                    className="mobile-xl-cover"
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ duration: 0.4 }}
+                                    onDoubleClick={(e) => handleCoverDoubleClick(e, 'mobile')}
+                                    title="双击添加收藏"
+                                >
+                                    <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                                    <div className="cover-like-burst-layer" aria-hidden="true">
+                                        {mobileLikeBursts.map((burst) => (
+                                            <span
+                                                key={burst.id}
+                                                className="cover-like-heart"
+                                                style={{ left: `${burst.x}px`, top: `${burst.y}px` }}
                                             >
-                                                {l.text}
-                                            </div>
-                                        );
-                                    })}
+                                                <Heart size={38} strokeWidth={1.8} fill="currentColor" />
+                                            </span>
+                                        ))}
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="mobile-no-lyrics">暂无歌词</div>
-                            )}
-                        </div>
+                                </Motion.div>
+                            </div>
 
-                        <div className="mobile-player-controls">
-                            <div className="mobile-progress-row">
-                                <div className="mobile-progress-section">
+                            <div className="mobile-track-info">
+                                <h1
+                                    className={`mobile-track-name ${isMobileTitleMarquee ? 'is-marquee' : ''}`}
+                                    ref={mobileTitleRef}
+                                >
+                                    <span data-text={currentTrack.name}>{currentTrack.name}</span>
+                                </h1>
+                            </div>
+
+                            <div className="mobile-lyrics-section">
+                                {lyrics.length > 0 ? (
                                     <div
-                                        className={`mobile-progress-bar ${isDragActive ? 'is-dragging' : ''}`}
-                                        onClick={handleSeek}
-                                        onPointerDown={handlePointerDown}
-                                        onMouseDown={handleMouseDown}
-                                        onTouchStart={handleTouchStart}
+                                        className="mobile-lyrics-scroller"
+                                        ref={mobileLyricsScrollerRef}
+                                        onWheel={markLyricsManualScroll}
+                                        onPointerDown={markLyricsManualScroll}
+                                        onTouchStart={markLyricsManualScroll}
                                     >
-                                        <div className="mobile-progress-fill" style={{ width: `${progress}%` }} />
-                                        <div className={`mobile-progress-thumb ${isDragActive ? 'is-visible' : ''}`} style={{ left: `${progress}%` }} />
+                                        <div className="mobile-lyrics-wrap" ref={mobileLyricsWrapRef}>
+                                            {lyrics.map((l, i) => {
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className={`mobile-lyric-line lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
+                                                    onClick={(e) => { e.stopPropagation(); audioRef.current.currentTime = l.time; }}
+                                                >
+                                                    {l.text}
+                                                </div>
+                                            );
+                                        })}
+                                        </div>
                                     </div>
-                                    <div className="mobile-time-display">
-                                        <span>{formatTime(currentTime)}</span>
-                                        <span>{formatTime(duration)}</span>
-                                    </div>
-                                </div>
+                                ) : (
+                                    <div className="mobile-no-lyrics">暂无歌词</div>
+                                )}
                             </div>
 
-                            <div className="mobile-control-buttons">
-                                <button className="mobile-mode-btn" onClick={togglePlayMode}>
-                                    {getPlayModeIcon(24)}
-                                </button>
-                                <button className="mobile-control-btn" onClick={handlePrev}>
-                                    <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
-                                    <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
-                                </button>
-                                <button className="mobile-play-btn" onClick={handlePlayPause}>
-                                    {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" style={{ marginLeft: '4px' }} />}
-                                </button>
-                                <button className="mobile-control-btn" onClick={handleNext}>
-                                    <Play size={24} fill="currentColor" style={{ marginRight: '-8px' }} />
-                                    <Play size={24} fill="currentColor" />
-                                </button>
-                                <button className="mobile-playlist-btn" onClick={() => setIsAlbumListOpen(true)}>
-                                    <ListMusic size={24} strokeWidth={2.4} absoluteStrokeWidth />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {isMobileOverlay && (
-                        <>
-                            <button
-                                type="button"
-                                className={`overlay-favorite-trigger mobile-fab ${isCurrentTrackFavorited ? 'active' : ''}`}
-                                onClick={handleToggleFavorite}
-                                aria-label={favoriteAriaLabel}
-                                title={favoriteAriaLabel}
-                                disabled={!canToggleFavorite}
-                            >
-                                <Heart size={22} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
-                            </button>
-                            <button
-                                type="button"
-                                className={`overlay-comment-trigger mobile-fab ${isCommentDrawerOpen ? 'active' : ''}`}
-                                onClick={toggleCommentDrawer}
-                                aria-label="歌曲评论"
-                                disabled={!canOpenCommentDrawer}
-                            >
-                                <MessageCircle size={22} strokeWidth={2.2} absoluteStrokeWidth />
-                            </button>
-                        </>
-                    )}
-
-                    {/* 桌面端内容 */}
-                    <div className="desktop-player-content">
-                        <div className="album-view">
-                            <div
-                                className="xl-cover"
-                                onDoubleClick={(e) => handleCoverDoubleClick(e, 'desktop')}
-                                title="双击添加收藏"
-                            >
-                                <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
-                                <div className="cover-like-burst-layer" aria-hidden="true">
-                                    {desktopLikeBursts.map((burst) => (
-                                        <span
-                                            key={burst.id}
-                                            className="cover-like-heart"
-                                            style={{ left: `${burst.x}px`, top: `${burst.y}px` }}
+                            <div className="mobile-player-controls">
+                                <div className="mobile-progress-row">
+                                    <div className="mobile-progress-section">
+                                        <div
+                                            className={`mobile-progress-bar ${isDragActive ? 'is-dragging' : ''}`}
+                                            onClick={handleSeek}
+                                            onPointerDown={handlePointerDown}
+                                            onMouseDown={handleMouseDown}
+                                            onTouchStart={handleTouchStart}
                                         >
-                                            <Heart size={42} strokeWidth={1.8} fill="currentColor" />
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="track-meta" style={{ textAlign: 'center', marginTop: 20 }}>
-                                <h2>{currentTrack.name}</h2>
-                                <p>{currentAlbum.artist} - {currentAlbum.name}</p>
-                            </div>
-
-                            <div className="overlay-controls">
-                                <div className="overlay-comment-row">
-                                    <button
-                                        type="button"
-                                        className={`overlay-favorite-trigger desktop-floating ${isCurrentTrackFavorited ? 'active' : ''}`}
-                                        onClick={handleToggleFavorite}
-                                        aria-label={favoriteAriaLabel}
-                                        title={favoriteAriaLabel}
-                                        disabled={!canToggleFavorite}
-                                    >
-                                        <Heart size={24} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`overlay-comment-trigger desktop-floating ${isCommentDrawerOpen ? 'active' : ''}`}
-                                        onClick={toggleCommentDrawer}
-                                        aria-label="歌曲评论"
-                                        disabled={!canOpenCommentDrawer}
-                                    >
-                                        <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
-                                    </button>
-                                </div>
-                                <div className="overlay-progress-row">
-                                    <div
-                                        className={`overlay-progress-container ${isDragActive ? 'is-dragging' : ''}`}
-                                        onClick={handleSeek}
-                                        onPointerDown={handlePointerDown}
-                                        onMouseDown={handleMouseDown}
-                                        onTouchStart={handleTouchStart}
-                                    >
-                                        <div className="overlay-progress-fill" style={{ width: `${progress}%` }} />
-                                        <div className={`overlay-progress-thumb ${isDragActive ? 'is-visible' : ''}`} style={{ left: `${progress}%` }} />
-                                        <div className="overlay-time-info">
+                                            <div className="mobile-progress-fill" style={{ width: `${progress}%` }} />
+                                            <div className={`mobile-progress-thumb ${isDragActive ? 'is-visible' : ''}`} style={{ left: `${progress}%` }} />
+                                        </div>
+                                        <div className="mobile-time-display">
                                             <span>{formatTime(currentTime)}</span>
                                             <span>{formatTime(duration)}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="overlay-buttons">
-                                    <div className="icon-btn" onClick={togglePlayMode}>
+
+                                <div className="mobile-control-buttons">
+                                    <button className="mobile-mode-btn" onClick={togglePlayMode}>
                                         {getPlayModeIcon(24)}
-                                    </div>
-                                    <div className="icon-btn" onClick={handlePrev}>
+                                    </button>
+                                    <button className="mobile-control-btn" onClick={handlePrev}>
                                         <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
                                         <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
-                                    </div>
-                                    <div className="overlay-play-btn" onClick={handlePlayPause}>
-                                        {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: '6px' }} />}
-                                    </div>
-                                    <div className="icon-btn" onClick={handleNext}>
+                                    </button>
+                                    <button className="mobile-play-btn" onClick={handlePlayPause}>
+                                        {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" style={{ marginLeft: '4px' }} />}
+                                    </button>
+                                    <button className="mobile-control-btn" onClick={handleNext}>
                                         <Play size={24} fill="currentColor" style={{ marginRight: '-8px' }} />
                                         <Play size={24} fill="currentColor" />
-                                    </div>
-                                    <div className="icon-btn" onClick={() => setIsAlbumListOpen(true)}>
+                                    </button>
+                                    <button className="mobile-playlist-btn" onClick={() => setIsAlbumListOpen(true)}>
                                         <ListMusic size={24} strokeWidth={2.4} absoluteStrokeWidth />
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="lyrics-view desktop-lyrics">
-                            <div
-                                className={`lyrics-scroller ${lyrics.length > 0 ? '' : 'is-empty'}`}
-                                ref={desktopLyricsScrollerRef}
-                                onWheel={markLyricsManualScroll}
-                                onPointerDown={markLyricsManualScroll}
-                                onTouchStart={markLyricsManualScroll}
-                            >
-                                {lyrics.length > 0 ? (
-                                    <div ref={desktopLyricsWrapRef}>
-                                        {lyrics.map((l, i) => (
-                                            <div
-                                                key={i}
-                                                className={`lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
-                                                onClick={() => { audioRef.current.currentTime = l.time; }}
+                        {isMobileOverlay && (
+                            <>
+                                <button
+                                    type="button"
+                                    className={`overlay-favorite-trigger mobile-fab ${isCurrentTrackFavorited ? 'active' : ''}`}
+                                    onClick={handleToggleFavorite}
+                                    aria-label={favoriteAriaLabel}
+                                    title={favoriteAriaLabel}
+                                    disabled={!canToggleFavorite}
+                                >
+                                    <Heart size={22} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`overlay-comment-trigger mobile-fab ${isCommentDrawerOpen ? 'active' : ''}`}
+                                    onClick={toggleCommentDrawer}
+                                    aria-label="歌曲评论"
+                                    disabled={!canOpenCommentDrawer}
+                                >
+                                    <MessageCircle size={22} strokeWidth={2.2} absoluteStrokeWidth />
+                                </button>
+                            </>
+                        )}
+
+                        {/* 桌面端内容 */}
+                        <div className="desktop-player-content">
+                            <div className="album-view">
+                                <div
+                                    className="xl-cover"
+                                    onDoubleClick={(e) => handleCoverDoubleClick(e, 'desktop')}
+                                    title="双击添加收藏"
+                                >
+                                    <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                                    <div className="cover-like-burst-layer" aria-hidden="true">
+                                        {desktopLikeBursts.map((burst) => (
+                                            <span
+                                                key={burst.id}
+                                                className="cover-like-heart"
+                                                style={{ left: `${burst.x}px`, top: `${burst.y}px` }}
                                             >
-                                                {l.text}
-                                            </div>
+                                                <Heart size={42} strokeWidth={1.8} fill="currentColor" />
+                                            </span>
                                         ))}
                                     </div>
-                                ) : (
-                                    <div className="no-lyrics">暂无歌词</div>
-                                )}
+                                </div>
+
+                                <div className="track-meta" style={{ textAlign: 'center', marginTop: 20 }}>
+                                    <h2>{currentTrack.name}</h2>
+                                    <p>{currentAlbum.artist} - {currentAlbum.name}</p>
+                                </div>
+
+                                <div className="overlay-controls">
+                                    <div className="overlay-comment-row">
+                                        <button
+                                            type="button"
+                                            className={`overlay-favorite-trigger desktop-floating ${isCurrentTrackFavorited ? 'active' : ''}`}
+                                            onClick={handleToggleFavorite}
+                                            aria-label={favoriteAriaLabel}
+                                            title={favoriteAriaLabel}
+                                            disabled={!canToggleFavorite}
+                                        >
+                                            <Heart size={24} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`overlay-comment-trigger desktop-floating ${isCommentDrawerOpen ? 'active' : ''}`}
+                                            onClick={toggleCommentDrawer}
+                                            aria-label="歌曲评论"
+                                            disabled={!canOpenCommentDrawer}
+                                        >
+                                            <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
+                                        </button>
+                                    </div>
+                                    <div className="overlay-progress-row">
+                                        <div
+                                            className={`overlay-progress-container ${isDragActive ? 'is-dragging' : ''}`}
+                                            onClick={handleSeek}
+                                            onPointerDown={handlePointerDown}
+                                            onMouseDown={handleMouseDown}
+                                            onTouchStart={handleTouchStart}
+                                        >
+                                            <div className="overlay-progress-fill" style={{ width: `${progress}%` }} />
+                                            <div className={`overlay-progress-thumb ${isDragActive ? 'is-visible' : ''}`} style={{ left: `${progress}%` }} />
+                                            <div className="overlay-time-info">
+                                                <span>{formatTime(currentTime)}</span>
+                                                <span>{formatTime(duration)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="overlay-buttons">
+                                        <div className="icon-btn" onClick={togglePlayMode}>
+                                            {getPlayModeIcon(24)}
+                                        </div>
+                                        <div className="icon-btn" onClick={handlePrev}>
+                                            <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
+                                            <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
+                                        </div>
+                                        <div className="overlay-play-btn" onClick={handlePlayPause}>
+                                            {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: '6px' }} />}
+                                        </div>
+                                        <div className="icon-btn" onClick={handleNext}>
+                                            <Play size={24} fill="currentColor" style={{ marginRight: '-8px' }} />
+                                            <Play size={24} fill="currentColor" />
+                                        </div>
+                                        <div className="icon-btn" onClick={() => setIsAlbumListOpen(true)}>
+                                            <ListMusic size={24} strokeWidth={2.4} absoluteStrokeWidth />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="lyrics-view desktop-lyrics">
+                                <div
+                                    className={`lyrics-scroller ${lyrics.length > 0 ? '' : 'is-empty'}`}
+                                    ref={desktopLyricsScrollerRef}
+                                    onWheel={markLyricsManualScroll}
+                                    onPointerDown={markLyricsManualScroll}
+                                    onTouchStart={markLyricsManualScroll}
+                                >
+                                    {lyrics.length > 0 ? (
+                                        <div ref={desktopLyricsWrapRef}>
+                                            {lyrics.map((l, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={`lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
+                                                    onClick={() => { audioRef.current.currentTime = l.time; }}
+                                                >
+                                                    {l.text}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="no-lyrics">暂无歌词</div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </Motion.div>
-            )}
-            {shouldRenderCommentDrawer ? (
-                <>
-                    <Motion.button
-                        type="button"
-                        className="song-comment-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        onClick={closeCommentDrawer}
-                        aria-label="关闭评论抽屉"
-                    />
-                    <Motion.aside
-                        className="song-comment-drawer"
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                        onClick={(event) => event.stopPropagation()}
-                    >
-                        <div className="song-comment-drawer-header">
-                            <div className="song-comment-drawer-texts">
-                                <h3>单曲评论</h3>
-                                <p>{currentTrack.name}</p>
-                            </div>
-                            <button
+                    </Motion.div>
+                )}
+            </AnimatePresence>
+            <AnimatePresence>
+                {shouldRenderCommentDrawer ? (
+                    <>
+                        {!isMobileOverlay && (
+                            <Motion.button
+                                key="song-comment-backdrop"
                                 type="button"
-                                className="song-comment-close"
+                                className="song-comment-backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
                                 onClick={closeCommentDrawer}
                                 aria-label="关闭评论抽屉"
-                            >
-                                <X size={18} strokeWidth={2.2} absoluteStrokeWidth />
-                            </button>
-                        </div>
-                        <div className="song-comment-drawer-body">
-                            <CommentSection
-                                serverURL={commentServerURL}
-                                path={currentSongCommentPath}
-                                title=""
-                                subtitle=""
                             />
-                        </div>
-                    </Motion.aside>
-                </>
-            ) : null}
-        </AnimatePresence>,
+                        )}
+                        <Motion.aside
+                            key={`song-comment-drawer-${currentSongCommentPath || 'empty'}`}
+                            className="song-comment-drawer"
+                            initial={commentDrawerInitial}
+                            animate={commentDrawerAnimate}
+                            exit={commentDrawerExit}
+                            transition={commentDrawerTransition}
+                            onClick={(event) => event.stopPropagation()}
+                            onTouchStart={handleCommentDrawerTouchStart}
+                            onTouchEnd={handleCommentDrawerTouchEnd}
+                            onTouchCancel={resetCommentDrawerSwipeState}
+                        >
+                            <div className="song-comment-drawer-header">
+                                <div className="song-comment-drawer-texts">
+                                    <h3>单曲评论</h3>
+                                    <p>{currentTrack.name}</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="song-comment-close"
+                                    onClick={closeCommentDrawer}
+                                    aria-label="关闭评论抽屉"
+                                >
+                                    <X size={18} strokeWidth={2.2} absoluteStrokeWidth />
+                                </button>
+                            </div>
+                            <div className="song-comment-drawer-body">
+                                <CommentSection
+                                    serverURL={commentServerURL}
+                                    path={currentSongCommentPath}
+                                    title=""
+                                    subtitle=""
+                                />
+                            </div>
+                        </Motion.aside>
+                    </>
+                ) : null}
+            </AnimatePresence>
+        </>,
         document.body
     );
 };
