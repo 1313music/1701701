@@ -2,58 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ImagePlus, LoaderCircle, RefreshCw } from 'lucide-react';
 import '../styles/gallery.css';
-
-const DEFAULT_INDEX_URL = String(
-  import.meta.env.VITE_GALLERY_INDEX_URL || 'https://images.1701701.xyz/gallery-index.json'
-).trim();
-
-const toAbsoluteUrl = (value, fallbackBase = '') => {
-  const input = String(value || '').trim();
-  if (!input) return '';
-  try {
-    return new URL(input).toString();
-  } catch {
-    if (!fallbackBase) return '';
-    try {
-      return new URL(input, fallbackBase).toString();
-    } catch {
-      return '';
-    }
-  }
-};
-
-const parseGalleryIndexItems = (payload, fallbackBase = '') => {
-  const gallery = payload?.gallery;
-  if (!gallery || typeof gallery !== 'object') return [];
-
-  const seen = new Set();
-  const result = [];
-
-  for (const [category, categoryData] of Object.entries(gallery)) {
-    const images = Array.isArray(categoryData?.images) ? categoryData.images : [];
-    for (const image of images) {
-      const original = toAbsoluteUrl(image?.original, fallbackBase);
-      if (!original || seen.has(original)) continue;
-      seen.add(original);
-      const preview = toAbsoluteUrl(image?.preview, fallbackBase) || original;
-      const name = typeof image?.name === 'string' && image.name
-        ? image.name
-        : original.split('/').pop() || 'image';
-
-      result.push({
-        id: `${category}/${name}/${original}`,
-        category,
-        name,
-        url: original,
-        previewUrl: preview
-      });
-    }
-  }
-
-  return result.sort(
-    (left, right) => left.category.localeCompare(right.category) || left.name.localeCompare(right.name)
-  );
-};
+import { loadGalleryItems, refreshGalleryItems } from '../data/galleryManifest';
 
 const shuffleItems = (input) => {
   const list = Array.isArray(input) ? [...input] : [];
@@ -92,31 +41,14 @@ const GalleryDisplayPage = () => {
 
   const categoryCount = categoryStats.length;
   const itemIdSet = useMemo(() => new Set(items.map((item) => item.id)), [items]);
-  const sourceUrl = useMemo(() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    return toAbsoluteUrl(DEFAULT_INDEX_URL, origin) || DEFAULT_INDEX_URL;
-  }, []);
-
-  const loadImages = useCallback(async () => {
+  const loadImages = useCallback(async ({ forceRefresh = false } = {}) => {
     setIsLoading(true);
     setError('');
 
-    const endpoint = sourceUrl;
-    if (!endpoint) {
-      setItems([]);
-      setError('未配置可用的图库索引地址（VITE_GALLERY_INDEX_URL）');
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch(endpoint, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`图库索引请求失败（HTTP ${response.status}）`);
-      }
-
-      const payload = await response.json();
-      const parsedItems = parseGalleryIndexItems(payload, endpoint);
+      const parsedItems = forceRefresh
+        ? await refreshGalleryItems()
+        : await loadGalleryItems();
       const randomizedItems = shuffleItems(parsedItems);
       setItems(randomizedItems);
       setSelectedCategory(ALL_CATEGORY);
@@ -126,7 +58,7 @@ const GalleryDisplayPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [sourceUrl]);
+  }, []);
 
   useEffect(() => {
     void loadImages();
@@ -196,7 +128,14 @@ const GalleryDisplayPage = () => {
         {error && (
           <section className="gallery-readonly-card gallery-error-card" aria-label="图库加载错误">
             <div>{error}</div>
-            <button type="button" className="gallery-btn ghost" onClick={loadImages} disabled={isLoading}>
+            <button
+              type="button"
+              className="gallery-btn ghost"
+              onClick={() => {
+                void loadImages({ forceRefresh: true });
+              }}
+              disabled={isLoading}
+            >
               <RefreshCw size={16} />
               重新加载
             </button>
