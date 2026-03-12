@@ -9,7 +9,7 @@ const buildDownloadItem = ({ name, src }) => ({
 const kualaLumpurDownloadItems = jlpAlbum.songs
   .filter(
     ({ src }) =>
-      src === "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站/南京越来越远.mp3" ||
+      src === "https://r4.1701701.xyz/mp3/南京越来越远.mp3" ||
       src.startsWith("https://jlp.1701701.xyz/mp3/")
   )
   .map(buildDownloadItem);
