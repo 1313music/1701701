@@ -1072,7 +1072,12 @@ const App = () => {
     }
     return results;
   }, [musicAlbums, searchTerm]);
-  const pageLoadingFallback = <div className="page-loading">加载中...</div>;
+  const pageLoadingFallback = (
+    <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
+      <span className="page-loading-ring" aria-hidden="true" />
+      <span>加载中...</span>
+    </div>
+  );
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
 

@@ -25,10 +25,102 @@
   <meta name="twitter:description" content="一个分享李志音乐与视频的网站，支持专辑浏览、播放列表与视频内容。" />
   <meta name="twitter:image" content="https://1701701.xyz/logo.png" />
   <link rel="canonical" href="https://1701701.xyz/" />
+  <style>
+    #app-boot-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #121214;
+      color: #f5f5f7;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.24s ease, visibility 0.24s ease;
+    }
+
+    html[data-theme='light'] #app-boot-splash {
+      background: #f7f8fb;
+      color: #111827;
+    }
+
+    html[data-theme='dark'] #app-boot-splash {
+      background: #121214;
+      color: #f5f5f7;
+    }
+
+    @media (prefers-color-scheme: light) {
+      #app-boot-splash {
+        background: #f7f8fb;
+        color: #111827;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #app-boot-splash {
+        background: #121214;
+        color: #f5f5f7;
+      }
+    }
+
+    #app-boot-splash.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .app-boot-shell {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 22px;
+      border-radius: 14px;
+    }
+
+    .app-boot-spinner {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 2.2px solid rgba(255, 255, 255, 0.24);
+      border-top-color: currentColor;
+      animation: app-boot-spin 0.9s linear infinite;
+    }
+
+    html[data-theme='light'] .app-boot-spinner {
+      border-color: rgba(17, 24, 39, 0.18);
+      border-top-color: currentColor;
+    }
+
+    .app-boot-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .app-boot-text {
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.72;
+      letter-spacing: 0.08em;
+    }
+
+    @keyframes app-boot-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
   <script>
     (function () {
       try {
         var root = document.documentElement;
+        var storedTheme = window.localStorage.getItem('themePreference');
+        if (storedTheme === 'light' || storedTheme === 'dark') {
+          root.setAttribute('data-theme', storedTheme);
+        }
         var mq = window.matchMedia ? window.matchMedia('(display-mode: standalone)') : null;
         var mqStandalone = !!(mq && mq.matches);
         var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -48,6 +140,13 @@
 </head>
 
 <body>
+  <div id="app-boot-splash" role="status" aria-live="polite" aria-label="应用加载中">
+    <div class="app-boot-shell">
+      <div class="app-boot-spinner" aria-hidden="true"></div>
+      <p class="app-boot-title">1701701.xyz</p>
+      <p class="app-boot-text">正在加载...</p>
+    </div>
+  </div>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
