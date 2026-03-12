@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { createPortal } from 'react-dom';
 import { Play, Pause, ListMusic, Heart, Share2, ChevronDown, MessageCircle, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import '../styles/lyrics-overlay.css';
 import { formatTime } from '../utils/formatUtils';
 import CommentSection from './CommentSection.jsx';
 
@@ -30,7 +31,15 @@ const LyricsOverlay = ({
     onShare,
     isCurrentTrackFavorited,
     onToggleFavorite,
-    openCommentRequestId
+    lyricsOverlaySessionId,
+    playerOverlayContextId,
+    trackChangeId,
+    openCommentRequestId,
+    openCommentRequestTrackSrc,
+    openCommentRequestMode,
+    openCommentRequestOverlaySessionId,
+    openCommentRequestTrackChangeId,
+    openCommentRequestViewContextId
 }) => {
     const isDraggingRef = useRef(false);
     const lastTouchRef = useRef(0);
@@ -53,8 +62,8 @@ const LyricsOverlay = ({
     const burstTimerRef = useRef([]);
     const [mobileLikeBursts, setMobileLikeBursts] = useState([]);
     const [desktopLikeBursts, setDesktopLikeBursts] = useState([]);
-    const [isCommentDrawerOpen, setIsCommentDrawerOpen] = useState(false);
-    const handledOpenCommentRequestRef = useRef(0);
+    const [manualCommentDrawerContextKey, setManualCommentDrawerContextKey] = useState('');
+    const [dismissedCommentRequestId, setDismissedCommentRequestId] = useState(0);
 
     const spawnCoverLikeBurst = (event, setter) => {
         if (!event?.currentTarget) return;
@@ -277,8 +286,79 @@ const LyricsOverlay = ({
         };
     }, []);
 
+    const isMobileOverlay = isMobileViewport();
+    const currentTrackSrc = currentTrack?.src || '';
+    const latestCommentRequestId = Number.isFinite(openCommentRequestId) ? openCommentRequestId : 0;
+    const commentAlbumId = currentSongInfo?.album?.id || currentAlbum?.id || 'library';
+    const currentSongCommentPath = currentTrackSrc
+        ? `song:${commentAlbumId}:${encodeURIComponent(currentTrackSrc)}`
+        : '';
+    const canOpenCommentDrawer = Boolean(commentServerURL && currentSongCommentPath);
+    const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
+    const canToggleFavorite = Boolean(currentTrackSrc);
+    const currentCommentDrawerContextKey = currentTrackSrc
+        ? `${playerOverlayContextId}:${lyricsOverlaySessionId}:${trackChangeId}:${currentTrackSrc}`
+        : '';
+    const hasMatchingCommentRequest = (
+        canOpenCommentDrawer
+        && latestCommentRequestId > dismissedCommentRequestId
+        && openCommentRequestTrackSrc === currentTrackSrc
+        && openCommentRequestTrackChangeId === trackChangeId
+        && openCommentRequestViewContextId === playerOverlayContextId
+    );
+    const hasManualCommentDrawerOpen = (
+        manualCommentDrawerContextKey !== ''
+        && manualCommentDrawerContextKey === currentCommentDrawerContextKey
+    );
+    const hasOverlayCommentDrawerOpen = (
+        hasMatchingCommentRequest
+        && openCommentRequestMode !== 'standalone'
+        && isLyricsOpen
+        && openCommentRequestOverlaySessionId === lyricsOverlaySessionId
+    );
+    const hasStandaloneCommentDrawerOpen = (
+        hasMatchingCommentRequest
+        && openCommentRequestMode === 'standalone'
+        && !isMobileOverlay
+    );
+    const hasExternalCommentDrawerOpen = hasOverlayCommentDrawerOpen || hasStandaloneCommentDrawerOpen;
+    const isCommentDrawerOpen = hasManualCommentDrawerOpen || hasExternalCommentDrawerOpen;
+
+    const handleToggleFavorite = (event) => {
+        event?.stopPropagation?.();
+        if (!canToggleFavorite) return;
+        onToggleFavorite?.(currentTrack, event);
+    };
+
+    const dismissActiveCommentRequest = useCallback(() => {
+        setDismissedCommentRequestId((previous) => Math.max(previous, latestCommentRequestId));
+    }, [latestCommentRequestId]);
+
+    const openCommentDrawer = useCallback(() => {
+        if (!canOpenCommentDrawer || !currentCommentDrawerContextKey) return;
+        dismissActiveCommentRequest();
+        setManualCommentDrawerContextKey(currentCommentDrawerContextKey);
+    }, [canOpenCommentDrawer, currentCommentDrawerContextKey, dismissActiveCommentRequest]);
+
+    const closeCommentDrawer = useCallback(() => {
+        dismissActiveCommentRequest();
+        setManualCommentDrawerContextKey('');
+    }, [dismissActiveCommentRequest]);
+
+    const toggleCommentDrawer = useCallback(() => {
+        if (!canOpenCommentDrawer) return;
+        if (isCommentDrawerOpen) {
+            closeCommentDrawer();
+            return;
+        }
+        openCommentDrawer();
+    }, [canOpenCommentDrawer, closeCommentDrawer, isCommentDrawerOpen, openCommentDrawer]);
+
+    const shouldRenderCommentDrawer = isCommentDrawerOpen && canOpenCommentDrawer;
+    const shouldLockViewport = isLyricsOpen || (!isMobileOverlay && shouldRenderCommentDrawer);
+
     useEffect(() => {
-        if (!isLyricsOpen || typeof window === 'undefined' || typeof document === 'undefined') {
+        if (!shouldLockViewport || typeof window === 'undefined' || typeof document === 'undefined') {
             return undefined;
         }
 
@@ -318,42 +398,8 @@ const LyricsOverlay = ({
             body.style.width = previousStyles.bodyWidth;
             window.scrollTo(0, scrollY);
         };
-    }, [isLyricsOpen]);
+    }, [shouldLockViewport]);
 
-    useEffect(() => {
-        if (!isLyricsOpen) {
-            setIsCommentDrawerOpen(false);
-        }
-    }, [isLyricsOpen]);
-
-    useEffect(() => {
-        setIsCommentDrawerOpen(false);
-    }, [currentTrack?.src]);
-
-    const commentAlbumId = currentSongInfo?.album?.id || currentAlbum?.id || 'library';
-    const currentSongCommentPath = currentTrack?.src
-        ? `song:${commentAlbumId}:${encodeURIComponent(currentTrack.src)}`
-        : '';
-    const canOpenCommentDrawer = Boolean(commentServerURL && currentSongCommentPath);
-    const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
-    const canToggleFavorite = Boolean(currentTrack?.src);
-
-    const handleToggleFavorite = (event) => {
-        event?.stopPropagation?.();
-        if (!canToggleFavorite) return;
-        onToggleFavorite?.(currentTrack, event);
-    };
-
-    useEffect(() => {
-        if (!isLyricsOpen) return;
-        if (!Number.isFinite(openCommentRequestId)) return;
-        if (openCommentRequestId <= handledOpenCommentRequestRef.current) return;
-        handledOpenCommentRequestRef.current = openCommentRequestId;
-        if (!canOpenCommentDrawer) return;
-        setIsCommentDrawerOpen(true);
-    }, [canOpenCommentDrawer, isLyricsOpen, openCommentRequestId]);
-
-    const isMobileOverlay = isMobileViewport();
     const overlayInitial = isMobileOverlay
         ? { y: '100%' }
         : { opacity: 0, y: '100%' };
@@ -528,10 +574,7 @@ const LyricsOverlay = ({
                             <button
                                 type="button"
                                 className={`overlay-comment-trigger mobile-fab ${isCommentDrawerOpen ? 'active' : ''}`}
-                                onClick={() => {
-                                    if (!canOpenCommentDrawer) return;
-                                    setIsCommentDrawerOpen((prev) => !prev);
-                                }}
+                                onClick={toggleCommentDrawer}
                                 aria-label="歌曲评论"
                                 disabled={!canOpenCommentDrawer}
                             >
@@ -582,10 +625,7 @@ const LyricsOverlay = ({
                                     <button
                                         type="button"
                                         className={`overlay-comment-trigger desktop-floating ${isCommentDrawerOpen ? 'active' : ''}`}
-                                        onClick={() => {
-                                            if (!canOpenCommentDrawer) return;
-                                            setIsCommentDrawerOpen((prev) => !prev);
-                                        }}
+                                        onClick={toggleCommentDrawer}
                                         aria-label="歌曲评论"
                                         disabled={!canOpenCommentDrawer}
                                     >
@@ -656,55 +696,53 @@ const LyricsOverlay = ({
                             </div>
                         </div>
                     </div>
-                    <AnimatePresence>
-                        {isCommentDrawerOpen && canOpenCommentDrawer ? (
-                            <>
-                                <Motion.button
-                                    type="button"
-                                    className="song-comment-backdrop"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    onClick={() => setIsCommentDrawerOpen(false)}
-                                    aria-label="关闭评论抽屉"
-                                />
-                                <Motion.aside
-                                    className="song-comment-drawer"
-                                    initial={{ x: '100%' }}
-                                    animate={{ x: 0 }}
-                                    exit={{ x: '100%' }}
-                                    transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                                    onClick={(event) => event.stopPropagation()}
-                                >
-                                    <div className="song-comment-drawer-header">
-                                        <div className="song-comment-drawer-texts">
-                                            <h3>单曲评论</h3>
-                                            <p>{currentTrack.name}</p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="song-comment-close"
-                                            onClick={() => setIsCommentDrawerOpen(false)}
-                                            aria-label="关闭评论抽屉"
-                                        >
-                                            <X size={18} strokeWidth={2.2} absoluteStrokeWidth />
-                                        </button>
-                                    </div>
-                                    <div className="song-comment-drawer-body">
-                                        <CommentSection
-                                            serverURL={commentServerURL}
-                                            path={currentSongCommentPath}
-                                            title=""
-                                            subtitle=""
-                                        />
-                                    </div>
-                                </Motion.aside>
-                            </>
-                        ) : null}
-                    </AnimatePresence>
                 </Motion.div>
             )}
+            {shouldRenderCommentDrawer ? (
+                <>
+                    <Motion.button
+                        type="button"
+                        className="song-comment-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={closeCommentDrawer}
+                        aria-label="关闭评论抽屉"
+                    />
+                    <Motion.aside
+                        className="song-comment-drawer"
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="song-comment-drawer-header">
+                            <div className="song-comment-drawer-texts">
+                                <h3>单曲评论</h3>
+                                <p>{currentTrack.name}</p>
+                            </div>
+                            <button
+                                type="button"
+                                className="song-comment-close"
+                                onClick={closeCommentDrawer}
+                                aria-label="关闭评论抽屉"
+                            >
+                                <X size={18} strokeWidth={2.2} absoluteStrokeWidth />
+                            </button>
+                        </div>
+                        <div className="song-comment-drawer-body">
+                            <CommentSection
+                                serverURL={commentServerURL}
+                                path={currentSongCommentPath}
+                                title=""
+                                subtitle=""
+                            />
+                        </div>
+                    </Motion.aside>
+                </>
+            ) : null}
         </AnimatePresence>,
         document.body
     );

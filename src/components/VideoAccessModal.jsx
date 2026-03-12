@@ -1,4 +1,5 @@
 import React from 'react';
+import '../styles/video-access.css';
 
 const VideoAccessModal = ({
   isOpen,

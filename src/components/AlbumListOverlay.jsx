@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Heart, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import '../styles/album-list-overlay.css';
 
 const FAVORITE_MARQUEE_GAP = 28;
 const FAVORITE_MARQUEE_TEXT_GAP = 8;

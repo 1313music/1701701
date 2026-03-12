@@ -43,7 +43,7 @@ const isIOSDevice = () => {
 };
 
 export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
-  const [currentTrack, setCurrentTrack] = useState(() => musicAlbums[0]?.songs?.[0]);
+  const [currentTrack, setCurrentTrackState] = useState(() => musicAlbums[0]?.songs?.[0]);
   const [currentAlbum, setCurrentAlbum] = useState(() => musicAlbums[0] || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -52,6 +52,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [lyrics, setLyrics] = useState([]);
   const [playMode, setPlayMode] = useState('loop');
   const [isTrackNameOverflowing, setIsTrackNameOverflowing] = useState(false);
+  const [trackChangeId, setTrackChangeId] = useState(0);
 
   const trackNameRef = useRef(null);
   const audioRef = useRef(new Audio());
@@ -67,6 +68,20 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     currentTrack?.src ? songIndex.get(currentTrack.src) : null
   ), [currentTrack, songIndex]);
 
+  const setCurrentTrack = useCallback((nextTrackOrUpdater) => {
+    setCurrentTrackState((previousTrack) => {
+      const nextTrack = typeof nextTrackOrUpdater === 'function'
+        ? nextTrackOrUpdater(previousTrack)
+        : nextTrackOrUpdater;
+
+      if (nextTrack?.src !== previousTrack?.src) {
+        setTrackChangeId((previousId) => previousId + 1);
+      }
+
+      return nextTrack;
+    });
+  }, []);
+
   useEffect(() => {
     if (currentTrack?.src) return;
     const firstAlbum = musicAlbums[0];
@@ -77,7 +92,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       setCurrentTrack((prev) => (prev?.src ? prev : firstSong));
     }, 0);
     return () => clearTimeout(timerId);
-  }, [currentTrack?.src, musicAlbums]);
+  }, [currentTrack?.src, musicAlbums, setCurrentTrack]);
 
   const currentLyricIndex = useMemo(() => {
     const index = lyrics.findIndex((line, i) => (
@@ -116,7 +131,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
-  }, []);
+  }, [setCurrentTrack]);
 
   useEffect(() => {
     if (!currentTrack?.src) return;
@@ -252,7 +267,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
     setCurrentTrack(activeAlbum.songs[nextIdx]);
     setIsPlaying(true);
-  }, []);
+  }, [setCurrentTrack]);
 
   const handlePrev = useCallback(() => {
     const { currentAlbum: activeAlbum, currentTrack: activeTrack, playMode: activePlayMode } = playbackContextRef.current;
@@ -274,7 +289,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
     setCurrentTrack(activeAlbum.songs[prevIdx]);
     setIsPlaying(true);
-  }, []);
+  }, [setCurrentTrack]);
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
@@ -378,7 +393,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     setCurrentAlbum(album);
     setCurrentTrack(song);
     setIsPlaying(true);
-  }, [currentAlbum, currentTrack]);
+  }, [currentAlbum, currentTrack, setCurrentTrack]);
 
   const pausePlayback = useCallback(() => {
     setIsPlaying(false);
@@ -403,6 +418,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   return {
     currentTrack,
     setCurrentTrack,
+    trackChangeId,
     currentAlbum,
     setCurrentAlbum,
     isPlaying,

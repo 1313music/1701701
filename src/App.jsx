@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { ChevronUp } from 'lucide-react';
-import './index.css';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -8,7 +7,6 @@ import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
-import CommentPage from './components/CommentPage.jsx';
 
 // Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
@@ -42,6 +40,7 @@ const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
 const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
+const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
 const VIEW_PATHS = Object.freeze({
   library: '/',
   video: '/video',
@@ -176,6 +175,8 @@ const App = () => {
     }
   });
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
+  const [lyricsOverlaySessionId, setLyricsOverlaySessionId] = useState(0);
+  const [playerOverlayContextId, setPlayerOverlayContextId] = useState(0);
   const [isAlbumListOpen, setIsAlbumListOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -187,7 +188,14 @@ const App = () => {
   const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
   const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [lyricsCommentRequestId, setLyricsCommentRequestId] = useState(0);
+  const [lyricsCommentRequest, setLyricsCommentRequest] = useState(() => ({
+    id: 0,
+    trackSrc: '',
+    overlaySessionId: 0,
+    trackChangeId: 0,
+    viewContextId: 0,
+    mode: 'overlay'
+  }));
   const shareCardRequestIdRef = useRef(0);
   const tempPlaylistIdsRef = useRef(tempPlaylistIds);
 
@@ -242,6 +250,7 @@ const App = () => {
     trackNameRef,
     audioRef,
     currentSongInfo,
+    trackChangeId,
     handlePlayPause,
     handleSeek,
     handlePrev,
@@ -622,18 +631,41 @@ const App = () => {
   const setLyricsOverlayOpen = useCallback((open) => {
     if (open) {
       setHasLyricsOverlayLoaded(true);
+      if (!isLyricsOpen) {
+        setLyricsOverlaySessionId((prev) => prev + 1);
+      }
       setIsLyricsOpen(true);
       return;
     }
     setIsLyricsOpen(false);
-  }, []);
+  }, [isLyricsOpen]);
 
   const openCurrentTrackComments = useCallback(() => {
     if (!currentTrack?.src) return;
+    const shouldOpenStandaloneCommentDrawer = (
+      !isLyricsOpen &&
+      typeof window !== 'undefined' &&
+      window.innerWidth > 1024
+    );
+    const requestMode = shouldOpenStandaloneCommentDrawer ? 'standalone' : 'overlay';
+
+    const targetOverlaySessionId = requestMode === 'overlay'
+      ? (isLyricsOpen ? lyricsOverlaySessionId : lyricsOverlaySessionId + 1)
+      : lyricsOverlaySessionId;
     setHasLyricsOverlayLoaded(true);
-    setLyricsCommentRequestId((prev) => prev + 1);
-    setIsLyricsOpen(true);
-  }, [currentTrack?.src]);
+
+    setLyricsCommentRequest((prev) => ({
+      id: prev.id + 1,
+      trackSrc: currentTrack.src,
+      overlaySessionId: targetOverlaySessionId,
+      trackChangeId,
+      viewContextId: playerOverlayContextId,
+      mode: requestMode
+    }));
+    if (requestMode === 'overlay') {
+      setLyricsOverlayOpen(true);
+    }
+  }, [currentTrack?.src, isLyricsOpen, lyricsOverlaySessionId, playerOverlayContextId, setLyricsOverlayOpen, trackChangeId]);
 
   const setAlbumListOverlayOpen = useCallback((open) => {
     if (open) {
@@ -677,13 +709,17 @@ const App = () => {
   const handleViewChange = useCallback((nextView, options = {}) => {
     const resolvedView = AVAILABLE_VIEWS.has(nextView) ? nextView : 'library';
     const historyMode = options.historyMode || 'push';
+    const isViewChanging = view !== resolvedView;
 
     if (resolvedView === 'video') {
       stopPlaybackForVideo();
     }
+    if (isViewChanging) {
+      setPlayerOverlayContextId((prev) => prev + 1);
+    }
     setView((prev) => (prev === resolvedView ? prev : resolvedView));
     syncUrlForView(resolvedView, historyMode);
-  }, [stopPlaybackForVideo, syncUrlForView]);
+  }, [stopPlaybackForVideo, syncUrlForView, view]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -1147,7 +1183,9 @@ const App = () => {
               )}
               {view === 'comment' && (
                 <div className="view-panel view-panel-comment">
-                  <CommentPage serverURL={WALINE_SERVER_URL} />
+                  <Suspense fallback={pageLoadingFallback}>
+                    <CommentPage serverURL={WALINE_SERVER_URL} />
+                  </Suspense>
                 </div>
               )}
             </main>
@@ -1215,7 +1253,15 @@ const App = () => {
                   onAddToFavorites={addTempSong}
                   onToggleFavorite={toggleTempSong}
                   isCurrentTrackFavorited={tempPlaylistSet.has(currentTrack?.src)}
-                  openCommentRequestId={lyricsCommentRequestId}
+                  lyricsOverlaySessionId={lyricsOverlaySessionId}
+                  playerOverlayContextId={playerOverlayContextId}
+                  trackChangeId={trackChangeId}
+                  openCommentRequestId={lyricsCommentRequest.id}
+                  openCommentRequestTrackSrc={lyricsCommentRequest.trackSrc}
+                  openCommentRequestMode={lyricsCommentRequest.mode}
+                  openCommentRequestOverlaySessionId={lyricsCommentRequest.overlaySessionId}
+                  openCommentRequestTrackChangeId={lyricsCommentRequest.trackChangeId}
+                  openCommentRequestViewContextId={lyricsCommentRequest.viewContextId}
                   onShare={handleShareCurrentTrack}
                 />
               </Suspense>

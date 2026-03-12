@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageCircle } from 'lucide-react';
+import '../styles/video.css';
 import { videoCategories, videoData } from '../data/videoData';
 import { isPlayerInBrowserFullscreen, isPlayerInWebFullscreen, isVideoNativeFullscreen } from '../utils/videoFullscreenUtils';
 import SearchHeader from './SearchHeader';

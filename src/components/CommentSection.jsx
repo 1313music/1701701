@@ -1,22 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { init } from '@waline/client';
 import '@waline/client/style';
+import '../styles/comments.css';
 
 const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', subtitle = '' }) => {
   const containerRef = useRef(null);
   const walineRef = useRef(null);
   const syncTimerRef = useRef(null);
   const observerRef = useRef(null);
+  const latestPathRef = useRef(path);
 
-  const getHeaderText = (labelText, input) => {
+  useEffect(() => {
+    latestPathRef.current = path;
+  }, [path]);
+
+  const getHeaderText = useCallback((labelText, input) => {
     if (labelText) return labelText;
     const fieldName = (input?.getAttribute('name') || '').toLowerCase();
     if (fieldName.includes('nick')) return '昵称';
     if (fieldName.includes('mail') || fieldName.includes('email')) return '邮箱';
     return '';
-  };
+  }, []);
 
-  const syncHeaderPlaceholders = () => {
+  const syncHeaderPlaceholders = useCallback(() => {
     const root = containerRef.current;
     if (!root) return;
     const headerItems = root.querySelectorAll('.wl-header-item');
@@ -35,9 +41,9 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
         textarea.placeholder = '音乐和心情都可以留在这里';
       }
     });
-  };
+  }, [getHeaderText]);
 
-  const scheduleHeaderSync = () => {
+  const scheduleHeaderSync = useCallback(() => {
     syncHeaderPlaceholders();
     if (typeof window !== 'undefined' && window.requestAnimationFrame) {
       window.requestAnimationFrame(syncHeaderPlaceholders);
@@ -49,14 +55,14 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       syncTimerRef.current = null;
       syncHeaderPlaceholders();
     }, 120);
-  };
+  }, [syncHeaderPlaceholders]);
 
   useEffect(() => {
     if (!containerRef.current || !serverURL) return undefined;
     walineRef.current = init({
       el: containerRef.current,
       serverURL,
-      path,
+      path: latestPathRef.current,
       meta: ['nick', 'mail'],
       lang: 'zh-CN',
       locale: {
@@ -97,13 +103,13 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       }
       walineRef.current = null;
     };
-  }, [serverURL]);
+  }, [scheduleHeaderSync, serverURL]);
 
   useEffect(() => {
     if (!walineRef.current?.update || !path) return;
     walineRef.current.update({ path });
     scheduleHeaderSync();
-  }, [path]);
+  }, [path, scheduleHeaderSync]);
 
   return (
     <section className="comment-section">

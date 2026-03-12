@@ -1,8 +1,2 @@
 @import './styles/base.css';
-@import './styles/video.css';
-@import './styles/player.css';
-@import './styles/download.css';
-@import './styles/about.css';
-@import './styles/app-download.css';
-@import './styles/comments.css';
-@import './styles/gallery.css';
+@import './styles/player-core.css';

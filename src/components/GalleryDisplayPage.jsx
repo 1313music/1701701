@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ImagePlus, LoaderCircle, RefreshCw } from 'lucide-react';
+import '../styles/gallery.css';
 
 const DEFAULT_INDEX_URL = String(
   import.meta.env.VITE_GALLERY_INDEX_URL || 'https://images.1701701.xyz/gallery-index.json'

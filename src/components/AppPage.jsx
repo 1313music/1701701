@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Monitor, Laptop, Smartphone, Apple, Share2 } from 'lucide-react';
+import '../styles/app-download.css';
 
 const DOMAIN_DOWNLOAD_BASE_URL = 'https://app.1701701.xyz';
 

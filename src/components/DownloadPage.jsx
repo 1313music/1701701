@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Share2, BookOpen } from 'lucide-react';
+import '../styles/download.css';
 import { downloadSections } from '../data/downloadData';
 
 const DownloadItem = ({ item }) => {
