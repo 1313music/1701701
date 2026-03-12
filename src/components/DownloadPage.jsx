@@ -137,7 +137,7 @@ const DownloadGroup = ({ group, defaultOpen = false, forcePreview = false }) => 
     );
 };
 
-const DownloadPage = ({ onCopyPageLink }) => {
+const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
     const [downloadSections, setDownloadSections] = useState([]);
     const [isSectionsLoading, setIsSectionsLoading] = useState(true);
     const [sectionsLoadError, setSectionsLoadError] = useState('');
@@ -167,6 +167,11 @@ const DownloadPage = ({ onCopyPageLink }) => {
             canceled = true;
         };
     }, [sectionsRetryKey]);
+    useEffect(() => {
+        if (!isSectionsLoading && typeof onInitialReady === 'function') {
+            onInitialReady();
+        }
+    }, [isSectionsLoading, onInitialReady]);
     useEffect(() => {
         if (typeof window === 'undefined' || typeof fetch !== 'function') return;
         const warmupTimer = window.setTimeout(() => {
@@ -253,16 +258,10 @@ const DownloadPage = ({ onCopyPageLink }) => {
             </section>
 
             {isSectionsLoading && (
-                <section className="download-section-block">
-                    <div className="download-section-header">
-                        <h3>加载中</h3>
-                    </div>
-                    <div className="download-groups">
-                        <div className="download-group">
-                            <div className="download-group-body">下载清单加载中…</div>
-                        </div>
-                    </div>
-                </section>
+                <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
+                    <span className="page-loading-ring" aria-hidden="true" />
+                    <span>加载中...</span>
+                </div>
             )}
 
             {!isSectionsLoading && sectionsLoadError && (

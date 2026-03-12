@@ -1,6 +1,10 @@
 const DEFAULT_VIDEO_INDEX_URL = String(
   import.meta.env.VITE_VIDEO_INDEX_URL || 'https://r2.1701701.xyz/json/video-index.json'
 ).trim();
+const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+let cachedCatalog = null;
+let cachedAt = 0;
+let inflightCatalogPromise = null;
 
 const toAbsoluteUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -129,5 +133,23 @@ const loadRemoteCatalog = async () => {
 };
 
 export const loadVideoCatalog = async () => {
-  return await loadRemoteCatalog();
+  const now = Date.now();
+  if (cachedCatalog && now - cachedAt < MEMORY_CACHE_TTL_MS) {
+    return cachedCatalog;
+  }
+  if (inflightCatalogPromise) {
+    return await inflightCatalogPromise;
+  }
+
+  inflightCatalogPromise = loadRemoteCatalog()
+    .then((catalog) => {
+      cachedCatalog = catalog;
+      cachedAt = Date.now();
+      return catalog;
+    })
+    .finally(() => {
+      inflightCatalogPromise = null;
+    });
+
+  return await inflightCatalogPromise;
 };

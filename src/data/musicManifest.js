@@ -1,6 +1,10 @@
 const DEFAULT_MUSIC_INDEX_URL = String(
   import.meta.env.VITE_MUSIC_INDEX_URL || 'https://r2.1701701.xyz/json/music-index.json'
 ).trim();
+const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+let cachedAlbums = null;
+let cachedAt = 0;
+let inflightAlbumsPromise = null;
 
 const toAbsoluteUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -105,5 +109,23 @@ const loadRemoteAlbums = async () => {
 };
 
 export const loadMusicManifestAlbums = async () => {
-  return await loadRemoteAlbums();
+  const now = Date.now();
+  if (cachedAlbums && now - cachedAt < MEMORY_CACHE_TTL_MS) {
+    return cachedAlbums;
+  }
+  if (inflightAlbumsPromise) {
+    return await inflightAlbumsPromise;
+  }
+
+  inflightAlbumsPromise = loadRemoteAlbums()
+    .then((albums) => {
+      cachedAlbums = albums;
+      cachedAt = Date.now();
+      return albums;
+    })
+    .finally(() => {
+      inflightAlbumsPromise = null;
+    });
+
+  return await inflightAlbumsPromise;
 };

@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 
 const BOOT_SPLASH_ID = 'app-boot-splash'
+const APP_READY_EVENT = 'app-initial-ready'
 let hasHiddenBootSplash = false
 
 const hideBootSplash = () => {
@@ -27,9 +28,5 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-window.requestAnimationFrame(() => {
-  window.requestAnimationFrame(() => {
-    hideBootSplash()
-  })
-})
-window.setTimeout(hideBootSplash, 3600)
+window.addEventListener(APP_READY_EVENT, hideBootSplash, { once: true })
+window.setTimeout(hideBootSplash, 8000)

@@ -93,7 +93,7 @@ const BackCard = ({ onClick }) => (
     </Motion.div>
 );
 
-const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
+const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, onInitialReady }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [videoCatalog, setVideoCatalog] = useState(() => ({
         videoCategories: [],
@@ -158,6 +158,11 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
             canceled = true;
         };
     }, [catalogRetryKey]);
+    useEffect(() => {
+        if (!isCatalogLoading && typeof onInitialReady === 'function') {
+            onInitialReady();
+        }
+    }, [isCatalogLoading, onInitialReady]);
 
     useEffect(() => {
         const firstCategoryId = videoCategories[0]?.id || '';
@@ -1225,9 +1230,11 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
             />
 
             {isSearching && renderVideoGrid()}
-
             {!isSearching && !isWatching && isCatalogLoading && (
-                <div className="video-empty">视频清单加载中…</div>
+                <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
+                    <span className="page-loading-ring" aria-hidden="true" />
+                    <span>加载中...</span>
+                </div>
             )}
 
             {!isSearching && !isWatching && !isCatalogLoading && catalogLoadError && (

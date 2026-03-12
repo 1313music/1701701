@@ -1,6 +1,10 @@
 const DEFAULT_DOWNLOAD_INDEX_URL = String(
   import.meta.env.VITE_DOWNLOAD_INDEX_URL || 'https://r2.1701701.xyz/json/download-index.json'
 ).trim();
+const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+let cachedSections = null;
+let cachedAt = 0;
+let inflightSectionsPromise = null;
 
 const toAbsoluteUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -112,6 +116,23 @@ const loadRemoteSections = async () => {
 };
 
 export const loadDownloadSections = async () => {
-  return await loadRemoteSections();
-};
+  const now = Date.now();
+  if (cachedSections && now - cachedAt < MEMORY_CACHE_TTL_MS) {
+    return cachedSections;
+  }
+  if (inflightSectionsPromise) {
+    return await inflightSectionsPromise;
+  }
 
+  inflightSectionsPromise = loadRemoteSections()
+    .then((sections) => {
+      cachedSections = sections;
+      cachedAt = Date.now();
+      return sections;
+    })
+    .finally(() => {
+      inflightSectionsPromise = null;
+    });
+
+  return await inflightSectionsPromise;
+};

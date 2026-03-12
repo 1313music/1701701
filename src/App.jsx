@@ -153,6 +153,7 @@ const KL_EVENT_URL = 'https://idealivearena.com/event/three-missing-one/';
 const WECHAT_OFFICIAL_ACCOUNT_NAME = '民谣俱乐部';
 const WECHAT_VIDEO_PASSWORD_KEYWORD = '密码';
 const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg';
+const APP_READY_EVENT = 'app-initial-ready';
 
 const App = () => {
   const [view, setView] = useState(() => (
@@ -199,6 +200,7 @@ const App = () => {
   }));
   const shareCardRequestIdRef = useRef(0);
   const tempPlaylistIdsRef = useRef(tempPlaylistIds);
+  const hasSignaledBootReadyRef = useRef(false);
 
   const allSongSrcs = useMemo(() => buildSongSrcSet(musicAlbums), [musicAlbums]);
   const songIndex = useMemo(() => buildSongIndex(musicAlbums), [musicAlbums]);
@@ -1089,6 +1091,24 @@ const App = () => {
   );
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
+  const signalBootReady = useCallback(() => {
+    if (hasSignaledBootReadyRef.current || typeof window === 'undefined') return;
+    hasSignaledBootReadyRef.current = true;
+    window.dispatchEvent(new Event(APP_READY_EVENT));
+  }, []);
+
+  useEffect(() => {
+    if (view === 'library') {
+      if (!showLibraryLoading) {
+        signalBootReady();
+      }
+      return;
+    }
+    if (view === 'download' || view === 'video') {
+      return;
+    }
+    signalBootReady();
+  }, [signalBootReady, showLibraryLoading, view]);
 
   return (
     <>
@@ -1151,6 +1171,7 @@ const App = () => {
                       requestVideoView={requestVideoView}
                       onShareVideo={handleShareVideo}
                       commentServerURL={WALINE_SERVER_URL}
+                      onInitialReady={signalBootReady}
                     />
                   </Suspense>
                 </div>
@@ -1159,6 +1180,7 @@ const App = () => {
                 <div className="view-panel view-panel-download">
                   <Suspense fallback={pageLoadingFallback}>
                     <DownloadPage
+                      onInitialReady={signalBootReady}
                       onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
                         new URL(getPathForView('download'), SITE_URL).toString(),
                         '下载页链接已复制',
