@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageCircle } from 'lucide-react';
 import '../styles/video.css';
-import { videoCategories, videoData } from '../data/videoData';
+import { loadVideoCatalog } from '../data/videoManifest';
 import { isPlayerInBrowserFullscreen, isPlayerInWebFullscreen, isVideoNativeFullscreen } from '../utils/videoFullscreenUtils';
 import SearchHeader from './SearchHeader';
 import CommentSection from './CommentSection.jsx';
@@ -95,8 +95,17 @@ const BackCard = ({ onClick }) => (
 
 const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState(videoCategories[0]?.id || '');
-    const [watchCategory, setWatchCategory] = useState(videoCategories[0]?.id || '');
+    const [videoCatalog, setVideoCatalog] = useState(() => ({
+        videoCategories: [],
+        videoData: {}
+    }));
+    const [isCatalogLoading, setIsCatalogLoading] = useState(true);
+    const [catalogLoadError, setCatalogLoadError] = useState('');
+    const [catalogRetryKey, setCatalogRetryKey] = useState(0);
+    const videoCategories = videoCatalog.videoCategories;
+    const videoData = videoCatalog.videoData;
+    const [activeCategory, setActiveCategory] = useState('');
+    const [watchCategory, setWatchCategory] = useState('');
     const [folderStack, setFolderStack] = useState([]);
     const [activeVideo, setActiveVideo] = useState(null);
     const [resolvedUrl, setResolvedUrl] = useState('');
@@ -125,12 +134,51 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
         canRight: false
     });
 
+    useEffect(() => {
+        let canceled = false;
+        const applyCatalog = async () => {
+            setIsCatalogLoading(true);
+            setCatalogLoadError('');
+            try {
+                const nextCatalog = await loadVideoCatalog();
+                if (canceled) return;
+                setVideoCatalog(nextCatalog);
+            } catch (error) {
+                if (canceled) return;
+                setVideoCatalog({ videoCategories: [], videoData: {} });
+                setCatalogLoadError(error?.message || '视频清单加载失败');
+            } finally {
+                if (!canceled) {
+                    setIsCatalogLoading(false);
+                }
+            }
+        };
+        void applyCatalog();
+        return () => {
+            canceled = true;
+        };
+    }, [catalogRetryKey]);
+
+    useEffect(() => {
+        const firstCategoryId = videoCategories[0]?.id || '';
+        if (!firstCategoryId) return;
+
+        if (!videoCategories.some((category) => category.id === activeCategory)) {
+            setActiveCategory(firstCategoryId);
+            setFolderStack([]);
+        }
+
+        if (!videoCategories.some((category) => category.id === watchCategory)) {
+            setWatchCategory(firstCategoryId);
+        }
+    }, [videoCategories, activeCategory, watchCategory]);
+
     const currentItems = useMemo(() => {
         if (folderStack.length > 0) {
             return folderStack[folderStack.length - 1].items;
         }
         return videoData[activeCategory] || [];
-    }, [activeCategory, folderStack]);
+    }, [activeCategory, folderStack, videoData]);
 
     const isSearching = searchQuery.trim().length > 0;
     const showBackCard = !isSearching && folderStack.length > 0;
@@ -163,7 +211,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
         });
 
         return results;
-    }, []);
+    }, [videoCategories, videoData]);
 
     const allVideoMap = useMemo(() => {
         const map = new Map();
@@ -182,7 +230,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
             counts[item._categoryId] = (counts[item._categoryId] || 0) + 1;
         });
         return counts;
-    }, [allVideos]);
+    }, [allVideos, videoCategories]);
 
     const searchResults = useMemo(() => {
         if (!isSearching) return [];
@@ -279,12 +327,12 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
 
     const activeCategoryMeta = useMemo(
         () => videoCategories.find((cat) => cat.id === activeCategory),
-        [activeCategory]
+        [activeCategory, videoCategories]
     );
 
     const watchCategoryMeta = useMemo(
         () => videoCategories.find((cat) => cat.id === watchCategory),
-        [watchCategory]
+        [watchCategory, videoCategories]
     );
 
     const canPlayInline = useCallback(
@@ -1001,6 +1049,10 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
         setWatchCategory(categoryId);
     };
 
+    const handleRetryCatalog = () => {
+        setCatalogRetryKey((value) => value + 1);
+    };
+
     const updateStageCategoriesScrollState = useCallback(() => {
         const node = stageCategoriesRef.current;
         if (!node) {
@@ -1174,7 +1226,24 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
 
             {isSearching && renderVideoGrid()}
 
-            {!isSearching && !isWatching && (
+            {!isSearching && !isWatching && isCatalogLoading && (
+                <div className="video-empty">视频清单加载中…</div>
+            )}
+
+            {!isSearching && !isWatching && !isCatalogLoading && catalogLoadError && (
+                <div className="video-empty">
+                    <div>{catalogLoadError}</div>
+                    <button
+                        type="button"
+                        className="video-unsupported-action"
+                        onClick={handleRetryCatalog}
+                    >
+                        重试加载
+                    </button>
+                </div>
+            )}
+
+            {!isSearching && !isWatching && !isCatalogLoading && !catalogLoadError && (
                 <div className="video-toolbar">
                     <div className="video-tabs" role="tablist" aria-label="视频分类">
                         {videoCategories.map((cat) => (
@@ -1419,7 +1488,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
                 </div>
             )}
 
-            {!isSearching && !isWatching && renderVideoGrid()}
+            {!isSearching && !isWatching && !isCatalogLoading && !catalogLoadError && renderVideoGrid()}
             {typeof document !== 'undefined' && createPortal(
                 <AnimatePresence>
                     {shouldRenderVideoCommentDrawer ? (

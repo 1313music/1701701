@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1701701.xyz/schemas/music-index.schema.json",
+  "title": "Music Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "updatedAt",
+    "albums"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "albums": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/album"
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "album": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "artist",
+        "cover",
+        "songs"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artist": {
+          "type": "string"
+        },
+        "cover": {
+          "type": "string"
+        },
+        "year": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "songs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/song"
+          }
+        }
+      }
+    },
+    "song": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "trackNumber",
+        "name",
+        "src"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "trackNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "src": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lrc": {
+          "type": "string"
+        },
+        "cover": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
+

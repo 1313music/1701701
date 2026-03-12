@@ -7,6 +7,7 @@ import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
+import { loadMusicManifestAlbums } from './data/musicManifest.js';
 
 // Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
@@ -288,9 +289,9 @@ const App = () => {
     let canceled = false;
     const loadMusicAlbums = async () => {
       try {
-        const module = await import('./data/mp3list.js');
+        const albums = await loadMusicManifestAlbums();
         if (canceled) return;
-        setMusicAlbums(Array.isArray(module.musicAlbums) ? module.musicAlbums : []);
+        setMusicAlbums(Array.isArray(albums) ? albums : []);
       } catch {
         if (canceled) return;
         setMusicLoadError('曲库加载失败，请刷新重试');

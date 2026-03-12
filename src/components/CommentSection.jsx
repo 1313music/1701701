@@ -37,9 +37,7 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     });
     const textareas = root.querySelectorAll('textarea');
     textareas.forEach((textarea) => {
-      if (!textarea.placeholder) {
-        textarea.placeholder = '音乐和心情都可以留在这里';
-      }
+      textarea.placeholder = '说点什么吧';
     });
   }, [getHeaderText]);
 
@@ -66,7 +64,7 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       meta: ['nick', 'mail'],
       lang: 'zh-CN',
       locale: {
-        comment: '留言',
+        comment: '评论',
         sofa: ''
       },
       noCopyright: true,

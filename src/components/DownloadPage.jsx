@@ -1,11 +1,36 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Share2, BookOpen } from 'lucide-react';
 import '../styles/download.css';
-import { downloadSections } from '../data/downloadData';
+import { loadDownloadSections } from '../data/downloadManifest';
 
-const DownloadItem = ({ item }) => {
+const PDF_PREVIEW_VIEWER_BASE = 'https://mozilla.github.io/pdf.js/web/viewer.html';
+const PDF_PREVIEW_VIEWER = `${PDF_PREVIEW_VIEWER_BASE}?file=`;
+
+const isPdfResource = (item) => {
+    const filename = String(item?.filename || '').toLowerCase();
+    const title = String(item?.title || '').toLowerCase();
+    const rawUrl = String(item?.url || '').toLowerCase();
+    const urlWithoutQuery = rawUrl.split('?')[0];
+    return (
+        filename.endsWith('.pdf') ||
+        title.endsWith('.pdf') ||
+        urlWithoutQuery.endsWith('.pdf')
+    );
+};
+
+const resolvePreviewHref = (item, forcePreview = false) => {
+    if (item?.previewUrl) return item.previewUrl;
+    if (!forcePreview || !item?.url) return '';
+    if (isPdfResource(item)) {
+        return `${PDF_PREVIEW_VIEWER}${encodeURIComponent(item.url)}`;
+    }
+    return item.url;
+};
+
+const DownloadItem = ({ item, forcePreview = false }) => {
     const [status, setStatus] = useState('idle');
     const timerRef = useRef(null);
+    const previewHref = resolvePreviewHref(item, forcePreview);
 
     const triggerDownload = (url, filename) => {
         const anchor = document.createElement('a');
@@ -56,15 +81,14 @@ const DownloadItem = ({ item }) => {
         if (status === 'error') return '下载失败';
         return '下载';
     }, [status]);
-
     return (
         <div className="download-item-row">
             <div className="download-item-title">{item.title}</div>
             <div className="download-item-actions">
-                {item.previewUrl && (
+                {previewHref && (
                     <a
                         className="download-action"
-                        href={item.previewUrl}
+                        href={previewHref}
                         target="_blank"
                         rel="noreferrer"
                     >
@@ -84,8 +108,8 @@ const DownloadItem = ({ item }) => {
     );
 };
 
-const DownloadGroup = ({ group }) => {
-    const [open, setOpen] = useState(false);
+const DownloadGroup = ({ group, defaultOpen = false, forcePreview = false }) => {
+    const [open, setOpen] = useState(Boolean(defaultOpen));
 
     return (
         <div className={`download-group ${open ? 'open' : ''}`}>
@@ -101,7 +125,11 @@ const DownloadGroup = ({ group }) => {
             <div className="download-group-panel" aria-hidden={!open}>
                 <div className="download-group-body">
                     {group.items.map((item) => (
-                        <DownloadItem key={`${item.title}-${item.url}`} item={item} />
+                        <DownloadItem
+                            key={`${item.title}-${item.url}`}
+                            item={item}
+                            forcePreview={forcePreview}
+                        />
                     ))}
                 </div>
             </div>
@@ -110,6 +138,47 @@ const DownloadGroup = ({ group }) => {
 };
 
 const DownloadPage = ({ onCopyPageLink }) => {
+    const [downloadSections, setDownloadSections] = useState([]);
+    const [isSectionsLoading, setIsSectionsLoading] = useState(true);
+    const [sectionsLoadError, setSectionsLoadError] = useState('');
+    const [sectionsRetryKey, setSectionsRetryKey] = useState(0);
+
+    useEffect(() => {
+        let canceled = false;
+        const loadSections = async () => {
+            setIsSectionsLoading(true);
+            setSectionsLoadError('');
+            try {
+                const sections = await loadDownloadSections();
+                if (canceled) return;
+                setDownloadSections(Array.isArray(sections) ? sections : []);
+            } catch (error) {
+                if (canceled) return;
+                setDownloadSections([]);
+                setSectionsLoadError(error?.message || '下载清单加载失败');
+            } finally {
+                if (!canceled) {
+                    setIsSectionsLoading(false);
+                }
+            }
+        };
+        void loadSections();
+        return () => {
+            canceled = true;
+        };
+    }, [sectionsRetryKey]);
+    useEffect(() => {
+        if (typeof window === 'undefined' || typeof fetch !== 'function') return;
+        const warmupTimer = window.setTimeout(() => {
+            fetch(PDF_PREVIEW_VIEWER_BASE, { cache: 'force-cache' }).catch(() => {
+                // no-op
+            });
+        }, 80);
+        return () => {
+            window.clearTimeout(warmupTimer);
+        };
+    }, []);
+
     const sectionStats = useMemo(() => {
         const map = new Map();
         downloadSections.forEach((section) => {
@@ -120,7 +189,11 @@ const DownloadPage = ({ onCopyPageLink }) => {
             map.set(section.title, count);
         });
         return map;
-    }, []);
+    }, [downloadSections]);
+
+    const handleRetrySections = () => {
+        setSectionsRetryKey((value) => value + 1);
+    };
     const handleCopyPageLink = (event) => {
         if (typeof onCopyPageLink !== 'function') return;
         onCopyPageLink({
@@ -128,6 +201,12 @@ const DownloadPage = ({ onCopyPageLink }) => {
             anchorEvent: { currentTarget: event.currentTarget }
         });
     };
+    const shouldDefaultOpenGroup = (sectionTitle, groupTitle) => (
+        sectionTitle === '其他资源' && groupTitle === '资源下载'
+    );
+    const shouldForcePreviewGroup = (sectionTitle, groupTitle) => (
+        sectionTitle === '其他资源' && groupTitle === '资源下载'
+    );
 
     return (
         <div className="download-page download-v2">
@@ -173,7 +252,42 @@ const DownloadPage = ({ onCopyPageLink }) => {
                 </div>
             </section>
 
-            {downloadSections.map((section) => {
+            {isSectionsLoading && (
+                <section className="download-section-block">
+                    <div className="download-section-header">
+                        <h3>加载中</h3>
+                    </div>
+                    <div className="download-groups">
+                        <div className="download-group">
+                            <div className="download-group-body">下载清单加载中…</div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {!isSectionsLoading && sectionsLoadError && (
+                <section className="download-section-block">
+                    <div className="download-section-header">
+                        <h3>加载失败</h3>
+                    </div>
+                    <div className="download-groups">
+                        <div className="download-group">
+                            <div className="download-group-body">
+                                <p>{sectionsLoadError}</p>
+                                <button
+                                    type="button"
+                                    className="download-action"
+                                    onClick={handleRetrySections}
+                                >
+                                    重试加载
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {!isSectionsLoading && !sectionsLoadError && downloadSections.map((section) => {
                 const isCenteredHeader = [
                     "叁缺壹吉隆坡站",
                     "叁缺壹东京站",
@@ -197,7 +311,12 @@ const DownloadPage = ({ onCopyPageLink }) => {
                     </div>
                     <div className="download-groups">
                         {section.groups.map((group) => (
-                            <DownloadGroup key={group.title} group={group} />
+                            <DownloadGroup
+                                key={group.title}
+                                group={group}
+                                defaultOpen={shouldDefaultOpenGroup(section.title, group.title)}
+                                forcePreview={shouldForcePreviewGroup(section.title, group.title)}
+                            />
                         ))}
                     </div>
                 </section>

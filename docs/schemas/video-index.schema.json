@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1701701.xyz/schemas/video-index.schema.json",
+  "title": "Video Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "updatedAt",
+    "categories"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/category"
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "items"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "icon": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      }
+    },
+    "item": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/folderItem"
+        },
+        {
+          "$ref": "#/$defs/videoItem"
+        }
+      ]
+    },
+    "folderItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "title",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "const": "folder"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "thumb": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      }
+    },
+    "videoItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "title",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "const": "video"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "backupUrl": {
+          "type": "string"
+        },
+        "thumb": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
+
