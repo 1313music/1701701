@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageCircle } from 'lucide-react';
 import '../styles/video.css';
@@ -1103,6 +1104,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
     const playerContainerKey = `${resolvedVideoKey || activeVideoKey || 'video'}:${sourceAttempt}:${resolveAttempt}`;
     const isWatching = Boolean(activeVideo);
     const showWangGuoCredit = isWatching && (activeVideo?._categoryId || watchCategory) === 'jlpsq1';
+    const shouldRenderVideoCommentDrawer = Boolean(isCommentDrawerOpen && canOpenCommentDrawer && activeVideo);
 
     useEffect(() => {
         if (!activeVideo) {
@@ -1410,53 +1412,6 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
                                     </button>
                                 </div>
                             </div>
-                            <AnimatePresence>
-                                {isCommentDrawerOpen && canOpenCommentDrawer ? (
-                                    <>
-                                        <Motion.button
-                                            type="button"
-                                            className="video-comment-backdrop"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            onClick={() => setIsCommentDrawerOpen(false)}
-                                            aria-label="关闭视频评论抽屉"
-                                        />
-                                        <Motion.aside
-                                            className="video-comment-drawer"
-                                            initial={{ x: '100%' }}
-                                            animate={{ x: 0 }}
-                                            exit={{ x: '100%' }}
-                                            transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                                            onClick={(event) => event.stopPropagation()}
-                                        >
-                                            <div className="video-comment-drawer-header">
-                                                <div className="video-comment-drawer-texts">
-                                                    <h3>视频评论</h3>
-                                                    <p>{activeVideo.title}</p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    className="video-comment-close"
-                                                    onClick={() => setIsCommentDrawerOpen(false)}
-                                                    aria-label="关闭视频评论抽屉"
-                                                >
-                                                    <X size={18} />
-                                                </button>
-                                            </div>
-                                            <div className="video-comment-drawer-body">
-                                                <CommentSection
-                                                    serverURL={commentServerURL}
-                                                    path={currentVideoCommentPath}
-                                                    title=""
-                                                    subtitle=""
-                                                />
-                                            </div>
-                                        </Motion.aside>
-                                    </>
-                                ) : null}
-                            </AnimatePresence>
                         {showWangGuoCredit && (
                             <div className="video-stage-credit">视频来自WANGUO</div>
                         )}
@@ -1465,6 +1420,56 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL }) => {
             )}
 
             {!isSearching && !isWatching && renderVideoGrid()}
+            {typeof document !== 'undefined' && createPortal(
+                <AnimatePresence>
+                    {shouldRenderVideoCommentDrawer ? (
+                        <>
+                            <Motion.button
+                                type="button"
+                                className="video-comment-backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                onClick={() => setIsCommentDrawerOpen(false)}
+                                aria-label="关闭视频评论抽屉"
+                            />
+                            <Motion.aside
+                                className="video-comment-drawer"
+                                initial={{ x: '100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '100%' }}
+                                transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <div className="video-comment-drawer-header">
+                                    <div className="video-comment-drawer-texts">
+                                        <h3>视频评论</h3>
+                                        <p>{activeVideo?.title || ''}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="video-comment-close"
+                                        onClick={() => setIsCommentDrawerOpen(false)}
+                                        aria-label="关闭视频评论抽屉"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                                <div className="video-comment-drawer-body">
+                                    <CommentSection
+                                        serverURL={commentServerURL}
+                                        path={currentVideoCommentPath}
+                                        title=""
+                                        subtitle=""
+                                    />
+                                </div>
+                            </Motion.aside>
+                        </>
+                    ) : null}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 };

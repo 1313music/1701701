@@ -316,6 +316,8 @@ const LyricsOverlay = ({
         canOpenCommentDrawer
         && latestCommentRequestId > dismissedCommentRequestId
         && openCommentRequestTrackSrc === currentTrackSrc
+        && openCommentRequestTrackChangeId === trackChangeId
+        && openCommentRequestViewContextId === playerOverlayContextId
     );
     const hasManualCommentDrawerOpen = (
         manualCommentDrawerContextKey !== ''
@@ -328,11 +330,7 @@ const LyricsOverlay = ({
         && isLyricsOpen
         && (
             isMobileOverlay
-            || (
-                openCommentRequestTrackChangeId === trackChangeId
-                && openCommentRequestViewContextId === playerOverlayContextId
-                && openCommentRequestOverlaySessionId === lyricsOverlaySessionId
-            )
+            || openCommentRequestOverlaySessionId === lyricsOverlaySessionId
         )
     );
     const hasStandaloneCommentDrawerOpen = (

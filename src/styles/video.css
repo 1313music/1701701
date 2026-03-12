@@ -491,9 +491,9 @@
 }
 
 .video-comment-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 24;
+  z-index: 2100;
   border: none;
   background: rgba(7, 10, 15, 0.4);
   backdrop-filter: blur(3px);
@@ -502,10 +502,10 @@
 }
 
 .video-comment-drawer {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
-  z-index: 30;
+  z-index: 2110;
   width: min(520px, 44vw);
   height: 100%;
   background: color-mix(in srgb, var(--bg-color) 90%, rgba(8, 12, 18, 0.9));

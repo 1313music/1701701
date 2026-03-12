@@ -716,6 +716,14 @@ const App = () => {
     }
     if (isViewChanging) {
       setPlayerOverlayContextId((prev) => prev + 1);
+      setLyricsCommentRequest((prev) => ({
+        ...prev,
+        trackSrc: '',
+        overlaySessionId: 0,
+        trackChangeId: -1,
+        viewContextId: -1,
+        mode: 'overlay'
+      }));
     }
     setView((prev) => (prev === resolvedView ? prev : resolvedView));
     syncUrlForView(resolvedView, historyMode);
