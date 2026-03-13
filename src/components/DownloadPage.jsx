@@ -5,6 +5,7 @@ import { loadDownloadSections } from '../data/downloadManifest';
 
 const PDF_PREVIEW_VIEWER_BASE = 'https://mozilla.github.io/pdf.js/web/viewer.html';
 const PDF_PREVIEW_VIEWER = `${PDF_PREVIEW_VIEWER_BASE}?file=`;
+const OBJECT_URL_REVOKE_DELAY_MS = 30000;
 
 const isPdfResource = (item) => {
     const filename = String(item?.filename || '').toLowerCase();
@@ -42,6 +43,21 @@ const DownloadItem = ({ item, forcePreview = false }) => {
         anchor.click();
         document.body.removeChild(anchor);
     };
+    const fetchAndTriggerDownload = async (url, filename) => {
+        const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
+        if (!response.ok) {
+            throw new Error(`download request failed with ${response.status}`);
+        }
+        const blob = await response.blob();
+        if (!blob.size) {
+            throw new Error('downloaded blob is empty');
+        }
+        const objectUrl = window.URL.createObjectURL(blob);
+        triggerDownload(objectUrl, filename);
+        window.setTimeout(() => {
+            window.URL.revokeObjectURL(objectUrl);
+        }, OBJECT_URL_REVOKE_DELAY_MS);
+    };
 
     useEffect(() => () => {
         if (timerRef.current) {
@@ -56,21 +72,23 @@ const DownloadItem = ({ item, forcePreview = false }) => {
         }, 2000);
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (status === 'loading') return;
         if (!item?.url) return;
         setStatus('loading');
+        const fileName = item.filename || item.title || 'download';
         try {
-            triggerDownload(item.url, item.filename || item.title);
+            await fetchAndTriggerDownload(item.url, fileName);
             setStatus('done');
             resetLater();
         } catch {
-            setStatus('error');
-            resetLater();
             try {
-                triggerDownload(item.url, item.filename || item.title);
+                triggerDownload(item.url, fileName);
+                setStatus('done');
+                resetLater();
             } catch {
-                // noop
+                setStatus('error');
+                resetLater();
             }
         }
     };

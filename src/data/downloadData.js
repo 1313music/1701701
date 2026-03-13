@@ -1,17 +1,32 @@
 import { jlpAlbum } from './jlp.js';
 
+const KUALA_LUMPUR_NANJING_TRACK_NAME = "南京越来越远";
+const KUALA_LUMPUR_NANJING_DOWNLOAD_URL = "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/mp3/南京越来越远.mp3";
+
 const buildDownloadItem = ({ name, src }) => ({
   title: name,
   url: src,
   filename: src.split('/').pop() || `${name}.mp3`
 });
 
+const isKualaLumpurDownloadSong = ({ name, src }) => (
+  name === KUALA_LUMPUR_NANJING_TRACK_NAME ||
+  src.startsWith("https://jlp.1701701.xyz/mp3/")
+);
+
+const toKualaLumpurDownloadSong = (song) => {
+  if (song.name !== KUALA_LUMPUR_NANJING_TRACK_NAME) {
+    return song;
+  }
+  return {
+    ...song,
+    src: KUALA_LUMPUR_NANJING_DOWNLOAD_URL
+  };
+};
+
 const kualaLumpurDownloadItems = jlpAlbum.songs
-  .filter(
-    ({ src }) =>
-      src === "https://r4.1701701.xyz/mp3/南京越来越远.mp3" ||
-      src.startsWith("https://jlp.1701701.xyz/mp3/")
-  )
+  .filter(isKualaLumpurDownloadSong)
+  .map(toKualaLumpurDownloadSong)
   .map(buildDownloadItem);
 
 export const downloadSections = [
