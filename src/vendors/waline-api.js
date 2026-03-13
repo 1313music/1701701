@@ -416,7 +416,6 @@ const ensureWalineAuthOverlay = () => {
           </label>
           <button type="submit" class="waline-auth-submit">注册</button>
         </form>
-        <p class="waline-auth-note">登录和注册都在当前页面完成，不会再跳到外部浏览器。</p>
       </div>
     </div>
   `;

@@ -496,13 +496,6 @@
   cursor: wait;
 }
 
-.waline-auth-note {
-  margin: 16px 0 0;
-  color: rgba(148, 163, 184, 0.86);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
 @media (max-width: 760px) {
   .comment-section {
     padding: 16px 6px 8px;
