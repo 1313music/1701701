@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Play, Pause, ListMusic, Share2, Heart, MessageCircle } from 'lucide-react';
 import { Maximize2Icon } from './icons/AppIcons';
+import { formatTime } from '../utils/formatUtils';
 
 const PlayerBar = ({
     currentTrack,
@@ -8,6 +9,8 @@ const PlayerBar = ({
     isPlaying,
     handlePlayPause,
     progress,
+    currentTime,
+    duration,
     handleSeek,
     togglePlayMode,
     getPlayModeIcon,
@@ -24,14 +27,34 @@ const PlayerBar = ({
 }) => {
     const ringProgress = Number.isFinite(progress) ? Math.min(Math.max(progress, 0), 100) : 0;
     const coverRingPath = 'M 10.736 10.736 A 23 23 0 0 1 27 4 H 73 A 23 23 0 0 1 96 27 V 73 A 23 23 0 0 1 73 96 H 27 A 23 23 0 0 1 4 73 V 27 A 23 23 0 0 1 10.736 10.736';
+    const [isProgressHovered, setIsProgressHovered] = useState(false);
+    const canShowTimeBadge = Number.isFinite(duration) && duration > 0;
+    const formatPlayerBarTime = (time) => {
+        const formatted = formatTime(time);
+        return formatted.length < 5 ? `0${formatted}` : formatted;
+    };
 
     return (
         <>
             <div className="progress-bar-wrapper">
-                <div className="progress-container" onClick={handleSeek}>
+                <div
+                    className="progress-container"
+                    onClick={handleSeek}
+                    onMouseEnter={() => setIsProgressHovered(true)}
+                    onMouseLeave={() => setIsProgressHovered(false)}
+                >
                     <div className="progress-fill" style={{ width: `${progress}%` }}>
                         <div className="progress-dot" />
                     </div>
+                    {canShowTimeBadge && (
+                        <div
+                            className={`progress-hover-time ${isProgressHovered ? 'is-visible' : ''}`}
+                            style={{ left: `clamp(64px, ${ringProgress}%, calc(100% - 64px))` }}
+                            aria-hidden="true"
+                        >
+                            {formatPlayerBarTime(currentTime)} / {formatPlayerBarTime(duration)}
+                        </div>
+                    )}
                 </div>
             </div>
 

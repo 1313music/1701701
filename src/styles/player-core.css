@@ -16,10 +16,12 @@
 }
 
 .progress-bar-wrapper .progress-container {
+  position: relative;
   height: 100%;
   background: transparent;
   border-radius: 0;
   cursor: pointer;
+  overflow: visible;
 }
 
 .progress-bar-wrapper .progress-fill {
@@ -44,6 +46,32 @@
 
 .progress-bar-wrapper:hover .progress-dot {
   display: block;
+}
+
+.progress-hover-time {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(5, 7, 12, 0.94);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  letter-spacing: 0.02em;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.progress-hover-time.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* 播放栏 */

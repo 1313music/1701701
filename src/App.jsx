@@ -1248,6 +1248,8 @@ const App = () => {
               isPlaying={isPlaying}
               handlePlayPause={handlePlayPause}
               progress={progress}
+              currentTime={currentTime}
+              duration={duration}
               handleSeek={handleSeek}
               togglePlayMode={togglePlayMode}
               getPlayModeIcon={getPlayModeIcon}
