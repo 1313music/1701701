@@ -133,14 +133,39 @@ const toggleTwoFactorField = (enabled) => {
 const persistWalineUser = (userInfo) => {
   if (typeof window === 'undefined' || !userInfo?.token) return;
 
-  const primaryStorage = userInfo.remember ? window.localStorage : window.sessionStorage;
-  const secondaryStorage = userInfo.remember ? window.sessionStorage : window.localStorage;
+  const serializedUser = JSON.stringify(userInfo);
+  const previousValue = window.localStorage.getItem(WALINE_USER_STORAGE_KEY);
 
   try {
-    primaryStorage.setItem(WALINE_USER_STORAGE_KEY, JSON.stringify(userInfo));
-    secondaryStorage.setItem(WALINE_USER_STORAGE_KEY, 'null');
+    // Keep localStorage in sync with Waline's internal reactive store.
+    window.localStorage.setItem(WALINE_USER_STORAGE_KEY, serializedUser);
+
+    if (userInfo.remember) {
+      window.sessionStorage.setItem(WALINE_USER_STORAGE_KEY, 'null');
+    } else {
+      window.sessionStorage.setItem(WALINE_USER_STORAGE_KEY, serializedUser);
+    }
   } catch {
     // ignore storage errors
+  }
+
+  try {
+    const storageEvent = new StorageEvent('storage', {
+      key: WALINE_USER_STORAGE_KEY,
+      oldValue: previousValue,
+      newValue: serializedUser,
+      storageArea: window.localStorage
+    });
+    window.dispatchEvent(storageEvent);
+  } catch {
+    const fallbackEvent = new Event('storage');
+    Object.defineProperties(fallbackEvent, {
+      key: { value: WALINE_USER_STORAGE_KEY },
+      oldValue: { value: previousValue },
+      newValue: { value: serializedUser },
+      storageArea: { value: window.localStorage }
+    });
+    window.dispatchEvent(fallbackEvent);
   }
 };
 
