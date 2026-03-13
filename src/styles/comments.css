@@ -418,9 +418,17 @@
   gap: 14px;
 }
 
+.waline-auth-form[hidden] {
+  display: none;
+}
+
 .waline-auth-field {
   display: grid;
   gap: 8px;
+}
+
+.waline-auth-field[hidden] {
+  display: none;
 }
 
 .waline-auth-field span {
