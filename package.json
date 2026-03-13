@@ -10,6 +10,7 @@
     "test": "./scripts/with-node22.sh vitest run",
     "test:watch": "./scripts/with-node22.sh vitest",
     "coverage": "./scripts/with-node22.sh vitest run --coverage",
+    "validate:manifests": "./scripts/with-node22.sh node ./scripts/validate-manifests.mjs",
     "check": "npm run lint && npm run test && npm run build",
     "preview": "./scripts/with-node22.sh vite preview",
     "desktop:build:mac": "./scripts/with-node22.sh ./scripts/build-desktop.sh mac",
@@ -23,6 +24,7 @@
     "android:apk:release": "./scripts/with-node22.sh ./scripts/android-shell.sh release"
   },
   "dependencies": {
+    "@waline/api": "^1.1.0",
     "@waline/client": "^3.8.0",
     "dplayer": "^1.27.1",
     "framer-motion": "^12.27.5",
@@ -43,6 +45,8 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^4.0.18",
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
