@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { init } from '@waline/client';
 import '@waline/client/style';
-import { WALINE_AUTH_SUCCESS_EVENT, openWalineAuthOverlay } from '../vendors/waline-api.js';
+import { openWalineAuthOverlay } from '../vendors/waline-api.js';
 import '../styles/comments.css';
 
 const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', subtitle = '' }) => {
@@ -10,7 +10,6 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
   const syncTimerRef = useRef(null);
   const observerRef = useRef(null);
   const latestPathRef = useRef(path);
-  const [authRefreshKey, setAuthRefreshKey] = useState(0);
 
   useEffect(() => {
     latestPathRef.current = path;
@@ -32,19 +31,6 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       mode: 'register'
     });
   }, [serverURL]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const handleAuthSuccess = () => {
-      setAuthRefreshKey((previous) => previous + 1);
-    };
-
-    window.addEventListener(WALINE_AUTH_SUCCESS_EVENT, handleAuthSuccess);
-    return () => {
-      window.removeEventListener(WALINE_AUTH_SUCCESS_EVENT, handleAuthSuccess);
-    };
-  }, []);
 
   const syncHeaderPlaceholders = useCallback(() => {
     const root = containerRef.current;
@@ -158,7 +144,7 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       }
       walineRef.current = null;
     };
-  }, [authRefreshKey, scheduleHeaderSync, serverURL]);
+  }, [scheduleHeaderSync, serverURL]);
 
   useEffect(() => {
     if (!walineRef.current?.update || !path) return;
