@@ -32,6 +32,15 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     });
   }, [serverURL]);
 
+  const openLoginPage = useCallback(() => {
+    if (!serverURL) return;
+    void openWalineAuthOverlay({
+      serverURL,
+      lang: 'zh-CN',
+      mode: 'login'
+    });
+  }, [serverURL]);
+
   const syncHeaderPlaceholders = useCallback(() => {
     const root = containerRef.current;
     if (!root) return;
@@ -56,14 +65,33 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     if (!root) return;
 
     const existingButtons = root.querySelectorAll('.wl-register-btn');
-    const loginButton = root.querySelector('.wl-footer button.wl-btn:not(.primary)');
+    const footer = root.querySelector('.wl-footer');
+    const originalLoginButton = footer?.querySelector('button.wl-btn:not(.primary):not(.wl-login-btn):not(.wl-register-btn)');
+    const loginButton = footer?.querySelector('button.wl-login-btn');
 
-    if (!loginButton) {
+    if (!footer || (!loginButton && !originalLoginButton)) {
       existingButtons.forEach((button) => button.remove());
       return;
     }
 
-    const existingNextButton = loginButton.nextElementSibling;
+    let controlledLoginButton = loginButton;
+
+    if (!controlledLoginButton && originalLoginButton) {
+      controlledLoginButton = document.createElement('button');
+      controlledLoginButton.type = 'button';
+      controlledLoginButton.className = `${originalLoginButton.className} wl-login-btn`;
+      controlledLoginButton.textContent = originalLoginButton.textContent || '登录';
+      controlledLoginButton.setAttribute('aria-label', '登录 Waline 账号');
+      controlledLoginButton.addEventListener('click', openLoginPage);
+      originalLoginButton.replaceWith(controlledLoginButton);
+    }
+
+    if (!controlledLoginButton) {
+      existingButtons.forEach((button) => button.remove());
+      return;
+    }
+
+    const existingNextButton = controlledLoginButton.nextElementSibling;
     if (existingNextButton?.classList.contains('wl-register-btn')) {
       return;
     }
@@ -76,8 +104,8 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     registerButton.textContent = '注册';
     registerButton.setAttribute('aria-label', '注册 Waline 账号');
     registerButton.addEventListener('click', openRegisterPage);
-    loginButton.insertAdjacentElement('afterend', registerButton);
-  }, [openRegisterPage]);
+    controlledLoginButton.insertAdjacentElement('afterend', registerButton);
+  }, [openLoginPage, openRegisterPage]);
 
   const scheduleHeaderSync = useCallback(() => {
     syncHeaderPlaceholders();
