@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { init } from '@waline/client';
 import '@waline/client/style';
+import { WALINE_AUTH_SUCCESS_EVENT, openWalineAuthOverlay } from '../vendors/waline-api.js';
 import '../styles/comments.css';
-
-const REGISTER_URL_FALLBACK = 'https://hello.1701701.xyz/ui/register';
 
 const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', subtitle = '' }) => {
   const containerRef = useRef(null);
@@ -11,6 +10,7 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
   const syncTimerRef = useRef(null);
   const observerRef = useRef(null);
   const latestPathRef = useRef(path);
+  const [authRefreshKey, setAuthRefreshKey] = useState(0);
 
   useEffect(() => {
     latestPathRef.current = path;
@@ -25,24 +25,26 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
   }, []);
 
   const openRegisterPage = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    const registerURL = serverURL
-      ? `${String(serverURL).replace(/\/?$/, '')}/ui/register`
-      : REGISTER_URL_FALLBACK;
-    const width = 520;
-    const height = 720;
-    const left = Math.max((window.innerWidth - width) / 2, 0);
-    const top = Math.max((window.innerHeight - height) / 2, 0);
-    const popup = window.open(
-      registerURL,
-      '_blank',
-      `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,status=no,location=no,toolbar=no,menubar=no`
-    );
-
-    if (!popup) {
-      window.location.href = registerURL;
-    }
+    if (!serverURL) return;
+    void openWalineAuthOverlay({
+      serverURL,
+      lang: 'zh-CN',
+      mode: 'register'
+    });
   }, [serverURL]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleAuthSuccess = () => {
+      setAuthRefreshKey((previous) => previous + 1);
+    };
+
+    window.addEventListener(WALINE_AUTH_SUCCESS_EVENT, handleAuthSuccess);
+    return () => {
+      window.removeEventListener(WALINE_AUTH_SUCCESS_EVENT, handleAuthSuccess);
+    };
+  }, []);
 
   const syncHeaderPlaceholders = useCallback(() => {
     const root = containerRef.current;
@@ -156,7 +158,7 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
       }
       walineRef.current = null;
     };
-  }, [scheduleHeaderSync, serverURL]);
+  }, [authRefreshKey, scheduleHeaderSync, serverURL]);
 
   useEffect(() => {
     if (!walineRef.current?.update || !path) return;
