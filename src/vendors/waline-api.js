@@ -13,6 +13,7 @@ import {
 } from '@waline/api-original';
 
 const WALINE_USER_STORAGE_KEY = 'WALINE_USER';
+export const WALINE_AUTH_SUCCESS_EVENT = 'waline-auth-success';
 
 const authOverlayState = {
   overlay: null,
@@ -175,6 +176,11 @@ const resolvePendingLogin = (userInfo) => {
 
 const finalizeWalineLogin = (userInfo) => {
   persistWalineUser(userInfo);
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(WALINE_AUTH_SUCCESS_EVENT, { detail: userInfo }));
+  }
+
   closeWalineAuthOverlay();
   resolvePendingLogin(userInfo);
 };
