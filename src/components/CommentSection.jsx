@@ -3,6 +3,8 @@ import { init } from '@waline/client';
 import '@waline/client/style';
 import '../styles/comments.css';
 
+const REGISTER_URL_FALLBACK = 'https://hello.1701701.xyz/ui/register';
+
 const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', subtitle = '' }) => {
   const containerRef = useRef(null);
   const walineRef = useRef(null);
@@ -21,6 +23,26 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     if (fieldName.includes('mail') || fieldName.includes('email')) return '邮箱';
     return '';
   }, []);
+
+  const openRegisterPage = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const registerURL = serverURL
+      ? `${String(serverURL).replace(/\/?$/, '')}/ui/register`
+      : REGISTER_URL_FALLBACK;
+    const width = 520;
+    const height = 720;
+    const left = Math.max((window.innerWidth - width) / 2, 0);
+    const top = Math.max((window.innerHeight - height) / 2, 0);
+    const popup = window.open(
+      registerURL,
+      '_blank',
+      `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,status=no,location=no,toolbar=no,menubar=no`
+    );
+
+    if (!popup) {
+      window.location.href = registerURL;
+    }
+  }, [serverURL]);
 
   const syncHeaderPlaceholders = useCallback(() => {
     const root = containerRef.current;
@@ -41,10 +63,42 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     });
   }, [getHeaderText]);
 
+  const syncAuthButtons = useCallback(() => {
+    const root = containerRef.current;
+    if (!root) return;
+
+    const existingButtons = root.querySelectorAll('.wl-register-btn');
+    const loginButton = root.querySelector('.wl-footer button.wl-btn:not(.primary)');
+
+    if (!loginButton) {
+      existingButtons.forEach((button) => button.remove());
+      return;
+    }
+
+    const existingNextButton = loginButton.nextElementSibling;
+    if (existingNextButton?.classList.contains('wl-register-btn')) {
+      return;
+    }
+
+    existingButtons.forEach((button) => button.remove());
+
+    const registerButton = document.createElement('button');
+    registerButton.type = 'button';
+    registerButton.className = 'wl-btn wl-register-btn';
+    registerButton.textContent = '注册';
+    registerButton.setAttribute('aria-label', '注册 Waline 账号');
+    registerButton.addEventListener('click', openRegisterPage);
+    loginButton.insertAdjacentElement('afterend', registerButton);
+  }, [openRegisterPage]);
+
   const scheduleHeaderSync = useCallback(() => {
     syncHeaderPlaceholders();
+    syncAuthButtons();
     if (typeof window !== 'undefined' && window.requestAnimationFrame) {
-      window.requestAnimationFrame(syncHeaderPlaceholders);
+      window.requestAnimationFrame(() => {
+        syncHeaderPlaceholders();
+        syncAuthButtons();
+      });
     }
     if (syncTimerRef.current) {
       clearTimeout(syncTimerRef.current);
@@ -52,8 +106,9 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
     syncTimerRef.current = setTimeout(() => {
       syncTimerRef.current = null;
       syncHeaderPlaceholders();
+      syncAuthButtons();
     }, 120);
-  }, [syncHeaderPlaceholders]);
+  }, [syncAuthButtons, syncHeaderPlaceholders]);
 
   useEffect(() => {
     if (!containerRef.current || !serverURL) return undefined;

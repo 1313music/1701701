@@ -218,6 +218,18 @@
   font-weight: 600;
 }
 
+.comment-section .wl-register-btn {
+  margin-left: 10px;
+  border-color: var(--comment-field-border);
+  background: transparent;
+  color: var(--text-main);
+}
+
+.comment-section .wl-register-btn:hover {
+  border-color: var(--text-main);
+  background: var(--hover-bg);
+}
+
 .comment-section .wl-btn.primary {
   border-color: var(--text-main);
   background: var(--text-main);
@@ -252,6 +264,10 @@
 @media (max-width: 760px) {
   .comment-section {
     padding: 16px 6px 8px;
+  }
+
+  .comment-section .wl-register-btn {
+    margin-left: 8px;
   }
 
   .comment-section .wl-header {

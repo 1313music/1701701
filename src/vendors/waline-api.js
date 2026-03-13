@@ -10,7 +10,7 @@ import {
   updateArticleCounter,
   updateComment,
   updatePageview
-} from '@waline/api/dist/api.js';
+} from '@waline/api-original';
 
 const buildLoginUrl = (serverURL, lang, withRedirect = false) => {
   const base = String(serverURL || '').replace(/\/?$/, '');
