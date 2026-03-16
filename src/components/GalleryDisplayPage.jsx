@@ -14,6 +14,35 @@ const shuffleItems = (input) => {
 };
 
 const ALL_CATEGORY = '__all__';
+const COVER_CATEGORY = '封面';
+
+const containsCjk = (value) => /[\u3400-\u9fff]/.test(String(value || ''));
+
+const compareCategoryNames = (left, right) => {
+  if (left === COVER_CATEGORY) return -1;
+  if (right === COVER_CATEGORY) return 1;
+
+  const leftHasCjk = containsCjk(left);
+  const rightHasCjk = containsCjk(right);
+  if (leftHasCjk !== rightHasCjk) {
+    return leftHasCjk ? -1 : 1;
+  }
+
+  return left.localeCompare(right, 'zh-Hans-CN');
+};
+
+const buildCategoryStats = (items) => {
+  const map = new Map();
+  for (const item of items) {
+    map.set(item.category, (map.get(item.category) || 0) + 1);
+  }
+
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((left, right) => compareCategoryNames(left.name, right.name));
+};
+
+const getDefaultCategory = (items) => buildCategoryStats(items)[0]?.name || ALL_CATEGORY;
 
 const GalleryDisplayPage = () => {
   const [items, setItems] = useState([]);
@@ -23,15 +52,7 @@ const GalleryDisplayPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
   const [loadedItemIds, setLoadedItemIds] = useState(() => new Set());
 
-  const categoryStats = useMemo(() => {
-    const map = new Map();
-    for (const item of items) {
-      map.set(item.category, (map.get(item.category) || 0) + 1);
-    }
-    return Array.from(map.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((left, right) => left.name.localeCompare(right.name));
-  }, [items]);
+  const categoryStats = useMemo(() => buildCategoryStats(items), [items]);
 
   const filteredItems = useMemo(() => (
     selectedCategory === ALL_CATEGORY
@@ -51,7 +72,7 @@ const GalleryDisplayPage = () => {
         : await loadGalleryItems();
       const randomizedItems = shuffleItems(parsedItems);
       setItems(randomizedItems);
-      setSelectedCategory(ALL_CATEGORY);
+      setSelectedCategory(getDefaultCategory(randomizedItems));
     } catch (requestError) {
       setItems([]);
       setError(requestError?.message || '图库加载失败');
@@ -68,7 +89,7 @@ const GalleryDisplayPage = () => {
     if (selectedCategory === ALL_CATEGORY) return;
     const exists = categoryStats.some((category) => category.name === selectedCategory);
     if (!exists) {
-      setSelectedCategory(ALL_CATEGORY);
+      setSelectedCategory(categoryStats[0]?.name || ALL_CATEGORY);
     }
   }, [categoryStats, selectedCategory]);
 
@@ -153,14 +174,6 @@ const GalleryDisplayPage = () => {
 
           {!isLoading && categoryStats.length > 0 && (
             <div className="gallery-category-bar" aria-label="分类筛选">
-              <button
-                type="button"
-                className={`gallery-category-btn ${selectedCategory === ALL_CATEGORY ? 'is-active' : ''}`}
-                onClick={() => setSelectedCategory(ALL_CATEGORY)}
-              >
-                全部
-                <span>{items.length}</span>
-              </button>
               {categoryStats.map((category) => (
                 <button
                   key={category.name}
@@ -172,6 +185,14 @@ const GalleryDisplayPage = () => {
                   <span>{category.count}</span>
                 </button>
               ))}
+              <button
+                type="button"
+                className={`gallery-category-btn ${selectedCategory === ALL_CATEGORY ? 'is-active' : ''}`}
+                onClick={() => setSelectedCategory(ALL_CATEGORY)}
+              >
+                全部
+                <span>{items.length}</span>
+              </button>
             </div>
           )}
 
