@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { init } from '@waline/client';
 import '@waline/client/style';
 import { WALINE_AUTH_SUCCESS_EVENT, openWalineAuthOverlay } from '../vendors/waline-api.js';
+import {
+  syncWalineAuthButtons,
+  syncWalineHeaderPlaceholders
+} from '../vendors/walineDomAdapter.js';
 import '../styles/comments.css';
 
 const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', subtitle = '' }) => {
@@ -15,14 +19,6 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
   useEffect(() => {
     latestPathRef.current = path;
   }, [path]);
-
-  const getHeaderText = useCallback((labelText, input) => {
-    if (labelText) return labelText;
-    const fieldName = (input?.getAttribute('name') || '').toLowerCase();
-    if (fieldName.includes('nick')) return '昵称';
-    if (fieldName.includes('mail') || fieldName.includes('email')) return '邮箱';
-    return '';
-  }, []);
 
   const openRegisterPage = useCallback(() => {
     if (!serverURL) return;
@@ -56,69 +52,15 @@ const CommentSection = ({ serverURL, path = 'page:home', title = '留言板', su
   }, []);
 
   const syncHeaderPlaceholders = useCallback(() => {
-    const root = containerRef.current;
-    if (!root) return;
-    const headerItems = root.querySelectorAll('.wl-header-item');
-    headerItems.forEach((item) => {
-      const label = item.querySelector('label');
-      const input = item.querySelector('input');
-      if (!input) return;
-      const text = getHeaderText(label?.textContent?.trim(), input);
-      if (!text) return;
-      input.placeholder = text;
-      input.setAttribute('aria-label', text);
-    });
-    const textareas = root.querySelectorAll('textarea');
-    textareas.forEach((textarea) => {
-      textarea.placeholder = '说点什么吧';
-    });
-  }, [getHeaderText]);
+    syncWalineHeaderPlaceholders(containerRef.current);
+  }, []);
 
   const syncAuthButtons = useCallback(() => {
-    const root = containerRef.current;
-    if (!root) return;
-
-    const existingButtons = root.querySelectorAll('.wl-register-btn');
-    const footer = root.querySelector('.wl-footer');
-    const originalLoginButton = footer?.querySelector('button.wl-btn:not(.primary):not(.wl-login-btn):not(.wl-register-btn)');
-    const loginButton = footer?.querySelector('button.wl-login-btn');
-
-    if (!footer || (!loginButton && !originalLoginButton)) {
-      existingButtons.forEach((button) => button.remove());
-      return;
-    }
-
-    let controlledLoginButton = loginButton;
-
-    if (!controlledLoginButton && originalLoginButton) {
-      controlledLoginButton = document.createElement('button');
-      controlledLoginButton.type = 'button';
-      controlledLoginButton.className = `${originalLoginButton.className} wl-login-btn`;
-      controlledLoginButton.textContent = originalLoginButton.textContent || '登录';
-      controlledLoginButton.setAttribute('aria-label', '登录 Waline 账号');
-      controlledLoginButton.addEventListener('click', openLoginPage);
-      originalLoginButton.replaceWith(controlledLoginButton);
-    }
-
-    if (!controlledLoginButton) {
-      existingButtons.forEach((button) => button.remove());
-      return;
-    }
-
-    const existingNextButton = controlledLoginButton.nextElementSibling;
-    if (existingNextButton?.classList.contains('wl-register-btn')) {
-      return;
-    }
-
-    existingButtons.forEach((button) => button.remove());
-
-    const registerButton = document.createElement('button');
-    registerButton.type = 'button';
-    registerButton.className = 'wl-btn wl-register-btn';
-    registerButton.textContent = '注册';
-    registerButton.setAttribute('aria-label', '注册 Waline 账号');
-    registerButton.addEventListener('click', openRegisterPage);
-    controlledLoginButton.insertAdjacentElement('afterend', registerButton);
+    syncWalineAuthButtons({
+      root: containerRef.current,
+      onLogin: openLoginPage,
+      onRegister: openRegisterPage
+    });
   }, [openLoginPage, openRegisterPage]);
 
   const scheduleHeaderSync = useCallback(() => {

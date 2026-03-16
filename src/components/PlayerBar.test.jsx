@@ -1,9 +1,9 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import PlayerBar from './PlayerBar';
 
-const defaultProps = {
+const createProps = (overrides = {}) => ({
   currentTrack: { name: 'Test Song', cover: null, src: 'song.mp3' },
   currentAlbum: { artist: 'Test Artist', cover: null },
   isPlaying: false,
@@ -23,12 +23,18 @@ const defaultProps = {
   onOpenComments: vi.fn(),
   onShare: vi.fn(),
   isTrackNameOverflowing: false,
-  trackNameRef: { current: null }
-};
+  trackNameRef: { current: null },
+  ...overrides
+});
 
 describe('PlayerBar', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('shows current time and total duration while hovering the desktop progress bar', () => {
-    const { container } = render(<PlayerBar {...defaultProps} />);
+    const props = createProps();
+    const { container } = render(<PlayerBar {...props} />);
     const progressContainer = container.querySelector('.progress-container');
 
     expect(progressContainer).not.toBeNull();
@@ -36,5 +42,58 @@ describe('PlayerBar', () => {
     fireEvent.mouseEnter(progressContainer);
 
     expect(screen.getByText('01:02 / 02:22')).toBeInTheDocument();
+  });
+
+  it('opens the full-screen player from the footer and expand button', () => {
+    const props = createProps();
+    const { container } = render(<PlayerBar {...props} />);
+
+    fireEvent.click(container.querySelector('.player-bar'));
+    fireEvent.click(screen.getByRole('button', { name: '展开全屏播放器' }));
+
+    expect(props.setIsLyricsOpen).toHaveBeenNthCalledWith(1, true);
+    expect(props.setIsLyricsOpen).toHaveBeenNthCalledWith(2, true);
+  });
+
+  it('routes playback controls without reopening the full-screen player', () => {
+    const props = createProps();
+    const { container } = render(<PlayerBar {...props} />);
+
+    fireEvent.click(container.querySelector('.mode-btn'));
+    fireEvent.click(container.querySelector('.skip-back-btn'));
+    fireEvent.click(container.querySelector('.main-play-btn'));
+    fireEvent.click(container.querySelector('.skip-forward-btn'));
+    fireEvent.click(container.querySelector('.playlist-btn'));
+
+    expect(props.togglePlayMode).toHaveBeenCalledTimes(1);
+    expect(props.handlePrev).toHaveBeenCalledTimes(1);
+    expect(props.handlePlayPause).toHaveBeenCalledTimes(1);
+    expect(props.handleNext).toHaveBeenCalledTimes(1);
+    expect(props.setIsAlbumListOpen).toHaveBeenCalledWith(true);
+    expect(props.setIsLyricsOpen).not.toHaveBeenCalled();
+  });
+
+  it('wires favorite, comment, and share actions to callbacks', () => {
+    const props = createProps();
+    render(<PlayerBar {...props} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '收藏当前歌曲' }));
+    fireEvent.click(screen.getByRole('button', { name: '查看当前歌曲评论' }));
+    fireEvent.click(screen.getByRole('button', { name: '分享当前歌曲' }));
+
+    expect(props.onToggleFavorite).toHaveBeenCalledTimes(1);
+    expect(props.onToggleFavorite.mock.calls[0][0]).toEqual(props.currentTrack);
+    expect(props.onOpenComments).toHaveBeenCalledTimes(1);
+    expect(props.onShare).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders marquee text when the track name overflows during playback', () => {
+    const props = createProps({
+      isPlaying: true,
+      isTrackNameOverflowing: true
+    });
+    const { container } = render(<PlayerBar {...props} />);
+
+    expect(container.querySelector('.scrolling-text')).toHaveTextContent('Test Song | Test Song');
   });
 });

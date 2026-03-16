@@ -11,7 +11,7 @@
     "test:watch": "./scripts/with-node22.sh vitest",
     "coverage": "./scripts/with-node22.sh vitest run --coverage",
     "validate:manifests": "./scripts/with-node22.sh node ./scripts/validate-manifests.mjs",
-    "check": "npm run lint && npm run test && npm run build",
+    "check": "npm run lint && npm run validate:manifests && npm run test && npm run build",
     "preview": "./scripts/with-node22.sh vite preview",
     "desktop:build:mac": "./scripts/with-node22.sh ./scripts/build-desktop.sh mac",
     "desktop:build:win": "./scripts/with-node22.sh ./scripts/build-desktop.sh win",

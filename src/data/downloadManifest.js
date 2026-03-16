@@ -21,6 +21,12 @@ const toAbsoluteUrl = (value, fallbackBase = '') => {
   }
 };
 
+const resolveAssetUrl = (value, fallbackBase = '') => {
+  const input = String(value || '').trim();
+  if (!input) return '';
+  return toAbsoluteUrl(input, fallbackBase) || input;
+};
+
 const toSortedList = (input) => {
   const list = Array.isArray(input) ? input : [];
   return list
@@ -38,40 +44,40 @@ const toSortedList = (input) => {
     .map((entry) => entry.item);
 };
 
-const normalizeItem = (item) => {
+const normalizeItem = (item, assetBase = '') => {
   if (!item || item.enabled === false) return null;
   const title = String(item.title || '').trim();
-  const url = String(item.url || '').trim();
+  const url = resolveAssetUrl(item.url, assetBase);
   if (!title || !url) return null;
 
   return {
     title,
     url,
     filename: String(item.filename || '').trim() || undefined,
-    previewUrl: String(item.previewUrl || '').trim() || undefined
+    previewUrl: resolveAssetUrl(item.previewUrl, assetBase) || undefined
   };
 };
 
-const normalizeGroup = (group) => {
+const normalizeGroup = (group, assetBase = '') => {
   if (!group || group.enabled === false) return null;
   const title = String(group.title || '').trim();
   if (!title) return null;
 
   const items = toSortedList(group.items)
-    .map((item) => normalizeItem(item))
+    .map((item) => normalizeItem(item, assetBase))
     .filter(Boolean);
   if (items.length === 0) return null;
 
   return { title, items };
 };
 
-const normalizeSection = (section) => {
+const normalizeSection = (section, assetBase = '') => {
   if (!section || section.enabled === false) return null;
   const title = String(section.title || '').trim();
   if (!title) return null;
 
   const groups = toSortedList(section.groups)
-    .map((group) => normalizeGroup(group))
+    .map((group) => normalizeGroup(group, assetBase))
     .filter(Boolean);
   if (groups.length === 0) return null;
 
@@ -81,15 +87,15 @@ const normalizeSection = (section) => {
     note: section.note && typeof section.note === 'object'
       ? {
           label: String(section.note.label || '').trim(),
-          href: String(section.note.href || '').trim()
+          href: resolveAssetUrl(section.note.href, assetBase) || String(section.note.href || '').trim()
         }
       : undefined
   };
 };
 
-const parseDownloadManifest = (payload) => {
+const parseDownloadManifest = (payload, assetBase = '') => {
   const sections = toSortedList(payload?.sections)
-    .map((section) => normalizeSection(section))
+    .map((section) => normalizeSection(section, assetBase))
     .filter(Boolean);
 
   return sections.length > 0 ? sections : null;
@@ -108,11 +114,17 @@ const loadRemoteSections = async () => {
   }
 
   const payload = await response.json();
-  const parsed = parseDownloadManifest(payload);
+  const parsed = parseDownloadManifest(payload, endpoint);
   if (!parsed) {
     throw new Error('下载清单格式无效');
   }
   return parsed;
+};
+
+export const __resetDownloadManifestCacheForTests = () => {
+  cachedSections = null;
+  cachedAt = 0;
+  inflightSectionsPromise = null;
 };
 
 export const loadDownloadSections = async () => {

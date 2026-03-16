@@ -21,6 +21,12 @@ const toAbsoluteUrl = (value, fallbackBase = '') => {
   }
 };
 
+const resolveAssetUrl = (value, fallbackBase = '') => {
+  const input = String(value || '').trim();
+  if (!input) return '';
+  return toAbsoluteUrl(input, fallbackBase) || input;
+};
+
 const toLegacyIcon = (value) => {
   const icon = String(value || '').trim();
   if (!icon) return '#icon-video';
@@ -46,7 +52,7 @@ const toSortedList = (input) => {
     .map((entry) => entry.item);
 };
 
-const normalizeVideoItems = (items, videoMap, parentId) => {
+const normalizeVideoItems = (items, videoMap, parentId, assetBase = '') => {
   const result = [];
 
   toSortedList(items).forEach((item, index) => {
@@ -59,8 +65,8 @@ const normalizeVideoItems = (items, videoMap, parentId) => {
     if (isFolder) {
       const folderId = String(item.id || item.folderId || `${parentId}-folder-${index + 1}`);
       const title = String(item.title || folderId).trim() || folderId;
-      const thumb = String(item.thumb || '').trim();
-      videoMap[folderId] = normalizeVideoItems(item.items, videoMap, folderId);
+      const thumb = resolveAssetUrl(item.thumb, assetBase);
+      videoMap[folderId] = normalizeVideoItems(item.items, videoMap, folderId, assetBase);
       result.push({
         id: item.id ?? folderId,
         title,
@@ -72,22 +78,22 @@ const normalizeVideoItems = (items, videoMap, parentId) => {
     }
 
     const title = String(item.title || '').trim();
-    const url = String(item.url || '').trim();
+    const url = resolveAssetUrl(item.url, assetBase);
     if (!title || !url) return;
 
     result.push({
       id: item.id ?? `${parentId}-video-${index + 1}`,
       title,
       url,
-      backupUrl: String(item.backupUrl || '').trim(),
-      thumb: String(item.thumb || '').trim()
+      backupUrl: resolveAssetUrl(item.backupUrl, assetBase),
+      thumb: resolveAssetUrl(item.thumb, assetBase)
     });
   });
 
   return result;
 };
 
-const parseVideoManifest = (payload) => {
+const parseVideoManifest = (payload, assetBase = '') => {
   const categories = toSortedList(payload?.categories).filter((category) => (
     category &&
     category.enabled !== false &&
@@ -106,7 +112,7 @@ const parseVideoManifest = (payload) => {
       name,
       icon: toLegacyIcon(category.icon)
     });
-    videoData[id] = normalizeVideoItems(category.items, videoData, id);
+    videoData[id] = normalizeVideoItems(category.items, videoData, id, assetBase);
   });
 
   return { videoCategories, videoData };
@@ -125,11 +131,17 @@ const loadRemoteCatalog = async () => {
   }
 
   const payload = await response.json();
-  const parsed = parseVideoManifest(payload);
+  const parsed = parseVideoManifest(payload, endpoint);
   if (!parsed) {
     throw new Error('视频清单格式无效');
   }
   return parsed;
+};
+
+export const __resetVideoManifestCacheForTests = () => {
+  cachedCatalog = null;
+  cachedAt = 0;
+  inflightCatalogPromise = null;
 };
 
 export const loadVideoCatalog = async () => {

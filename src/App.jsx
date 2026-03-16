@@ -1,39 +1,31 @@
-import React, { useMemo, useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { ChevronUp } from 'lucide-react';
 
-// Components
 import Sidebar from './components/Sidebar';
 import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
-import { loadMusicManifestAlbums } from './data/musicManifest.js';
-
-// Hooks
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
+import { useAppShell } from './hooks/useAppShell.js';
+import { useLibraryState } from './hooks/useLibraryState.js';
+import { useSeoMeta } from './hooks/useSeoMeta.js';
+import { useSharePanel } from './hooks/useSharePanel.js';
 import { useTheme } from './hooks/useTheme.js';
 import { useToast } from './hooks/useToast.js';
 import { useVideoAccess } from './hooks/useVideoAccess.js';
+import { copyTextToClipboard } from './utils/appDomUtils.js';
+import { resolveMusicShareTarget } from './utils/musicShareUtils.js';
 import {
-  addFavoriteId,
-  clearFavoriteIds,
-  toggleAlbumFavoritesBySongs,
-  toggleFavoriteId
-} from './utils/favoritesUtils.js';
-import {
-  copyTextToClipboard,
-  dataUrlToFile,
-  downloadDataUrl,
-  isIOSDevice,
-  isWeChatBrowser,
-  openImagePreviewWindow,
-  upsertJsonLd,
-  upsertLinkTag,
-  upsertMetaTag
-} from './utils/appDomUtils.js';
-import { sanitizeTempPlaylist } from './utils/playlistUtils.js';
+  APP_READY_EVENT,
+  getPathForView,
+  SITE_URL,
+  WALINE_SERVER_URL,
+  WECHAT_OFFICIAL_ACCOUNT_NAME,
+  WECHAT_VIDEO_PASSWORD_KEYWORD,
+  WECHAT_OFFICIAL_ACCOUNT_QR_URL
+} from './utils/appShellConfig.js';
 
-const TEMP_PLAYLIST_KEY = 'tempPlaylistIds';
 const LyricsOverlay = lazy(() => import('./components/LyricsOverlay.jsx'));
 const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'));
 const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
@@ -42,174 +34,9 @@ const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.js
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
 const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
-const VIEW_PATHS = Object.freeze({
-  library: '/',
-  video: '/video',
-  download: '/download',
-  gallery: '/gallery',
-  app: '/app',
-  about: '/about',
-  comment: '/comment'
-});
-const VIEW_QUERY_KEYS = Object.freeze({
-  library: ['albumId', 'song'],
-  video: ['videoId', 'videoCategory'],
-  download: [],
-  gallery: [],
-  app: [],
-  about: [],
-  comment: []
-});
-const AVAILABLE_VIEWS = new Set(Object.keys(VIEW_PATHS));
-
-const buildSongSrcSet = (albums) => {
-  const set = new Set();
-  for (const album of albums) {
-    for (const song of album.songs) {
-      if (song?.src) set.add(song.src);
-    }
-  }
-  return set;
-};
-
-const buildSongIndex = (albums) => {
-  const map = new Map();
-  for (const album of albums) {
-    for (const song of album.songs) {
-      if (song?.src && !map.has(song.src)) {
-        map.set(song.src, { album, song });
-      }
-    }
-  }
-  return map;
-};
-
-const normalizePathname = (pathname = '/') => {
-  if (!pathname) return '/';
-  const normalized = pathname.startsWith('/') ? pathname : `/${pathname}`;
-  if (normalized.length === 1) return normalized;
-  return normalized.replace(/\/+$/, '') || '/';
-};
-
-const getPathForView = (view) => VIEW_PATHS[view] || VIEW_PATHS.library;
-
-const getViewFromPathname = (pathname = '/') => {
-  const normalized = normalizePathname(pathname);
-  const matched = Object.entries(VIEW_PATHS).find(([, path]) => path === normalized);
-  return matched ? matched[0] : null;
-};
-
-const getCanonicalSearchForView = (view, search = '') => {
-  const params = new URLSearchParams(search);
-  params.delete('view');
-  const nextParams = new URLSearchParams();
-
-  for (const key of VIEW_QUERY_KEYS[view] || []) {
-    const value = params.get(key);
-    if (value) {
-      nextParams.set(key, value);
-    }
-  }
-
-  const nextSearch = nextParams.toString();
-  return nextSearch ? `?${nextSearch}` : '';
-};
-
-const resolveViewFromLocation = (locationLike) => {
-  if (!locationLike) return 'library';
-  const pathnameView = getViewFromPathname(locationLike.pathname);
-  if (pathnameView) return pathnameView;
-  const params = new URLSearchParams(locationLike.search || '');
-  const queryView = String(params.get('view') || '').trim();
-  return AVAILABLE_VIEWS.has(queryView) ? queryView : 'library';
-};
-
-const SITE_URL = 'https://1701701.xyz';
-const SITE_NAME = '1701701.xyz';
-const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
-const WALINE_SERVER_URL = import.meta.env.VITE_WALINE_SERVER_URL || 'https://hello.1701701.xyz';
-const LI_ZHI_ENTITY_LINKS = [
-  'https://musicbrainz.org/artist/e54bc357-19aa-4e1f-9795-3346e486d5db',
-  'https://en.wikipedia.org/wiki/Li_Zhi_(singer)'
-];
-const RESEARCHED_KEY_RELEASES = [
-  { name: '被禁忌的游戏', year: '2004' },
-  { name: '梵高先生', year: '2005' },
-  { name: '这个世界会好吗', year: '2006' },
-  { name: '我爱南京', year: '2009' },
-  { name: '你好，郑州', year: '2010' },
-  { name: 'F', year: '2011' },
-  { name: '1701', year: '2014' },
-  { name: '8', year: '2016' },
-  { name: '在每一条伤心的应天大街上', year: '2016' },
-  { name: '看见', year: '2020' }
-];
-const KL_EVENT_DATES = [
-  '2025-11-11T20:30:00+08:00',
-  '2025-11-12T20:30:00+08:00',
-  '2025-11-13T20:30:00+08:00'
-];
-const KL_EVENT_URL = 'https://idealivearena.com/event/three-missing-one/';
-const WECHAT_OFFICIAL_ACCOUNT_NAME = '民谣俱乐部';
-const WECHAT_VIDEO_PASSWORD_KEYWORD = '密码';
-const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg';
-const APP_READY_EVENT = 'app-initial-ready';
 
 const App = () => {
-  const [view, setView] = useState(() => (
-    typeof window === 'undefined' ? 'library' : resolveViewFromLocation(window.location)
-  )); // 'library' | 'video' | 'download' | 'gallery' | 'app' | 'about' | 'comment'
-  const [locationSearch, setLocationSearch] = useState(() => (
-    typeof window === 'undefined' ? '' : window.location.search
-  ));
-  const [musicAlbums, setMusicAlbums] = useState([]);
-  const [isMusicLoading, setIsMusicLoading] = useState(true);
-  const [musicLoadError, setMusicLoadError] = useState('');
-  const [selectedAlbum, setSelectedAlbum] = useState(null);
-  const [tempPlaylistIds, setTempPlaylistIds] = useState(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      const raw = window.localStorage.getItem(TEMP_PLAYLIST_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return sanitizeTempPlaylist(parsed);
-    } catch {
-      return [];
-    }
-  });
-  const [isLyricsOpen, setIsLyricsOpen] = useState(false);
-  const [lyricsOverlaySessionId, setLyricsOverlaySessionId] = useState(0);
-  const [playerOverlayContextId, setPlayerOverlayContextId] = useState(0);
-  const [isAlbumListOpen, setIsAlbumListOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [hasLyricsOverlayLoaded, setHasLyricsOverlayLoaded] = useState(false);
-  const [hasAlbumListOverlayLoaded, setHasAlbumListOverlayLoaded] = useState(false);
-  const [sharePanelData, setSharePanelData] = useState(null);
-  const [shareCardDataUrl, setShareCardDataUrl] = useState('');
-  const [isShareCardGenerating, setIsShareCardGenerating] = useState(false);
-  const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-  const [lyricsCommentRequest, setLyricsCommentRequest] = useState(() => ({
-    id: 0,
-    trackSrc: '',
-    overlaySessionId: 0,
-    trackChangeId: 0,
-    viewContextId: 0,
-    mode: 'overlay'
-  }));
-  const shareCardRequestIdRef = useRef(0);
-  const tempPlaylistIdsRef = useRef(tempPlaylistIds);
   const hasSignaledBootReadyRef = useRef(false);
-
-  const allSongSrcs = useMemo(() => buildSongSrcSet(musicAlbums), [musicAlbums]);
-  const songIndex = useMemo(() => buildSongIndex(musicAlbums), [musicAlbums]);
-
-  const tempPlaylistSet = useMemo(() => new Set(tempPlaylistIds), [tempPlaylistIds]);
-  const tempPlaylistItems = useMemo(
-    () => tempPlaylistIds.map((id) => songIndex.get(id)).filter(Boolean),
-    [songIndex, tempPlaylistIds]
-  );
 
   const {
     toastMessage,
@@ -236,6 +63,26 @@ const App = () => {
     requestVideoView,
     submitVideoAccess
   } = useVideoAccess();
+
+  const {
+    musicAlbums,
+    isMusicLoading,
+    musicLoadError,
+    selectedAlbum,
+    setSelectedAlbum,
+    searchQuery,
+    setSearchQuery,
+    songIndex,
+    tempPlaylistIds,
+    tempPlaylistItems,
+    tempPlaylistSet,
+    toggleTempSong,
+    addTempSong,
+    toggleAlbumFavorites,
+    clearTempPlaylist,
+    filteredAlbums,
+    songSuggestions
+  } = useLibraryState({ showToast });
 
   const {
     currentTrack,
@@ -267,6 +114,50 @@ const App = () => {
     songIndex
   });
 
+  const {
+    view,
+    locationSearch,
+    handleViewChange,
+    isLyricsOpen,
+    lyricsOverlaySessionId,
+    playerOverlayContextId,
+    isAlbumListOpen,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    isSidebarCollapsed,
+    setIsSidebarCollapsed,
+    hasLyricsOverlayLoaded,
+    hasAlbumListOverlayLoaded,
+    setLyricsOverlayOpen,
+    setAlbumListOverlayOpen,
+    lyricsCommentRequest,
+    openCurrentTrackComments,
+    isWeChatBrowserHintOpen,
+    closeWeChatBrowserHint,
+    showBackToTop,
+    handleBackToTop
+  } = useAppShell({
+    currentTrackSrc: currentTrack?.src,
+    pausePlayback,
+    trackChangeId
+  });
+
+  useSeoMeta({ view, musicAlbums });
+
+  useEffect(() => {
+    if (musicAlbums.length === 0) return;
+    const resolvedShareTarget = resolveMusicShareTarget(musicAlbums, locationSearch);
+    if (!resolvedShareTarget) return;
+
+    const timerId = window.setTimeout(() => {
+      setSelectedAlbum(resolvedShareTarget.album);
+      setCurrentAlbum(resolvedShareTarget.album);
+      setCurrentTrack(resolvedShareTarget.track);
+      setIsPlaying(false);
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [locationSearch, musicAlbums, setCurrentAlbum, setCurrentTrack, setIsPlaying, setSelectedAlbum]);
+
   const listAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
     ? currentSongInfo.album
     : currentAlbum;
@@ -287,494 +178,26 @@ const App = () => {
     };
   }, [tempPlaylistItems, currentAlbum?.cover]);
 
-  useEffect(() => {
-    let canceled = false;
-    const loadMusicAlbums = async () => {
-      try {
-        const albums = await loadMusicManifestAlbums();
-        if (canceled) return;
-        setMusicAlbums(Array.isArray(albums) ? albums : []);
-      } catch {
-        if (canceled) return;
-        setMusicLoadError('曲库加载失败，请刷新重试');
-      } finally {
-        if (!canceled) {
-          setIsMusicLoading(false);
-        }
-      }
-    };
+  const playFavorites = (song) => {
+    if (!favoriteAlbum || favoriteAlbum.songs.length === 0) return;
 
-    loadMusicAlbums();
-    return () => {
-      canceled = true;
-    };
-  }, []);
+    const target = song
+      ? favoriteAlbum.songs.find((item) => item.src === song.src)
+      : favoriteAlbum.songs[0];
+    const nextTrack = target || favoriteAlbum.songs[0];
 
-  useEffect(() => {
-    tempPlaylistIdsRef.current = tempPlaylistIds;
-  }, [tempPlaylistIds]);
+    const isSameTrack = Boolean(currentTrack?.src) && currentTrack.src === nextTrack.src;
+    const isInFavoritesAlbum = currentAlbum?.id === favoriteAlbum.id;
 
-  useEffect(() => {
-    if (allSongSrcs.size === 0) return;
-    setTempPlaylistIds((prev) => {
-      const next = sanitizeTempPlaylist(prev, allSongSrcs);
-      tempPlaylistIdsRef.current = next;
-      if (
-        next.length === prev.length &&
-        next.every((id, index) => id === prev[index])
-      ) {
-        return prev;
-      }
-      return next;
-    });
-  }, [allSongSrcs]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.localStorage.setItem(TEMP_PLAYLIST_KEY, JSON.stringify(tempPlaylistIds));
-    } catch {
-      // ignore storage errors
-    }
-  }, [tempPlaylistIds]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!isWeChatBrowser()) return;
-    setIsWeChatBrowserHintOpen(true);
-  }, []);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const researchedReleaseNames = RESEARCHED_KEY_RELEASES.map((item) => item.name);
-    const releaseYearMap = new Map(
-      RESEARCHED_KEY_RELEASES.map((item) => [item.name, item.year])
-    );
-
-    const seoMap = {
-      library: {
-        title: '李志音乐 | 1701701.xyz',
-        description: '收录李志代表作与现场内容，包含《被禁忌的游戏》《梵高先生》《1701》及叁缺壹吉隆坡站等，支持歌词查看、播放列表与收藏管理。',
-        pageType: 'CollectionPage',
-        keywords: [
-          '李志',
-          '李志音乐',
-          '李志专辑',
-          '李志现场',
-          '李志1701',
-          '李志8',
-          '334计划',
-          '我们的叁叁肆',
-          '叁缺壹吉隆坡站',
-          '叁缺壹东京站',
-          'Three Missing One',
-          'IDEA LIVE ARENA',
-          '被禁忌的游戏',
-          '梵高先生',
-          '这个世界会好吗',
-          '我爱南京',
-          '你好郑州',
-          '在每一条伤心的应天大街上'
-        ]
-      },
-      video: {
-        title: '李志现场视频与纪录片 | 1701701.xyz',
-        description: '整理李志相关现场视频、纪录片与演出影像，覆盖“我们的叁叁肆”、叁叁肆计划巡演、跨年与采访内容。',
-        pageType: 'VideoGallery',
-        keywords: [
-          '李志视频',
-          '李志纪录片',
-          '我们的叁叁肆',
-          '334计划',
-          '334城巡演',
-          '李志巡演',
-          '李志跨年',
-          '叁缺壹现场',
-          '叁缺壹吉隆坡站'
-        ]
-      },
-      download: {
-        title: '李志音乐资源下载 | 1701701.xyz',
-        description: '提供李志相关资源下载入口与内容汇总，覆盖叁缺壹吉隆坡站、东京站以及代表专辑相关资源。',
-        pageType: 'CollectionPage',
-        keywords: [
-          '李志下载',
-          '李志资源',
-          '叁缺壹吉隆坡站下载',
-          '叁缺壹东京站下载',
-          '李志现场音频',
-          '李志1701下载',
-          '李志梵高先生'
-        ]
-      },
-      gallery: {
-        title: '图库 | 1701701.xyz',
-        description: '前端图库展示页，默认读取 B2 图库索引并以瀑布流展示已发布图片。',
-        pageType: 'CollectionPage',
-        keywords: [
-          '图库',
-          '图片瀑布流',
-          'B2 图床',
-          '图床展示'
-        ]
-      },
-      app: {
-        title: 'APP 下载 | 1701701.xyz',
-        description: '下载 1701701 的 macOS、Windows 与 Android 客户端，并查看 iOS 添加到主屏幕使用教程。',
-        pageType: 'CollectionPage',
-        keywords: [
-          '1701701 app',
-          '1701701 mac',
-          '1701701 windows',
-          '1701701 android',
-          '1701701 apk',
-          'iOS PWA',
-          '添加到主屏幕'
-        ]
-      },
-      about: {
-        title: '关于本站 | 1701701.xyz',
-        description: '了解本站的内容范围、资源说明与使用说明。',
-        pageType: 'AboutPage',
-        keywords: ['1701701.xyz', '李志音乐站', '李志资料整理']
-      }
-    };
-
-    const currentSeo = seoMap[view] || seoMap.library;
-    const canonicalUrl = new URL(getPathForView(view), SITE_URL).toString();
-    const keywordsContent = Array.isArray(currentSeo.keywords)
-      ? currentSeo.keywords.join(',')
-      : '';
-    const albumListForSeo = Array.isArray(musicAlbums)
-      ? musicAlbums.filter((album) => album?.name).slice(0, 30)
-      : [];
-
-    document.title = currentSeo.title;
-    upsertMetaTag({ name: 'description' }, currentSeo.description);
-    upsertMetaTag({ property: 'og:type' }, 'website');
-    upsertMetaTag({ property: 'og:site_name' }, SITE_NAME);
-    upsertMetaTag({ property: 'og:title' }, currentSeo.title);
-    upsertMetaTag({ property: 'og:description' }, currentSeo.description);
-    upsertMetaTag({ property: 'og:url' }, canonicalUrl);
-    upsertMetaTag({ property: 'og:image' }, DEFAULT_OG_IMAGE);
-    upsertMetaTag({ name: 'twitter:card' }, 'summary_large_image');
-    upsertMetaTag({ name: 'twitter:title' }, currentSeo.title);
-    upsertMetaTag({ name: 'twitter:description' }, currentSeo.description);
-    upsertMetaTag({ name: 'twitter:image' }, DEFAULT_OG_IMAGE);
-    upsertMetaTag({ name: 'keywords' }, keywordsContent);
-    upsertLinkTag('canonical', canonicalUrl);
-
-    const jsonLdPayload = [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: SITE_NAME,
-        url: SITE_URL,
-        inLanguage: 'zh-CN',
-        description: '一个分享李志音乐与视频的网站',
-        about: {
-          '@type': 'Person',
-          name: '李志'
-        },
-        keywords: [
-          '李志音乐',
-          '李志现场视频',
-          '叁缺壹吉隆坡站',
-          '1701701.xyz'
-        ]
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': currentSeo.pageType,
-        name: currentSeo.title,
-        url: canonicalUrl,
-        inLanguage: 'zh-CN',
-        isPartOf: {
-          '@type': 'WebSite',
-          name: SITE_NAME,
-          url: SITE_URL
-        },
-        about: {
-          '@type': 'Person',
-          name: '李志'
-        },
-        description: currentSeo.description,
-        keywords: currentSeo.keywords,
-        mentions: researchedReleaseNames.slice(0, 8).map((name) => ({
-          '@type': 'MusicAlbum',
-          name,
-          byArtist: {
-            '@type': 'MusicGroup',
-            name: '李志'
-          }
-        }))
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: '李志',
-        birthDate: '1978-11-13',
-        birthPlace: {
-          '@type': 'Place',
-          name: '江苏金坛'
-        },
-        jobTitle: 'Singer-Songwriter',
-        genre: ['contemporary folk', 'singer-songwriter'],
-        description: '民谣音乐人，代表作包括《梵高先生》《这个世界会好吗》《1701》等。',
-        sameAs: LI_ZHI_ENTITY_LINKS,
-        knowsAbout: ['李志音乐', 'contemporary folk', 'singer-songwriter', ...researchedReleaseNames.slice(0, 6)]
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'MusicEvent',
-        name: '叁缺壹·吉隆坡站',
-        startDate: KL_EVENT_DATES[0],
-        endDate: KL_EVENT_DATES[2],
-        eventStatus: 'https://schema.org/EventCompleted',
-        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-        location: {
-          '@type': 'Place',
-          name: 'IDEA LIVE ARENA',
-          address: {
-            '@type': 'PostalAddress',
-            addressLocality: 'Petaling Jaya',
-            addressCountry: 'MY'
-          }
-        },
-        performer: {
-          '@type': 'Person',
-          name: '李志'
-        },
-        offers: {
-          '@type': 'Offer',
-          availabilityStarts: '2025-08-26T12:30:00+08:00',
-          url: KL_EVENT_URL
-        },
-        description: '2025年11月11日至11月13日，叁缺壹吉隆坡站在 IDEA LIVE ARENA 演出（官方开售时间为 2025-08-26）。',
-        subEvent: KL_EVENT_DATES.map((startDate, index) => ({
-          '@type': 'MusicEvent',
-          name: `叁缺壹·吉隆坡站 第${index + 1}场`,
-          startDate,
-          eventStatus: 'https://schema.org/EventCompleted',
-          eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-          location: {
-            '@type': 'Place',
-            name: 'IDEA LIVE ARENA'
-          },
-          performer: {
-            '@type': 'Person',
-            name: '李志'
-          }
-        })),
-        url: KL_EVENT_URL
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'CreativeWorkSeries',
-        name: '我们的叁叁肆',
-        description: '围绕叁叁肆计划巡演的影像记录内容。',
-        keywords: ['我们的叁叁肆', '叁叁肆计划', '334城巡演'],
-        about: {
-          '@type': 'Person',
-          name: '李志'
-        }
-      }
-    ];
-
-    if (view === 'library' && albumListForSeo.length > 0) {
-      jsonLdPayload.push({
-        '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: '李志音乐专辑列表',
-        itemListOrder: 'https://schema.org/ItemListOrderAscending',
-        numberOfItems: albumListForSeo.length,
-        itemListElement: albumListForSeo.map((album, index) => ({
-          '@type': 'ListItem',
-          position: index + 1,
-          item: {
-            '@type': 'MusicAlbum',
-            '@id': `${canonicalUrl}#album-${encodeURIComponent(String(album.id || index + 1))}`,
-            name: album.name,
-            byArtist: {
-              '@type': 'MusicGroup',
-              name: album.artist || '李志'
-            },
-            datePublished: releaseYearMap.get(album.name) || undefined,
-            numTracks: Array.isArray(album.songs) ? album.songs.length : undefined,
-            image: album.cover || undefined,
-            url: canonicalUrl
-          }
-        }))
-      });
-    }
-    upsertJsonLd('page-seo-jsonld', jsonLdPayload);
-  }, [view, musicAlbums]);
-
-  useEffect(() => {
-    if (musicAlbums.length === 0) return;
-    const params = new URLSearchParams(locationSearch);
-    const albumId = params.get('albumId');
-    if (!albumId) return;
-    const targetAlbum = musicAlbums.find((album) => String(album.id) === albumId);
-    if (!targetAlbum?.songs?.length) return;
-    let songIndex = Number.parseInt(params.get('song') || '1', 10);
-    if (!Number.isInteger(songIndex) || songIndex < 1 || songIndex > targetAlbum.songs.length) {
-      songIndex = 1;
-    }
-    const timerId = window.setTimeout(() => {
-      setView('library');
-      setSelectedAlbum(targetAlbum);
-      setCurrentAlbum(targetAlbum);
-      setCurrentTrack(targetAlbum.songs[songIndex - 1]);
-      setIsPlaying(false);
-    }, 0);
-    return () => window.clearTimeout(timerId);
-  }, [locationSearch, musicAlbums, setCurrentAlbum, setCurrentTrack, setIsPlaying, setSelectedAlbum]);
-
-  const setLyricsOverlayOpen = useCallback((open) => {
-    if (open) {
-      setHasLyricsOverlayLoaded(true);
-      if (!isLyricsOpen) {
-        setLyricsOverlaySessionId((prev) => prev + 1);
-      }
-      setIsLyricsOpen(true);
-      return;
-    }
-    setIsLyricsOpen(false);
-  }, [isLyricsOpen]);
-
-  const openCurrentTrackComments = useCallback(() => {
-    if (!currentTrack?.src) return;
-    const shouldOpenStandaloneCommentDrawer = (
-      !isLyricsOpen &&
-      typeof window !== 'undefined' &&
-      window.innerWidth > 1024
-    );
-    const requestMode = shouldOpenStandaloneCommentDrawer ? 'standalone' : 'overlay';
-
-    const targetOverlaySessionId = requestMode === 'overlay'
-      ? (isLyricsOpen ? lyricsOverlaySessionId : lyricsOverlaySessionId + 1)
-      : lyricsOverlaySessionId;
-    setHasLyricsOverlayLoaded(true);
-
-    setLyricsCommentRequest((prev) => ({
-      id: prev.id + 1,
-      trackSrc: currentTrack.src,
-      overlaySessionId: targetOverlaySessionId,
-      trackChangeId,
-      viewContextId: playerOverlayContextId,
-      mode: requestMode
-    }));
-    if (requestMode === 'overlay') {
-      setLyricsOverlayOpen(true);
-    }
-  }, [currentTrack?.src, isLyricsOpen, lyricsOverlaySessionId, playerOverlayContextId, setLyricsOverlayOpen, trackChangeId]);
-
-  const setAlbumListOverlayOpen = useCallback((open) => {
-    if (open) {
-      setHasAlbumListOverlayLoaded(true);
-      setIsAlbumListOpen(true);
-      return;
-    }
-    setIsAlbumListOpen(false);
-  }, []);
-
-  const stopPlaybackForVideo = useCallback(() => {
-    pausePlayback();
-    setLyricsOverlayOpen(false);
-    setAlbumListOverlayOpen(false);
-  }, [pausePlayback, setLyricsOverlayOpen, setAlbumListOverlayOpen]);
-
-  const syncUrlForView = useCallback((nextView, historyMode = 'push') => {
-    if (typeof window === 'undefined' || historyMode === 'skip') return;
-    const url = new URL(window.location.href);
-    url.pathname = getPathForView(nextView);
-    url.search = getCanonicalSearchForView(nextView, window.location.search);
-    url.hash = '';
-
-    const nextRelativeUrl = `${url.pathname}${url.search}${url.hash}`;
-    const currentRelativeUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-
-    if (nextRelativeUrl === currentRelativeUrl) {
-      setLocationSearch(url.search);
+    if (song && isInFavoritesAlbum && isSameTrack) {
+      setIsPlaying((prev) => !prev);
       return;
     }
 
-    if (historyMode === 'replace') {
-      window.history.replaceState(null, '', nextRelativeUrl);
-    } else {
-      window.history.pushState(null, '', nextRelativeUrl);
-    }
-
-    setLocationSearch(url.search);
-  }, []);
-
-  const handleViewChange = useCallback((nextView, options = {}) => {
-    const resolvedView = AVAILABLE_VIEWS.has(nextView) ? nextView : 'library';
-    const historyMode = options.historyMode || 'push';
-    const isViewChanging = view !== resolvedView;
-
-    if (resolvedView === 'video') {
-      stopPlaybackForVideo();
-    }
-    if (isViewChanging) {
-      setPlayerOverlayContextId((prev) => prev + 1);
-      setLyricsCommentRequest((prev) => ({
-        ...prev,
-        trackSrc: '',
-        overlaySessionId: 0,
-        trackChangeId: -1,
-        viewContextId: -1,
-        mode: 'overlay'
-      }));
-    }
-    setView((prev) => (prev === resolvedView ? prev : resolvedView));
-    syncUrlForView(resolvedView, historyMode);
-  }, [stopPlaybackForVideo, syncUrlForView, view]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    handleViewChange(resolveViewFromLocation(window.location), { historyMode: 'replace' });
-
-    const handlePopState = () => {
-      handleViewChange(resolveViewFromLocation(window.location), { historyMode: 'replace' });
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [handleViewChange]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    let frameId = 0;
-    const updateVisibility = () => {
-      frameId = 0;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-      const shouldShow = scrollTop > 280;
-      setShowBackToTop((prev) => (prev === shouldShow ? prev : shouldShow));
-    };
-
-    const handleScroll = () => {
-      if (frameId) return;
-      frameId = window.requestAnimationFrame(updateVisibility);
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (frameId) window.cancelAnimationFrame(frameId);
-    };
-  }, []);
-
-  const handleBackToTop = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+    setCurrentAlbum(favoriteAlbum);
+    setCurrentTrack(nextTrack);
+    setIsPlaying(true);
+  };
 
   const handleVideoAccessSubmit = useCallback(() => {
     submitVideoAccess();
@@ -823,6 +246,7 @@ const App = () => {
     const shareTrack = resolvedAlbum.songs[matchedIndex] || currentTrack;
     const url = new URL(getPathForView('library'), window.location.origin);
     url.searchParams.set('albumId', String(resolvedAlbum.id));
+    url.searchParams.set('songId', String(shareTrack.id || ''));
     url.searchParams.set('song', String(matchedIndex + 1));
     return {
       type: 'music',
@@ -837,47 +261,20 @@ const App = () => {
     };
   }, [currentAlbum, currentSongInfo, currentTrack]);
 
-  const startShareCardGeneration = useCallback((payload) => {
-    if (!payload?.url) return;
-    const requestId = ++shareCardRequestIdRef.current;
-    setIsShareCardGenerating(true);
-    setShareCardDataUrl('');
-    void (async () => {
-      try {
-        const { createShareCardDataUrl } = await import('./utils/shareCardGenerator.js');
-        if (shareCardRequestIdRef.current !== requestId) return;
-        const dataUrl = await createShareCardDataUrl(payload);
-        if (shareCardRequestIdRef.current !== requestId) return;
-        setShareCardDataUrl(dataUrl);
-      } catch {
-        if (shareCardRequestIdRef.current !== requestId) return;
-        setShareCardDataUrl('');
-        showToast('分享卡片生成失败', 'tone-remove', { placement: 'bottom' });
-      } finally {
-        if (shareCardRequestIdRef.current === requestId) {
-          setIsShareCardGenerating(false);
-        }
-      }
-    })();
-  }, [showToast]);
-
-  const closeSharePanel = useCallback(() => {
-    shareCardRequestIdRef.current += 1;
-    setSharePanelData(null);
-    setShareCardDataUrl('');
-    setIsShareCardGenerating(false);
-  }, []);
-
-  const openSharePanel = useCallback((payload) => {
-    if (!payload?.url) return false;
-    setSharePanelData(payload);
-    startShareCardGeneration(payload);
-    return true;
-  }, [startShareCardGeneration]);
-
-  const closeWeChatBrowserHint = useCallback(() => {
-    setIsWeChatBrowserHintOpen(false);
-  }, []);
+  const {
+    sharePanelData,
+    shareCardDataUrl,
+    isShareCardGenerating,
+    closeSharePanel,
+    handleCopyShareLink,
+    handleCopySpecificPageUrl,
+    handleShareCardImage,
+    handleShareCurrentTrack,
+    handleShareVideo
+  } = useSharePanel({
+    getCurrentTrackSharePayload: buildCurrentSharePayload,
+    showToast
+  });
 
   const handleCopyCurrentPageUrl = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -892,205 +289,21 @@ const App = () => {
     }
   }, [closeWeChatBrowserHint, showToast]);
 
-  const handleShareCurrentTrack = useCallback(async (anchorOrOptions) => {
-    const payload = buildCurrentSharePayload();
-    if (!openSharePanel(payload)) {
-      showToast('当前歌曲暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
-      return;
-    }
-  }, [buildCurrentSharePayload, openSharePanel, showToast]);
-
-  const handleShareVideo = useCallback((payload, anchorOrOptions) => {
-    if (!openSharePanel(payload)) {
-      showToast('当前视频暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
-    }
-  }, [openSharePanel, showToast]);
-
-  const handleCopySpecificPageUrl = useCallback(async (url, successMessage, anchorOrOptions) => {
-    if (!url) return;
-    const copied = await copyTextToClipboard(url);
-    showToast(
-      copied ? successMessage : '复制失败，请手动复制',
-      copied ? 'tone-add' : 'tone-remove',
-      anchorOrOptions || { placement: 'bottom' }
-    );
-  }, [showToast]);
-
-  const handleCopyShareLink = useCallback(async (anchorOrOptions = { placement: 'side' }) => {
-    if (!sharePanelData?.url) return;
-    const copied = await copyTextToClipboard(sharePanelData.url);
-    showToast(
-      copied ? '分享链接已复制' : '复制失败，请手动复制',
-      copied ? 'tone-add' : 'tone-remove',
-      anchorOrOptions
-    );
-  }, [sharePanelData?.url, showToast]);
-
-  const handleDownloadShareCard = useCallback((anchorOrOptions = { placement: 'side' }) => {
-    if (!shareCardDataUrl) return;
-    downloadDataUrl(shareCardDataUrl, '1701701-share-card.png');
-    showToast('分享卡片已下载', 'tone-add', anchorOrOptions);
-  }, [shareCardDataUrl, showToast]);
-
-  const handleShareCardImage = useCallback(async () => {
-    if (!shareCardDataUrl) return;
-    const file = dataUrlToFile(shareCardDataUrl, `1701701-share-card-${Date.now()}.png`);
-    const canUseSystemShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-
-    if (isIOSDevice() && canUseSystemShare) {
-      showToast('在系统菜单选择“保存图像”即可保存到相册', 'tone-add', {
-        placement: 'top',
-        duration: 3800
-      });
-    }
-
-    if (canUseSystemShare) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: sharePanelData?.title || '1701701 分享卡片',
-          text: sharePanelData?.text || ''
-        });
-        return;
-      } catch (error) {
-        if (error?.name === 'AbortError') return;
-      }
-    }
-
-    if (isIOSDevice()) {
-      const opened = openImagePreviewWindow(shareCardDataUrl);
-      if (opened) {
-        showToast('已打开图片，长按可保存到相册', 'tone-add', { placement: 'side' });
-        return;
-      }
-    }
-
-    handleDownloadShareCard({ placement: 'side' });
-  }, [handleDownloadShareCard, shareCardDataUrl, sharePanelData?.text, sharePanelData?.title, showToast]);
-
-  const applyTempPlaylistMutation = useCallback((mutator) => {
-    if (typeof mutator !== 'function') return null;
-    const result = mutator(tempPlaylistIdsRef.current);
-    if (!result || !Array.isArray(result.nextIds)) return null;
-    tempPlaylistIdsRef.current = result.nextIds;
-    setTempPlaylistIds(result.nextIds);
-    return result;
-  }, []);
-
-  const toggleTempSong = useCallback((song, event) => {
-    const id = song?.src;
-    if (!id) return;
-    const result = applyTempPlaylistMutation((prev) => toggleFavoriteId(prev, id));
-    if (!result || result.action === 'noop') return;
-    showToast(
-      result.action === 'removed' ? '已取消收藏' : '已收藏',
-      result.action === 'removed' ? 'tone-remove' : 'tone-add',
-      event
-    );
-  }, [applyTempPlaylistMutation, showToast]);
-
-  const addTempSong = useCallback((song, anchorOrOptions = { placement: 'bottom' }) => {
-    const id = song?.src;
-    if (!id) return;
-    const result = applyTempPlaylistMutation((prev) => addFavoriteId(prev, id));
-    if (!result || result.action !== 'added') {
-      showToast('已在收藏', 'tone-add', anchorOrOptions);
-      return;
-    }
-    showToast('已收藏', 'tone-add', anchorOrOptions);
-  }, [applyTempPlaylistMutation, showToast]);
-
-  const toggleAlbumFavorites = useCallback((songs, anchorOrOptions = { placement: 'bottom' }) => {
-    const result = applyTempPlaylistMutation((prev) => toggleAlbumFavoritesBySongs(prev, songs));
-    if (!result || result.action === 'noop') return;
-    if (result.action === 'removed') {
-      showToast(
-        result.count === 1 ? '已取消收藏 1 首' : `已取消收藏 ${result.count} 首`,
-        'tone-remove',
-        anchorOrOptions
-      );
-      return;
-    }
-
-    showToast(
-      result.count === 1 ? '已收藏 1 首' : `已收藏 ${result.count} 首`,
-      'tone-add',
-      anchorOrOptions
-    );
-  }, [applyTempPlaylistMutation, showToast]);
-
-  const clearTempPlaylist = useCallback((anchorOrOptions = { placement: 'bottom' }) => {
-    applyTempPlaylistMutation((prev) => clearFavoriteIds(prev));
-    showToast('已清空收藏', 'tone-remove', anchorOrOptions);
-  }, [applyTempPlaylistMutation, showToast]);
-
-  const playFavorites = useCallback((song) => {
-    if (!favoriteAlbum || favoriteAlbum.songs.length === 0) return;
-
-    const target = song
-      ? favoriteAlbum.songs.find((item) => item.src === song.src)
-      : favoriteAlbum.songs[0];
-    const nextTrack = target || favoriteAlbum.songs[0];
-
-    const isSameTrack = Boolean(currentTrack?.src) && currentTrack.src === nextTrack.src;
-    const isInFavoritesAlbum = currentAlbum?.id === favoriteAlbum.id;
-
-    // Keep same click behavior as album list rows: second click toggles play/pause.
-    if (song && isInFavoritesAlbum && isSameTrack) {
-      setIsPlaying((prev) => !prev);
-      return;
-    }
-
-    setCurrentAlbum(favoriteAlbum);
-    setCurrentTrack(nextTrack);
-    setIsPlaying(true);
-  }, [
-    favoriteAlbum,
-    currentTrack?.src,
-    currentAlbum?.id,
-    setCurrentAlbum,
-    setCurrentTrack,
-    setIsPlaying
-  ]);
-
-  const navigateToAlbum = (album) => {
+  const handleSelectAlbum = useCallback((album) => {
     setSelectedAlbum((prev) => (prev && prev.id === album.id ? null : album));
     setIsSidebarOpen(false);
-  };
+  }, [setSelectedAlbum, setIsSidebarOpen]);
 
-  const searchTerm = searchQuery.trim().toLowerCase();
-  const filteredAlbums = useMemo(() => {
-    if (!searchTerm) return musicAlbums;
-    return musicAlbums.filter((album) => (
-      album.name.toLowerCase().includes(searchTerm) ||
-      album.artist.toLowerCase().includes(searchTerm) ||
-      album.songs.some((song) => song.name.toLowerCase().includes(searchTerm))
-    ));
-  }, [musicAlbums, searchTerm]);
-
-  const songSuggestions = useMemo(() => {
-    if (!searchTerm) return [];
-    const results = [];
-    for (const album of musicAlbums) {
-      const albumMatch = album.name.toLowerCase().includes(searchTerm) ||
-        album.artist.toLowerCase().includes(searchTerm);
-      for (const song of album.songs) {
-        if (albumMatch || song.name.toLowerCase().includes(searchTerm)) {
-          results.push({ album, song });
-          if (results.length >= 8) return results;
-        }
-      }
-    }
-    return results;
-  }, [musicAlbums, searchTerm]);
   const pageLoadingFallback = (
     <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
       <span className="page-loading-ring" aria-hidden="true" />
       <span>加载中...</span>
     </div>
   );
+
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
+
   const signalBootReady = useCallback(() => {
     if (hasSignaledBootReadyRef.current || typeof window === 'undefined') return;
     hasSignaledBootReadyRef.current = true;
@@ -1148,7 +361,7 @@ const App = () => {
                       />
                       <AlbumGrid
                         musicAlbums={filteredAlbums}
-                        navigateToAlbum={navigateToAlbum}
+                        navigateToAlbum={handleSelectAlbum}
                         expandedAlbumId={selectedAlbum ? selectedAlbum.id : null}
                         currentTrack={currentTrack}
                         isPlaying={isPlaying}
@@ -1171,6 +384,7 @@ const App = () => {
                       requestVideoView={requestVideoView}
                       onShareVideo={handleShareVideo}
                       commentServerURL={WALINE_SERVER_URL}
+                      locationSearch={locationSearch}
                       onInitialReady={signalBootReady}
                     />
                   </Suspense>
@@ -1436,7 +650,6 @@ const App = () => {
             </div>
           </div>
         )}
-
       </div>
 
       <div

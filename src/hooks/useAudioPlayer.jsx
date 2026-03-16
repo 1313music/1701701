@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Repeat, Repeat1, Shuffle } from 'lucide-react';
-import { parseLyrics } from '../utils/lyricUtils';
+
+import { useAudioLyricsState } from './useAudioLyricsState.js';
+import { useAudioMediaSession } from './useAudioMediaSession.js';
 
 const toAbsoluteUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
@@ -17,31 +19,6 @@ const toAbsoluteUrl = (value) => {
   }
 };
 
-const buildMediaArtwork = (coverUrl) => {
-  const absoluteCover = toAbsoluteUrl(coverUrl);
-  if (!absoluteCover) return undefined;
-  return [
-    { src: absoluteCover, sizes: '96x96' },
-    { src: absoluteCover, sizes: '128x128' },
-    { src: absoluteCover, sizes: '192x192' },
-    { src: absoluteCover, sizes: '256x256' },
-    { src: absoluteCover, sizes: '384x384' },
-    { src: absoluteCover, sizes: '512x512' }
-  ];
-};
-
-const isIOSDevice = () => {
-  if (typeof navigator === 'undefined') return false;
-  const userAgent = navigator.userAgent || '';
-  const platform = navigator.platform || '';
-  const maxTouchPoints = navigator.maxTouchPoints || 0;
-
-  return (
-    /iPad|iPhone|iPod/i.test(userAgent) ||
-    (platform === 'MacIntel' && maxTouchPoints > 1)
-  );
-};
-
 export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [currentTrack, setCurrentTrackState] = useState(() => musicAlbums[0]?.songs?.[0]);
   const [currentAlbum, setCurrentAlbum] = useState(() => musicAlbums[0] || null);
@@ -49,14 +26,12 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [lyrics, setLyrics] = useState([]);
   const [playMode, setPlayMode] = useState('loop');
   const [isTrackNameOverflowing, setIsTrackNameOverflowing] = useState(false);
   const [trackChangeId, setTrackChangeId] = useState(0);
 
   const trackNameRef = useRef(null);
   const audioRef = useRef(new Audio());
-  const lyricsRequestIdRef = useRef(0);
   const lastTimelineRef = useRef({ time: 0, progress: 0 });
   const playbackContextRef = useRef({
     currentAlbum: null,
@@ -67,6 +42,11 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const currentSongInfo = useMemo(() => (
     currentTrack?.src ? songIndex.get(currentTrack.src) : null
   ), [currentTrack, songIndex]);
+  const currentTrackSrc = currentTrack?.src || '';
+  const currentLyricsUrl = useMemo(
+    () => toAbsoluteUrl(currentTrack?.lrc),
+    [currentTrack?.lrc]
+  );
 
   const setCurrentTrack = useCallback((nextTrackOrUpdater) => {
     setCurrentTrackState((previousTrack) => {
@@ -94,12 +74,11 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     return () => clearTimeout(timerId);
   }, [currentTrack?.src, musicAlbums, setCurrentTrack]);
 
-  const currentLyricIndex = useMemo(() => {
-    const index = lyrics.findIndex((line, i) => (
-      currentTime >= line.time && (!lyrics[i + 1] || currentTime < lyrics[i + 1].time)
-    ));
-    return index === -1 ? 0 : index;
-  }, [currentTime, lyrics]);
+  const { lyrics, currentLyricIndex } = useAudioLyricsState({
+    currentLyricsUrl,
+    currentTime,
+    currentTrackSrc
+  });
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -134,43 +113,13 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   }, [setCurrentTrack]);
 
   useEffect(() => {
-    if (!currentTrack?.src) return;
-    let canceled = false;
-    const requestId = ++lyricsRequestIdRef.current;
-    const loadLyrics = async () => {
-      const lrcUrl = currentTrack.lrc;
-      if (!lrcUrl || !lrcUrl.startsWith('http')) {
-        await Promise.resolve();
-        if (canceled || lyricsRequestIdRef.current !== requestId) return;
-        setLyrics([]);
-        return;
-      }
-
-      try {
-        const response = await fetch(lrcUrl);
-        const text = await response.text();
-        if (canceled || lyricsRequestIdRef.current !== requestId) return;
-        setLyrics(parseLyrics(text));
-      } catch {
-        if (canceled || lyricsRequestIdRef.current !== requestId) return;
-        setLyrics([]);
-      }
-    };
-
-    loadLyrics();
-    return () => {
-      canceled = true;
-    };
-  }, [currentTrack]);
-
-  useEffect(() => {
     const audio = audioRef.current;
-    if (!currentTrack?.src) {
+    if (!currentTrackSrc) {
       audio.pause();
       return;
     }
     if (isPlaying) {
-      const normalizedTrackSrc = toAbsoluteUrl(currentTrack.src);
+      const normalizedTrackSrc = toAbsoluteUrl(currentTrackSrc);
       if (normalizedTrackSrc && audio.src !== normalizedTrackSrc) {
         audio.src = normalizedTrackSrc;
       }
@@ -178,60 +127,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       return;
     }
     audio.pause();
-  }, [currentTrack?.src, isPlaying]);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-    if (typeof window === 'undefined' || !('MediaMetadata' in window)) return;
-
-    const mediaSession = navigator.mediaSession;
-    const metadata = {
-      title: currentTrack?.name || '未知歌曲',
-      artist: currentSongInfo?.album?.artist || currentAlbum?.artist || '',
-      album: currentSongInfo?.album?.name || currentAlbum?.name || '',
-      artwork: buildMediaArtwork(
-        currentTrack?.cover || currentSongInfo?.album?.cover || currentAlbum?.cover
-      )
-    };
-
-    try {
-      mediaSession.metadata = new window.MediaMetadata(metadata);
-    } catch {
-      mediaSession.metadata = null;
-    }
-  }, [
-    currentTrack?.name,
-    currentTrack?.cover,
-    currentSongInfo?.album?.artist,
-    currentSongInfo?.album?.name,
-    currentSongInfo?.album?.cover,
-    currentAlbum?.artist,
-    currentAlbum?.name,
-    currentAlbum?.cover
-  ]);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-    const mediaSession = navigator.mediaSession;
-    if (typeof mediaSession.setPositionState !== 'function') return;
-    if (!Number.isFinite(duration) || duration <= 0) return;
-
-    const safePosition = Math.min(Math.max(currentTime, 0), duration);
-    try {
-      mediaSession.setPositionState({
-        duration,
-        playbackRate: audioRef.current.playbackRate || 1,
-        position: safePosition
-      });
-    } catch {
-      // ignore unsupported/broken implementations
-    }
-  }, [currentTime, duration, currentTrack?.src]);
+  }, [currentTrackSrc, isPlaying]);
 
   useEffect(() => {
     playbackContextRef.current = {
@@ -291,66 +187,18 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     setIsPlaying(true);
   }, [setCurrentTrack]);
 
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-    const mediaSession = navigator.mediaSession;
-    const hasMultipleTracks = (currentAlbum?.songs?.length || 0) > 1;
-    const preferTrackControlsOnLockScreen = isIOSDevice() && hasMultipleTracks;
-
-    const setHandler = (action, handler) => {
-      try {
-        mediaSession.setActionHandler(action, handler);
-      } catch {
-        // ignore unsupported actions
-      }
-    };
-
-    setHandler('play', () => setIsPlaying(true));
-    setHandler('pause', () => setIsPlaying(false));
-    if (hasMultipleTracks) {
-      setHandler('previoustrack', () => handlePrev());
-      setHandler('nexttrack', () => handleNext());
-    } else {
-      setHandler('previoustrack', null);
-      setHandler('nexttrack', null);
-    }
-
-    if (preferTrackControlsOnLockScreen) {
-      setHandler('seekbackward', null);
-      setHandler('seekforward', null);
-    } else {
-      setHandler('seekbackward', (details) => {
-        const offset = details?.seekOffset ?? 10;
-        const audio = audioRef.current;
-        audio.currentTime = Math.max(audio.currentTime - offset, 0);
-      });
-      setHandler('seekforward', (details) => {
-        const offset = details?.seekOffset ?? 10;
-        const audio = audioRef.current;
-        const maxTime = Number.isFinite(audio.duration) ? audio.duration : Infinity;
-        audio.currentTime = Math.min(audio.currentTime + offset, maxTime);
-      });
-    }
-    setHandler('seekto', (details) => {
-      if (typeof details?.seekTime !== 'number') return;
-      const audio = audioRef.current;
-      if (details.fastSeek && typeof audio.fastSeek === 'function') {
-        audio.fastSeek(details.seekTime);
-      } else {
-        audio.currentTime = details.seekTime;
-      }
-    });
-
-    return () => {
-      setHandler('play', null);
-      setHandler('pause', null);
-      setHandler('previoustrack', null);
-      setHandler('nexttrack', null);
-      setHandler('seekbackward', null);
-      setHandler('seekforward', null);
-      setHandler('seekto', null);
-    };
-  }, [currentAlbum?.songs?.length, handleNext, handlePrev]);
+  useAudioMediaSession({
+    audioRef,
+    currentAlbum,
+    currentSongInfo,
+    currentTime,
+    currentTrack,
+    duration,
+    handleNext,
+    handlePrev,
+    isPlaying,
+    setIsPlaying
+  });
 
   const handleSongEnd = useCallback(() => {
     if (playMode === 'single') {
@@ -408,10 +256,14 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   const getPlayModeIcon = useCallback((size = 20, color = 'currentColor') => {
     switch (playMode) {
-      case 'loop': return <Repeat size={size} color={color} strokeWidth={2.4} absoluteStrokeWidth />;
-      case 'single': return <Repeat1 size={size} color={color} strokeWidth={2.4} absoluteStrokeWidth />;
-      case 'shuffle': return <Shuffle size={size} color={color} strokeWidth={2.4} absoluteStrokeWidth />;
-      default: return <Repeat size={size} color={color} strokeWidth={2.4} absoluteStrokeWidth />;
+      case 'loop':
+        return createElement(Repeat, { size, color, strokeWidth: 2.4, absoluteStrokeWidth: true });
+      case 'single':
+        return createElement(Repeat1, { size, color, strokeWidth: 2.4, absoluteStrokeWidth: true });
+      case 'shuffle':
+        return createElement(Shuffle, { size, color, strokeWidth: 2.4, absoluteStrokeWidth: true });
+      default:
+        return createElement(Repeat, { size, color, strokeWidth: 2.4, absoluteStrokeWidth: true });
     }
   }, [playMode]);
 

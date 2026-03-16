@@ -21,6 +21,12 @@ const toAbsoluteUrl = (value, fallbackBase = '') => {
   }
 };
 
+const resolveAssetUrl = (value, fallbackBase = '') => {
+  const input = String(value || '').trim();
+  if (!input) return '';
+  return toAbsoluteUrl(input, fallbackBase) || input;
+};
+
 const toSortedList = (input) => {
   const list = Array.isArray(input) ? input : [];
   return list
@@ -38,9 +44,9 @@ const toSortedList = (input) => {
     .map((entry) => entry.item);
 };
 
-const normalizeSong = (song, albumId, index) => {
+const normalizeSong = (song, albumId, index, assetBase = '') => {
   if (!song || song.enabled === false) return null;
-  const src = String(song.src || '').trim();
+  const src = resolveAssetUrl(song.src, assetBase);
   if (!src) return null;
 
   const trackNumber = Number(song.trackNumber);
@@ -54,18 +60,18 @@ const normalizeSong = (song, albumId, index) => {
     trackNumber: safeTrackNumber,
     name: String(song.name || `Track ${safeTrackNumber}`).trim() || `Track ${safeTrackNumber}`,
     src,
-    lrc: String(song.lrc || '').trim(),
-    cover: String(song.cover || '').trim()
+    lrc: resolveAssetUrl(song.lrc, assetBase),
+    cover: resolveAssetUrl(song.cover, assetBase)
   };
 };
 
-const normalizeAlbum = (album) => {
+const normalizeAlbum = (album, assetBase = '') => {
   if (!album || album.enabled === false) return null;
   const albumId = String(album.id || '').trim();
   if (!albumId) return null;
 
   const songs = toSortedList(album.songs)
-    .map((song, songIndex) => normalizeSong(song, albumId, songIndex))
+    .map((song, songIndex) => normalizeSong(song, albumId, songIndex, assetBase))
     .filter(Boolean);
   if (songs.length === 0) return null;
 
@@ -73,16 +79,16 @@ const normalizeAlbum = (album) => {
     id: albumId,
     name: String(album.name || albumId).trim() || albumId,
     artist: String(album.artist || '').trim(),
-    cover: String(album.cover || '').trim(),
+    cover: resolveAssetUrl(album.cover, assetBase),
     year: Number.isFinite(Number(album.year)) ? Number(album.year) : undefined,
     type: String(album.type || '').trim() || undefined,
     songs
   };
 };
 
-const parseMusicManifest = (payload) => {
+const parseMusicManifest = (payload, assetBase = '') => {
   const albums = toSortedList(payload?.albums)
-    .map((album) => normalizeAlbum(album))
+    .map((album) => normalizeAlbum(album, assetBase))
     .filter(Boolean);
 
   return albums.length > 0 ? albums : null;
@@ -101,11 +107,17 @@ const loadRemoteAlbums = async () => {
   }
 
   const payload = await response.json();
-  const parsed = parseMusicManifest(payload);
+  const parsed = parseMusicManifest(payload, endpoint);
   if (!parsed) {
     throw new Error('音乐清单格式无效');
   }
   return parsed;
+};
+
+export const __resetMusicManifestCacheForTests = () => {
+  cachedAlbums = null;
+  cachedAt = 0;
+  inflightAlbumsPromise = null;
 };
 
 export const loadMusicManifestAlbums = async () => {

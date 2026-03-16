@@ -1,10 +1,13 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Pause, ListMusic, Heart, Share2, ChevronDown, MessageCircle, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../styles/lyrics-overlay.css';
 import { formatTime } from '../utils/formatUtils';
 import CommentSection from './CommentSection.jsx';
+import { useLyricsOverlayComments } from '../hooks/useLyricsOverlayComments.js';
+import { useLyricsOverlayProgress } from '../hooks/useLyricsOverlayProgress.js';
+import { useLyricsOverlayViewport } from '../hooks/useLyricsOverlayViewport.js';
 
 const LyricsOverlay = ({
     isLyricsOpen,
@@ -41,35 +44,41 @@ const LyricsOverlay = ({
     openCommentRequestTrackChangeId,
     openCommentRequestViewContextId
 }) => {
-    const isDraggingRef = useRef(false);
-    const lastTouchRef = useRef(0);
-    const [isDragActive, setIsDragActive] = useState(false);
-    const mobileTitleRef = useRef(null);
-    const [isMobileTitleMarquee, setIsMobileTitleMarquee] = useState(false);
-    const desktopLyricsWrapRef = useRef(null);
-    const desktopLyricsScrollerRef = useRef(null);
-    const mobileLyricsWrapRef = useRef(null);
-    const mobileLyricsScrollerRef = useRef(null);
-    const lyricsManualScrollUntilRef = useRef(0);
-    const mobileSwipeRef = useRef({
-        active: false,
-        ignore: false,
-        startX: 0,
-        startY: 0,
-        startAt: 0
-    });
-    const commentDrawerSwipeRef = useRef({
-        active: false,
-        startX: 0,
-        startY: 0,
-        startAt: 0
-    });
     const burstIdRef = useRef(0);
     const burstTimerRef = useRef([]);
     const [mobileLikeBursts, setMobileLikeBursts] = useState([]);
     const [desktopLikeBursts, setDesktopLikeBursts] = useState([]);
-    const [manualCommentDrawerContextKey, setManualCommentDrawerContextKey] = useState('');
-    const [dismissedCommentRequestId, setDismissedCommentRequestId] = useState(0);
+
+    const {
+        mobileTitleRef,
+        isMobileTitleMarquee,
+        desktopLyricsWrapRef,
+        desktopLyricsScrollerRef,
+        mobileLyricsWrapRef,
+        mobileLyricsScrollerRef,
+        markLyricsManualScroll,
+        handleOverlayTouchStart,
+        handleOverlayTouchEnd,
+        resetMobileSwipeState,
+        isMobileViewport
+    } = useLyricsOverlayViewport({
+        currentLyricIndex,
+        currentTrackName: currentTrack.name,
+        currentTrackSrc: currentTrack?.src,
+        isLyricsOpen,
+        lyrics,
+        setIsLyricsOpen
+    });
+
+    const {
+        isDragActive,
+        handlePointerDown,
+        handleMouseDown,
+        handleTouchStart
+    } = useLyricsOverlayProgress({
+        audioRef,
+        duration
+    });
 
     const spawnCoverLikeBurst = (event, setter) => {
         if (!event?.currentTarget) return;
@@ -94,204 +103,6 @@ const LyricsOverlay = ({
         spawnCoverLikeBurst(event, setDesktopLikeBursts);
     };
 
-    const isMobileViewport = () => {
-        if (typeof window === 'undefined') return false;
-        return window.innerWidth <= 1024;
-    };
-
-    const resetMobileSwipeState = () => {
-        mobileSwipeRef.current.active = false;
-        mobileSwipeRef.current.ignore = false;
-        mobileSwipeRef.current.startX = 0;
-        mobileSwipeRef.current.startY = 0;
-        mobileSwipeRef.current.startAt = 0;
-    };
-
-    const resetCommentDrawerSwipeState = () => {
-        commentDrawerSwipeRef.current.active = false;
-        commentDrawerSwipeRef.current.startX = 0;
-        commentDrawerSwipeRef.current.startY = 0;
-        commentDrawerSwipeRef.current.startAt = 0;
-    };
-
-    const handleOverlayTouchStart = (e) => {
-        if (!isMobileViewport()) return;
-        const touch = e.touches?.[0];
-        if (!touch) return;
-        const target = e.target;
-        const startedInControls = Boolean(
-            target &&
-            typeof target.closest === 'function' &&
-            target.closest('.overlay-header, .mobile-player-controls, .mobile-lyrics-scroller, .song-comment-drawer, .overlay-comment-trigger, .overlay-favorite-trigger')
-        );
-        mobileSwipeRef.current.active = true;
-        mobileSwipeRef.current.ignore = startedInControls;
-        mobileSwipeRef.current.startX = touch.clientX;
-        mobileSwipeRef.current.startY = touch.clientY;
-        mobileSwipeRef.current.startAt = Date.now();
-    };
-
-    const handleOverlayTouchEnd = (e) => {
-        const state = mobileSwipeRef.current;
-        if (!state.active) return;
-        const touch = e.changedTouches?.[0];
-        const ignore = state.ignore;
-        const startX = state.startX;
-        const startY = state.startY;
-        const startAt = state.startAt;
-        resetMobileSwipeState();
-        if (!touch || ignore || !isMobileViewport()) return;
-
-        const deltaX = touch.clientX - startX;
-        const deltaY = touch.clientY - startY;
-        const elapsed = Math.max(Date.now() - startAt, 1);
-        const velocityX = deltaX / elapsed;
-        const velocityY = deltaY / elapsed;
-        const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
-        const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.3;
-        const shouldCloseByDown = deltaY > 90 || (deltaY > 45 && velocityY > 0.6);
-        const shouldCloseByLeft = deltaX < -90 || (deltaX < -50 && velocityX < -0.6);
-
-        if ((isVerticalSwipe && shouldCloseByDown) || (isHorizontalSwipe && shouldCloseByLeft)) {
-            setIsLyricsOpen(false);
-        }
-    };
-
-    const seekByClientX = (clientX, target) => {
-        if (!target || !audioRef.current) return;
-        const rect = target.getBoundingClientRect();
-        const ratio = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
-        audioRef.current.currentTime = ratio * duration;
-    };
-
-    const startDrag = (clientX, target, moveEvent, upEvent, getClientX, options) => {
-        if (isDraggingRef.current) return;
-        isDraggingRef.current = true;
-        seekByClientX(clientX, target);
-        setIsDragActive(true);
-
-        const onMove = (moveEventObj) => {
-            if (!isDraggingRef.current) return;
-            if (moveEventObj.cancelable) moveEventObj.preventDefault();
-            const nextX = getClientX(moveEventObj);
-            if (typeof nextX === 'number') seekByClientX(nextX, target);
-        };
-        const onUp = (upEventObj) => {
-            const endX = getClientX(upEventObj);
-            if (typeof endX === 'number') seekByClientX(endX, target);
-            isDraggingRef.current = false;
-            setIsDragActive(false);
-            window.removeEventListener(moveEvent, onMove, options);
-            window.removeEventListener(upEvent, onUp, options);
-        };
-
-        window.addEventListener(moveEvent, onMove, options);
-        window.addEventListener(upEvent, onUp, options);
-    };
-
-    const handlePointerDown = (e) => {
-        if (isDraggingRef.current) return;
-        e.preventDefault();
-        startDrag(
-            e.clientX,
-            e.currentTarget,
-            'pointermove',
-            'pointerup',
-            (ev) => ev.clientX
-        );
-    };
-
-    const handleMouseDown = (e) => {
-        if (Date.now() - lastTouchRef.current < 500) return;
-        if (isDraggingRef.current) return;
-        e.preventDefault();
-        startDrag(
-            e.clientX,
-            e.currentTarget,
-            'mousemove',
-            'mouseup',
-            (ev) => ev.clientX
-        );
-    };
-
-    const handleTouchStart = (e) => {
-        if (isDraggingRef.current) return;
-        const touch = e.touches[0];
-        if (!touch) return;
-        lastTouchRef.current = Date.now();
-        const options = { passive: false };
-        startDrag(
-            touch.clientX,
-            e.currentTarget,
-            'touchmove',
-            'touchend',
-            (ev) => {
-                const t = ev.touches && ev.touches[0] ? ev.touches[0] : ev.changedTouches && ev.changedTouches[0];
-                return t ? t.clientX : undefined;
-            },
-            options
-        );
-    };
-
-    const markLyricsManualScroll = () => {
-        lyricsManualScrollUntilRef.current = Date.now() + 2600;
-    };
-
-    const getActiveLyricsNodes = useCallback(() => {
-        const useMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
-        return {
-            scroller: useMobile ? mobileLyricsScrollerRef.current : desktopLyricsScrollerRef.current,
-            wrap: useMobile ? mobileLyricsWrapRef.current : desktopLyricsWrapRef.current
-        };
-    }, []);
-
-    const scrollActiveLyricIntoView = useCallback((behavior = 'smooth') => {
-        if (!isLyricsOpen) return;
-        if (Date.now() < lyricsManualScrollUntilRef.current) return;
-        const { scroller, wrap } = getActiveLyricsNodes();
-        if (!scroller || !wrap) return;
-        const active = wrap.querySelector('.lyric-line.active');
-        if (!active) return;
-        const target = active.offsetTop + active.offsetHeight / 2 - scroller.clientHeight / 2;
-        const maxScroll = Math.max(scroller.scrollHeight - scroller.clientHeight, 0);
-        const top = Math.min(Math.max(target, 0), maxScroll);
-        scroller.scrollTo({ top, behavior });
-    }, [getActiveLyricsNodes, isLyricsOpen]);
-
-    useEffect(() => {
-        if (!isLyricsOpen) {
-            lyricsManualScrollUntilRef.current = 0;
-            return;
-        }
-        scrollActiveLyricIntoView('auto');
-    }, [isLyricsOpen, lyrics.length, currentTrack?.src, scrollActiveLyricIntoView]);
-
-    useEffect(() => {
-        if (!isLyricsOpen) return;
-        const handleResize = () => scrollActiveLyricIntoView('auto');
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [isLyricsOpen, currentLyricIndex, lyrics.length, currentTrack?.src, scrollActiveLyricIntoView]);
-
-    useLayoutEffect(() => {
-        if (!isLyricsOpen) return;
-        scrollActiveLyricIntoView('smooth');
-    }, [isLyricsOpen, currentLyricIndex, lyrics.length, scrollActiveLyricIntoView]);
-
-    useLayoutEffect(() => {
-        if (!isLyricsOpen) return;
-        const node = mobileTitleRef.current;
-        if (!node) return;
-        const update = () => {
-            const isOverflow = node.scrollWidth > node.clientWidth + 2;
-            setIsMobileTitleMarquee(isOverflow);
-        };
-        update();
-        const ro = new ResizeObserver(update);
-        ro.observe(node);
-        return () => ro.disconnect();
-    }, [isLyricsOpen, currentTrack.name]);
-
     useEffect(() => {
         return () => {
             burstTimerRef.current.forEach((timerId) => window.clearTimeout(timerId));
@@ -299,159 +110,43 @@ const LyricsOverlay = ({
         };
     }, []);
 
-    const isMobileOverlay = isMobileViewport();
     const currentTrackSrc = currentTrack?.src || '';
-    const latestCommentRequestId = Number.isFinite(openCommentRequestId) ? openCommentRequestId : 0;
-    const commentAlbumId = currentSongInfo?.album?.id || currentAlbum?.id || 'library';
-    const currentSongCommentPath = currentTrackSrc
-        ? `song:${commentAlbumId}:${encodeURIComponent(currentTrackSrc)}`
-        : '';
-    const canOpenCommentDrawer = Boolean(commentServerURL && currentSongCommentPath);
     const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
     const canToggleFavorite = Boolean(currentTrackSrc);
-    const currentCommentDrawerContextKey = currentTrackSrc
-        ? `${playerOverlayContextId}:${lyricsOverlaySessionId}:${trackChangeId}:${currentTrackSrc}`
-        : '';
-    const hasMatchingCommentRequest = (
-        canOpenCommentDrawer
-        && latestCommentRequestId > dismissedCommentRequestId
-        && openCommentRequestTrackSrc === currentTrackSrc
-        && openCommentRequestTrackChangeId === trackChangeId
-        && openCommentRequestViewContextId === playerOverlayContextId
-    );
-    const hasManualCommentDrawerOpen = (
-        manualCommentDrawerContextKey !== ''
-        && manualCommentDrawerContextKey === currentCommentDrawerContextKey
-        && (isLyricsOpen || !isMobileOverlay)
-    );
-    const hasOverlayCommentDrawerOpen = (
-        hasMatchingCommentRequest
-        && openCommentRequestMode !== 'standalone'
-        && isLyricsOpen
-        && (
-            isMobileOverlay
-            || openCommentRequestOverlaySessionId === lyricsOverlaySessionId
-        )
-    );
-    const hasStandaloneCommentDrawerOpen = (
-        hasMatchingCommentRequest
-        && openCommentRequestMode === 'standalone'
-        && !isMobileOverlay
-    );
-    const hasExternalCommentDrawerOpen = hasOverlayCommentDrawerOpen || hasStandaloneCommentDrawerOpen;
-    const isCommentDrawerOpen = hasManualCommentDrawerOpen || hasExternalCommentDrawerOpen;
+    const {
+        currentSongCommentPath,
+        canOpenCommentDrawer,
+        isCommentDrawerOpen,
+        shouldRenderCommentDrawer,
+        toggleCommentDrawer,
+        closeCommentDrawer,
+        handleCommentDrawerTouchStart,
+        handleCommentDrawerTouchEnd,
+        resetCommentDrawerSwipeState,
+        isMobileOverlay
+    } = useLyricsOverlayComments({
+        commentServerURL,
+        currentAlbum,
+        currentSongInfo,
+        currentTrackSrc,
+        isLyricsOpen,
+        isMobileViewport,
+        lyricsOverlaySessionId,
+        openCommentRequestId,
+        openCommentRequestMode,
+        openCommentRequestOverlaySessionId,
+        openCommentRequestTrackChangeId,
+        openCommentRequestTrackSrc,
+        openCommentRequestViewContextId,
+        playerOverlayContextId,
+        trackChangeId
+    });
 
     const handleToggleFavorite = (event) => {
         event?.stopPropagation?.();
         if (!canToggleFavorite) return;
         onToggleFavorite?.(currentTrack, event);
     };
-
-    const dismissActiveCommentRequest = useCallback(() => {
-        setDismissedCommentRequestId((previous) => Math.max(previous, latestCommentRequestId));
-    }, [latestCommentRequestId]);
-
-    const openCommentDrawer = useCallback(() => {
-        if (!canOpenCommentDrawer || !currentCommentDrawerContextKey) return;
-        dismissActiveCommentRequest();
-        setManualCommentDrawerContextKey(currentCommentDrawerContextKey);
-    }, [canOpenCommentDrawer, currentCommentDrawerContextKey, dismissActiveCommentRequest]);
-
-    const closeCommentDrawer = useCallback(() => {
-        dismissActiveCommentRequest();
-        setManualCommentDrawerContextKey('');
-    }, [dismissActiveCommentRequest]);
-
-    const toggleCommentDrawer = useCallback(() => {
-        if (!canOpenCommentDrawer) return;
-        if (isCommentDrawerOpen) {
-            closeCommentDrawer();
-            return;
-        }
-        openCommentDrawer();
-    }, [canOpenCommentDrawer, closeCommentDrawer, isCommentDrawerOpen, openCommentDrawer]);
-
-    const shouldRenderCommentDrawer = (
-        isCommentDrawerOpen
-        && canOpenCommentDrawer
-        && (isLyricsOpen || !isMobileOverlay)
-    );
-    const shouldLockViewport = isLyricsOpen || (!isMobileOverlay && shouldRenderCommentDrawer);
-
-    const handleCommentDrawerTouchStart = useCallback((event) => {
-        if (!isMobileViewport()) return;
-        const touch = event.touches?.[0];
-        if (!touch) return;
-        commentDrawerSwipeRef.current.active = true;
-        commentDrawerSwipeRef.current.startX = touch.clientX;
-        commentDrawerSwipeRef.current.startY = touch.clientY;
-        commentDrawerSwipeRef.current.startAt = Date.now();
-    }, []);
-
-    const handleCommentDrawerTouchEnd = useCallback((event) => {
-        const state = commentDrawerSwipeRef.current;
-        if (!state.active) return;
-        const touch = event.changedTouches?.[0];
-        const startX = state.startX;
-        const startY = state.startY;
-        const startAt = state.startAt;
-        resetCommentDrawerSwipeState();
-        if (!touch || !isMobileViewport()) return;
-
-        const deltaX = touch.clientX - startX;
-        const deltaY = touch.clientY - startY;
-        const elapsed = Math.max(Date.now() - startAt, 1);
-        const velocityX = deltaX / elapsed;
-        const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
-        const shouldCloseByRight = deltaX > 88 || (deltaX > 42 && velocityX > 0.58);
-
-        if (isHorizontalSwipe && shouldCloseByRight) {
-            closeCommentDrawer();
-        }
-    }, [closeCommentDrawer]);
-
-    useEffect(() => {
-        if (!shouldLockViewport || typeof window === 'undefined' || typeof document === 'undefined') {
-            return undefined;
-        }
-
-        const { documentElement, body } = document;
-        const scrollY = window.scrollY || window.pageYOffset || 0;
-        const previousStyles = {
-            htmlOverflow: documentElement.style.overflow,
-            htmlOverscrollBehavior: documentElement.style.overscrollBehavior,
-            bodyOverflow: body.style.overflow,
-            bodyOverscrollBehavior: body.style.overscrollBehavior,
-            bodyPosition: body.style.position,
-            bodyTop: body.style.top,
-            bodyLeft: body.style.left,
-            bodyRight: body.style.right,
-            bodyWidth: body.style.width
-        };
-
-        documentElement.style.overflow = 'hidden';
-        documentElement.style.overscrollBehavior = 'none';
-        body.style.overflow = 'hidden';
-        body.style.overscrollBehavior = 'none';
-        body.style.position = 'fixed';
-        body.style.top = `-${scrollY}px`;
-        body.style.left = '0';
-        body.style.right = '0';
-        body.style.width = '100%';
-
-        return () => {
-            documentElement.style.overflow = previousStyles.htmlOverflow;
-            documentElement.style.overscrollBehavior = previousStyles.htmlOverscrollBehavior;
-            body.style.overflow = previousStyles.bodyOverflow;
-            body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior;
-            body.style.position = previousStyles.bodyPosition;
-            body.style.top = previousStyles.bodyTop;
-            body.style.left = previousStyles.bodyLeft;
-            body.style.right = previousStyles.bodyRight;
-            body.style.width = previousStyles.bodyWidth;
-            window.scrollTo(0, scrollY);
-        };
-    }, [shouldLockViewport]);
 
     const overlayInitial = isMobileOverlay
         ? { y: '100%' }
