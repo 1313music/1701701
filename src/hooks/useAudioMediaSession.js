@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const toAbsoluteUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
@@ -40,9 +40,16 @@ const isIOSDevice = () => {
   );
 };
 
+const normalizeMetadataText = (value) => (
+  typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : ''
+);
+
+const LOCK_SCREEN_TRACK_ACTION_COOLDOWN_MS = 280;
+
 export const useAudioMediaSession = ({
   audioRef,
   currentAlbum,
+  currentLyricText,
   currentSongInfo,
   currentTime,
   currentTrack,
@@ -52,15 +59,22 @@ export const useAudioMediaSession = ({
   isPlaying,
   setIsPlaying
 }) => {
+  const lastTrackActionAtRef = useRef(0);
+
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
     if (typeof window === 'undefined' || !('MediaMetadata' in window)) return;
 
     const mediaSession = navigator.mediaSession;
+    const trackTitle = normalizeMetadataText(currentTrack?.name) || '未知歌曲';
+    const artistName = normalizeMetadataText(currentSongInfo?.album?.artist || currentAlbum?.artist);
+    const albumName = normalizeMetadataText(currentSongInfo?.album?.name || currentAlbum?.name);
+    const lyricText = normalizeMetadataText(currentLyricText);
+    const secondaryLine = lyricText || artistName;
     const metadata = {
-      title: currentTrack?.name || '未知歌曲',
-      artist: currentSongInfo?.album?.artist || currentAlbum?.artist || '',
-      album: currentSongInfo?.album?.name || currentAlbum?.name || '',
+      title: trackTitle,
+      artist: secondaryLine,
+      album: albumName,
       artwork: buildMediaArtwork(
         currentTrack?.cover || currentSongInfo?.album?.cover || currentAlbum?.cover
       )
@@ -72,6 +86,7 @@ export const useAudioMediaSession = ({
       mediaSession.metadata = null;
     }
   }, [
+    currentLyricText,
     currentTrack?.name,
     currentTrack?.cover,
     currentSongInfo?.album?.artist,
@@ -118,12 +133,21 @@ export const useAudioMediaSession = ({
         // ignore unsupported actions
       }
     };
+    const runTrackAction = (handler) => {
+      const now = Date.now();
+      if ((now - lastTrackActionAtRef.current) < LOCK_SCREEN_TRACK_ACTION_COOLDOWN_MS) {
+        return;
+      }
+      lastTrackActionAtRef.current = now;
+      handler();
+    };
 
     setHandler('play', () => setIsPlaying(true));
     setHandler('pause', () => setIsPlaying(false));
+
     if (hasMultipleTracks) {
-      setHandler('previoustrack', () => handlePrev());
-      setHandler('nexttrack', () => handleNext());
+      setHandler('previoustrack', () => runTrackAction(handlePrev));
+      setHandler('nexttrack', () => runTrackAction(handleNext));
     } else {
       setHandler('previoustrack', null);
       setHandler('nexttrack', null);
@@ -154,15 +178,28 @@ export const useAudioMediaSession = ({
         audio.currentTime = details.seekTime;
       }
     });
+  }, [audioRef, currentAlbum?.id, currentAlbum?.songs?.length, currentTrack?.src, handleNext, handlePrev, isPlaying, setIsPlaying]);
 
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    const mediaSession = navigator.mediaSession;
+    const supportedActions = [
+      'play',
+      'pause',
+      'previoustrack',
+      'nexttrack',
+      'seekbackward',
+      'seekforward',
+      'seekto'
+    ];
     return () => {
-      setHandler('play', null);
-      setHandler('pause', null);
-      setHandler('previoustrack', null);
-      setHandler('nexttrack', null);
-      setHandler('seekbackward', null);
-      setHandler('seekforward', null);
-      setHandler('seekto', null);
+      supportedActions.forEach((action) => {
+        try {
+          mediaSession.setActionHandler(action, null);
+        } catch {
+          // ignore unsupported actions
+        }
+      });
     };
-  }, [audioRef, currentAlbum?.songs?.length, handleNext, handlePrev, setIsPlaying]);
+  }, []);
 };

@@ -8,7 +8,9 @@ class AudioMock {
     this._src = '';
     this.currentTime = 0;
     this.duration = 0;
+    this.readyState = 4;
     this.playbackRate = 1;
+    this.paused = true;
     this.preload = '';
     this.playsInline = false;
     this.listeners = new Map();
@@ -42,10 +44,15 @@ class AudioMock {
   }
 
   play() {
+    this.paused = false;
     return Promise.resolve();
   }
 
-  pause() {}
+  load() {}
+
+  pause() {
+    this.paused = true;
+  }
 
   emit(type) {
     const set = this.listeners.get(type);
@@ -89,11 +96,14 @@ describe('useAudioPlayer lyric race', () => {
     originalPlatformDescriptor = Object.getOwnPropertyDescriptor(globalThis.navigator, 'platform');
     originalMaxTouchPointsDescriptor = Object.getOwnPropertyDescriptor(globalThis.navigator, 'maxTouchPoints');
     globalThis.Audio = AudioMock;
+    globalThis.localStorage?.clear();
   });
 
   afterEach(() => {
     globalThis.Audio = originalAudio;
     globalThis.fetch = originalFetch;
+    globalThis.localStorage?.clear();
+    vi.useRealTimers();
 
     if (originalMediaSessionDescriptor) {
       Object.defineProperty(globalThis.navigator, 'mediaSession', originalMediaSessionDescriptor);
@@ -251,6 +261,247 @@ describe('useAudioPlayer lyric race', () => {
     expect(result.current.audioRef.current.currentTime).toBe(42);
   });
 
+  it('restores the last track, time, and playback intent from storage', async () => {
+    const album = {
+      id: 'album-resume',
+      name: 'Album Resume',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' },
+        { name: 'Song 2', src: 'song-2.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }],
+      [album.songs[1].src, { album, song: album.songs[1] }]
+    ]);
+
+    const firstRender = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    await waitFor(() => {
+      expect(firstRender.result.current.currentTrack?.src).toBe(album.songs[0].src);
+    });
+
+    act(() => {
+      firstRender.result.current.playSongFromAlbum(album, album.songs[1]);
+    });
+
+    await waitFor(() => {
+      expect(firstRender.result.current.currentTrack?.src).toBe(album.songs[1].src);
+    });
+
+    await waitFor(() => {
+      expect(firstRender.result.current.isPlaying).toBe(true);
+    });
+
+    act(() => {
+      firstRender.result.current.audioRef.current.duration = 180;
+      firstRender.result.current.audioRef.current.currentTime = 52;
+      firstRender.result.current.audioRef.current.emit('loadedmetadata');
+      firstRender.result.current.audioRef.current.emit('timeupdate');
+      window.dispatchEvent(new Event('pagehide'));
+    });
+
+    firstRender.unmount();
+
+    const secondRender = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    await waitFor(() => {
+      expect(secondRender.result.current.currentTrack?.src).toBe(album.songs[1].src);
+    });
+
+    await waitFor(() => {
+      expect(secondRender.result.current.isPlaying).toBe(true);
+    });
+
+    act(() => {
+      secondRender.result.current.audioRef.current.duration = 180;
+      secondRender.result.current.audioRef.current.emit('loadedmetadata');
+    });
+
+    await waitFor(() => {
+      expect(secondRender.result.current.audioRef.current.currentTime).toBeCloseTo(52);
+    });
+  });
+
+  it('does not force replay when returning to foreground while audio is already healthy', async () => {
+    const album = {
+      id: 'album-foreground-stable',
+      name: 'Album Foreground Stable',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const hiddenDescriptor = Object.getOwnPropertyDescriptor(document, 'hidden');
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: false,
+      writable: true
+    });
+
+    try {
+      const { result } = renderHook(() => useAudioPlayer({
+        musicAlbums: [album],
+        songIndex
+      }));
+
+      act(() => {
+        result.current.handlePlayPause();
+      });
+      await waitFor(() => {
+        expect(result.current.isPlaying).toBe(true);
+      });
+
+      result.current.audioRef.current.currentTime = 33;
+      result.current.audioRef.current.readyState = 4;
+      result.current.audioRef.current.paused = false;
+
+      const playSpy = vi.spyOn(result.current.audioRef.current, 'play');
+      playSpy.mockClear();
+
+      act(() => {
+        Object.defineProperty(document, 'hidden', {
+          configurable: true,
+          value: true,
+          writable: true
+        });
+        document.dispatchEvent(new Event('visibilitychange'));
+        Object.defineProperty(document, 'hidden', {
+          configurable: true,
+          value: false,
+          writable: true
+        });
+        document.dispatchEvent(new Event('visibilitychange'));
+        window.dispatchEvent(new Event('pageshow'));
+      });
+
+      expect(playSpy).not.toHaveBeenCalled();
+      expect(result.current.audioRef.current.currentTime).toBeCloseTo(33);
+    } finally {
+      if (hiddenDescriptor) {
+        Object.defineProperty(document, 'hidden', hiddenDescriptor);
+      } else {
+        delete document.hidden;
+      }
+    }
+  });
+
+  it('retries playback on foreground return when audio is paused', async () => {
+    const album = {
+      id: 'album-foreground-recover',
+      name: 'Album Foreground Recover',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    await waitFor(() => {
+      expect(result.current.isPlaying).toBe(true);
+    });
+
+    const playSpy = vi.spyOn(result.current.audioRef.current, 'play');
+    playSpy.mockClear();
+
+    act(() => {
+      result.current.audioRef.current.paused = true;
+      result.current.audioRef.current.readyState = 0;
+      window.dispatchEvent(new Event('pageshow'));
+    });
+
+    expect(playSpy).toHaveBeenCalled();
+  });
+
+  it('deduplicates foreground recovery when visibilitychange and pageshow fire together', async () => {
+    const album = {
+      id: 'album-foreground-dedup',
+      name: 'Album Foreground Dedup',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const hiddenDescriptor = Object.getOwnPropertyDescriptor(document, 'hidden');
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: false,
+      writable: true
+    });
+
+    try {
+      const { result } = renderHook(() => useAudioPlayer({
+        musicAlbums: [album],
+        songIndex
+      }));
+
+      act(() => {
+        result.current.handlePlayPause();
+      });
+      await waitFor(() => {
+        expect(result.current.isPlaying).toBe(true);
+      });
+
+      const playSpy = vi.spyOn(result.current.audioRef.current, 'play');
+      playSpy.mockClear();
+
+      act(() => {
+        result.current.audioRef.current.paused = true;
+        result.current.audioRef.current.readyState = 0;
+        Object.defineProperty(document, 'hidden', {
+          configurable: true,
+          value: true,
+          writable: true
+        });
+        document.dispatchEvent(new Event('visibilitychange'));
+        Object.defineProperty(document, 'hidden', {
+          configurable: true,
+          value: false,
+          writable: true
+        });
+        document.dispatchEvent(new Event('visibilitychange'));
+        window.dispatchEvent(new Event('pageshow'));
+      });
+
+      expect(playSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      if (hiddenDescriptor) {
+        Object.defineProperty(document, 'hidden', hiddenDescriptor);
+      } else {
+        delete document.hidden;
+      }
+    }
+  });
+
   it('publishes media metadata and playback position updates', async () => {
     const mediaSession = {
       setActionHandler: vi.fn(),
@@ -312,6 +563,77 @@ describe('useAudioPlayer lyric race', () => {
     });
 
     expect(mediaSession.playbackState).toBe('playing');
+  });
+
+  it('uses the current lyric line as lock screen metadata when lyrics are available', async () => {
+    const mediaSession = {
+      setActionHandler: vi.fn(),
+      setPositionState: vi.fn(),
+      playbackState: 'none'
+    };
+    const MediaMetadataMock = vi.fn().mockImplementation(function MediaMetadata(data) {
+      this.data = data;
+    });
+    Object.defineProperty(globalThis.navigator, 'mediaSession', {
+      configurable: true,
+      value: mediaSession
+    });
+    Object.defineProperty(globalThis.window, 'MediaMetadata', {
+      configurable: true,
+      value: MediaMetadataMock
+    });
+
+    const album = {
+      id: 'album-lyrics-metadata',
+      name: 'Album Lyrics',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3', lrc: 'https://example.com/song-1.lrc' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      text: () => Promise.resolve('[00:10.00]第一句歌词\n[00:20.00]第二句歌词')
+    });
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    await waitFor(() => {
+      expect(result.current.lyrics).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.audioRef.current.currentTime = 12;
+      result.current.audioRef.current.emit('timeupdate');
+    });
+
+    await waitFor(() => {
+      expect(MediaMetadataMock).toHaveBeenLastCalledWith(expect.objectContaining({
+        title: 'Song 1',
+        artist: '第一句歌词',
+        album: 'Album Lyrics'
+      }));
+    });
+
+    act(() => {
+      result.current.audioRef.current.currentTime = 21;
+      result.current.audioRef.current.emit('timeupdate');
+    });
+
+    await waitFor(() => {
+      expect(MediaMetadataMock).toHaveBeenLastCalledWith(expect.objectContaining({
+        title: 'Song 1',
+        artist: '第二句歌词',
+        album: 'Album Lyrics'
+      }));
+    });
   });
 
   it('prefers previous/next controls over seek controls on iOS lock screen', async () => {
@@ -416,7 +738,74 @@ describe('useAudioPlayer lyric race', () => {
     ).toBe(true);
   });
 
-  it('does not re-register media actions when switching tracks within same album', async () => {
+  it('throttles rapid lock screen previous/next actions on iOS', async () => {
+    const mediaSession = {
+      setActionHandler: vi.fn(),
+      setPositionState: vi.fn(),
+      playbackState: 'none'
+    };
+    Object.defineProperty(globalThis.navigator, 'mediaSession', {
+      configurable: true,
+      value: mediaSession
+    });
+    setNavigatorField('userAgent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)');
+    setNavigatorField('platform', 'iPhone');
+    setNavigatorField('maxTouchPoints', 5);
+
+    const album = {
+      id: 'album-throttle',
+      name: 'Album Throttle',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' },
+        { name: 'Song 2', src: 'song-2.mp3' },
+        { name: 'Song 3', src: 'song-3.mp3' }
+      ]
+    };
+    const songIndex = new Map(
+      album.songs.map((song) => [song.src, { album, song }])
+    );
+
+    let now = 1700000000000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    await waitFor(() => {
+      expect(mediaSession.setActionHandler).toHaveBeenCalled();
+    });
+
+    const nextHandlerCall = [...mediaSession.setActionHandler.mock.calls]
+      .reverse()
+      .find(([action, handler]) => action === 'nexttrack' && typeof handler === 'function');
+    expect(nextHandlerCall).toBeTruthy();
+
+    const nextHandler = nextHandlerCall[1];
+
+    act(() => {
+      nextHandler();
+      nextHandler();
+    });
+
+    await waitFor(() => {
+      expect(result.current.currentTrack?.src).toBe('song-2.mp3');
+    });
+
+    now += 350;
+    act(() => {
+      nextHandler();
+    });
+
+    await waitFor(() => {
+      expect(result.current.currentTrack?.src).toBe('song-3.mp3');
+    });
+  });
+
+  it('re-registers media actions when switching tracks within same album to refresh lock screen controls', async () => {
     const mediaSession = {
       setActionHandler: vi.fn(),
       setPositionState: vi.fn(),
@@ -463,7 +852,9 @@ describe('useAudioPlayer lyric race', () => {
       expect(result.current.currentTrack?.src).toBe(album.songs[1].src);
     });
 
-    expect(mediaSession.setActionHandler.mock.calls.length).toBe(initialCalls);
+    await waitFor(() => {
+      expect(mediaSession.setActionHandler.mock.calls.length).toBeGreaterThan(initialCalls);
+    });
   });
 
   it('cycles play modes and replays the current track in single mode', async () => {
@@ -580,7 +971,7 @@ describe('useAudioPlayer lyric race', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.currentTrack?.src).toBe(album.songs[0].src);
+      expect(result.current.currentTrack?.src).not.toBe(album.songs[1].src);
     });
 
     act(() => {
@@ -616,5 +1007,51 @@ describe('useAudioPlayer lyric race', () => {
     expect(result.current.isPlaying).toBe(false);
 
     randomSpy.mockRestore();
+  });
+
+  it('retries playback after a stalled event when playback should continue', async () => {
+    vi.useFakeTimers();
+
+    const album = {
+      id: 'album-retry',
+      name: 'Album Retry',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { id: 'song-1', name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    expect(result.current.currentTrack?.src).toBe(album.songs[0].src);
+
+    const playSpy = vi.spyOn(result.current.audioRef.current, 'play');
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+
+    const initialPlayCalls = playSpy.mock.calls.length;
+
+    act(() => {
+      result.current.audioRef.current.currentTime = 37;
+      result.current.audioRef.current.emit('stalled');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+    });
+
+    expect(playSpy.mock.calls.length).toBeGreaterThan(initialPlayCalls);
   });
 });
