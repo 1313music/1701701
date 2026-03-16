@@ -15,6 +15,10 @@ import {
     MessageSquareMore
 } from 'lucide-react';
 
+const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
+    String(import.meta.env.VITE_SHOW_COMMENT_NAV || '').trim().toLowerCase()
+);
+
 const NavItem = ({ icon, label, active = false, onClick }) => (
     <div className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
         {icon}
@@ -112,12 +116,14 @@ const Sidebar = ({
                         active={view === 'app'}
                         onClick={() => handleNavClick('app')}
                     />
-                    <NavItem
-                        icon={<MessageSquareMore size={20} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="留言"
-                        active={view === 'comment'}
-                        onClick={() => handleNavClick('comment')}
-                    />
+                    {SHOW_COMMENT_NAV && (
+                        <NavItem
+                            icon={<MessageSquareMore size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="留言"
+                            active={view === 'comment'}
+                            onClick={() => handleNavClick('comment')}
+                        />
+                    )}
                     <NavItem
                         icon={<Info size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
@@ -183,12 +189,14 @@ const Sidebar = ({
                         active={view === 'app'}
                         onClick={() => handleNavClick('app')}
                     />
-                    <NavItem
-                        icon={<MessageSquareMore size={22} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="留言"
-                        active={view === 'comment'}
-                        onClick={() => handleNavClick('comment')}
-                    />
+                    {SHOW_COMMENT_NAV && (
+                        <NavItem
+                            icon={<MessageSquareMore size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="留言"
+                            active={view === 'comment'}
+                            onClick={() => handleNavClick('comment')}
+                        />
+                    )}
                     <NavItem
                         icon={<Info size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
