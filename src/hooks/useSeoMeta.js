@@ -87,9 +87,9 @@ const SEO_MAP = {
   },
   gallery: {
     title: '图库 | 1701701.xyz',
-    description: '前端图库展示页，默认读取 B2 图库索引并以瀑布流展示已发布图片。',
+    description: '前端图库展示页，默认读取图片索引并以瀑布流展示已发布图片。',
     pageType: 'CollectionPage',
-    keywords: ['图库', '图片瀑布流', 'B2 图床', '图床展示']
+    keywords: ['图库', '图片瀑布流', '图片索引', '图床展示']
   },
   app: {
     title: 'APP 下载 | 1701701.xyz',

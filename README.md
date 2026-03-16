@@ -49,12 +49,12 @@ VITE_VIDEO_PASSWORD=your-video-password
 Cloudflare Pages（如果在 Cloudflare 上构建）可在项目设置里添加同名环境变量后重新部署。
 说明：这属于前端体验门禁，变量会进入前端构建产物。
 
-## B2 图库展示
+## 图库展示
 
-当前图库页只做只读展示，数据源为静态索引 `gallery-index.json`：
+当前图库页只做只读展示，默认数据源为静态索引 `images.json`：
 
 - `https://1701701.xyz/gallery`
-- 默认索引地址：`https://images.1701701.xyz/gallery-index.json`
+- 默认索引地址：`https://imgs.1701701.xyz/data/images.json`
 
 可选环境变量（构建时注入）：
 
@@ -65,7 +65,7 @@ VITE_GALLERY_INDEX_URL=
 说明：
 
 - `VITE_GALLERY_INDEX_URL` 为空时，会回退到默认索引地址。
-- 前端不提供公开上传接口；图片上传和索引更新在你自己的 B2 项目中完成。
+- 前端不提供公开上传接口；图片上传和索引更新在你自己的图床项目中完成。
 
 ## 桌面版（Win/Mac）
 

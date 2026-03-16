@@ -1,5 +1,5 @@
 const DEFAULT_GALLERY_INDEX_URL = String(
-  import.meta.env.VITE_GALLERY_INDEX_URL || 'https://images.1701701.xyz/gallery-index.json'
+  import.meta.env.VITE_GALLERY_INDEX_URL || 'https://imgs.1701701.xyz/data/images.json'
 ).trim();
 const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedItems = null;
@@ -21,14 +21,94 @@ const toAbsoluteUrl = (value, fallbackBase = '') => {
   }
 };
 
-const parseGalleryIndexItems = (payload, fallbackBase = '') => {
+const sortGalleryItems = (items) => items.sort(
+  (left, right) => left.category.localeCompare(right.category) || left.name.localeCompare(right.name)
+);
+
+const decodePathSegment = (value) => {
+  const input = String(value || '').trim();
+  if (!input) return '';
+
+  try {
+    return decodeURIComponent(input);
+  } catch {
+    return input;
+  }
+};
+
+const getFilenameFromUrl = (value) => {
+  const input = String(value || '').trim();
+  if (!input) return '';
+
+  try {
+    const url = new URL(input);
+    const pathname = url.pathname.split('/').filter(Boolean);
+    return decodePathSegment(pathname[pathname.length - 1] || '');
+  } catch {
+    const pathname = input.split(/[?#]/)[0].split('/').filter(Boolean);
+    return decodePathSegment(pathname[pathname.length - 1] || '');
+  }
+};
+
+const getCategoryFromPath = (value) => {
+  const input = String(value || '').trim();
+  if (!input) return '';
+
+  try {
+    const url = new URL(input);
+    const pathname = url.pathname.split('/').filter(Boolean);
+    return pathname.length >= 2 ? decodePathSegment(pathname[pathname.length - 2]) : '';
+  } catch {
+    const pathname = input.split(/[?#]/)[0].split('/').filter(Boolean);
+    return pathname.length >= 2 ? decodePathSegment(pathname[pathname.length - 2]) : '';
+  }
+};
+
+const parseFlatGalleryItems = (payload, fallbackBase = '') => {
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const seen = new Set();
+  const result = [];
+
+  for (const item of items) {
+    const original = toAbsoluteUrl(item?.original || item?.url, fallbackBase);
+    if (!original || seen.has(original)) continue;
+
+    seen.add(original);
+    const category = String(
+      item?.category
+      || getCategoryFromPath(item?.path)
+      || getCategoryFromPath(item?.id)
+      || getCategoryFromPath(item?.url)
+      || '未分类'
+    ).trim() || '未分类';
+    const name = String(item?.name || getFilenameFromUrl(original) || 'image').trim() || 'image';
+    const preview = toAbsoluteUrl(
+      item?.preview || item?.previewUrl || item?.thumbnail || item?.thumb,
+      fallbackBase
+    ) || original;
+
+    result.push({
+      id: String(item?.id || `${category}/${name}/${original}`),
+      category,
+      name,
+      url: original,
+      previewUrl: preview
+    });
+  }
+
+  return sortGalleryItems(result);
+};
+
+const parseNestedGalleryItems = (payload, fallbackBase = '') => {
   const gallery = payload?.gallery;
   if (!gallery || typeof gallery !== 'object') return [];
 
   const seen = new Set();
   const result = [];
 
-  for (const [category, categoryData] of Object.entries(gallery)) {
+  for (const [rawCategory, categoryData] of Object.entries(gallery)) {
+    const category = String(rawCategory || '').trim();
+    if (!category) continue;
     const images = Array.isArray(categoryData?.images) ? categoryData.images : [];
     for (const image of images) {
       const original = toAbsoluteUrl(image?.original, fallbackBase);
@@ -36,9 +116,7 @@ const parseGalleryIndexItems = (payload, fallbackBase = '') => {
 
       seen.add(original);
       const preview = toAbsoluteUrl(image?.preview, fallbackBase) || original;
-      const name = typeof image?.name === 'string' && image.name
-        ? image.name
-        : original.split('/').pop() || 'image';
+      const name = String(image?.name || getFilenameFromUrl(original) || 'image').trim() || 'image';
 
       result.push({
         id: `${category}/${name}/${original}`,
@@ -50,9 +128,16 @@ const parseGalleryIndexItems = (payload, fallbackBase = '') => {
     }
   }
 
-  return result.sort(
-    (left, right) => left.category.localeCompare(right.category) || left.name.localeCompare(right.name)
-  );
+  return sortGalleryItems(result);
+};
+
+const parseGalleryIndexItems = (payload, fallbackBase = '') => {
+  const flatItems = parseFlatGalleryItems(payload, fallbackBase);
+  if (flatItems.length > 0) {
+    return flatItems;
+  }
+
+  return parseNestedGalleryItems(payload, fallbackBase);
 };
 
 const loadRemoteItems = async () => {
@@ -69,6 +154,12 @@ const loadRemoteItems = async () => {
 
   const payload = await response.json();
   return parseGalleryIndexItems(payload, endpoint);
+};
+
+export const __resetGalleryManifestCacheForTests = () => {
+  cachedItems = null;
+  cachedAt = 0;
+  inflightItemsPromise = null;
 };
 
 const fetchAndCacheItems = async () => {

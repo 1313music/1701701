@@ -184,7 +184,7 @@ const GalleryDisplayPage = () => {
             <div className="gallery-empty-state">
               <ImagePlus size={22} />
               {items.length === 0
-                ? '暂无图片，请先更新并发布 `gallery-index.json`。'
+                ? '暂无图片，请先更新并发布图片索引。'
                 : `分类「${selectedCategory}」暂无图片。`}
             </div>
           ) : (
