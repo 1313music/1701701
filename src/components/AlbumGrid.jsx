@@ -436,4 +436,4 @@ const AlbumGrid = ({
     );
 };
 
-export default AlbumGrid;
+export default React.memo(AlbumGrid);

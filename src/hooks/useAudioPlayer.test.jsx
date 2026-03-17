@@ -1054,4 +1054,153 @@ describe('useAudioPlayer lyric race', () => {
 
     expect(playSpy.mock.calls.length).toBeGreaterThan(initialPlayCalls);
   });
+
+  it('does not auto-recover after a user-initiated pause', async () => {
+    vi.useFakeTimers();
+
+    const album = {
+      id: 'album-user-pause',
+      name: 'Album User Pause',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { id: 'song-1', name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    expect(result.current.isPlaying).toBe(true);
+
+    const playSpy = vi.spyOn(result.current.audioRef.current, 'play');
+    const loadSpy = vi.spyOn(result.current.audioRef.current, 'load');
+    playSpy.mockClear();
+    loadSpy.mockClear();
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    expect(result.current.isPlaying).toBe(false);
+
+    act(() => {
+      result.current.audioRef.current.emit('pause');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(6000);
+      await Promise.resolve();
+    });
+
+    expect(playSpy).not.toHaveBeenCalled();
+    expect(loadSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not reload immediately on the first stalled recovery attempt', async () => {
+    vi.useFakeTimers();
+
+    const album = {
+      id: 'album-reload-guard',
+      name: 'Album Reload Guard',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { id: 'song-1', name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    expect(result.current.isPlaying).toBe(true);
+
+    const loadSpy = vi.spyOn(result.current.audioRef.current, 'load');
+    loadSpy.mockClear();
+
+    act(() => {
+      result.current.audioRef.current.currentTime = 37;
+      result.current.audioRef.current.emit('stalled');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+    });
+
+    expect(loadSpy).not.toHaveBeenCalled();
+  });
+
+  it('reloads only after the track stays frozen across repeated stalled events', async () => {
+    vi.useFakeTimers();
+
+    const album = {
+      id: 'album-reload-after-freeze',
+      name: 'Album Reload After Freeze',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { id: 'song-1', name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+    expect(result.current.isPlaying).toBe(true);
+
+    const loadSpy = vi.spyOn(result.current.audioRef.current, 'load');
+    loadSpy.mockClear();
+
+    act(() => {
+      result.current.audioRef.current.currentTime = 37;
+      result.current.audioRef.current.emit('stalled');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+    });
+
+    expect(loadSpy).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+      await Promise.resolve();
+    });
+
+    act(() => {
+      result.current.audioRef.current.emit('stalled');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+      await Promise.resolve();
+    });
+
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+  });
 });

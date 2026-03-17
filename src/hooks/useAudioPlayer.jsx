@@ -10,6 +10,13 @@ const PLAYBACK_POSITION_PERSIST_THRESHOLD = 5;
 const PLAYBACK_STATE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
 const PLAYBACK_HEALTHY_READY_STATE = 2;
 const FOREGROUND_RECOVERY_DEDUP_WINDOW_MS = 320;
+const TIMELINE_UPDATE_MIN_DELTA_SECONDS = 0.35;
+const TIMELINE_UPDATE_MIN_DELTA_PROGRESS = 0.35;
+const PLAYBACK_MOVEMENT_EPSILON_SECONDS = 0.1;
+const PLAYBACK_RECOVERY_MIN_STALL_MS = 900;
+const PLAYBACK_RECOVERY_RELOAD_MIN_STALL_MS = 4000;
+const PLAYBACK_RECOVERY_RELOAD_COOLDOWN_MS = 15000;
+const PLAYBACK_RECOVERY_MAX_RELOAD_ATTEMPTS = 2;
 
 const toAbsoluteUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
@@ -67,7 +74,7 @@ const writeStoredPlaybackState = (snapshot) => {
 export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [currentTrack, setCurrentTrackState] = useState(() => musicAlbums[0]?.songs?.[0]);
   const [currentAlbum, setCurrentAlbum] = useState(() => musicAlbums[0] || null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayingState, setIsPlayingState] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -83,6 +90,14 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const recoveryTimerRef = useRef(null);
   const recoveryAttemptRef = useRef(0);
   const lastForegroundRecoveryRef = useRef({ at: 0, source: '' });
+  const playbackIntentRef = useRef(false);
+  const playbackHealthRef = useRef({
+    lastProgressAt: 0,
+    lastTime: 0,
+    waitingSince: 0,
+    lastReloadAt: 0,
+    consecutiveReloads: 0
+  });
   const playbackStateRef = useRef({
     currentAlbum: null,
     currentTrack: null,
@@ -107,20 +122,54 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     [currentTrack?.lrc]
   );
 
+  const setIsPlaying = useCallback((nextValueOrUpdater) => {
+    setIsPlayingState((previousValue) => {
+      const resolvedValue = typeof nextValueOrUpdater === 'function'
+        ? nextValueOrUpdater(previousValue)
+        : nextValueOrUpdater;
+      const nextValue = Boolean(resolvedValue);
+      playbackIntentRef.current = nextValue;
+      return nextValue;
+    });
+  }, []);
+  const isPlaying = isPlayingState;
+
   const clearRecoveryTimer = useCallback(() => {
     if (typeof window === 'undefined' || recoveryTimerRef.current == null) return;
     window.clearTimeout(recoveryTimerRef.current);
     recoveryTimerRef.current = null;
   }, []);
 
+  const markPlaybackHealthy = useCallback((timeValue) => {
+    const now = Date.now();
+    const nextTime = Number.isFinite(timeValue) ? Math.max(timeValue, 0) : 0;
+    playbackHealthRef.current = {
+      ...playbackHealthRef.current,
+      lastProgressAt: now,
+      lastTime: nextTime,
+      waitingSince: 0,
+      consecutiveReloads: 0
+    };
+  }, []);
+
+  const markPlaybackWaiting = useCallback((timeValue) => {
+    const now = Date.now();
+    const nextTime = Number.isFinite(timeValue) ? Math.max(timeValue, 0) : playbackHealthRef.current.lastTime;
+    playbackHealthRef.current = {
+      ...playbackHealthRef.current,
+      lastTime: nextTime,
+      waitingSince: playbackHealthRef.current.waitingSince || now
+    };
+  }, []);
+
   const persistPlaybackState = useCallback((force = false) => {
     const {
       currentAlbum: activeAlbum,
       currentTrack: activeTrack,
-      isPlaying: intendedPlaying,
       playMode: activePlayMode
     } = playbackStateRef.current;
     if (!activeTrack?.src) return;
+    const intendedPlaying = playbackIntentRef.current;
 
     const audio = audioRef.current;
     const nextSnapshot = {
@@ -174,14 +223,22 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   }, []);
 
   const attemptPlaybackRecovery = useCallback(({ forceReload = false, onlyWhenPaused = true } = {}) => {
-    const { currentTrackSrc: activeTrackSrc, isPlaying: intendedPlaying } = playbackStateRef.current;
+    const { currentTrackSrc: activeTrackSrc } = playbackStateRef.current;
+    const intendedPlaying = playbackIntentRef.current;
     if (!activeTrackSrc || !intendedPlaying) return;
 
     const audio = audioRef.current;
     const isPaused = audio.paused === true;
     const readyState = Number.isFinite(audio.readyState) ? audio.readyState : 0;
+    const now = Date.now();
+    const playbackHealth = playbackHealthRef.current;
+    const stallStartedAt = playbackHealth.waitingSince || playbackHealth.lastProgressAt || now;
+    const stalledFor = Math.max(now - stallStartedAt, 0);
     const canContinueWithoutRecovery = !isPaused && readyState >= PLAYBACK_HEALTHY_READY_STATE;
     if (onlyWhenPaused && !forceReload && canContinueWithoutRecovery) {
+      return;
+    }
+    if (!isPaused && stalledFor < PLAYBACK_RECOVERY_MIN_STALL_MS) {
       return;
     }
 
@@ -197,8 +254,19 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
         trackSrc: activeTrackSrc
       };
     }
-    if (forceReload && typeof audio.load === 'function') {
+    const canReload = (
+      forceReload &&
+      stalledFor >= PLAYBACK_RECOVERY_RELOAD_MIN_STALL_MS &&
+      (now - playbackHealth.lastReloadAt) >= PLAYBACK_RECOVERY_RELOAD_COOLDOWN_MS &&
+      playbackHealth.consecutiveReloads < PLAYBACK_RECOVERY_MAX_RELOAD_ATTEMPTS
+    );
+    if (canReload && typeof audio.load === 'function') {
       audio.load();
+      playbackHealthRef.current = {
+        ...playbackHealthRef.current,
+        lastReloadAt: now,
+        consecutiveReloads: playbackHealth.consecutiveReloads + 1
+      };
     }
     applyPendingRestore(audio);
     audio.play().catch(() => { });
@@ -206,7 +274,8 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   const schedulePlaybackRecovery = useCallback(({ forceReload = false } = {}) => {
     if (typeof window === 'undefined') return;
-    const { currentTrackSrc: activeTrackSrc, isPlaying: intendedPlaying } = playbackStateRef.current;
+    const { currentTrackSrc: activeTrackSrc } = playbackStateRef.current;
+    const intendedPlaying = playbackIntentRef.current;
     if (!activeTrackSrc || !intendedPlaying) return;
     if (typeof document !== 'undefined' && document.hidden) return;
 
@@ -281,9 +350,12 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       const nextTime = audio.currentTime || 0;
       const nextProgress = (nextTime / audio.duration) * 100 || 0;
       const prev = lastTimelineRef.current;
+      if (Math.abs(nextTime - playbackHealthRef.current.lastTime) >= PLAYBACK_MOVEMENT_EPSILON_SECONDS) {
+        markPlaybackHealthy(nextTime);
+      }
       if (
-        Math.abs(nextTime - prev.time) < 0.2 &&
-        Math.abs(nextProgress - prev.progress) < 0.25
+        Math.abs(nextTime - prev.time) < TIMELINE_UPDATE_MIN_DELTA_SECONDS &&
+        Math.abs(nextProgress - prev.progress) < TIMELINE_UPDATE_MIN_DELTA_PROGRESS
       ) {
         return;
       }
@@ -304,6 +376,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
         time: nextTime,
         progress: nextProgress
       };
+      markPlaybackHealthy(nextTime);
       persistPlaybackState(true);
     };
     const onCanPlay = () => {
@@ -312,17 +385,28 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     const onPlaybackHealthy = () => {
       recoveryAttemptRef.current = 0;
       clearRecoveryTimer();
+      markPlaybackHealthy(audio.currentTime || 0);
       persistPlaybackState(true);
     };
     const onPause = () => {
       persistPlaybackState(true);
-      if (playbackStateRef.current.isPlaying) {
+      if (playbackIntentRef.current) {
+        markPlaybackWaiting(audio.currentTime || 0);
         schedulePlaybackRecovery();
       }
     };
-    const onWaiting = () => schedulePlaybackRecovery();
-    const onStalled = () => schedulePlaybackRecovery({ forceReload: true });
-    const onError = () => schedulePlaybackRecovery({ forceReload: true });
+    const onWaiting = () => {
+      markPlaybackWaiting(audio.currentTime || 0);
+      schedulePlaybackRecovery();
+    };
+    const onStalled = () => {
+      markPlaybackWaiting(audio.currentTime || 0);
+      schedulePlaybackRecovery({ forceReload: true });
+    };
+    const onError = () => {
+      markPlaybackWaiting(audio.currentTime || 0);
+      schedulePlaybackRecovery({ forceReload: true });
+    };
     const onSuspend = () => persistPlaybackState(true);
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -345,7 +429,15 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       audio.removeEventListener('error', onError);
       audio.removeEventListener('suspend', onSuspend);
     };
-  }, [applyPendingRestore, clearRecoveryTimer, persistPlaybackState, schedulePlaybackRecovery, setCurrentTrack]);
+  }, [
+    applyPendingRestore,
+    clearRecoveryTimer,
+    markPlaybackHealthy,
+    markPlaybackWaiting,
+    persistPlaybackState,
+    schedulePlaybackRecovery,
+    setCurrentTrack
+  ]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -359,11 +451,12 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
         audio.src = normalizedTrackSrc;
       }
       applyPendingRestore(audio);
+      markPlaybackWaiting(audio.currentTime || 0);
       audio.play().catch(() => { });
       return;
     }
     audio.pause();
-  }, [applyPendingRestore, currentTrackSrc, isPlaying]);
+  }, [applyPendingRestore, currentTrackSrc, isPlaying, markPlaybackWaiting]);
 
   useEffect(() => {
     playbackContextRef.current = {
