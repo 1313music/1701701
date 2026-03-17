@@ -140,6 +140,37 @@
   word-break: break-word;
 }
 
+.comment-section-debug {
+  max-width: 920px;
+  margin: 0 auto 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--comment-field-border);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+}
+
+[data-theme='light'] .comment-section-debug {
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.comment-section-debug-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.comment-section-debug-row code {
+  color: var(--text-main);
+  word-break: break-all;
+}
+
+.comment-section-debug-row.is-error code {
+  color: #ff6b6b;
+}
+
 .comment-page {
   max-width: 1080px;
   margin: 0 auto;

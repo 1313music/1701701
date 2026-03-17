@@ -50,6 +50,20 @@ const CommentSection = ({
   const latestPathRef = useRef(path);
   const [authRefreshKey, setAuthRefreshKey] = useState(0);
   const [legacyComments, setLegacyComments] = useState([]);
+  const [legacyDebug, setLegacyDebug] = useState({
+    loading: false,
+    error: '',
+    entries: []
+  });
+  const [primaryDebug, setPrimaryDebug] = useState({
+    loading: false,
+    error: '',
+    count: null,
+    totalPages: null
+  });
+
+  const isDebug = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).has('commentDebug');
 
   useEffect(() => {
     latestPathRef.current = path;
@@ -174,6 +188,14 @@ const CommentSection = ({
   useEffect(() => {
     if (!serverURL || legacyPaths.length === 0) {
       setLegacyComments((previous) => (previous.length === 0 ? previous : []));
+      if (isDebug) {
+        setLegacyDebug((previous) => ({
+          ...previous,
+          loading: false,
+          error: '',
+          entries: []
+        }));
+      }
       return undefined;
     }
 
@@ -183,6 +205,13 @@ const CommentSection = ({
     let canceled = false;
 
     const loadLegacyComments = async () => {
+      if (isDebug) {
+        setLegacyDebug({
+          loading: true,
+          error: '',
+          entries: []
+        });
+      }
       try {
         const responses = await Promise.all(legacyPaths.map(async (legacyPath) => {
           const firstPage = await getComment({
@@ -227,9 +256,26 @@ const CommentSection = ({
           (Number(left?.time) || 0) - (Number(right?.time) || 0)
         ));
         setLegacyComments(mergedComments);
+        if (isDebug) {
+          setLegacyDebug({
+            loading: false,
+            error: '',
+            entries: legacyPaths.map((legacyPath, index) => ({
+              path: legacyPath,
+              count: Number(responses[index]?.length || 0)
+            }))
+          });
+        }
       } catch {
         if (canceled) return;
         setLegacyComments([]);
+        if (isDebug) {
+          setLegacyDebug({
+            loading: false,
+            error: 'legacy load failed',
+            entries: []
+          });
+        }
       }
     };
 
@@ -239,7 +285,66 @@ const CommentSection = ({
       canceled = true;
       controller?.abort();
     };
-  }, [legacyPaths, serverURL]);
+  }, [isDebug, legacyPaths, serverURL]);
+
+  useEffect(() => {
+    if (!isDebug || !serverURL || !path) {
+      setPrimaryDebug((previous) => ({
+        ...previous,
+        loading: false,
+        error: '',
+        count: null,
+        totalPages: null
+      }));
+      return undefined;
+    }
+
+    const controller = typeof AbortController !== 'undefined'
+      ? new AbortController()
+      : null;
+    let canceled = false;
+
+    const loadPrimaryDebug = async () => {
+      setPrimaryDebug((previous) => ({
+        ...previous,
+        loading: true,
+        error: ''
+      }));
+      try {
+        const response = await getComment({
+          serverURL,
+          lang: 'zh-CN',
+          path,
+          page: 1,
+          pageSize: 1,
+          sortBy: LEGACY_COMMENT_SORT_BY,
+          signal: controller?.signal
+        });
+        if (canceled) return;
+        setPrimaryDebug({
+          loading: false,
+          error: '',
+          count: Number(response?.count ?? 0),
+          totalPages: Number(response?.totalPages ?? 0)
+        });
+      } catch (error) {
+        if (canceled) return;
+        setPrimaryDebug({
+          loading: false,
+          error: error instanceof Error ? error.message : 'primary load failed',
+          count: null,
+          totalPages: null
+        });
+      }
+    };
+
+    void loadPrimaryDebug();
+
+    return () => {
+      canceled = true;
+      controller?.abort();
+    };
+  }, [isDebug, path, serverURL]);
 
   return (
     <section className="comment-section">
@@ -249,6 +354,52 @@ const CommentSection = ({
             {title ? <h2 className="comment-section-title">{title}</h2> : null}
             {subtitle ? <p className="comment-section-subtitle">{subtitle}</p> : null}
           </div>
+        </div>
+      ) : null}
+      {isDebug ? (
+        <div className="comment-section-debug">
+          <div className="comment-section-debug-row">
+            <span>server</span>
+            <code>{serverURL || 'empty'}</code>
+          </div>
+          <div className="comment-section-debug-row">
+            <span>primary path</span>
+            <code>{path || 'empty'}</code>
+          </div>
+          <div className="comment-section-debug-row">
+            <span>primary count</span>
+            <code>
+              {primaryDebug.loading ? 'loading' : `${primaryDebug.count ?? 'n/a'} / ${primaryDebug.totalPages ?? 'n/a'}`}
+            </code>
+          </div>
+          {primaryDebug.error ? (
+            <div className="comment-section-debug-row is-error">
+              <span>primary error</span>
+              <code>{primaryDebug.error}</code>
+            </div>
+          ) : null}
+          <div className="comment-section-debug-row">
+            <span>legacy paths</span>
+            <code>{legacyPaths.length ? legacyPaths.join(' | ') : 'none'}</code>
+          </div>
+          <div className="comment-section-debug-row">
+            <span>legacy status</span>
+            <code>{legacyDebug.loading ? 'loading' : 'idle'}</code>
+          </div>
+          {legacyDebug.error ? (
+            <div className="comment-section-debug-row is-error">
+              <span>legacy error</span>
+              <code>{legacyDebug.error}</code>
+            </div>
+          ) : null}
+          {legacyDebug.entries.length > 0 ? (
+            <div className="comment-section-debug-row">
+              <span>legacy counts</span>
+              <code>
+                {legacyDebug.entries.map((entry) => `${entry.path} -> ${entry.count}`).join(' | ')}
+              </code>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {legacyComments.length > 0 ? (
