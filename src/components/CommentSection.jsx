@@ -246,9 +246,9 @@ const CommentSection = ({
         const mergedComments = [];
         const seenCommentIds = new Set();
         responses.flat().forEach((comment) => {
-          const objectId = Number(comment?.objectId);
-          if (!Number.isFinite(objectId) || seenCommentIds.has(objectId)) return;
-          seenCommentIds.add(objectId);
+          const objectKey = String(comment?.objectId || '').trim();
+          if (!objectKey || seenCommentIds.has(objectKey)) return;
+          seenCommentIds.add(objectKey);
           mergedComments.push(comment);
         });
 
