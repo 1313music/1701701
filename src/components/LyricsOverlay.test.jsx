@@ -5,7 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LyricsOverlay from './LyricsOverlay.jsx';
 
 vi.mock('./CommentSection.jsx', () => ({
-  default: ({ path }) => <div data-testid="comment-path">{path}</div>
+  default: ({ path, legacyPaths = [] }) => (
+    <div>
+      <div data-testid="comment-path">{path}</div>
+      <div data-testid="comment-legacy-paths">{legacyPaths.join('|')}</div>
+    </div>
+  )
 }));
 
 vi.mock('framer-motion', () => {
@@ -45,6 +50,9 @@ const createBaseProps = (overrides = {}) => ({
   currentSongInfo: {
     album: {
       id: 'album-1'
+    },
+    song: {
+      id: 'song-1'
     }
   },
   isPlaying: false,
@@ -109,6 +117,9 @@ describe('LyricsOverlay comment drawer requests', () => {
 
     expect(screen.getByText('单曲评论')).toBeInTheDocument();
     expect(screen.getByTestId('comment-path')).toHaveTextContent(
+      'song:album-1:song-1'
+    );
+    expect(screen.getByTestId('comment-legacy-paths')).toHaveTextContent(
       'song:album-1:https%3A%2F%2Fexample.com%2Fsong.mp3'
     );
   });
@@ -152,7 +163,7 @@ describe('LyricsOverlay comment drawer requests', () => {
 
     expect(screen.getByText('单曲评论')).toBeInTheDocument();
     expect(screen.getByTestId('comment-path')).toHaveTextContent(
-      'song:album-1:https%3A%2F%2Fexample.com%2Fsong.mp3'
+      'song:album-1:song-1'
     );
 
     fireEvent.click(screen.getByRole('button', { name: '关闭评论抽屉' }));

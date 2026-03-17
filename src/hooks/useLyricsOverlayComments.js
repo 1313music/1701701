@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { buildSongCommentPaths } from '../utils/commentPathUtils.js';
 
 export const useLyricsOverlayComments = ({
   commentServerURL,
@@ -28,9 +29,13 @@ export const useLyricsOverlayComments = ({
 
   const latestCommentRequestId = Number.isFinite(openCommentRequestId) ? openCommentRequestId : 0;
   const commentAlbumId = currentSongInfo?.album?.id || currentAlbum?.id || 'library';
-  const currentSongCommentPath = currentTrackSrc
-    ? `song:${commentAlbumId}:${encodeURIComponent(currentTrackSrc)}`
-    : '';
+  const { primaryPath: currentSongCommentPath, legacyPaths: legacySongCommentPaths } = useMemo(() => (
+    buildSongCommentPaths({
+      albumId: commentAlbumId,
+      songId: currentSongInfo?.song?.id,
+      trackSrc: currentTrackSrc
+    })
+  ), [commentAlbumId, currentSongInfo?.song?.id, currentTrackSrc]);
   const canOpenCommentDrawer = Boolean(commentServerURL && currentSongCommentPath);
   const currentCommentDrawerContextKey = currentTrackSrc
     ? `${playerOverlayContextId}:${lyricsOverlaySessionId}:${trackChangeId}:${currentTrackSrc}`
@@ -179,6 +184,7 @@ export const useLyricsOverlayComments = ({
 
   return {
     currentSongCommentPath,
+    legacySongCommentPaths,
     canOpenCommentDrawer,
     isCommentDrawerOpen,
     shouldRenderCommentDrawer,
