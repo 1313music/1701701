@@ -115,7 +115,6 @@ const LyricsOverlay = ({
     const canToggleFavorite = Boolean(currentTrackSrc);
     const {
         currentSongCommentPath,
-        legacySongCommentPaths,
         canOpenCommentDrawer,
         isCommentDrawerOpen,
         shouldRenderCommentDrawer,
@@ -499,7 +498,6 @@ const LyricsOverlay = ({
                                 <CommentSection
                                     serverURL={commentServerURL}
                                     path={currentSongCommentPath}
-                                    legacyPaths={legacySongCommentPaths}
                                     title=""
                                     subtitle=""
                                 />

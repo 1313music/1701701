@@ -5,10 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LyricsOverlay from './LyricsOverlay.jsx';
 
 vi.mock('./CommentSection.jsx', () => ({
-  default: ({ path, legacyPaths = [] }) => (
+  default: ({ path }) => (
     <div>
       <div data-testid="comment-path">{path}</div>
-      <div data-testid="comment-legacy-paths">{legacyPaths.join('|')}</div>
     </div>
   )
 }));
@@ -118,9 +117,6 @@ describe('LyricsOverlay comment drawer requests', () => {
     expect(screen.getByText('单曲评论')).toBeInTheDocument();
     expect(screen.getByTestId('comment-path')).toHaveTextContent(
       'song:album-1:song-1'
-    );
-    expect(screen.getByTestId('comment-legacy-paths')).toHaveTextContent(
-      'song:album-1:https%3A%2F%2Fexample.com%2Fsong.mp3'
     );
   });
 

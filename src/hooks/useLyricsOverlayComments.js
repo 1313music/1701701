@@ -29,7 +29,7 @@ export const useLyricsOverlayComments = ({
 
   const latestCommentRequestId = Number.isFinite(openCommentRequestId) ? openCommentRequestId : 0;
   const commentAlbumId = currentSongInfo?.album?.id || currentAlbum?.id || 'library';
-  const { primaryPath: currentSongCommentPath, legacyPaths: legacySongCommentPaths } = useMemo(() => (
+  const { primaryPath: currentSongCommentPath } = useMemo(() => (
     buildSongCommentPaths({
       albumId: commentAlbumId,
       songId: currentSongInfo?.song?.id,
@@ -184,7 +184,6 @@ export const useLyricsOverlayComments = ({
 
   return {
     currentSongCommentPath,
-    legacySongCommentPaths,
     canOpenCommentDrawer,
     isCommentDrawerOpen,
     shouldRenderCommentDrawer,

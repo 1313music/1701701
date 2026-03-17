@@ -12,34 +12,11 @@ import {
 } from '../vendors/walineDomAdapter.js';
 import '../styles/comments.css';
 
-const LEGACY_COMMENT_PAGE_SIZE = 100;
-const LEGACY_COMMENT_SORT_BY = 'insertedAt_asc';
-const EMPTY_LEGACY_PATHS = [];
-
-const flattenCommentTree = (comments, depth = 0) => comments.flatMap((comment) => ([
-  { ...comment, depth },
-  ...flattenCommentTree(comment.children || [], depth + 1)
-]));
-
-const formatCommentTime = (value) => {
-  if (!Number.isFinite(value)) return '';
-  try {
-    return new Intl.DateTimeFormat('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(new Date(value));
-  } catch {
-    return '';
-  }
-};
+const COMMENT_SORT_BY = 'insertedAt_asc';
 
 const CommentSection = ({
   serverURL,
   path = 'page:home',
-  legacyPaths = EMPTY_LEGACY_PATHS,
   title = '留言板',
   subtitle = ''
 }) => {
@@ -49,12 +26,6 @@ const CommentSection = ({
   const observerRef = useRef(null);
   const latestPathRef = useRef(path);
   const [authRefreshKey, setAuthRefreshKey] = useState(0);
-  const [legacyComments, setLegacyComments] = useState([]);
-  const [legacyDebug, setLegacyDebug] = useState({
-    loading: false,
-    error: '',
-    entries: []
-  });
   const [primaryDebug, setPrimaryDebug] = useState({
     loading: false,
     error: '',
@@ -186,108 +157,6 @@ const CommentSection = ({
   }, [path, scheduleHeaderSync]);
 
   useEffect(() => {
-    if (!serverURL || legacyPaths.length === 0) {
-      setLegacyComments((previous) => (previous.length === 0 ? previous : []));
-      if (isDebug) {
-        setLegacyDebug((previous) => ({
-          ...previous,
-          loading: false,
-          error: '',
-          entries: []
-        }));
-      }
-      return undefined;
-    }
-
-    const controller = typeof AbortController !== 'undefined'
-      ? new AbortController()
-      : null;
-    let canceled = false;
-
-    const loadLegacyComments = async () => {
-      if (isDebug) {
-        setLegacyDebug({
-          loading: true,
-          error: '',
-          entries: []
-        });
-      }
-      try {
-        const responses = await Promise.all(legacyPaths.map(async (legacyPath) => {
-          const firstPage = await getComment({
-            serverURL,
-            lang: 'zh-CN',
-            path: legacyPath,
-            page: 1,
-            pageSize: LEGACY_COMMENT_PAGE_SIZE,
-            sortBy: LEGACY_COMMENT_SORT_BY,
-            signal: controller?.signal
-          });
-
-          const totalPages = Math.max(Number(firstPage?.totalPages) || 1, 1);
-          const pages = [firstPage];
-          for (let page = 2; page <= totalPages; page += 1) {
-            pages.push(await getComment({
-              serverURL,
-              lang: 'zh-CN',
-              path: legacyPath,
-              page,
-              pageSize: LEGACY_COMMENT_PAGE_SIZE,
-              sortBy: LEGACY_COMMENT_SORT_BY,
-              signal: controller?.signal
-            }));
-          }
-
-          return pages.flatMap((page) => flattenCommentTree(page?.data || []));
-        }));
-
-        if (canceled) return;
-
-        const mergedComments = [];
-        const seenCommentIds = new Set();
-        responses.flat().forEach((comment) => {
-          const objectKey = String(comment?.objectId || '').trim();
-          if (!objectKey || seenCommentIds.has(objectKey)) return;
-          seenCommentIds.add(objectKey);
-          mergedComments.push(comment);
-        });
-
-        mergedComments.sort((left, right) => (
-          (Number(left?.time) || 0) - (Number(right?.time) || 0)
-        ));
-        setLegacyComments(mergedComments);
-        if (isDebug) {
-          setLegacyDebug({
-            loading: false,
-            error: '',
-            entries: legacyPaths.map((legacyPath, index) => ({
-              path: legacyPath,
-              count: Number(responses[index]?.length || 0)
-            }))
-          });
-        }
-      } catch {
-        if (canceled) return;
-        setLegacyComments([]);
-        if (isDebug) {
-          setLegacyDebug({
-            loading: false,
-            error: 'legacy load failed',
-            entries: []
-          });
-        }
-      }
-    };
-
-    void loadLegacyComments();
-
-    return () => {
-      canceled = true;
-      controller?.abort();
-    };
-  }, [isDebug, legacyPaths, serverURL]);
-
-  useEffect(() => {
     if (!isDebug || !serverURL || !path) {
       setPrimaryDebug((previous) => ({
         ...previous,
@@ -317,7 +186,7 @@ const CommentSection = ({
           path,
           page: 1,
           pageSize: 1,
-          sortBy: LEGACY_COMMENT_SORT_BY,
+          sortBy: COMMENT_SORT_BY,
           signal: controller?.signal
         });
         if (canceled) return;
@@ -378,51 +247,6 @@ const CommentSection = ({
               <code>{primaryDebug.error}</code>
             </div>
           ) : null}
-          <div className="comment-section-debug-row">
-            <span>legacy paths</span>
-            <code>{legacyPaths.length ? legacyPaths.join(' | ') : 'none'}</code>
-          </div>
-          <div className="comment-section-debug-row">
-            <span>legacy status</span>
-            <code>{legacyDebug.loading ? 'loading' : 'idle'}</code>
-          </div>
-          {legacyDebug.error ? (
-            <div className="comment-section-debug-row is-error">
-              <span>legacy error</span>
-              <code>{legacyDebug.error}</code>
-            </div>
-          ) : null}
-          {legacyDebug.entries.length > 0 ? (
-            <div className="comment-section-debug-row">
-              <span>legacy counts</span>
-              <code>
-                {legacyDebug.entries.map((entry) => `${entry.path} -> ${entry.count}`).join(' | ')}
-              </code>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-      {legacyComments.length > 0 ? (
-        <div className="comment-section-legacy">
-          <div className="comment-section-legacy-head">
-            <h3>历史评论</h3>
-            <p>已自动合并早期不同评论路径下的单曲评论。</p>
-          </div>
-          <div className="comment-section-legacy-list">
-            {legacyComments.map((comment) => (
-              <article
-                key={comment.objectId}
-                className="comment-section-legacy-item"
-                style={{ '--legacy-comment-depth': comment.depth || 0 }}
-              >
-                <div className="comment-section-legacy-meta">
-                  <span className="comment-section-legacy-author">{comment.nick || '匿名'}</span>
-                  <span className="comment-section-legacy-time">{formatCommentTime(comment.time)}</span>
-                </div>
-                <div className="comment-section-legacy-content">{comment.orig || comment.comment || ''}</div>
-              </article>
-            ))}
-          </div>
         </div>
       ) : null}
       {!serverURL ? (
