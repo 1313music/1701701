@@ -6,6 +6,7 @@ import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
+import IosPwaAudioNotice from './components/IosPwaAudioNotice.jsx';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAppShell } from './hooks/useAppShell.js';
 import { useLibraryState } from './hooks/useLibraryState.js';
@@ -37,6 +38,7 @@ const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
 
 const App = () => {
   const hasSignaledBootReadyRef = useRef(false);
+  const sharedTargetRef = useRef(null);
 
   const {
     toastMessage,
@@ -45,6 +47,16 @@ const App = () => {
     toastPlacement,
     showToast
   } = useToast();
+
+  const handleCopyPwaLink = useCallback(async (href) => {
+    if (!href) return;
+    const copied = await copyTextToClipboard(href);
+    showToast(
+      copied ? '已复制，请用 Safari 打开' : '复制失败',
+      copied ? 'tone-add' : 'tone-warn',
+      { placement: 'bottom' }
+    );
+  }, [showToast]);
 
   const {
     themePreference,
@@ -118,6 +130,7 @@ const App = () => {
     view,
     locationSearch,
     handleViewChange,
+    replaceLocationSearch,
     isLyricsOpen,
     lyricsOverlaySessionId,
     playerOverlayContextId,
@@ -148,6 +161,27 @@ const App = () => {
     if (musicAlbums.length === 0) return;
     const resolvedShareTarget = resolveMusicShareTarget(musicAlbums, locationSearch);
     if (!resolvedShareTarget) return;
+    const isSameTrack = Boolean(
+      currentTrack?.src
+      && resolvedShareTarget.track?.src
+      && currentTrack.src === resolvedShareTarget.track.src
+    );
+    const isSameAlbum = Boolean(
+      currentAlbum?.id
+      && resolvedShareTarget.album?.id
+      && currentAlbum.id === resolvedShareTarget.album.id
+    );
+    if (isSameTrack && isSameAlbum) {
+      sharedTargetRef.current = {
+        albumId: resolvedShareTarget.album.id,
+        trackSrc: resolvedShareTarget.track.src
+      };
+      return;
+    }
+    sharedTargetRef.current = {
+      albumId: resolvedShareTarget.album.id,
+      trackSrc: resolvedShareTarget.track.src
+    };
 
     const timerId = window.setTimeout(() => {
       setSelectedAlbum(resolvedShareTarget.album);
@@ -156,7 +190,35 @@ const App = () => {
       setIsPlaying(false);
     }, 0);
     return () => window.clearTimeout(timerId);
-  }, [locationSearch, musicAlbums, setCurrentAlbum, setCurrentTrack, setIsPlaying, setSelectedAlbum]);
+  }, [
+    currentAlbum,
+    currentTrack,
+    locationSearch,
+    musicAlbums,
+    setCurrentAlbum,
+    setCurrentTrack,
+    setIsPlaying,
+    setSelectedAlbum
+  ]);
+
+  useEffect(() => {
+    if (view !== 'library') return;
+    const sharedTarget = sharedTargetRef.current;
+    if (!sharedTarget) return;
+    if (!currentTrack?.src || !currentAlbum?.id) return;
+    const hasShareParams = Boolean(locationSearch && locationSearch.includes('albumId='));
+    if (!hasShareParams) {
+      sharedTargetRef.current = null;
+      return;
+    }
+    const isStillSharedTrack = (
+      sharedTarget.trackSrc === currentTrack.src
+      && sharedTarget.albumId === currentAlbum.id
+    );
+    if (isStillSharedTrack) return;
+    replaceLocationSearch('', { view: 'library', historyMode: 'replace' });
+    sharedTargetRef.current = null;
+  }, [currentAlbum, currentTrack, locationSearch, replaceLocationSearch, view]);
 
   const listAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
     ? currentSongInfo.album
@@ -650,6 +712,11 @@ const App = () => {
             </div>
           </div>
         )}
+
+        <IosPwaAudioNotice
+          blocked={isWeChatBrowserHintOpen || isVideoAccessOpen || Boolean(sharePanelData)}
+          onCopyLink={handleCopyPwaLink}
+        />
       </div>
 
       <div

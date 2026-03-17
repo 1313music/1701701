@@ -1,5 +1,3 @@
-import QRCode from 'qrcode';
-
 const isIOSDevice = () => {
   if (typeof navigator === 'undefined') return false;
   return /iP(hone|ad|od)/i.test(navigator.userAgent || '');
@@ -314,12 +312,13 @@ export const createShareCardDataUrl = async ({
   const isDark = resolveIsDarkTheme();
   const useManualBlur = shouldUseManualCanvasBlur();
   const width = isVideoCard ? 1600 : 1080;
-  const cardInsetX = isVideoCard ? 64 : 72;
-  const cardTopGap = isVideoCard ? 56 : 80;
-  const cardBodyHeight = isVideoCard ? 760 : 1360;
-  const shareQrSize = isVideoCard ? 98 : 96;
-  const lowerGap = isVideoCard ? 54 : cardTopGap;
-  const height = cardTopGap + cardBodyHeight + lowerGap + shareQrSize + lowerGap;
+  const brandFontSize = isVideoCard ? 30 : 36;
+  const brandGapTop = isVideoCard ? 0 : 32;
+  const brandGapBottom = isVideoCard ? 0 : 44;
+  const brandAreaHeight = isVideoCard ? 0 : brandGapTop + brandFontSize + brandGapBottom;
+  const cardBodyHeight = isVideoCard ? 760 : 1460;
+  const cardHeight = cardBodyHeight + brandAreaHeight;
+  const height = cardHeight;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -365,6 +364,14 @@ export const createShareCardDataUrl = async ({
       ? (isDark ? 'rgba(255, 255, 255, 0.006)' : 'rgba(255, 255, 255, 0.005)')
       : (isDark ? 'rgba(255, 255, 255, 0.018)' : 'rgba(255, 255, 255, 0.014)')
   };
+  const cardX = 0;
+  const cardY = 0;
+  const cardWidth = width;
+  const cardRadius = isVideoCard ? 42 : 58;
+
+  ctx.save();
+  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+  ctx.clip();
   if (coverImage) {
     drawBlurredCover(
       ctx,
@@ -386,28 +393,23 @@ export const createShareCardDataUrl = async ({
   ctx.fillStyle = palette.backdrop;
   ctx.fillRect(0, 0, width, height);
 
-  const vignette = ctx.createRadialGradient(width * 0.5, height * 0.42, width * 0.18, width * 0.5, height * 0.5, width * 0.88);
+  const vignette = ctx.createRadialGradient(width * 0.5, cardHeight * 0.42, width * 0.18, width * 0.5, cardHeight * 0.5, width * 0.88);
   vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
   vignette.addColorStop(0.62, 'rgba(0, 0, 0, 0.14)');
   vignette.addColorStop(1, palette.vignette);
   ctx.fillStyle = vignette;
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, width, cardHeight);
 
   ctx.save();
-  for (let i = 0; i < 1200; i += 1) {
+  for (let i = 0; i < 1000; i += 1) {
     const x = Math.random() * width;
-    const y = Math.random() * height;
+    const y = Math.random() * cardHeight;
     const size = Math.random() * 1.4 + 0.4;
     ctx.fillStyle = palette.grain;
     ctx.fillRect(x, y, size, size);
   }
   ctx.restore();
-
-  const cardX = cardInsetX;
-  const cardY = cardTopGap;
-  const cardWidth = width - cardInsetX * 2;
-  const cardHeight = cardBodyHeight;
-  const cardRadius = isVideoCard ? 42 : 58;
+  ctx.restore();
 
   if (!isVideoCard) {
     ctx.save();
@@ -433,85 +435,11 @@ export const createShareCardDataUrl = async ({
     }
     const cardGlass = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
     cardGlass.addColorStop(0, palette.cardGlassTop);
-    cardGlass.addColorStop(0.46, palette.cardGlassMid);
+    cardGlass.addColorStop(0.55, palette.cardGlassMid);
     cardGlass.addColorStop(1, palette.cardGlassBottom);
     ctx.fillStyle = cardGlass;
     ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-    const cardMist = ctx.createRadialGradient(
-      cardX + cardWidth * 0.22,
-      cardY + cardHeight * 0.2,
-      cardWidth * 0.08,
-      cardX + cardWidth * 0.22,
-      cardY + cardHeight * 0.2,
-      cardWidth * 0.62
-    );
-    cardMist.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
-    cardMist.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = cardMist;
-    ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-    if (useManualBlur) {
-      const liquidTint = ctx.createLinearGradient(cardX, cardY, cardX + cardWidth, cardY + cardHeight);
-      liquidTint.addColorStop(0, toRgbaColor(mixRgb(accent, { r: 204, g: 232, b: 255 }, 0.4), isDark ? 0.07 : 0.06));
-      liquidTint.addColorStop(0.52, 'rgba(255, 255, 255, 0)');
-      liquidTint.addColorStop(1, toRgbaColor(mixRgb(accent, { r: 128, g: 172, b: 222 }, 0.52), isDark ? 0.08 : 0.06));
-      ctx.fillStyle = liquidTint;
-      ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-      const topGlint = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight * 0.28);
-      topGlint.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-      topGlint.addColorStop(0.36, 'rgba(255, 255, 255, 0.08)');
-      topGlint.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = topGlint;
-      ctx.fillRect(cardX, cardY, cardWidth, cardHeight * 0.32);
-
-      const refractionBand = ctx.createLinearGradient(
-        cardX - cardWidth * 0.14,
-        cardY + cardHeight * 0.18,
-        cardX + cardWidth * 1.08,
-        cardY + cardHeight * 0.58
-      );
-      refractionBand.addColorStop(0, 'rgba(255, 255, 255, 0)');
-      refractionBand.addColorStop(0.42, 'rgba(255, 255, 255, 0.075)');
-      refractionBand.addColorStop(0.5, 'rgba(255, 255, 255, 0.012)');
-      refractionBand.addColorStop(0.58, 'rgba(255, 255, 255, 0.06)');
-      refractionBand.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = refractionBand;
-      ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-
-      const innerShade = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
-      innerShade.addColorStop(0, 'rgba(255, 255, 255, 0.038)');
-      innerShade.addColorStop(0.62, 'rgba(255, 255, 255, 0)');
-      innerShade.addColorStop(1, 'rgba(0, 0, 0, 0.14)');
-      ctx.fillStyle = innerShade;
-      ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
-    }
     ctx.restore();
-
-    ctx.save();
-    drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
-    ctx.shadowColor = palette.cardShadow;
-    ctx.shadowBlur = 34;
-    ctx.shadowOffsetY = 10;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.restore();
-
-    const cardStroke = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
-    cardStroke.addColorStop(0, palette.cardStrokeTop);
-    cardStroke.addColorStop(0.42, palette.cardStrokeMid);
-    cardStroke.addColorStop(1, palette.cardStrokeBottom);
-    drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
-    ctx.strokeStyle = cardStroke;
-    ctx.lineWidth = 1.35;
-    ctx.stroke();
-
-    drawRoundedRectPath(ctx, cardX + 1.8, cardY + 1.8, cardWidth - 3.6, cardHeight - 3.6, cardRadius - 1.8);
-    ctx.strokeStyle = palette.cardInnerStroke;
-    ctx.lineWidth = 1;
-    ctx.stroke();
   }
 
   if (isVideoCard) {
@@ -519,7 +447,7 @@ export const createShareCardDataUrl = async ({
     const posterX = cardX + posterInset;
     const posterY = cardY + posterInset;
     const posterWidth = cardWidth - posterInset * 2;
-    const posterHeight = cardHeight - posterInset * 2;
+    const posterHeight = cardBodyHeight - posterInset * 2;
     const posterRadius = cardRadius;
 
     if (coverImage) {
@@ -776,36 +704,24 @@ export const createShareCardDataUrl = async ({
     drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
   }
 
-  const qrDataUrl = await QRCode.toDataURL(url, {
-    errorCorrectionLevel: 'M',
-    margin: 0,
-    width: 320,
-    color: {
-      dark: palette.qrDark,
-      light: palette.qrLight
-    }
-  });
-  const qrImage = await loadCanvasImage(qrDataUrl);
-  const qrX = cardX + cardWidth - shareQrSize;
-  const qrY = cardY + cardHeight + lowerGap;
-  ctx.drawImage(qrImage, qrX, qrY, shareQrSize, shareQrSize);
-
-  const infoLeftX = cardX;
   const brandText = '1701701.xyz';
-  const tipText = isVideoCard ? '扫码观看视频' : '扫码播放歌曲';
-  const infoFontSize = isVideoCard ? 34 : 35;
-  const infoBlockTop = qrY;
-  const infoLineGap = Math.max(14, shareQrSize - infoFontSize * 2);
-  const infoBrandY = infoBlockTop;
-  const infoTitleY = infoBrandY + infoFontSize + infoLineGap;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = palette.text;
-  ctx.font = `600 ${infoFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
-  ctx.fillText(brandText, infoLeftX, infoBrandY);
-  ctx.fillStyle = palette.footer;
-  ctx.font = `600 ${infoFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
-  ctx.fillText(tipText, infoLeftX, infoTitleY);
+  if (isVideoCard) {
+    const brandPadding = 34;
+    const brandX = width - brandPadding;
+    const brandY = brandPadding;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    ctx.font = `600 ${brandFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
+    ctx.fillText(brandText, brandX, brandY);
+  } else {
+    const infoBrandY = cardBodyHeight + brandGapTop;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = palette.text;
+    ctx.font = `600 ${brandFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
+    ctx.fillText(brandText, width / 2, infoBrandY);
+  }
 
   return canvas.toDataURL('image/png');
 };

@@ -26,6 +26,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   margin-bottom: 6px;
+  text-align: center;
 }
 
 .ios-pwa-guide-steps {
@@ -39,7 +40,7 @@
 .ios-pwa-guide-actions {
   margin-top: 10px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 8px;
 }
 

@@ -91,6 +91,32 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
     setLocationSearch(url.search);
   }, []);
 
+  const replaceLocationSearch = useCallback((nextSearch, options = {}) => {
+    if (typeof window === 'undefined') return;
+    const targetView = AVAILABLE_VIEWS.has(options.view) ? options.view : view;
+    const historyMode = options.historyMode === 'push' ? 'push' : 'replace';
+    const url = new URL(window.location.href);
+    url.pathname = getPathForView(targetView);
+    url.search = getCanonicalSearchForView(targetView, nextSearch || '');
+    url.hash = '';
+
+    const nextRelativeUrl = `${url.pathname}${url.search}${url.hash}`;
+    const currentRelativeUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (nextRelativeUrl === currentRelativeUrl) {
+      setLocationSearch(url.search);
+      return;
+    }
+
+    if (historyMode === 'replace') {
+      window.history.replaceState(null, '', nextRelativeUrl);
+    } else {
+      window.history.pushState(null, '', nextRelativeUrl);
+    }
+
+    setLocationSearch(url.search);
+  }, [view]);
+
   const handleViewChange = useCallback((nextView, options = {}) => {
     const resolvedView = AVAILABLE_VIEWS.has(nextView) ? nextView : 'library';
     const historyMode = options.historyMode || 'push';
@@ -198,6 +224,7 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
     view,
     locationSearch,
     handleViewChange,
+    replaceLocationSearch,
     isLyricsOpen,
     lyricsOverlaySessionId,
     playerOverlayContextId,
