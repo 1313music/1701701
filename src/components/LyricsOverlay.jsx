@@ -113,6 +113,10 @@ const LyricsOverlay = ({
     const currentTrackSrc = currentTrack?.src || '';
     const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
     const canToggleFavorite = Boolean(currentTrackSrc);
+    const getLyricDistanceBucket = (index) => {
+        if (currentLyricIndex < 0) return 6;
+        return Math.min(Math.abs(index - currentLyricIndex), 6);
+    };
     const {
         currentSongCommentPath,
         canOpenCommentDrawer,
@@ -257,6 +261,7 @@ const LyricsOverlay = ({
                                                 <div
                                                     key={i}
                                                     className={`mobile-lyric-line lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
+                                                    data-distance={getLyricDistanceBucket(i)}
                                                     onClick={(e) => { e.stopPropagation(); audioRef.current.currentTime = l.time; }}
                                                 >
                                                     {l.text}
@@ -437,6 +442,7 @@ const LyricsOverlay = ({
                                                 <div
                                                     key={i}
                                                     className={`lyric-line ${i === currentLyricIndex ? 'active' : ''}`}
+                                                    data-distance={getLyricDistanceBucket(i)}
                                                     onClick={() => { audioRef.current.currentTime = l.time; }}
                                                 >
                                                     {l.text}
