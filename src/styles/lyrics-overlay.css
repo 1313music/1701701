@@ -509,9 +509,39 @@
   contain: paint;
 }
 
+:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics {
+  position: relative;
+  overflow: hidden;
+}
+
+:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics::before,
+:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 132px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics::before {
+  top: 0;
+  background:
+    linear-gradient(180deg, rgba(5, 7, 12, 0.96) 0%, rgba(5, 7, 12, 0.72) 42%, rgba(5, 7, 12, 0) 100%);
+}
+
+:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics::after {
+  bottom: 0;
+  background:
+    linear-gradient(0deg, rgba(5, 7, 12, 0.96) 0%, rgba(5, 7, 12, 0.76) 42%, rgba(5, 7, 12, 0) 100%);
+}
+
 :root.mac-desktop-webview-like .lyrics-scroller {
   mask-image: none;
   -webkit-mask-image: none;
+  position: relative;
+  z-index: 1;
 }
 
 :root.mac-desktop-webview-like .lyric-line {
