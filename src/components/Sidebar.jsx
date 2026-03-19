@@ -152,7 +152,7 @@ const Sidebar = ({
                                 aria-label={themeToggleLabel}
                                 title={themeToggleLabel}
                             >
-                                <ThemeIcon size={20} />
+                                <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
                             </button>
                         )}
                     </div>
