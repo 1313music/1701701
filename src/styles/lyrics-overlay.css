@@ -13,6 +13,17 @@
   color: white;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.lyrics-overlay::before,
+.lyrics-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
 }
 
 .overlay-header {
@@ -462,9 +473,35 @@
   Reduce the heaviest compositor effects only for that environment.
 */
 :root.mac-desktop-webview-like .lyrics-overlay {
-  background: color-mix(in srgb, var(--bg-color) 84%, rgba(6, 8, 12, 0.96));
+  background: rgba(5, 7, 12, 0.94);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+:root.mac-desktop-webview-like .lyrics-overlay::before {
+  inset: -10%;
+  opacity: 0.96;
+  background-image: var(--cover-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: scale(1.1);
+  filter: blur(78px) saturate(1.1) brightness(0.48);
+}
+
+:root.mac-desktop-webview-like .lyrics-overlay::after {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.08), transparent 30%),
+    radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.05), transparent 34%),
+    linear-gradient(180deg, rgba(3, 5, 8, 0.52), rgba(3, 5, 8, 0.88));
+}
+
+:root.mac-desktop-webview-like .overlay-header,
+:root.mac-desktop-webview-like .desktop-player-content,
+:root.mac-desktop-webview-like .mobile-player-content {
+  position: relative;
+  z-index: 1;
 }
 
 :root.mac-desktop-webview-like .lyrics-view.desktop-lyrics,

@@ -367,11 +367,8 @@ export const createShareCardDataUrl = async ({
   const cardX = 0;
   const cardY = 0;
   const cardWidth = width;
-  const cardRadius = isVideoCard ? 42 : 58;
+  const cardRadius = 0;
 
-  ctx.save();
-  drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
-  ctx.clip();
   if (coverImage) {
     drawBlurredCover(
       ctx,
@@ -408,7 +405,6 @@ export const createShareCardDataUrl = async ({
     ctx.fillStyle = palette.grain;
     ctx.fillRect(x, y, size, size);
   }
-  ctx.restore();
   ctx.restore();
 
   if (!isVideoCard) {
