@@ -104,25 +104,50 @@ const PlayerBar = ({
 
                 <div className="player-controls" onClick={(e) => e.stopPropagation()}>
                     <div className="control-buttons">
-                        <div className="icon-btn mode-btn" onClick={(e) => { e.stopPropagation(); togglePlayMode(); }}>
+                        <button
+                            type="button"
+                            className="icon-btn mode-btn"
+                            onClick={togglePlayMode}
+                            aria-label="切换播放模式"
+                        >
                             {getPlayModeIcon(24)}
-                        </div>
-                        <div className="icon-btn skip-back-btn" onClick={(e) => { e.stopPropagation(); handlePrev(); }}>
+                        </button>
+                        <button
+                            type="button"
+                            className="icon-btn skip-back-btn"
+                            onClick={handlePrev}
+                            aria-label="上一首"
+                        >
                             <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
                             <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
-                        </div>
-                        <div className="main-play-btn" onClick={(e) => { e.stopPropagation(); handlePlayPause(); }}>
+                        </button>
+                        <button
+                            type="button"
+                            className="main-play-btn"
+                            onClick={handlePlayPause}
+                            aria-label={isPlaying ? '暂停播放' : '播放'}
+                        >
                             {isPlaying
                                 ? <Pause size={32} fill="currentColor" />
                                 : <Play size={32} fill="currentColor" style={{ marginLeft: '4px' }} />}
-                        </div>
-                        <div className="icon-btn skip-forward-btn" onClick={(e) => { e.stopPropagation(); handleNext(); }}>
+                        </button>
+                        <button
+                            type="button"
+                            className="icon-btn skip-forward-btn"
+                            onClick={handleNext}
+                            aria-label="下一首"
+                        >
                             <Play size={20} fill="currentColor" style={{ marginRight: '-8px' }} />
                             <Play size={20} fill="currentColor" />
-                        </div>
-                        <div className="icon-btn playlist-btn" onClick={(e) => { e.stopPropagation(); setIsAlbumListOpen(true); }}>
+                        </button>
+                        <button
+                            type="button"
+                            className="icon-btn playlist-btn"
+                            onClick={() => setIsAlbumListOpen(true)}
+                            aria-label="打开收藏歌单"
+                        >
                             <ListMusic size={22} strokeWidth={2.4} absoluteStrokeWidth />
-                        </div>
+                        </button>
                     </div>
                 </div>
 

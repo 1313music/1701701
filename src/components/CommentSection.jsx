@@ -13,6 +13,12 @@ import {
 import '../styles/comments.css';
 
 const COMMENT_SORT_BY = 'insertedAt_asc';
+const createPrimaryDebugState = () => ({
+  loading: false,
+  error: '',
+  count: null,
+  totalPages: null
+});
 
 const CommentSection = ({
   serverURL,
@@ -26,12 +32,7 @@ const CommentSection = ({
   const observerRef = useRef(null);
   const latestPathRef = useRef(path);
   const [authRefreshKey, setAuthRefreshKey] = useState(0);
-  const [primaryDebug, setPrimaryDebug] = useState({
-    loading: false,
-    error: '',
-    count: null,
-    totalPages: null
-  });
+  const [primaryDebug, setPrimaryDebug] = useState(createPrimaryDebugState);
 
   const isDebug = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).has('commentDebug');
@@ -102,6 +103,32 @@ const CommentSection = ({
     }, 120);
   }, [syncAuthButtons, syncHeaderPlaceholders]);
 
+  const markPrimaryDebugLoading = useCallback(() => {
+    setPrimaryDebug((previous) => ({
+      ...previous,
+      loading: true,
+      error: ''
+    }));
+  }, []);
+
+  const applyPrimaryDebugSuccess = useCallback((response) => {
+    setPrimaryDebug({
+      loading: false,
+      error: '',
+      count: Number(response?.count ?? 0),
+      totalPages: Number(response?.totalPages ?? 0)
+    });
+  }, []);
+
+  const applyPrimaryDebugError = useCallback((error) => {
+    setPrimaryDebug({
+      loading: false,
+      error: error instanceof Error ? error.message : 'primary load failed',
+      count: null,
+      totalPages: null
+    });
+  }, []);
+
   useEffect(() => {
     if (!containerRef.current || !serverURL) return undefined;
     walineRef.current = init({
@@ -158,13 +185,6 @@ const CommentSection = ({
 
   useEffect(() => {
     if (!isDebug || !serverURL || !path) {
-      setPrimaryDebug((previous) => ({
-        ...previous,
-        loading: false,
-        error: '',
-        count: null,
-        totalPages: null
-      }));
       return undefined;
     }
 
@@ -174,11 +194,7 @@ const CommentSection = ({
     let canceled = false;
 
     const loadPrimaryDebug = async () => {
-      setPrimaryDebug((previous) => ({
-        ...previous,
-        loading: true,
-        error: ''
-      }));
+      markPrimaryDebugLoading();
       try {
         const response = await getComment({
           serverURL,
@@ -190,20 +206,10 @@ const CommentSection = ({
           signal: controller?.signal
         });
         if (canceled) return;
-        setPrimaryDebug({
-          loading: false,
-          error: '',
-          count: Number(response?.count ?? 0),
-          totalPages: Number(response?.totalPages ?? 0)
-        });
+        applyPrimaryDebugSuccess(response);
       } catch (error) {
         if (canceled) return;
-        setPrimaryDebug({
-          loading: false,
-          error: error instanceof Error ? error.message : 'primary load failed',
-          count: null,
-          totalPages: null
-        });
+        applyPrimaryDebugError(error);
       }
     };
 
@@ -213,7 +219,18 @@ const CommentSection = ({
       canceled = true;
       controller?.abort();
     };
-  }, [isDebug, path, serverURL]);
+  }, [
+    applyPrimaryDebugError,
+    applyPrimaryDebugSuccess,
+    isDebug,
+    markPrimaryDebugLoading,
+    path,
+    serverURL
+  ]);
+
+  const resolvedPrimaryDebug = isDebug && serverURL && path
+    ? primaryDebug
+    : createPrimaryDebugState();
 
   return (
     <section className="comment-section">
@@ -236,15 +253,15 @@ const CommentSection = ({
             <code>{path || 'empty'}</code>
           </div>
           <div className="comment-section-debug-row">
-            <span>primary count</span>
-            <code>
-              {primaryDebug.loading ? 'loading' : `${primaryDebug.count ?? 'n/a'} / ${primaryDebug.totalPages ?? 'n/a'}`}
+              <span>primary count</span>
+              <code>
+              {resolvedPrimaryDebug.loading ? 'loading' : `${resolvedPrimaryDebug.count ?? 'n/a'} / ${resolvedPrimaryDebug.totalPages ?? 'n/a'}`}
             </code>
           </div>
-          {primaryDebug.error ? (
+          {resolvedPrimaryDebug.error ? (
             <div className="comment-section-debug-row is-error">
               <span>primary error</span>
-              <code>{primaryDebug.error}</code>
+              <code>{resolvedPrimaryDebug.error}</code>
             </div>
           ) : null}
         </div>

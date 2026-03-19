@@ -499,7 +499,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     if (storedPlaybackState.isPlaying) {
       setIsPlaying(true);
     }
-  }, [musicAlbums.length, setCurrentTrack, songIndex]);
+  }, [musicAlbums.length, setCurrentTrack, setIsPlaying, songIndex]);
 
   useEffect(() => {
     persistPlaybackState(true);
@@ -571,7 +571,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
     setCurrentTrack(activeAlbum.songs[nextIdx]);
     setIsPlaying(true);
-  }, [setCurrentTrack]);
+  }, [setCurrentTrack, setIsPlaying]);
 
   const handlePrev = useCallback(() => {
     const { currentAlbum: activeAlbum, currentTrack: activeTrack, playMode: activePlayMode } = playbackContextRef.current;
@@ -593,7 +593,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
     setCurrentTrack(activeAlbum.songs[prevIdx]);
     setIsPlaying(true);
-  }, [setCurrentTrack]);
+  }, [setCurrentTrack, setIsPlaying]);
 
   useAudioMediaSession({
     audioRef,
@@ -629,7 +629,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   const handlePlayPause = useCallback(() => {
     setIsPlaying((prev) => !prev);
-  }, []);
+  }, [setIsPlaying]);
 
   const handleSeek = useCallback((event) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -650,12 +650,12 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     setCurrentAlbum(album);
     setCurrentTrack(song);
     setIsPlaying(true);
-  }, [currentAlbum, currentTrack, setCurrentTrack]);
+  }, [currentAlbum, currentTrack, setCurrentTrack, setIsPlaying]);
 
   const pausePlayback = useCallback(() => {
     setIsPlaying(false);
     audioRef.current.pause();
-  }, []);
+  }, [setIsPlaying]);
 
   const togglePlayMode = useCallback(() => {
     const modes = ['loop', 'single', 'shuffle'];

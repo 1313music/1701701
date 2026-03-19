@@ -244,23 +244,16 @@ export const useVideoCatalog = ({ locationSearch, onInitialReady, requestVideoVi
     const nextVideo = normalizeVideoItem(matched);
     if (!nextVideo) return;
 
-    const nextVideoKey = buildVideoKey(nextVideo);
-    if (
-      nextVideoKey === activeVideoKey &&
-      nextVideo._categoryId === activeCategory &&
-      folderStack.length === 0
-    ) {
-      return;
-    }
-
     const nextCategoryId = nextVideo._categoryId;
     if (nextCategoryId) {
-      setActiveCategory(nextCategoryId);
-      setWatchCategory(nextCategoryId);
+      setActiveCategory((prev) => (prev === nextCategoryId ? prev : nextCategoryId));
+      setWatchCategory((prev) => (prev === nextCategoryId ? prev : nextCategoryId));
     }
-    setFolderStack([]);
-    setActiveVideo(nextVideo);
-  }, [activeCategory, activeVideoKey, allVideos, folderStack.length, normalizeVideoItem, sharedLocationSearch]);
+    setFolderStack((prev) => (prev.length === 0 ? prev : []));
+    setActiveVideo((prev) => (
+      (prev ? buildVideoKey(prev) : '') === buildVideoKey(nextVideo) ? prev : nextVideo
+    ));
+  }, [allVideos, normalizeVideoItem, sharedLocationSearch]);
 
   useEffect(() => {
     const availableGroupKeys = new Set(watchEpisodeGroups.map((group) => group.key));

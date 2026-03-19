@@ -456,6 +456,35 @@
   filter: none;
 }
 
+/*
+  macOS desktop WebViews (notably the Pake/WKWebView wrapper) can show tile flicker
+  when the desktop lyrics scroller updates inside a full-screen backdrop-filter layer.
+  Reduce the heaviest compositor effects only for that environment.
+*/
+:root.mac-desktop-webview-like .lyrics-overlay {
+  background: color-mix(in srgb, var(--bg-color) 84%, rgba(6, 8, 12, 0.96));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics,
+:root.mac-desktop-webview-like .lyrics-scroller {
+  contain: paint;
+}
+
+:root.mac-desktop-webview-like .lyrics-scroller {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+:root.mac-desktop-webview-like .lyric-line {
+  filter: none;
+  transition:
+    opacity 0.24s cubic-bezier(0.2, 0, 0, 1),
+    font-size 0.24s cubic-bezier(0.2, 0, 0, 1),
+    text-shadow 0.24s cubic-bezier(0.2, 0, 0, 1);
+}
+
 /* Flip Card Effects (Mobile Only) */
 .flip-container {
   /* Default: No 3D transform on Desktop */

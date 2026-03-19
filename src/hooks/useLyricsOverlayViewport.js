@@ -23,6 +23,11 @@ export const useLyricsOverlayViewport = ({
     startAt: 0
   });
 
+  const shouldReduceDesktopScrollEffects = useCallback(() => (
+    typeof document !== 'undefined' &&
+    document.documentElement.classList.contains('mac-desktop-webview-like')
+  ), []);
+
   const isMobileViewport = useCallback(() => {
     if (typeof window === 'undefined') return false;
     return window.innerWidth <= 1024;
@@ -121,8 +126,16 @@ export const useLyricsOverlayViewport = ({
 
   useLayoutEffect(() => {
     if (!isLyricsOpen) return;
-    scrollActiveLyricIntoView('smooth');
-  }, [currentLyricIndex, isLyricsOpen, lyrics.length, scrollActiveLyricIntoView]);
+    const behavior = isMobileViewport() || !shouldReduceDesktopScrollEffects() ? 'smooth' : 'auto';
+    scrollActiveLyricIntoView(behavior);
+  }, [
+    currentLyricIndex,
+    isLyricsOpen,
+    isMobileViewport,
+    lyrics.length,
+    scrollActiveLyricIntoView,
+    shouldReduceDesktopScrollEffects
+  ]);
 
   useLayoutEffect(() => {
     if (!isLyricsOpen) return;

@@ -37,7 +37,7 @@ const encodePathPreservingEscapes = (value) => (
 
 const encodePathWithReadableUnicode = (value) => (
   Array.from(String(value || '')).map((char) => (
-    /[^\x00-\x7F]/.test(char) ? char : encodeURIComponent(char)
+    (char.codePointAt(0) || 0) > 0x7F ? char : encodeURIComponent(char)
   )).join('')
 );
 

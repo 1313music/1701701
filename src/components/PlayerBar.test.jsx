@@ -57,13 +57,13 @@ describe('PlayerBar', () => {
 
   it('routes playback controls without reopening the full-screen player', () => {
     const props = createProps();
-    const { container } = render(<PlayerBar {...props} />);
+    render(<PlayerBar {...props} />);
 
-    fireEvent.click(container.querySelector('.mode-btn'));
-    fireEvent.click(container.querySelector('.skip-back-btn'));
-    fireEvent.click(container.querySelector('.main-play-btn'));
-    fireEvent.click(container.querySelector('.skip-forward-btn'));
-    fireEvent.click(container.querySelector('.playlist-btn'));
+    fireEvent.click(screen.getByRole('button', { name: '切换播放模式' }));
+    fireEvent.click(screen.getByRole('button', { name: '上一首' }));
+    fireEvent.click(screen.getByRole('button', { name: '播放' }));
+    fireEvent.click(screen.getByRole('button', { name: '下一首' }));
+    fireEvent.click(screen.getByRole('button', { name: '打开收藏歌单' }));
 
     expect(props.togglePlayMode).toHaveBeenCalledTimes(1);
     expect(props.handlePrev).toHaveBeenCalledTimes(1);
@@ -71,6 +71,17 @@ describe('PlayerBar', () => {
     expect(props.handleNext).toHaveBeenCalledTimes(1);
     expect(props.setIsAlbumListOpen).toHaveBeenCalledWith(true);
     expect(props.setIsLyricsOpen).not.toHaveBeenCalled();
+  });
+
+  it('exposes playback controls as keyboard-reachable buttons', () => {
+    const props = createProps();
+    render(<PlayerBar {...props} />);
+
+    expect(screen.getByRole('button', { name: '切换播放模式' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '上一首' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '下一首' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '打开收藏歌单' })).toBeInTheDocument();
   });
 
   it('wires favorite, comment, and share actions to callbacks', () => {

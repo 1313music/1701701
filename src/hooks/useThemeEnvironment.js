@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { isMacDesktopWebViewLike } from '../utils/appDomUtils.js';
+
 const isIOSDevice = () => /iPad|iPhone|iPod/.test(window.navigator.userAgent);
 const isAndroidDevice = () => /Android/i.test(window.navigator.userAgent || '');
 
@@ -61,6 +63,7 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
     const isiOS = isIOSDevice();
     const isAndroid = isAndroidDevice();
+    const isMacDesktopWebView = isMacDesktopWebViewLike();
     const initialStandalone = mediaQuery.matches || (isiOS && window.navigator.standalone === true);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const standaloneThemeColor = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
@@ -79,6 +82,7 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
       root.classList.toggle('browser-mode', !isStandalone);
       root.classList.toggle('android-device', isAndroid);
       root.classList.toggle('android-browser-mode', isAndroid && !isStandalone);
+      root.classList.toggle('mac-desktop-webview-like', isMacDesktopWebView);
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', isStandalone ? standaloneThemeColor : browserThemeColor);
       }
@@ -117,6 +121,7 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
       document.removeEventListener('visibilitychange', applyModeAndStabilize);
       root.classList.remove('android-device');
       root.classList.remove('android-browser-mode');
+      root.classList.remove('mac-desktop-webview-like');
       removeMediaQueryListener();
     };
   }, [resolvedTheme]);

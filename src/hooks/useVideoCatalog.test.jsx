@@ -91,6 +91,28 @@ describe('useVideoCatalog share query sync', () => {
     expect(result.current.activeCategory).toBe('cat-b');
   });
 
+  it('allows dismissing or switching away from a shared video after initial hydration', async () => {
+    const { result } = renderHook(() => useVideoCatalog({
+      locationSearch: '?videoId=solo&videoCategory=cat-b'
+    }));
+
+    await waitFor(() => {
+      expect(result.current.activeVideo?.title).toBe('B-2');
+    });
+
+    act(() => {
+      result.current.setActiveVideo(null);
+    });
+
+    expect(result.current.activeVideo).toBe(null);
+
+    act(() => {
+      result.current.handleSelectWatchEpisode(result.current.watchEpisodes[0]);
+    });
+
+    expect(result.current.activeVideo?.title).toBe('B-1');
+  });
+
   it('ignores ambiguous ids without category hints', async () => {
     const { result } = renderHook(() => useVideoCatalog({
       locationSearch: '?videoId=dup'

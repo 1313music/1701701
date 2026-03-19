@@ -122,6 +122,32 @@ export const isWeChatBrowser = () => {
   return /MicroMessenger/i.test(navigator.userAgent || '');
 };
 
+export const isMacDesktopWebViewLike = () => {
+  if (typeof navigator === 'undefined') return false;
+
+  const userAgent = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  const isMac = /\bMacintosh\b/i.test(userAgent) || /^Mac/i.test(platform);
+  if (!isMac) return false;
+
+  if (typeof window !== 'undefined') {
+    const hasTauriLikeGlobal = Boolean(
+      window.__TAURI__ ||
+      window.__TAURI_INTERNALS__ ||
+      window.__TAURI_METADATA__
+    );
+    if (hasTauriLikeGlobal || /\b(?:Pake|Tauri)\b/i.test(userAgent)) {
+      return true;
+    }
+  }
+
+  const isAppleWebKit = /AppleWebKit/i.test(userAgent);
+  const isChromiumFamily = /\b(?:Chrome|CriOS|Edg|EdgiOS|OPR|Opera|Brave|Vivaldi|Arc)\b/i.test(userAgent);
+  const isFirefoxFamily = /\b(?:Firefox|FxiOS)\b/i.test(userAgent);
+
+  return isAppleWebKit && !isChromiumFamily && !isFirefoxFamily;
+};
+
 export const openImagePreviewWindow = (dataUrl) => {
   if (!dataUrl || typeof window === 'undefined') return false;
   const previewWindow = window.open('', '_blank');
