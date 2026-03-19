@@ -300,8 +300,9 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(8, 8, 10, 0.58);
-  backdrop-filter: blur(20px);
+  background: rgba(8, 8, 10, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .waline-auth-overlay[hidden] {
@@ -309,16 +310,17 @@
 }
 
 .waline-auth-modal {
-  width: min(960px, 100%);
-  height: min(820px, calc(100vh - 48px));
+  width: min(620px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid var(--glass-border);
-  background:
-    linear-gradient(180deg, rgba(24, 24, 28, 0.96) 0%, rgba(16, 16, 18, 0.96) 100%);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.34);
+  background: var(--sidebar-bg);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   color: var(--text-main);
 }
 
@@ -327,9 +329,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid var(--glass-border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
 }
 
 .waline-auth-heading {
@@ -340,85 +341,87 @@
   display: block;
   margin-bottom: 4px;
   color: var(--text-secondary);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .waline-auth-heading h3 {
   margin: 0;
   color: var(--text-main);
-  font-size: 20px;
-  line-height: 1.2;
+  font-size: 22px;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
 }
 
 .waline-auth-controls {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .waline-auth-tabs {
   display: inline-flex;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--hover-bg);
-  border: 1px solid var(--glass-border);
+  gap: 8px;
 }
 
 .waline-auth-tab,
 .waline-auth-close {
   appearance: none;
-  border: none;
+  min-height: 38px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--text-main);
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
 }
 
 .waline-auth-tab {
-  min-width: 72px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  background: transparent;
   color: var(--text-secondary);
-  font: inherit;
-  font-weight: 600;
 }
 
 .waline-auth-tab.active {
-  background: var(--text-main);
+  background: var(--main-color);
+  border-color: transparent;
   color: var(--bg-color);
 }
 
 .waline-auth-close {
-  padding: 10px 14px;
-  border-radius: 999px;
   background: var(--hover-bg);
-  color: var(--text-main);
-  font: inherit;
-  font-weight: 600;
-  border: 1px solid var(--glass-border);
 }
 
-.waline-auth-close:hover,
-.waline-auth-tab:hover {
-  opacity: 0.92;
-  background: rgba(255, 255, 255, 0.08);
+.waline-auth-tab:hover:not(.active),
+.waline-auth-close:hover {
+  transform: translateY(-1px);
+  background: var(--hover-bg);
+  color: var(--text-main);
+}
+
+.waline-auth-tab.active:hover {
+  filter: saturate(1.02);
 }
 
 .waline-auth-body {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 24px 20px 20px;
+  padding: 18px 20px 20px;
   overflow-y: auto;
-  background: linear-gradient(180deg, rgba(10, 10, 12, 0.94), rgba(14, 14, 16, 0.98));
 }
 
 .waline-auth-status {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid transparent;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -465,18 +468,21 @@
 .waline-auth-field span {
   color: var(--text-main);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .waline-auth-field input {
   width: 100%;
-  min-height: 48px;
-  padding: 0 14px;
+  min-height: 46px;
+  padding: 0 16px;
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  background: var(--hover-bg);
   color: var(--text-main);
-  font: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
   transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -486,78 +492,69 @@
 
 .waline-auth-field input:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+  border-color: color-mix(in srgb, var(--main-color) 24%, var(--glass-border));
+  background: var(--glass-bg);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 8%, transparent);
 }
 
 .waline-auth-check {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: var(--text-main);
-  font-size: 14px;
+  gap: 8px;
+  padding-top: 2px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .waline-auth-check input {
   width: 18px;
   height: 18px;
   margin: 0;
+  accent-color: var(--main-color);
 }
 
 .waline-auth-submit {
-  min-height: 50px;
-  border: 1px solid var(--text-main);
-  border-radius: 14px;
-  background: var(--text-main);
+  min-height: 42px;
+  margin-top: 2px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--main-color);
   color: var(--bg-color);
-  font: inherit;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
-  box-shadow: none;
+  transition: transform 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
 }
 
 .waline-auth-submit:hover:not(:disabled) {
   transform: translateY(-1px);
-  opacity: 0.92;
+  filter: saturate(1.05);
 }
 
 .waline-auth-submit:disabled {
-  opacity: 0.72;
+  opacity: 0.56;
   cursor: wait;
 }
 
 [data-theme='light'] .waline-auth-overlay {
-  background: rgba(18, 18, 20, 0.24);
+  background: rgba(18, 18, 20, 0.22);
 }
 
 [data-theme='light'] .waline-auth-modal {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 248, 250, 0.98) 100%);
-  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
 }
 
-[data-theme='light'] .waline-auth-header {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.04), rgba(15, 23, 42, 0.02));
+[data-theme='light'] .waline-auth-tab.active,
+[data-theme='light'] .waline-auth-submit {
+  background: #121214;
+  color: #ffffff;
 }
 
 [data-theme='light'] .waline-auth-close:hover,
-[data-theme='light'] .waline-auth-tab:hover {
+[data-theme='light'] .waline-auth-tab:hover:not(.active) {
   background: rgba(15, 23, 42, 0.06);
-}
-
-[data-theme='light'] .waline-auth-body {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98));
-}
-
-[data-theme='light'] .waline-auth-field input {
-  background: rgba(15, 23, 42, 0.02);
-}
-
-[data-theme='light'] .waline-auth-field input:focus {
-  border-color: rgba(15, 23, 42, 0.16);
-  background: rgba(15, 23, 42, 0.04);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04);
 }
 
 @media (max-width: 760px) {
@@ -575,21 +572,22 @@
   }
 
   .waline-auth-overlay {
-    padding: 0;
-    background: rgba(7, 10, 15, 0.86);
+    align-items: flex-end;
+    padding: 12px;
+    background: rgba(7, 10, 15, 0.7);
   }
 
   .waline-auth-modal {
     width: 100%;
-    height: 100%;
-    border-radius: 0;
+    max-height: calc(var(--mobile-fullscreen-height) - 12px);
+    border-radius: 18px;
   }
 
   .waline-auth-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
-    padding: 14px 14px 12px;
+    gap: 14px;
+    padding: 16px 16px 14px;
   }
 
   .waline-auth-controls {
@@ -605,7 +603,15 @@
     min-width: 0;
   }
 
+  .waline-auth-close {
+    padding: 7px 12px;
+  }
+
   .waline-auth-body {
-    padding: 18px 14px 16px;
+    padding: 16px 16px calc(16px + var(--mobile-fullscreen-safe-bottom));
+  }
+
+  .waline-auth-heading h3 {
+    font-size: 20px;
   }
 }
