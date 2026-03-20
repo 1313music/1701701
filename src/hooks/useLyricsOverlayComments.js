@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildSongCommentPaths } from '../utils/commentPathUtils.js';
 
+const COMMENT_DRAWER_EDGE_SWIPE_MAX_START_X = 64;
+
 export const useLyricsOverlayComments = ({
   commentServerURL,
   currentAlbum,
@@ -20,6 +22,7 @@ export const useLyricsOverlayComments = ({
 }) => {
   const commentDrawerSwipeRef = useRef({
     active: false,
+    fromLeftEdge: false,
     startX: 0,
     startY: 0,
     startAt: 0
@@ -78,6 +81,7 @@ export const useLyricsOverlayComments = ({
 
   const resetCommentDrawerSwipeState = useCallback(() => {
     commentDrawerSwipeRef.current.active = false;
+    commentDrawerSwipeRef.current.fromLeftEdge = false;
     commentDrawerSwipeRef.current.startX = 0;
     commentDrawerSwipeRef.current.startY = 0;
     commentDrawerSwipeRef.current.startAt = 0;
@@ -112,6 +116,7 @@ export const useLyricsOverlayComments = ({
     const touch = event.touches?.[0];
     if (!touch) return;
     commentDrawerSwipeRef.current.active = true;
+    commentDrawerSwipeRef.current.fromLeftEdge = touch.clientX <= COMMENT_DRAWER_EDGE_SWIPE_MAX_START_X;
     commentDrawerSwipeRef.current.startX = touch.clientX;
     commentDrawerSwipeRef.current.startY = touch.clientY;
     commentDrawerSwipeRef.current.startAt = Date.now();
@@ -121,6 +126,7 @@ export const useLyricsOverlayComments = ({
     const state = commentDrawerSwipeRef.current;
     if (!state.active) return;
     const touch = event.changedTouches?.[0];
+    const fromLeftEdge = state.fromLeftEdge;
     const startX = state.startX;
     const startY = state.startY;
     const startAt = state.startAt;
@@ -132,7 +138,7 @@ export const useLyricsOverlayComments = ({
     const elapsed = Math.max(Date.now() - startAt, 1);
     const velocityX = deltaX / elapsed;
     const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
-    const shouldCloseByRight = deltaX > 88 || (deltaX > 42 && velocityX > 0.58);
+    const shouldCloseByRight = fromLeftEdge && (deltaX > 88 || (deltaX > 42 && velocityX > 0.58));
 
     if (isHorizontalSwipe && shouldCloseByRight) {
       closeCommentDrawer();

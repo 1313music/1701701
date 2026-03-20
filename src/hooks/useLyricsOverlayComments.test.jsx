@@ -71,7 +71,7 @@ describe('useLyricsOverlayComments', () => {
     expect(scrollToSpy).toHaveBeenCalledWith(0, 240);
   });
 
-  it('toggles the manual drawer and closes it on mobile right swipe', () => {
+  it('toggles the manual drawer and closes it on mobile left-edge right swipe', () => {
     const nowSpy = vi.spyOn(Date, 'now');
     nowSpy.mockReturnValue(1000);
 
@@ -107,6 +107,27 @@ describe('useLyricsOverlayComments', () => {
     });
 
     expect(result.current.isCommentDrawerOpen).toBe(false);
+
+    act(() => {
+      result.current.toggleCommentDrawer();
+    });
+
+    expect(result.current.isCommentDrawerOpen).toBe(true);
+
+    nowSpy.mockReturnValue(2000);
+    act(() => {
+      result.current.handleCommentDrawerTouchStart({
+        touches: [{ clientX: 120, clientY: 20 }]
+      });
+    });
+
+    nowSpy.mockReturnValue(2100);
+    act(() => {
+      result.current.handleCommentDrawerTouchEnd({
+        changedTouches: [{ clientX: 240, clientY: 32 }]
+      });
+    });
+
+    expect(result.current.isCommentDrawerOpen).toBe(true);
   });
 });
-

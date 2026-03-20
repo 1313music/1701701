@@ -9,6 +9,7 @@ const FAVORITE_MARQUEE_TEXT_GAP = 8;
 const FAVORITE_MARQUEE_MIN_DURATION = 10;
 const FAVORITE_MARQUEE_SPEED = 34;
 const FAVORITE_META_MIN_VISIBLE = 44;
+const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
 
 const getMeasuredWidth = (element) => {
     if (!element) return 0;
@@ -172,9 +173,11 @@ const AlbumListOverlay = ({
     const [hoveredAlbumSrc, setHoveredAlbumSrc] = useState('');
     const [hoveredFavoriteSrc, setHoveredFavoriteSrc] = useState('');
     const touchGestureRef = useRef({
+        active: false,
         x: null,
         y: null,
-        fromListBody: false
+        startAt: 0,
+        fromLeftEdge: false
     });
     const safeTempCount = typeof tempPlaylistCount === 'number' ? tempPlaylistCount : 0;
     const safeTempItems = Array.isArray(tempPlaylistItems) ? tempPlaylistItems : [];
@@ -229,61 +232,62 @@ const AlbumListOverlay = ({
 
     if (!album) return null;
 
+    const isMobileViewport = () => (
+        typeof window !== 'undefined' && window.innerWidth <= 768
+    );
+
+    const resetTouchGesture = () => {
+        touchGestureRef.current = {
+            active: false,
+            x: null,
+            y: null,
+            startAt: 0,
+            fromLeftEdge: false
+        };
+    };
+
     const handleTouchStart = (event) => {
+        if (!isMobileViewport()) return;
         const touch = event.touches[0];
         if (!touch) return;
 
-        const target = event.target;
-        const fromListBody = Boolean(
-            target
-            && typeof target.closest === 'function'
-            && target.closest('.album-list-body')
-        );
-
         touchGestureRef.current = {
+            active: true,
             x: touch.clientX,
             y: touch.clientY,
-            fromListBody
+            startAt: Date.now(),
+            fromLeftEdge: touch.clientX <= MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X
         };
     };
 
     const handleTouchEnd = (event) => {
-        const startX = touchGestureRef.current.x;
-        const startY = touchGestureRef.current.y;
-        const fromListBody = touchGestureRef.current.fromListBody;
+        const {
+            active,
+            x: startX,
+            y: startY,
+            startAt,
+            fromLeftEdge
+        } = touchGestureRef.current;
 
-        touchGestureRef.current = { x: null, y: null, fromListBody: false };
-        if (startX == null || startY == null) return;
+        resetTouchGesture();
+        if (!active || startX == null || startY == null || !isMobileViewport()) return;
 
         const endX = event.changedTouches[0]?.clientX ?? startX;
         const endY = event.changedTouches[0]?.clientY ?? startY;
         const deltaX = endX - startX;
         const deltaY = endY - startY;
-        const absX = Math.abs(deltaX);
-        const absY = Math.abs(deltaY);
+        const elapsed = Math.max(Date.now() - startAt, 1);
+        const velocityX = deltaX / elapsed;
+        const isMostlyHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
+        const shouldCloseByRight = fromLeftEdge && (deltaX > 88 || (deltaX > 42 && velocityX > 0.58));
 
-        const horizontalThreshold = fromListBody ? 88 : 64;
-        const verticalTolerance = fromListBody ? 20 : 28;
-        const hasEnoughHorizontalDistance = absX >= horizontalThreshold;
-        const isMostlyHorizontal = absX > absY * 1.6;
-        const withinVerticalTolerance = absY <= verticalTolerance;
-
-        if (!hasEnoughHorizontalDistance || !isMostlyHorizontal || !withinVerticalTolerance) {
-            return;
-        }
-
-        if (deltaX < 0 && activeTab !== 'favorites') {
-            setActiveTab('favorites');
-            return;
-        }
-
-        if (deltaX > 0 && activeTab !== 'album') {
-            setActiveTab('album');
+        if (isMostlyHorizontal && shouldCloseByRight) {
+            onClose?.();
         }
     };
 
     const handleTouchCancel = () => {
-        touchGestureRef.current = { x: null, y: null, fromListBody: false };
+        resetTouchGesture();
     };
 
     const getRowClassName = (song) => {
@@ -502,6 +506,9 @@ const AlbumListOverlay = ({
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
                         onClick={(e) => e.stopPropagation()}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        onTouchCancel={handleTouchCancel}
                     >
                         <div className="album-list-header">
                             <div className="album-list-header-label">播放列表</div>
@@ -515,9 +522,6 @@ const AlbumListOverlay = ({
                             role="tablist"
                             aria-label="歌曲列表视图切换"
                             data-active-tab={activeTab}
-                            onTouchStart={handleTouchStart}
-                            onTouchEnd={handleTouchEnd}
-                            onTouchCancel={handleTouchCancel}
                         >
                             <span className="album-list-tab-slider" aria-hidden="true" />
                             <button
@@ -554,9 +558,6 @@ const AlbumListOverlay = ({
                         <div
                             className="album-list-mobile-layout"
                             data-active-tab={activeTab}
-                            onTouchStart={handleTouchStart}
-                            onTouchEnd={handleTouchEnd}
-                            onTouchCancel={handleTouchCancel}
                         >
                             <section
                                 id="album-list-mobile-album"

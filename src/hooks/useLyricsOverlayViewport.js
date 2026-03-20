@@ -15,9 +15,10 @@ export const getDesktopLyricEdgeOpacity = ({ lineCenter, scrollerTop, scrollerHe
   const scrollerCenter = scrollerTop + scrollerHeight / 2;
   const halfHeight = scrollerHeight / 2;
   const normalizedDistance = Math.min(Math.abs(lineCenter - scrollerCenter) / Math.max(halfHeight, 1), 1);
-  const easedVisibility = 1 - Math.pow(normalizedDistance, 1.55);
-  const minOpacity = isActive ? 0.82 : 0.06;
-  const maxOpacity = isActive ? 1 : 0.58;
+  const edgeBlend = Math.max(0, 1 - normalizedDistance);
+  const easedVisibility = Math.pow(edgeBlend, 0.68);
+  const minOpacity = isActive ? 0.88 : 0.14;
+  const maxOpacity = isActive ? 1 : 0.66;
 
   return Number((minOpacity + (maxOpacity - minOpacity) * easedVisibility).toFixed(3));
 };
@@ -149,13 +150,18 @@ export const useLyricsOverlayViewport = ({
 
     lineNodes.forEach((node) => {
       const rect = node.getBoundingClientRect();
+      const isActive = node.classList.contains('active');
       const opacity = getDesktopLyricEdgeOpacity({
         lineCenter: rect.top + rect.height / 2,
         scrollerTop: scrollerRect.top,
         scrollerHeight: scrollerRect.height,
-        isActive: node.classList.contains('active')
+        isActive
       });
+      const blur = isActive
+        ? Math.max(0, (1 - opacity) * 1.1)
+        : Math.max(0, (0.76 - opacity) * 4.6);
       node.style.setProperty('--desktop-edge-opacity', String(opacity));
+      node.style.setProperty('--desktop-edge-blur', `${blur.toFixed(2)}px`);
     });
   }, [isLyricsOpen, isMobileViewport, shouldReduceDesktopScrollEffects]);
 

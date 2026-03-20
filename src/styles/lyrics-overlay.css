@@ -523,15 +523,16 @@
   -webkit-mask-image: none;
   position: relative;
   z-index: 1;
-  padding-top: 84px;
-  padding-bottom: 108px;
+  padding-top: 68px;
+  padding-bottom: 88px;
 }
 
 :root.mac-desktop-webview-like .lyric-line {
-  filter: none;
+  filter: blur(var(--desktop-edge-blur, 0px));
   opacity: var(--desktop-edge-opacity, 0.3);
   transition:
     opacity 0.18s cubic-bezier(0.2, 0, 0, 1),
+    filter 0.18s cubic-bezier(0.2, 0, 0, 1),
     font-size 0.24s cubic-bezier(0.2, 0, 0, 1),
     text-shadow 0.24s cubic-bezier(0.2, 0, 0, 1);
 }

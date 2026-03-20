@@ -143,6 +143,29 @@ describe('LyricsOverlay comment drawer requests', () => {
     expect(props.setIsLyricsOpen).toHaveBeenCalledWith(false);
   });
 
+  it('closes the mobile overlay when swiping right from the left edge', () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 390
+    });
+
+    render(<LyricsOverlay {...props} />);
+    const overlay = document.body.querySelector('.lyrics-overlay');
+
+    fireEvent.touchStart(overlay, {
+      touches: [{ clientX: 24, clientY: 160 }]
+    });
+    fireEvent.touchEnd(overlay, {
+      changedTouches: [{ clientX: 150, clientY: 164 }]
+    });
+
+    expect(props.setIsLyricsOpen).toHaveBeenCalledWith(false);
+  });
+
   it('opens and closes the mobile comment drawer from the floating action button', async () => {
     const props = createBaseProps({
       isLyricsOpen: true,
@@ -163,6 +186,35 @@ describe('LyricsOverlay comment drawer requests', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: '关闭评论抽屉' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('单曲评论')).not.toBeInTheDocument();
+    });
+  });
+
+  it('closes the mobile comment drawer when swiping right from the left edge', async () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 390
+    });
+
+    render(<LyricsOverlay {...props} />);
+
+    fireEvent.click(document.body.querySelector('.overlay-comment-trigger.mobile-fab'));
+    expect(screen.getByText('单曲评论')).toBeInTheDocument();
+
+    const edgeZone = document.body.querySelector('.song-comment-edge-swipe-zone');
+
+    fireEvent.touchStart(edgeZone, {
+      touches: [{ clientX: 18, clientY: 220 }]
+    });
+    fireEvent.touchEnd(edgeZone, {
+      changedTouches: [{ clientX: 148, clientY: 226 }]
+    });
 
     await waitFor(() => {
       expect(screen.queryByText('单曲评论')).not.toBeInTheDocument();
