@@ -486,6 +486,15 @@ const LyricsOverlay = ({
                             onTouchEnd={handleCommentDrawerTouchEnd}
                             onTouchCancel={resetCommentDrawerSwipeState}
                         >
+                            {isMobileOverlay && (
+                                <div
+                                    className="song-comment-edge-swipe-zone"
+                                    onTouchStart={handleCommentDrawerTouchStart}
+                                    onTouchEnd={handleCommentDrawerTouchEnd}
+                                    onTouchCancel={resetCommentDrawerSwipeState}
+                                    aria-hidden="true"
+                                />
+                            )}
                             <div className="song-comment-drawer-header">
                                 <div className="song-comment-drawer-texts">
                                     <h3>单曲评论</h3>

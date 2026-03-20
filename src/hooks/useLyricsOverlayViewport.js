@@ -1,5 +1,27 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
+
+export const getDesktopLyricEdgeOpacity = ({ lineCenter, scrollerTop, scrollerHeight, isActive = false }) => {
+  if (
+    !Number.isFinite(lineCenter) ||
+    !Number.isFinite(scrollerTop) ||
+    !Number.isFinite(scrollerHeight) ||
+    scrollerHeight <= 0
+  ) {
+    return isActive ? 1 : 0.3;
+  }
+
+  const scrollerCenter = scrollerTop + scrollerHeight / 2;
+  const halfHeight = scrollerHeight / 2;
+  const normalizedDistance = Math.min(Math.abs(lineCenter - scrollerCenter) / Math.max(halfHeight, 1), 1);
+  const easedVisibility = 1 - Math.pow(normalizedDistance, 1.55);
+  const minOpacity = isActive ? 0.82 : 0.06;
+  const maxOpacity = isActive ? 1 : 0.58;
+
+  return Number((minOpacity + (maxOpacity - minOpacity) * easedVisibility).toFixed(3));
+};
+
 export const useLyricsOverlayViewport = ({
   currentLyricIndex,
   currentTrackName,
@@ -15,9 +37,11 @@ export const useLyricsOverlayViewport = ({
   const mobileLyricsWrapRef = useRef(null);
   const mobileLyricsScrollerRef = useRef(null);
   const lyricsManualScrollUntilRef = useRef(0);
+  const desktopEdgeFadeRafRef = useRef(0);
   const mobileSwipeRef = useRef({
     active: false,
     ignore: false,
+    fromLeftEdge: false,
     startX: 0,
     startY: 0,
     startAt: 0
@@ -36,6 +60,7 @@ export const useLyricsOverlayViewport = ({
   const resetMobileSwipeState = useCallback(() => {
     mobileSwipeRef.current.active = false;
     mobileSwipeRef.current.ignore = false;
+    mobileSwipeRef.current.fromLeftEdge = false;
     mobileSwipeRef.current.startX = 0;
     mobileSwipeRef.current.startY = 0;
     mobileSwipeRef.current.startAt = 0;
@@ -53,6 +78,7 @@ export const useLyricsOverlayViewport = ({
     );
     mobileSwipeRef.current.active = true;
     mobileSwipeRef.current.ignore = startedInControls;
+    mobileSwipeRef.current.fromLeftEdge = touch.clientX <= MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X;
     mobileSwipeRef.current.startX = touch.clientX;
     mobileSwipeRef.current.startY = touch.clientY;
     mobileSwipeRef.current.startAt = Date.now();
@@ -63,6 +89,7 @@ export const useLyricsOverlayViewport = ({
     if (!state.active) return;
     const touch = event.changedTouches?.[0];
     const ignore = state.ignore;
+    const fromLeftEdge = state.fromLeftEdge;
     const startX = state.startX;
     const startY = state.startY;
     const startAt = state.startAt;
@@ -78,8 +105,9 @@ export const useLyricsOverlayViewport = ({
     const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.3;
     const shouldCloseByDown = deltaY > 90 || (deltaY > 45 && velocityY > 0.6);
     const shouldCloseByLeft = deltaX < -90 || (deltaX < -50 && velocityX < -0.6);
+    const shouldCloseByRight = fromLeftEdge && (deltaX > 88 || (deltaX > 42 && velocityX > 0.58));
 
-    if ((isVerticalSwipe && shouldCloseByDown) || (isHorizontalSwipe && shouldCloseByLeft)) {
+    if ((isVerticalSwipe && shouldCloseByDown) || (isHorizontalSwipe && (shouldCloseByLeft || shouldCloseByRight))) {
       setIsLyricsOpen(false);
     }
   }, [isMobileViewport, resetMobileSwipeState, setIsLyricsOpen]);
@@ -109,6 +137,39 @@ export const useLyricsOverlayViewport = ({
     scroller.scrollTo({ top, behavior });
   }, [getActiveLyricsNodes, isLyricsOpen]);
 
+  const applyDesktopLyricEdgeFade = useCallback(() => {
+    if (!isLyricsOpen || isMobileViewport() || !shouldReduceDesktopScrollEffects()) return;
+
+    const scroller = desktopLyricsScrollerRef.current;
+    const wrap = desktopLyricsWrapRef.current;
+    if (!scroller || !wrap) return;
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const lineNodes = wrap.querySelectorAll('.lyric-line');
+
+    lineNodes.forEach((node) => {
+      const rect = node.getBoundingClientRect();
+      const opacity = getDesktopLyricEdgeOpacity({
+        lineCenter: rect.top + rect.height / 2,
+        scrollerTop: scrollerRect.top,
+        scrollerHeight: scrollerRect.height,
+        isActive: node.classList.contains('active')
+      });
+      node.style.setProperty('--desktop-edge-opacity', String(opacity));
+    });
+  }, [isLyricsOpen, isMobileViewport, shouldReduceDesktopScrollEffects]);
+
+  const scheduleDesktopLyricEdgeFade = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (desktopEdgeFadeRafRef.current) {
+      window.cancelAnimationFrame(desktopEdgeFadeRafRef.current);
+    }
+    desktopEdgeFadeRafRef.current = window.requestAnimationFrame(() => {
+      desktopEdgeFadeRafRef.current = 0;
+      applyDesktopLyricEdgeFade();
+    });
+  }, [applyDesktopLyricEdgeFade]);
+
   useEffect(() => {
     if (!isLyricsOpen) {
       lyricsManualScrollUntilRef.current = 0;
@@ -128,12 +189,42 @@ export const useLyricsOverlayViewport = ({
     if (!isLyricsOpen) return;
     const behavior = isMobileViewport() || !shouldReduceDesktopScrollEffects() ? 'smooth' : 'auto';
     scrollActiveLyricIntoView(behavior);
+    scheduleDesktopLyricEdgeFade();
   }, [
     currentLyricIndex,
     isLyricsOpen,
     isMobileViewport,
     lyrics.length,
+    scheduleDesktopLyricEdgeFade,
     scrollActiveLyricIntoView,
+    shouldReduceDesktopScrollEffects
+  ]);
+
+  useEffect(() => {
+    if (!isLyricsOpen || isMobileViewport() || !shouldReduceDesktopScrollEffects()) return;
+
+    const scroller = desktopLyricsScrollerRef.current;
+    if (!scroller) return;
+
+    const handleScroll = () => scheduleDesktopLyricEdgeFade();
+    scheduleDesktopLyricEdgeFade();
+    scroller.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      scroller.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      if (desktopEdgeFadeRafRef.current) {
+        window.cancelAnimationFrame(desktopEdgeFadeRafRef.current);
+        desktopEdgeFadeRafRef.current = 0;
+      }
+    };
+  }, [
+    currentTrackSrc,
+    isLyricsOpen,
+    isMobileViewport,
+    lyrics.length,
+    scheduleDesktopLyricEdgeFade,
     shouldReduceDesktopScrollEffects
   ]);
 

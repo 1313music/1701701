@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useLyricsOverlayViewport } from './useLyricsOverlayViewport.js';
+import { getDesktopLyricEdgeOpacity, useLyricsOverlayViewport } from './useLyricsOverlayViewport.js';
 
 const createBaseProps = (overrides = {}) => ({
   currentLyricIndex: 0,
@@ -81,7 +81,7 @@ describe('useLyricsOverlayViewport', () => {
     expect(scrollTo).toHaveBeenCalledWith({ top: 105, behavior: 'auto' });
   });
 
-  it('closes on a left swipe but ignores swipes that started inside controls', () => {
+  it('closes on left swipe and left-edge right swipe, but ignores blocked starts', () => {
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
       value: 390
@@ -113,17 +113,77 @@ describe('useLyricsOverlayViewport', () => {
     nowSpy.mockReturnValue(2000);
 
     result.current.handleOverlayTouchStart({
+      touches: [{ clientX: 24, clientY: 80 }],
+      target: {
+        closest: () => null
+      }
+    });
+
+    nowSpy.mockReturnValue(2100);
+    result.current.handleOverlayTouchEnd({
+      changedTouches: [{ clientX: 160, clientY: 84 }]
+    });
+
+    expect(setIsLyricsOpen).toHaveBeenCalledWith(false);
+
+    setIsLyricsOpen.mockClear();
+    nowSpy.mockReturnValue(3000);
+
+    result.current.handleOverlayTouchStart({
+      touches: [{ clientX: 140, clientY: 80 }],
+      target: {
+        closest: () => null
+      }
+    });
+
+    nowSpy.mockReturnValue(3100);
+    result.current.handleOverlayTouchEnd({
+      changedTouches: [{ clientX: 280, clientY: 84 }]
+    });
+
+    expect(setIsLyricsOpen).not.toHaveBeenCalled();
+
+    nowSpy.mockReturnValue(4000);
+
+    result.current.handleOverlayTouchStart({
       touches: [{ clientX: 180, clientY: 40 }],
       target: {
         closest: () => '.overlay-header'
       }
     });
 
-    nowSpy.mockReturnValue(2100);
+    nowSpy.mockReturnValue(4100);
     result.current.handleOverlayTouchEnd({
       changedTouches: [{ clientX: 40, clientY: 45 }]
     });
 
     expect(setIsLyricsOpen).not.toHaveBeenCalled();
+  });
+
+  it('computes stronger opacity near the center and lighter opacity near the edges', () => {
+    const centerOpacity = getDesktopLyricEdgeOpacity({
+      lineCenter: 300,
+      scrollerTop: 100,
+      scrollerHeight: 400,
+      isActive: false
+    });
+
+    const edgeOpacity = getDesktopLyricEdgeOpacity({
+      lineCenter: 110,
+      scrollerTop: 100,
+      scrollerHeight: 400,
+      isActive: false
+    });
+
+    const activeEdgeOpacity = getDesktopLyricEdgeOpacity({
+      lineCenter: 110,
+      scrollerTop: 100,
+      scrollerHeight: 400,
+      isActive: true
+    });
+
+    expect(centerOpacity).toBeGreaterThan(edgeOpacity);
+    expect(edgeOpacity).toBeLessThan(0.2);
+    expect(activeEdgeOpacity).toBeGreaterThan(edgeOpacity);
   });
 });

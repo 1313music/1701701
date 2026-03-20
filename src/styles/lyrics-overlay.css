@@ -334,6 +334,15 @@
   overflow: hidden;
 }
 
+.song-comment-edge-swipe-zone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 28px;
+  z-index: 3;
+}
+
 .song-comment-drawer-header {
   position: relative;
   display: flex;
@@ -520,36 +529,15 @@
 
 :root.mac-desktop-webview-like .lyric-line {
   filter: none;
-  opacity: 0.18;
+  opacity: var(--desktop-edge-opacity, 0.3);
   transition:
-    opacity 0.24s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.18s cubic-bezier(0.2, 0, 0, 1),
     font-size 0.24s cubic-bezier(0.2, 0, 0, 1),
     text-shadow 0.24s cubic-bezier(0.2, 0, 0, 1);
 }
 
 :root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line.active {
-  opacity: 1;
-}
-
-:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line[data-distance="1"] {
-  opacity: 0.52;
-}
-
-:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line[data-distance="2"] {
-  opacity: 0.38;
-}
-
-:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line[data-distance="3"] {
-  opacity: 0.3;
-}
-
-:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line[data-distance="4"] {
-  opacity: 0.24;
-}
-
-:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line[data-distance="5"],
-:root.mac-desktop-webview-like .lyrics-view.desktop-lyrics .lyric-line[data-distance="6"] {
-  opacity: 0.16;
+  opacity: var(--desktop-edge-opacity, 1);
 }
 
 /* Flip Card Effects (Mobile Only) */
