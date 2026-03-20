@@ -162,21 +162,32 @@ describe('useLyricsOverlayViewport', () => {
 
   it('computes stronger opacity near the center and lighter opacity near the edges', () => {
     const centerOpacity = getDesktopLyricEdgeOpacity({
-      lineCenter: 300,
+      lineTop: 260,
+      lineBottom: 340,
       scrollerTop: 100,
       scrollerHeight: 400,
       isActive: false
     });
 
     const edgeOpacity = getDesktopLyricEdgeOpacity({
-      lineCenter: 110,
+      lineTop: 106,
+      lineBottom: 146,
+      scrollerTop: 100,
+      scrollerHeight: 400,
+      isActive: false
+    });
+
+    const clippedEdgeOpacity = getDesktopLyricEdgeOpacity({
+      lineTop: 76,
+      lineBottom: 116,
       scrollerTop: 100,
       scrollerHeight: 400,
       isActive: false
     });
 
     const activeEdgeOpacity = getDesktopLyricEdgeOpacity({
-      lineCenter: 110,
+      lineTop: 106,
+      lineBottom: 146,
       scrollerTop: 100,
       scrollerHeight: 400,
       isActive: true
@@ -184,6 +195,7 @@ describe('useLyricsOverlayViewport', () => {
 
     expect(centerOpacity).toBeGreaterThan(edgeOpacity);
     expect(edgeOpacity).toBeLessThan(0.25);
+    expect(clippedEdgeOpacity).toBeLessThan(edgeOpacity);
     expect(activeEdgeOpacity).toBeGreaterThan(edgeOpacity);
   });
 });

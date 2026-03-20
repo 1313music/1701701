@@ -2,9 +2,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 
 const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
 
-export const getDesktopLyricEdgeOpacity = ({ lineCenter, scrollerTop, scrollerHeight, isActive = false }) => {
+export const getDesktopLyricEdgeOpacity = ({ lineTop, lineBottom, scrollerTop, scrollerHeight, isActive = false }) => {
   if (
-    !Number.isFinite(lineCenter) ||
+    !Number.isFinite(lineTop) ||
+    !Number.isFinite(lineBottom) ||
     !Number.isFinite(scrollerTop) ||
     !Number.isFinite(scrollerHeight) ||
     scrollerHeight <= 0
@@ -12,13 +13,13 @@ export const getDesktopLyricEdgeOpacity = ({ lineCenter, scrollerTop, scrollerHe
     return isActive ? 1 : 0.3;
   }
 
-  const scrollerCenter = scrollerTop + scrollerHeight / 2;
-  const halfHeight = scrollerHeight / 2;
-  const normalizedDistance = Math.min(Math.abs(lineCenter - scrollerCenter) / Math.max(halfHeight, 1), 1);
-  const edgeBlend = Math.max(0, 1 - normalizedDistance);
-  const easedVisibility = Math.pow(edgeBlend, 0.96);
-  const minOpacity = isActive ? 0.9 : 0.2;
-  const maxOpacity = isActive ? 1 : 0.6;
+  const scrollerBottom = scrollerTop + scrollerHeight;
+  const edgeGap = Math.min(lineTop - scrollerTop, scrollerBottom - lineBottom);
+  const fadeDistance = Math.max(Math.min(scrollerHeight * 0.26, 180), 96);
+  const normalizedGap = Math.min(Math.max(edgeGap / fadeDistance, 0), 1);
+  const easedVisibility = normalizedGap * normalizedGap * (3 - 2 * normalizedGap);
+  const minOpacity = isActive ? 0.86 : 0.04;
+  const maxOpacity = isActive ? 1 : 0.66;
 
   return Number((minOpacity + (maxOpacity - minOpacity) * easedVisibility).toFixed(3));
 };
@@ -152,14 +153,15 @@ export const useLyricsOverlayViewport = ({
       const rect = node.getBoundingClientRect();
       const isActive = node.classList.contains('active');
       const opacity = getDesktopLyricEdgeOpacity({
-        lineCenter: rect.top + rect.height / 2,
+        lineTop: rect.top,
+        lineBottom: rect.bottom,
         scrollerTop: scrollerRect.top,
         scrollerHeight: scrollerRect.height,
         isActive
       });
       const blur = isActive
-        ? Math.max(0, (1 - opacity) * 0.75)
-        : Math.max(0, (0.68 - opacity) * 2.4);
+        ? Math.max(0, (1 - opacity) * 0.55)
+        : Math.max(0, (0.6 - opacity) * 2.1);
       node.style.setProperty('--desktop-edge-opacity', String(opacity));
       node.style.setProperty('--desktop-edge-blur', `${blur.toFixed(2)}px`);
     });
