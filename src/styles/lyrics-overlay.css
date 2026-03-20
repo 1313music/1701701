@@ -523,8 +523,8 @@
   -webkit-mask-image: none;
   position: relative;
   z-index: 1;
-  padding-top: 68px;
-  padding-bottom: 88px;
+  padding-top: 56px;
+  padding-bottom: 72px;
 }
 
 :root.mac-desktop-webview-like .lyric-line {

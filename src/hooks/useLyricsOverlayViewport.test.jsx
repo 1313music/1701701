@@ -183,7 +183,7 @@ describe('useLyricsOverlayViewport', () => {
     });
 
     expect(centerOpacity).toBeGreaterThan(edgeOpacity);
-    expect(edgeOpacity).toBeLessThan(0.2);
+    expect(edgeOpacity).toBeLessThan(0.25);
     expect(activeEdgeOpacity).toBeGreaterThan(edgeOpacity);
   });
 });
