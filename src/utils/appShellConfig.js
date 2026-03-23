@@ -28,6 +28,7 @@ export const WECHAT_OFFICIAL_ACCOUNT_NAME = '民谣俱乐部';
 export const WECHAT_VIDEO_PASSWORD_KEYWORD = '密码';
 export const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg';
 export const APP_READY_EVENT = 'app-initial-ready';
+export const DOWNLOAD_PREVIEW_PATH_PREFIX = `${VIEW_PATHS.download}/preview`;
 
 const normalizePathname = (pathname = '/') => {
   if (!pathname) return '/';
@@ -38,8 +39,30 @@ const normalizePathname = (pathname = '/') => {
 
 export const getPathForView = (view) => VIEW_PATHS[view] || VIEW_PATHS.library;
 
+export const getDownloadPreviewPath = (slug = '') => {
+  const normalizedSlug = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
+  if (!normalizedSlug) return VIEW_PATHS.download;
+  return `${DOWNLOAD_PREVIEW_PATH_PREFIX}/${encodeURIComponent(normalizedSlug)}`;
+};
+
+export const getDownloadPreviewSlugFromPathname = (pathname = '/') => {
+  const normalized = normalizePathname(pathname);
+  const prefix = `${DOWNLOAD_PREVIEW_PATH_PREFIX}/`;
+  if (!normalized.startsWith(prefix)) return '';
+  const rawSlug = normalized.slice(prefix.length);
+  if (!rawSlug) return '';
+  try {
+    return decodeURIComponent(rawSlug);
+  } catch {
+    return rawSlug;
+  }
+};
+
 const getViewFromPathname = (pathname = '/') => {
   const normalized = normalizePathname(pathname);
+  if (getDownloadPreviewSlugFromPathname(normalized)) {
+    return 'download';
+  }
   const matched = Object.entries(VIEW_PATHS).find(([, path]) => path === normalized);
   return matched ? matched[0] : null;
 };

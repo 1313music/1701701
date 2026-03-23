@@ -520,6 +520,166 @@
   color: var(--text-secondary);
 }
 
+.download-page.download-v2.download-preview-route {
+  max-width: 1280px;
+}
+
+.download-preview-page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.download-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.download-preview-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.download-preview-back,
+.download-preview-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--hover-bg);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.download-preview-back:hover,
+.download-preview-link:hover {
+  transform: translateY(-1px);
+}
+
+.download-preview-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.download-preview-eyebrow {
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.download-preview-heading h1 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.15;
+}
+
+.download-preview-heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.download-preview-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(232, 169, 53, 0.24);
+  background: linear-gradient(135deg, rgba(232, 169, 53, 0.12), rgba(232, 169, 53, 0.04));
+}
+
+[data-theme='dark'] .download-preview-notice {
+  border-color: rgba(255, 210, 122, 0.24);
+  background: linear-gradient(135deg, rgba(255, 210, 122, 0.12), rgba(255, 210, 122, 0.05));
+}
+
+.download-preview-notice p {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.download-preview-notice.is-loading p {
+  font-weight: 600;
+}
+
+.download-preview-frame-shell {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.14);
+}
+
+[data-theme='dark'] .download-preview-frame-shell {
+  background: rgba(18, 18, 22, 0.9);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+}
+
+.download-preview-frame {
+  width: 100%;
+  height: min(82vh, 1080px);
+  min-height: 720px;
+  border: 0;
+  display: block;
+  background: #ffffff;
+}
+
+.download-preview-frame-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(17, 17, 19, 0.14), rgba(17, 17, 19, 0.04));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+[data-theme='light'] .download-preview-frame-loading {
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.65), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.58));
+}
+
+.download-preview-frame-loading span:last-child {
+  max-width: 320px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.download-preview-error-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .download-group-arrow,
   .download-group-panel,
@@ -574,5 +734,28 @@
   .download-page.download-v2 .download-intro-media img {
     width: 160px;
     height: 160px;
+  }
+
+  .download-preview-toolbar,
+  .download-preview-toolbar-actions,
+  .download-preview-error-actions {
+    align-items: stretch;
+  }
+
+  .download-preview-toolbar-actions,
+  .download-preview-error-actions {
+    width: 100%;
+  }
+
+  .download-preview-back,
+  .download-preview-link,
+  .download-page.download-v2 .download-preview-route .download-action,
+  .download-page.download-v2.download-preview-route .download-action {
+    width: 100%;
+  }
+
+  .download-preview-frame {
+    min-height: 72vh;
+    height: 72vh;
   }
 }

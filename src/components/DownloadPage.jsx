@@ -1,11 +1,23 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Share2, BookOpen } from 'lucide-react';
+import { Share2, BookOpen, ArrowLeft, ExternalLink } from 'lucide-react';
 import '../styles/download.css';
 import { loadDownloadSections } from '../data/downloadManifest';
+import {
+    getDownloadPreviewPath,
+    getDownloadPreviewSlugFromPathname,
+    getPathForView
+} from '../utils/appShellConfig.js';
 
 const PDF_PREVIEW_VIEWER_BASE = 'https://mozilla.github.io/pdf.js/web/viewer.html';
 const PDF_PREVIEW_VIEWER = `${PDF_PREVIEW_VIEWER_BASE}?file=`;
 const OBJECT_URL_REVOKE_DELAY_MS = 30000;
+const PREVIEW_LOADING_HINT = '文档较大，首次加载可能需要 5 到 20 秒。若长时间空白，可尝试右上角“新窗口打开”。';
+
+const getPreviewIdentifier = (item) => {
+    const filename = String(item?.filename || '').trim().replace(/\.pdf$/i, '');
+    if (filename) return filename;
+    return String(item?.title || '').trim();
+};
 
 const isPdfResource = (item) => {
     const filename = String(item?.filename || '').toLowerCase();
@@ -19,7 +31,7 @@ const isPdfResource = (item) => {
     );
 };
 
-const resolvePreviewHref = (item, forcePreview = false) => {
+const resolvePreviewSource = (item, forcePreview = false) => {
     if (item?.previewUrl) return item.previewUrl;
     if (!forcePreview || !item?.url) return '';
     if (isPdfResource(item)) {
@@ -28,36 +40,44 @@ const resolvePreviewHref = (item, forcePreview = false) => {
     return item.url;
 };
 
-const DownloadItem = ({ item, forcePreview = false }) => {
+const resolvePreviewHref = (item, forcePreview = false) => {
+    const previewSource = resolvePreviewSource(item, forcePreview);
+    if (!previewSource) return '';
+    const previewIdentifier = getPreviewIdentifier(item);
+    if (!previewIdentifier) return previewSource;
+    return getDownloadPreviewPath(previewIdentifier);
+};
+
+const triggerDownload = (url, filename) => {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = 'noopener noreferrer';
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+};
+
+const fetchAndTriggerDownload = async (url, filename) => {
+    const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
+    if (!response.ok) {
+        throw new Error(`download request failed with ${response.status}`);
+    }
+    const blob = await response.blob();
+    if (!blob.size) {
+        throw new Error('downloaded blob is empty');
+    }
+    const objectUrl = window.URL.createObjectURL(blob);
+    triggerDownload(objectUrl, filename);
+    window.setTimeout(() => {
+        window.URL.revokeObjectURL(objectUrl);
+    }, OBJECT_URL_REVOKE_DELAY_MS);
+};
+
+const useDownloadAction = (item) => {
     const [status, setStatus] = useState('idle');
     const timerRef = useRef(null);
-    const previewHref = resolvePreviewHref(item, forcePreview);
-
-    const triggerDownload = (url, filename) => {
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = filename;
-        anchor.rel = 'noopener noreferrer';
-        anchor.style.display = 'none';
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-    };
-    const fetchAndTriggerDownload = async (url, filename) => {
-        const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
-        if (!response.ok) {
-            throw new Error(`download request failed with ${response.status}`);
-        }
-        const blob = await response.blob();
-        if (!blob.size) {
-            throw new Error('downloaded blob is empty');
-        }
-        const objectUrl = window.URL.createObjectURL(blob);
-        triggerDownload(objectUrl, filename);
-        window.setTimeout(() => {
-            window.URL.revokeObjectURL(objectUrl);
-        }, OBJECT_URL_REVOKE_DELAY_MS);
-    };
 
     useEffect(() => () => {
         if (timerRef.current) {
@@ -99,6 +119,18 @@ const DownloadItem = ({ item, forcePreview = false }) => {
         if (status === 'error') return '下载失败';
         return '下载';
     }, [status]);
+
+    return {
+        status,
+        label,
+        handleDownload
+    };
+};
+
+const DownloadItem = ({ item, forcePreview = false }) => {
+    const previewHref = resolvePreviewHref(item, forcePreview);
+    const { status, label, handleDownload } = useDownloadAction(item);
+
     return (
         <div className="download-item-row">
             <div className="download-item-title">{item.title}</div>
@@ -108,7 +140,7 @@ const DownloadItem = ({ item, forcePreview = false }) => {
                         className="download-action"
                         href={previewHref}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                     >
                         预览
                     </a>
@@ -123,6 +155,90 @@ const DownloadItem = ({ item, forcePreview = false }) => {
                 </button>
             </div>
         </div>
+    );
+};
+
+const findPreviewItemBySlug = (sections, previewSlug) => {
+    if (!previewSlug) return null;
+    for (const section of sections) {
+        for (const group of section.groups) {
+            for (const item of group.items) {
+                if (getPreviewIdentifier(item) !== previewSlug) continue;
+                const previewSrc = resolvePreviewSource(item, true);
+                if (!previewSrc) continue;
+                return {
+                    item,
+                    previewSrc
+                };
+            }
+        }
+    }
+    return null;
+};
+
+const DownloadPreviewPage = ({ item, previewSrc }) => {
+    const { status, label, handleDownload } = useDownloadAction(item);
+    const [isFrameLoading, setIsFrameLoading] = useState(true);
+
+    return (
+        <section className="download-preview-page-shell" aria-label="文档预览页">
+            <div className="download-preview-toolbar">
+                <a className="download-preview-back" href={getPathForView('download')}>
+                    <ArrowLeft size={16} strokeWidth={2.2} absoluteStrokeWidth />
+                    返回下载页
+                </a>
+                <div className="download-preview-toolbar-actions">
+                    <a
+                        className="download-preview-link"
+                        href={previewSrc}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <ExternalLink size={15} strokeWidth={2.2} absoluteStrokeWidth />
+                        新窗口打开
+                    </a>
+                    <button
+                        type="button"
+                        className={`download-action ${status}`}
+                        onClick={handleDownload}
+                        disabled={status === 'loading'}
+                    >
+                        {label}
+                    </button>
+                </div>
+            </div>
+
+            <div className="download-preview-heading">
+                <span className="download-preview-eyebrow">Preview</span>
+                <h1>{item.title}</h1>
+                <p>{item.filename || 'PDF 文档'}</p>
+            </div>
+
+            <div
+                className={`download-preview-notice ${isFrameLoading ? 'is-loading' : ''}`}
+                role="status"
+                aria-live="polite"
+            >
+                {isFrameLoading && <span className="page-loading-ring" aria-hidden="true" />}
+                <p>{PREVIEW_LOADING_HINT}</p>
+            </div>
+
+            <div className="download-preview-frame-shell">
+                {isFrameLoading && (
+                    <div className="download-preview-frame-loading" aria-hidden="true">
+                        <span className="page-loading-ring" />
+                        <span>预览加载中，请稍等…</span>
+                    </div>
+                )}
+                <iframe
+                    className="download-preview-frame"
+                    src={previewSrc}
+                    title={`${item.title} 文档预览`}
+                    loading="lazy"
+                    onLoad={() => setIsFrameLoading(false)}
+                />
+            </div>
+        </section>
     );
 };
 
@@ -160,6 +276,9 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
     const [isSectionsLoading, setIsSectionsLoading] = useState(true);
     const [sectionsLoadError, setSectionsLoadError] = useState('');
     const [sectionsRetryKey, setSectionsRetryKey] = useState(0);
+    const previewSlug = typeof window === 'undefined'
+        ? ''
+        : getDownloadPreviewSlugFromPathname(window.location.pathname);
 
     useEffect(() => {
         let canceled = false;
@@ -230,6 +349,80 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
     const shouldForcePreviewGroup = (sectionTitle, groupTitle) => (
         sectionTitle === '其他资源' && groupTitle === '资源下载'
     );
+    const previewEntry = useMemo(
+        () => findPreviewItemBySlug(downloadSections, previewSlug),
+        [downloadSections, previewSlug]
+    );
+
+    if (previewSlug) {
+        return (
+            <div className="download-page download-v2 download-preview-route">
+                {isSectionsLoading && (
+                    <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
+                        <span className="page-loading-ring" aria-hidden="true" />
+                        <span>加载中...</span>
+                    </div>
+                )}
+
+                {!isSectionsLoading && sectionsLoadError && (
+                    <section className="download-section-block">
+                        <div className="download-section-header">
+                            <h3>加载失败</h3>
+                        </div>
+                        <div className="download-groups">
+                            <div className="download-group open">
+                                <div className="download-group-body">
+                                    <p>{sectionsLoadError}</p>
+                                    <div className="download-preview-error-actions">
+                                        <a className="download-preview-back" href={getPathForView('download')}>
+                                            <ArrowLeft size={16} strokeWidth={2.2} absoluteStrokeWidth />
+                                            返回下载页
+                                        </a>
+                                        <button
+                                            type="button"
+                                            className="download-action"
+                                            onClick={handleRetrySections}
+                                        >
+                                            重试加载
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {!isSectionsLoading && !sectionsLoadError && previewEntry && (
+                    <DownloadPreviewPage
+                        key={previewEntry.previewSrc}
+                        item={previewEntry.item}
+                        previewSrc={previewEntry.previewSrc}
+                    />
+                )}
+
+                {!isSectionsLoading && !sectionsLoadError && !previewEntry && (
+                    <section className="download-section-block">
+                        <div className="download-section-header">
+                            <h3>未找到该预览</h3>
+                        </div>
+                        <div className="download-groups">
+                            <div className="download-group open">
+                                <div className="download-group-body">
+                                    <p>当前链接对应的资源不存在，或暂不支持站内预览。</p>
+                                    <div className="download-preview-error-actions">
+                                        <a className="download-preview-back" href={getPathForView('download')}>
+                                            <ArrowLeft size={16} strokeWidth={2.2} absoluteStrokeWidth />
+                                            返回下载页
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="download-page download-v2">
