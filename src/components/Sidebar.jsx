@@ -20,10 +20,15 @@ const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
 );
 
 const NavItem = ({ icon, label, active = false, onClick }) => (
-    <div className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
+    <button
+        type="button"
+        className={`nav-item ${active ? 'active' : ''}`}
+        onClick={onClick}
+        aria-pressed={active}
+    >
         {icon}
         <span>{label}</span>
-    </div>
+    </button>
 );
 
 const Sidebar = ({
@@ -46,6 +51,12 @@ const Sidebar = ({
     const ThemeIcon = themePreference === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
     const sidebarToggleLabel = isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏';
+    const handleLogoKeyDown = (event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        handleNavClick('library');
+    };
 
     return (
         <>
@@ -61,12 +72,13 @@ const Sidebar = ({
                         <span className="hamburger-line bottom" />
                     </span>
                 </button>
-                <div
+                <button
+                    type="button"
                     className="mobile-brand"
                     onClick={() => handleNavClick('library')}
                 >
                     1701701.xyz
-                </div>
+                </button>
                 {onThemeToggle && (
                     <button
                         type="button"
@@ -137,6 +149,9 @@ const Sidebar = ({
                 <div
                     className="logo"
                     onClick={() => handleNavClick('library')}
+                    onKeyDown={handleLogoKeyDown}
+                    role="button"
+                    tabIndex={0}
                 >
                     <div className="logo-box" />
                     <span className="logo-text">1701701.xyz</span>

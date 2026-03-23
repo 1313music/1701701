@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const createEmptyResolvedSource = (error = '') => ({
+  url: '',
+  type: 'auto',
+  error
+});
+
 export const useVideoSourceResolver = ({ activeVideo, activeVideoKey }) => {
   const [resolvedUrl, setResolvedUrl] = useState('');
   const [fallbackUrl, setFallbackUrl] = useState('');
@@ -55,6 +61,14 @@ export const useVideoSourceResolver = ({ activeVideo, activeVideoKey }) => {
     return { url, type, error: '' };
   }, []);
 
+  const resolvePlayableSourceSafely = useCallback(async (rawUrl = '') => {
+    try {
+      return await resolvePlayableSource(rawUrl);
+    } catch {
+      return createEmptyResolvedSource('解析播放地址失败');
+    }
+  }, [resolvePlayableSource]);
+
   useEffect(() => {
     if (!activeVideo) {
       setResolvedUrl('');
@@ -83,10 +97,12 @@ export const useVideoSourceResolver = ({ activeVideo, activeVideoKey }) => {
       fallbackTriedRef.current = false;
 
       try {
-        const primary = await resolvePlayableSource(activeVideo.url || '');
-        const backup = activeVideo.backupUrl
-          ? await resolvePlayableSource(activeVideo.backupUrl)
-          : { url: '', type: 'auto', error: '' };
+        const [primary, backup] = await Promise.all([
+          resolvePlayableSourceSafely(activeVideo.url || ''),
+          activeVideo.backupUrl
+            ? resolvePlayableSourceSafely(activeVideo.backupUrl)
+            : Promise.resolve(createEmptyResolvedSource())
+        ]);
 
         if (canceled) return;
 
@@ -111,15 +127,6 @@ export const useVideoSourceResolver = ({ activeVideo, activeVideoKey }) => {
         setResolvedUrl('');
         setResolvedType('auto');
         setResolvedVideoKey('');
-        setResolveError(primary.error || backup.error || '解析播放地址失败');
-      } catch {
-        if (canceled) return;
-        setResolvedUrl('');
-        setResolvedType('auto');
-        setFallbackUrl('');
-        setFallbackType('auto');
-        setResolvedVideoKey('');
-        setResolveError('解析播放地址失败');
       } finally {
         if (!canceled) {
           setIsResolving(false);
@@ -131,7 +138,7 @@ export const useVideoSourceResolver = ({ activeVideo, activeVideoKey }) => {
     return () => {
       canceled = true;
     };
-  }, [activeVideo, activeVideoKey, resolvePlayableSource, resolveAttempt]);
+  }, [activeVideo, activeVideoKey, resolveAttempt, resolvePlayableSourceSafely]);
 
   const trySwitchToFallback = useCallback(() => {
     if (!fallbackUrl || resolvedUrl === fallbackUrl || fallbackTriedRef.current) {

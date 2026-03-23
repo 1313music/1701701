@@ -115,6 +115,12 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.app-download-card-status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 .app-download-btn {
   margin-top: 2px;
   display: inline-flex;
@@ -129,6 +135,11 @@
   font-size: 12px;
   font-weight: 700;
   transition: transform 0.2s ease;
+}
+
+.app-download-btn.secondary {
+  background: var(--hover-bg);
+  color: var(--text-main);
 }
 
 .app-download-btn:hover {

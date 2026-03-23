@@ -407,23 +407,48 @@ const LyricsOverlay = ({
                                         </div>
                                     </div>
                                     <div className="overlay-buttons">
-                                        <div className="icon-btn" onClick={togglePlayMode}>
+                                        <button
+                                            type="button"
+                                            className="icon-btn"
+                                            onClick={togglePlayMode}
+                                            aria-label="切换播放模式"
+                                        >
                                             {getPlayModeIcon(24)}
-                                        </div>
-                                        <div className="icon-btn" onClick={handlePrev}>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="icon-btn"
+                                            onClick={handlePrev}
+                                            aria-label="上一首"
+                                        >
                                             <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
                                             <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
-                                        </div>
-                                        <div className="overlay-play-btn" onClick={handlePlayPause}>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="overlay-play-btn"
+                                            onClick={handlePlayPause}
+                                            aria-label={isPlaying ? '暂停' : '播放'}
+                                        >
                                             {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: '6px' }} />}
-                                        </div>
-                                        <div className="icon-btn" onClick={handleNext}>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="icon-btn"
+                                            onClick={handleNext}
+                                            aria-label="下一首"
+                                        >
                                             <Play size={24} fill="currentColor" style={{ marginRight: '-8px' }} />
                                             <Play size={24} fill="currentColor" />
-                                        </div>
-                                        <div className="icon-btn" onClick={() => setIsAlbumListOpen(true)}>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="icon-btn"
+                                            onClick={() => setIsAlbumListOpen(true)}
+                                            aria-label="打开歌曲列表"
+                                        >
                                             <ListMusic size={24} strokeWidth={2.4} absoluteStrokeWidth />
-                                        </div>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

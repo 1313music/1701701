@@ -316,14 +316,23 @@ body {
   min-height: 44px;
   margin-bottom: 20px;
   padding: 0 6px;
+  border: none;
+  background: none;
   cursor: pointer;
   width: 100%;
+  text-align: left;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .logo:active {
   transform: scale(0.99);
   opacity: 0.88;
+}
+
+.logo:focus-visible {
+  outline: none;
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 34%, transparent);
 }
 
 .logo-box {
@@ -380,12 +389,19 @@ body {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 8px;
+  border: none;
+  background: none;
   cursor: pointer;
   transition: all 0.15s ease;
   font-weight: 600;
   margin-bottom: 2px;
   color: var(--text-main);
   font-size: 15px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .nav-item span {
@@ -397,6 +413,12 @@ body {
 .nav-item:hover {
   background: var(--hover-bg);
   transform: translateY(-1px);
+}
+
+.nav-item:focus-visible {
+  outline: none;
+  background: var(--hover-bg);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 34%, transparent);
 }
 
 .nav-item:active {

@@ -300,6 +300,12 @@
   transform: scale(1.1);
 }
 
+.overlay-play-btn:focus-visible {
+  outline: none;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.44);
+}
+
 .lyrics-view {
   flex: 1;
   display: flex;

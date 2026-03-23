@@ -19,7 +19,8 @@ const VideoCard = ({ item, onClick, meta }) => {
   const thumbLoaded = hasThumb && loadedThumbSrc === thumbSrc;
 
   return (
-    <Motion.div
+    <Motion.button
+      type="button"
       className={`video-card ${item.isFolder || item.folderId ? 'is-folder' : ''}`}
       onClick={onClick}
       initial={{ opacity: 0, y: 8 }}
@@ -63,12 +64,13 @@ const VideoCard = ({ item, onClick, meta }) => {
       </div>
       <div className="video-title">{item.title}</div>
       {meta ? <div className="video-meta">{meta}</div> : null}
-    </Motion.div>
+    </Motion.button>
   );
 };
 
 const BackCard = ({ onClick }) => (
-  <Motion.div
+  <Motion.button
+    type="button"
     className="video-card video-back-card"
     onClick={onClick}
     initial={{ opacity: 0, y: 8 }}
@@ -79,7 +81,7 @@ const BackCard = ({ onClick }) => (
       <CornerUpLeft size={28} />
     </div>
     <div className="video-title">返回上级</div>
-  </Motion.div>
+  </Motion.button>
 );
 
 const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationSearch, onInitialReady }) => {

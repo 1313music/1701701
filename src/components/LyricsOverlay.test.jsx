@@ -241,4 +241,19 @@ describe('LyricsOverlay comment drawer requests', () => {
     fireEvent.pointerDown(progressBar, { clientX: 25 });
     expect(props.audioRef.current.currentTime).toBe(45);
   });
+
+  it('renders desktop playback controls as accessible buttons', () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0
+    });
+
+    render(<LyricsOverlay {...props} />);
+
+    expect(screen.getByRole('button', { name: '切换播放模式' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '上一首' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '下一首' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '打开歌曲列表' })).toBeInTheDocument();
+  });
 });

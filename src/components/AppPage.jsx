@@ -3,6 +3,12 @@ import { Monitor, Laptop, Smartphone, Apple, Share2 } from 'lucide-react';
 import '../styles/app-download.css';
 
 const DOMAIN_DOWNLOAD_BASE_URL = 'https://app.1701701.xyz';
+const PACKAGE_STATUS = Object.freeze({
+  CHECKING: 'checking',
+  READY: 'ready',
+  MISSING: 'missing',
+  UNVERIFIED: 'unverified'
+});
 
 const appPackages = [
   {
@@ -38,13 +44,27 @@ const isValidPackageResponse = (response) => {
   return !contentType.includes('text/html');
 };
 
-const shouldProbeByHead = (url) => {
+const isSameOriginUrl = (url) => {
   if (typeof window === 'undefined') return false;
   try {
     const resolved = new URL(url, window.location.href);
     return resolved.origin === window.location.origin;
   } catch {
     return false;
+  }
+};
+
+const probePackageStatus = async (url) => {
+  const isSameOrigin = isSameOriginUrl(url);
+  try {
+    const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    return isValidPackageResponse(response)
+      ? PACKAGE_STATUS.READY
+      : PACKAGE_STATUS.MISSING;
+  } catch {
+    return isSameOrigin
+      ? PACKAGE_STATUS.MISSING
+      : PACKAGE_STATUS.UNVERIFIED;
   }
 };
 
@@ -64,15 +84,8 @@ const AppPage = ({ onCopyPageLink }) => {
     const probeDownloads = async () => {
       const pairs = await Promise.all(
         appPackages.map(async (pkg) => {
-          if (!shouldProbeByHead(pkg.href)) {
-            return [pkg.key, true];
-          }
-          try {
-            const response = await fetch(pkg.href, { method: 'HEAD', cache: 'no-store' });
-            return [pkg.key, isValidPackageResponse(response)];
-          } catch {
-            return [pkg.key, false];
-          }
+          const status = await probePackageStatus(pkg.href);
+          return [pkg.key, status];
         })
       );
 
@@ -119,7 +132,9 @@ const AppPage = ({ onCopyPageLink }) => {
       <section className="app-download-grid" aria-label="客户端下载">
         {appPackages.map((pkg) => {
           const Icon = pkg.icon;
-          const isReady = statusMap[pkg.key] === true;
+          const status = statusMap[pkg.key] || PACKAGE_STATUS.CHECKING;
+          const isReady = status === PACKAGE_STATUS.READY;
+          const isUnverified = status === PACKAGE_STATUS.UNVERIFIED;
           return (
             <article className="app-download-card" key={pkg.key}>
               <div className="app-download-card-head">
@@ -128,6 +143,11 @@ const AppPage = ({ onCopyPageLink }) => {
               </div>
               <p className="app-download-card-detail">{pkg.detail}</p>
               <div className="app-download-card-file">{pkg.filename}</div>
+              {isUnverified && (
+                <p className="app-download-card-status">
+                  无法自动校验，已提供直链
+                </p>
+              )}
               {isReady ? (
                 <a
                   className="app-download-btn"
@@ -135,6 +155,15 @@ const AppPage = ({ onCopyPageLink }) => {
                   download={pkg.filename}
                 >
                   立即下载
+                </a>
+              ) : isUnverified ? (
+                <a
+                  className="app-download-btn secondary"
+                  href={pkg.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  打开下载链接
                 </a>
               ) : (
                 <button type="button" className="app-download-btn disabled" disabled>
