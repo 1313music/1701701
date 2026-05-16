@@ -979,6 +979,7 @@
   .mobile-track-name span {
     display: inline-block;
     white-space: nowrap;
+    text-shadow: none;
   }
 
   .mobile-track-name.is-marquee span {
@@ -991,6 +992,7 @@
   .mobile-track-name.is-marquee span::after {
     content: attr(data-text);
     padding-left: 32px;
+    text-shadow: none;
   }
 
   @keyframes mobile-title-marquee {
@@ -1077,6 +1079,136 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+  }
+
+  :root.standalone-mode .mobile-fullscreen-player,
+  :root.standalone-fallback .mobile-fullscreen-player,
+  :root.native-app-mode .mobile-fullscreen-player {
+    --immersive-cover-height: min(100vw, 52dvh);
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-secondary: rgba(255, 255, 255, 0.45);
+    --main-color: rgba(255, 255, 255, 0.9);
+    background: #10110d;
+  }
+
+  :root.standalone-mode .mobile-fullscreen-player .noise-overlay,
+  :root.standalone-fallback .mobile-fullscreen-player .noise-overlay,
+  :root.native-app-mode .mobile-fullscreen-player .noise-overlay {
+    position: absolute;
+    inset: -16%;
+    pointer-events: none;
+    background-image: var(--cover-image);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(82px) saturate(1.55) brightness(0.58);
+    transform: scale(1.18);
+    opacity: 0.96;
+    z-index: 0;
+  }
+
+  :root.standalone-mode .mobile-fullscreen-player::before,
+  :root.standalone-fallback .mobile-fullscreen-player::before,
+  :root.native-app-mode .mobile-fullscreen-player::before {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    height: var(--immersive-cover-height);
+    opacity: 1;
+    background-image: var(--cover-image);
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    transform: none;
+    filter: saturate(1.04) contrast(1.04) brightness(0.88);
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 60%,
+      rgba(0, 0, 0, 0.72) 72%,
+      rgba(0, 0, 0, 0.22) 88%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 60%,
+      rgba(0, 0, 0, 0.72) 72%,
+      rgba(0, 0, 0, 0.22) 88%,
+      transparent 100%
+    );
+    z-index: 1;
+  }
+
+  :root.standalone-mode .mobile-fullscreen-player::after,
+  :root.standalone-fallback .mobile-fullscreen-player::after,
+  :root.native-app-mode .mobile-fullscreen-player::after {
+    opacity: 1;
+    background:
+      linear-gradient(180deg, rgba(5, 6, 5, 0.03) 0%, rgba(5, 6, 5, 0.08) 32%, rgba(5, 6, 5, 0.42) 48%, rgba(5, 6, 5, 0.66) 72%, rgba(5, 6, 5, 0.78) 100%),
+      radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.055), transparent 34%),
+      linear-gradient(0deg, rgba(0, 0, 0, 0.3), transparent 46%);
+    z-index: 2;
+  }
+
+  :root.standalone-mode .overlay-header,
+  :root.standalone-fallback .overlay-header,
+  :root.native-app-mode .overlay-header {
+    z-index: 12;
+  }
+
+  :root.standalone-mode .overlay-share-btn,
+  :root.standalone-fallback .overlay-share-btn,
+  :root.native-app-mode .overlay-share-btn {
+    color: var(--text-main);
+  }
+
+  :root.standalone-mode .mobile-cover-section,
+  :root.standalone-fallback .mobile-cover-section,
+  :root.native-app-mode .mobile-cover-section {
+    flex-basis: var(--immersive-cover-height);
+  }
+
+  :root.standalone-mode .mobile-xl-cover,
+  :root.standalone-fallback .mobile-xl-cover,
+  :root.native-app-mode .mobile-xl-cover {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  :root.standalone-mode .mobile-xl-cover img,
+  :root.standalone-fallback .mobile-xl-cover img,
+  :root.native-app-mode .mobile-xl-cover img {
+    opacity: 0;
+  }
+
+  :root.standalone-mode .mobile-track-info,
+  :root.standalone-fallback .mobile-track-info,
+  :root.native-app-mode .mobile-track-info {
+    margin-top: -104px;
+    padding: 0 calc(24px + var(--mobile-fullscreen-safe-right)) 10px calc(24px + var(--mobile-fullscreen-safe-left));
+  }
+
+  :root.standalone-mode .mobile-track-name,
+  :root.standalone-fallback .mobile-track-name,
+  :root.native-app-mode .mobile-track-name {
+    text-shadow: none;
+  }
+
+  :root.standalone-mode .mobile-lyrics-section,
+  :root.standalone-fallback .mobile-lyrics-section,
+  :root.native-app-mode .mobile-lyrics-section {
+    max-height: 380px;
+    margin-top: -18px;
+    padding-top: 6px;
+  }
+
+  :root.standalone-mode .mobile-lyric-line.active,
+  :root.standalone-fallback .mobile-lyric-line.active,
+  :root.native-app-mode .mobile-lyric-line.active {
+    text-shadow: 0 10px 34px rgba(0, 0, 0, 0.44);
   }
 
   .mobile-player-controls {

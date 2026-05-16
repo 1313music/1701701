@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { isMacDesktopWebViewLike } from '../utils/appDomUtils.js';
+import { isMacDesktopWebViewLike, isNativeAppWebView } from '../utils/appDomUtils.js';
 
 const isIOSDevice = () => /iPad|iPhone|iPod/.test(window.navigator.userAgent);
 const isAndroidDevice = () => /Android/i.test(window.navigator.userAgent || '');
@@ -64,6 +64,7 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
     const isiOS = isIOSDevice();
     const isAndroid = isAndroidDevice();
     const isMacDesktopWebView = isMacDesktopWebViewLike();
+    const isNativeApp = isNativeAppWebView();
     const initialStandalone = mediaQuery.matches || (isiOS && window.navigator.standalone === true);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const standaloneThemeColor = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
@@ -79,9 +80,10 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
       root.classList.remove('display-mode-standalone');
       root.classList.toggle('standalone-fallback', isFallbackStandalone);
       root.classList.toggle('standalone-mode', isStandalone);
-      root.classList.toggle('browser-mode', !isStandalone);
+      root.classList.toggle('native-app-mode', isNativeApp);
+      root.classList.toggle('browser-mode', !isStandalone && !isNativeApp);
       root.classList.toggle('android-device', isAndroid);
-      root.classList.toggle('android-browser-mode', isAndroid && !isStandalone);
+      root.classList.toggle('android-browser-mode', isAndroid && !isStandalone && !isNativeApp);
       root.classList.toggle('mac-desktop-webview-like', isMacDesktopWebView);
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', isStandalone ? standaloneThemeColor : browserThemeColor);
@@ -121,6 +123,7 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
       document.removeEventListener('visibilitychange', applyModeAndStabilize);
       root.classList.remove('android-device');
       root.classList.remove('android-browser-mode');
+      root.classList.remove('native-app-mode');
       root.classList.remove('mac-desktop-webview-like');
       removeMediaQueryListener();
     };
@@ -160,8 +163,27 @@ export const useAndroidViewportVars = () => {
       const safeBottomInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingBottom)) : 0;
       const safeLeftInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingLeft)) : 0;
       const isStandalone = root.classList.contains('standalone-mode') || root.classList.contains('standalone-fallback');
+      const isAndroidBrowserMode = root.classList.contains('android-browser-mode');
       const measuredTopInset = Math.max(Math.round(offsetTop), safeTopInset);
-      const fallbackTopInset = isStandalone && isMobileWidth && measuredTopInset === 0 ? 24 : 0;
+      const screenHeight = Math.max(window.screen?.height || 0, window.screen?.availHeight || 0);
+      const viewportShortfall = screenHeight > 0
+        ? Math.max(Math.round(screenHeight - viewportHeight), 0)
+        : 0;
+      // Some Android browsers render edge-to-edge but still report both
+      // visualViewport.offsetTop and env(safe-area-inset-top) as 0, which
+      // lets the fixed top bar slide under the OS status bar.
+      const needsAndroidBrowserTopFallback = (
+        isAndroidBrowserMode
+        && isMobileWidth
+        && measuredTopInset === 0
+        && viewportShortfall > 0
+        && viewportShortfall <= 56
+      );
+      const fallbackTopInset = isStandalone && isMobileWidth && measuredTopInset === 0
+        ? 24
+        : needsAndroidBrowserTopFallback
+          ? 24
+          : 0;
       const safeTop = Math.max(measuredTopInset, fallbackTopInset);
 
       root.style.setProperty('--mobile-fullscreen-height', `${Math.round(viewportHeight)}px`);

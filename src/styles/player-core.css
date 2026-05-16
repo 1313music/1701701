@@ -1085,6 +1085,12 @@
     transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
   }
 
+  .mobile-menu-btn svg {
+    display: block;
+    color: currentColor;
+    flex: 0 0 auto;
+  }
+
   .mobile-menu-btn:hover {
     background: transparent;
   }
@@ -1093,44 +1099,33 @@
     transform: none;
   }
 
-  .hamburger {
+  .hamburger-icon {
     width: 20px;
     height: 16px;
-    position: relative;
+    overflow: visible;
   }
 
-  .hamburger-line {
-    position: absolute;
-    left: 0;
-    width: 20px;
-    height: 2.4px;
-    border-radius: 999px;
-    background: currentColor;
-    transition: transform 0.28s ease, opacity 0.2s ease, width 0.2s ease;
+  .hamburger-stroke {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    transition: transform 0.28s ease, opacity 0.2s ease;
     transform-origin: center;
-    top: 0;
+    transform-box: fill-box;
   }
 
-  .hamburger-line.middle {
-    top: 7px;
+  .mobile-menu-btn.is-open .hamburger-stroke.top {
+    transform: translateY(6.5px) rotate(45deg);
   }
 
-  .hamburger-line.bottom {
-    top: 14px;
-  }
-
-  .mobile-menu-btn.is-open .hamburger-line.top {
-    transform: translateY(7px) rotate(45deg);
-  }
-
-  .mobile-menu-btn.is-open .hamburger-line.middle {
+  .mobile-menu-btn.is-open .hamburger-stroke.middle {
     opacity: 0;
-    width: 0;
     transform: scaleX(0);
   }
 
-  .mobile-menu-btn.is-open .hamburger-line.bottom {
-    transform: translateY(-7px) rotate(-45deg);
+  .mobile-menu-btn.is-open .hamburger-stroke.bottom {
+    transform: translateY(-6.5px) rotate(-45deg);
   }
 
   .mobile-brand {

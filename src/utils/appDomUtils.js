@@ -148,6 +148,20 @@ export const isMacDesktopWebViewLike = () => {
   return isAppleWebKit && !isChromiumFamily && !isFirefoxFamily;
 };
 
+export const isNativeAppWebView = () => {
+  if (typeof window === 'undefined') return false;
+
+  const capacitor = window.Capacitor;
+  if (capacitor) {
+    if (typeof capacitor.isNativePlatform === 'function') {
+      return capacitor.isNativePlatform();
+    }
+    return true;
+  }
+
+  return Boolean(window.webkit?.messageHandlers?.bridge);
+};
+
 export const openImagePreviewWindow = (dataUrl) => {
   if (!dataUrl || typeof window === 'undefined') return false;
   const previewWindow = window.open('', '_blank');

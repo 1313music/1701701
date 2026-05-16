@@ -66,11 +66,17 @@ const Sidebar = ({
                     onClick={() => setIsSidebarOpen((prev) => !prev)}
                     aria-label={isSidebarOpen ? '关闭菜单' : '打开菜单'}
                 >
-                    <span className="hamburger" aria-hidden="true">
-                        <span className="hamburger-line top" />
-                        <span className="hamburger-line middle" />
-                        <span className="hamburger-line bottom" />
-                    </span>
+                    <svg
+                        className="hamburger-icon"
+                        viewBox="0 0 20 16"
+                        width="20"
+                        height="16"
+                        aria-hidden="true"
+                    >
+                        <path className="hamburger-stroke top" d="M1 1.5H19" />
+                        <path className="hamburger-stroke middle" d="M1 8H19" />
+                        <path className="hamburger-stroke bottom" d="M1 14.5H19" />
+                    </svg>
                 </button>
                 <button
                     type="button"
