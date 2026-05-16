@@ -1401,12 +1401,25 @@
     text-align: center;
   }
 
+  .album-inline-header .album-info-text {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0 44px;
+  }
+
   .album-inline-close {
     margin-left: 0;
   }
 
   .album-inline-panel .album-title {
     font-size: 20px;
+    line-height: 1.24;
+    margin: 0 0 6px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-wrap: balance;
   }
 
   .album-inline-hero-actions {
