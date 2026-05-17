@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Pause, ListMusic, Heart, Share2, ChevronDown, MessageCircle, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../styles/lyrics-overlay.css';
 import { formatTime } from '../utils/formatUtils';
+import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
 import CommentSection from './CommentSection.jsx';
 import { useLyricsOverlayComments } from '../hooks/useLyricsOverlayComments.js';
 import { useLyricsOverlayProgress } from '../hooks/useLyricsOverlayProgress.js';
@@ -48,6 +49,7 @@ const LyricsOverlay = ({
     const burstTimerRef = useRef([]);
     const [mobileLikeBursts, setMobileLikeBursts] = useState([]);
     const [desktopLikeBursts, setDesktopLikeBursts] = useState([]);
+    const [coverAtmosphereAssets, setCoverAtmosphereAssets] = useState(null);
 
     const {
         mobileTitleRef,
@@ -109,6 +111,28 @@ const LyricsOverlay = ({
             burstTimerRef.current = [];
         };
     }, []);
+
+    const coverSrc = currentTrack.cover || currentAlbum.cover || '';
+
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!coverSrc) {
+            setCoverAtmosphereAssets(null);
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        buildCoverAtmosphereAssets(coverSrc).then((assets) => {
+            if (cancelled) return;
+            setCoverAtmosphereAssets(assets);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [coverSrc]);
 
     const currentTrackSrc = currentTrack?.src || '';
     const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
@@ -172,13 +196,30 @@ const LyricsOverlay = ({
     const commentDrawerAnimate = { x: 0 };
     const commentDrawerExit = { x: '100%' };
     const commentDrawerTransition = { type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] };
+    const coverVisualStyle = useMemo(() => {
+        const style = {
+            '--cover-image': `url(${coverSrc})`
+        };
+
+        if (coverAtmosphereAssets?.palette) {
+            style['--cover-accent-rgb'] = coverAtmosphereAssets.palette.accent;
+            style['--cover-glow-rgb'] = coverAtmosphereAssets.palette.glow;
+            style['--cover-shadow-rgb'] = coverAtmosphereAssets.palette.shadow;
+        }
+
+        if (coverAtmosphereAssets?.topCover) {
+            style['--cover-top-image'] = `url(${coverAtmosphereAssets.topCover})`;
+        }
+
+        return style;
+    }, [coverAtmosphereAssets, coverSrc]);
     // 使用 Portal 渲染到 body，确保不受父级样式限制（如 overflow, transform 等），实现真正的全屏
     return createPortal(
         <>
             <AnimatePresence>
                 {isLyricsOpen && (
                     <Motion.div
-                        className={`lyrics-overlay mobile-fullscreen-player ${isCommentDrawerOpen ? 'comment-drawer-open' : ''}`}
+                        className={`lyrics-overlay mobile-fullscreen-player ${isCommentDrawerOpen ? 'comment-drawer-open' : ''} ${coverAtmosphereAssets ? 'cover-assets-ready' : ''}`}
                         initial={overlayInitial}
                         animate={overlayAnimate}
                         exit={overlayExit}
@@ -186,9 +227,7 @@ const LyricsOverlay = ({
                         onTouchStart={handleOverlayTouchStart}
                         onTouchEnd={handleOverlayTouchEnd}
                         onTouchCancel={resetMobileSwipeState}
-                        style={{
-                            '--cover-image': `url(${currentTrack.cover || currentAlbum.cover})`
-                        }}
+                        style={coverVisualStyle}
                     >
                         <div className="noise-overlay"></div>
 
@@ -222,7 +261,7 @@ const LyricsOverlay = ({
                                     onDoubleClick={(e) => handleCoverDoubleClick(e, 'mobile')}
                                     title="双击添加收藏"
                                 >
-                                    <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                                    <img loading="lazy" src={coverSrc} alt="cover" />
                                     <div className="cover-like-burst-layer" aria-hidden="true">
                                         {mobileLikeBursts.map((burst) => (
                                             <span
@@ -349,7 +388,7 @@ const LyricsOverlay = ({
                                     onDoubleClick={(e) => handleCoverDoubleClick(e, 'desktop')}
                                     title="双击添加收藏"
                                 >
-                                    <img loading="lazy" src={currentTrack.cover || currentAlbum.cover} alt="cover" />
+                                    <img loading="lazy" src={coverSrc} alt="cover" />
                                     <div className="cover-like-burst-layer" aria-hidden="true">
                                         {desktopLikeBursts.map((burst) => (
                                             <span

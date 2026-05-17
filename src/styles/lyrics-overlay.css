@@ -1107,6 +1107,19 @@
     z-index: 0;
   }
 
+  :root.standalone-mode .mobile-fullscreen-player.cover-assets-ready .noise-overlay,
+  :root.standalone-fallback .mobile-fullscreen-player.cover-assets-ready .noise-overlay,
+  :root.native-app-mode .mobile-fullscreen-player.cover-assets-ready .noise-overlay {
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 50% 18%, rgba(var(--cover-glow-rgb, 56, 84, 164), 0.5) 0%, rgba(var(--cover-glow-rgb, 56, 84, 164), 0.3) 28%, transparent 54%),
+      radial-gradient(circle at 50% 62%, rgba(var(--cover-accent-rgb, 34, 58, 122), 0.4) 0%, rgba(var(--cover-accent-rgb, 34, 58, 122), 0.24) 36%, transparent 64%),
+      linear-gradient(180deg, rgba(var(--cover-accent-rgb, 34, 58, 122), 0.3) 0%, rgba(var(--cover-accent-rgb, 34, 58, 122), 0.48) 44%, rgba(var(--cover-shadow-rgb, 12, 16, 32), 0.66) 100%);
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+
   :root.standalone-mode .mobile-fullscreen-player::before,
   :root.standalone-fallback .mobile-fullscreen-player::before,
   :root.native-app-mode .mobile-fullscreen-player::before {
@@ -1139,6 +1152,18 @@
       transparent 100%
     );
     z-index: 1;
+  }
+
+  :root.standalone-mode .mobile-fullscreen-player.cover-assets-ready::before,
+  :root.standalone-fallback .mobile-fullscreen-player.cover-assets-ready::before,
+  :root.native-app-mode .mobile-fullscreen-player.cover-assets-ready::before {
+    background-image: var(--cover-top-image);
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    filter: none;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 
   :root.standalone-mode .mobile-fullscreen-player::after,
