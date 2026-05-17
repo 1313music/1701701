@@ -1,25 +1,23 @@
 const DEFAULT_VIDEO_INDEX_URL = String(
   import.meta.env.VITE_VIDEO_INDEX_URL || 'https://r2.1701701.xyz/json/video-index.json'
 ).trim();
-const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+import {
+  clearPersistentManifestCache,
+  readPersistentManifestCache,
+  writePersistentManifestCache
+} from './persistentManifestCache.js';
+import {
+  fetchJsonWithBundledFallback,
+  toAbsoluteUrl
+} from './manifestSourceUtils.js';
+
+const PERSISTENT_CACHE_KEY = 'manifest-cache:video:v1';
+const BUNDLED_SNAPSHOT_PATH = '/video-index.json';
+const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedCatalog = null;
 let cachedAt = 0;
 let inflightCatalogPromise = null;
-
-const toAbsoluteUrl = (value, fallbackBase = '') => {
-  const input = String(value || '').trim();
-  if (!input) return '';
-  try {
-    return new URL(input).toString();
-  } catch {
-    if (!fallbackBase) return '';
-    try {
-      return new URL(input, fallbackBase).toString();
-    } catch {
-      return '';
-    }
-  }
-};
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -125,13 +123,12 @@ const loadRemoteCatalog = async () => {
     throw new Error('视频清单地址为空');
   }
 
-  const response = await fetch(endpoint, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`视频清单请求失败（HTTP ${response.status}）`);
-  }
-
-  const payload = await response.json();
-  const parsed = parseVideoManifest(payload, endpoint);
+  const { payload, resolvedUrl } = await fetchJsonWithBundledFallback({
+    primaryUrl: endpoint,
+    fallbackPath: BUNDLED_SNAPSHOT_PATH,
+    requestLabel: '视频清单请求失败'
+  });
+  const parsed = parseVideoManifest(payload, resolvedUrl);
   if (!parsed) {
     throw new Error('视频清单格式无效');
   }
@@ -142,13 +139,10 @@ export const __resetVideoManifestCacheForTests = () => {
   cachedCatalog = null;
   cachedAt = 0;
   inflightCatalogPromise = null;
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
 
-export const loadVideoCatalog = async () => {
-  const now = Date.now();
-  if (cachedCatalog && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedCatalog;
-  }
+const loadAndPersistCatalog = async () => {
   if (inflightCatalogPromise) {
     return await inflightCatalogPromise;
   }
@@ -157,6 +151,7 @@ export const loadVideoCatalog = async () => {
     .then((catalog) => {
       cachedCatalog = catalog;
       cachedAt = Date.now();
+      writePersistentManifestCache(PERSISTENT_CACHE_KEY, catalog);
       return catalog;
     })
     .finally(() => {
@@ -164,4 +159,35 @@ export const loadVideoCatalog = async () => {
     });
 
   return await inflightCatalogPromise;
+};
+
+export const loadVideoCatalog = async () => {
+  const now = Date.now();
+  if (cachedCatalog && now - cachedAt < MEMORY_CACHE_TTL_MS) {
+    return cachedCatalog;
+  }
+  if (cachedCatalog) {
+    void loadAndPersistCatalog();
+    return cachedCatalog;
+  }
+
+  const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  if (persistedCache?.data) {
+    cachedCatalog = persistedCache.data;
+    cachedAt = persistedCache.savedAt;
+
+    if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
+      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
+        void loadAndPersistCatalog();
+      }
+      return cachedCatalog;
+    }
+  }
+
+  try {
+    return await loadAndPersistCatalog();
+  } catch (error) {
+    if (cachedCatalog) return cachedCatalog;
+    throw error;
+  }
 };

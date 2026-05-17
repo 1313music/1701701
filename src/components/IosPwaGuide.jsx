@@ -59,9 +59,9 @@ const IosPwaGuide = ({ blocked = false }) => {
       <div className="ios-pwa-guide-card">
         <div className="ios-pwa-guide-title" id="ios-pwa-guide-title">添加到 iPhone 主屏幕</div>
         <ol className="ios-pwa-guide-steps">
-          <li>点击 Safari 底部的“共享”按钮。</li>
-          <li>选择“添加到主屏幕”。</li>
-          <li>点击右上角“添加”。</li>
+          <li>请先用 Safari 打开本站。</li>
+          <li>点击底部“共享”按钮。</li>
+          <li>选择“添加到主屏幕”，再点右上角“添加”。</li>
         </ol>
         <div className="ios-pwa-guide-actions">
           <button
@@ -69,14 +69,14 @@ const IosPwaGuide = ({ blocked = false }) => {
             className="ios-pwa-guide-btn ghost"
             onClick={closeForever}
           >
-            不再提示
+            不再提醒
           </button>
           <button
             type="button"
             className="ios-pwa-guide-btn primary"
             onClick={closeNow}
           >
-            我知道了
+            稍后再说
           </button>
         </div>
       </div>

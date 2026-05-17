@@ -1,7 +1,15 @@
 const DEFAULT_GALLERY_INDEX_URL = String(
   import.meta.env.VITE_GALLERY_INDEX_URL || 'https://imgs.1701701.xyz/data/images.json'
 ).trim();
-const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+import {
+  clearPersistentManifestCache,
+  readPersistentManifestCache,
+  writePersistentManifestCache
+} from './persistentManifestCache.js';
+
+const PERSISTENT_CACHE_KEY = 'manifest-cache:gallery:v1';
+const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedItems = null;
 let cachedAt = 0;
 let inflightItemsPromise = null;
@@ -147,7 +155,7 @@ const loadRemoteItems = async () => {
     throw new Error('图库清单地址为空');
   }
 
-  const response = await fetch(endpoint, { cache: 'no-store' });
+  const response = await fetch(endpoint, { cache: 'default' });
   if (!response.ok) {
     throw new Error(`图库索引请求失败（HTTP ${response.status}）`);
   }
@@ -160,12 +168,14 @@ export const __resetGalleryManifestCacheForTests = () => {
   cachedItems = null;
   cachedAt = 0;
   inflightItemsPromise = null;
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
 
 const fetchAndCacheItems = async () => {
   const items = await loadRemoteItems();
   cachedItems = items;
   cachedAt = Date.now();
+  writePersistentManifestCache(PERSISTENT_CACHE_KEY, items);
   return items;
 };
 
@@ -174,15 +184,37 @@ export const loadGalleryItems = async () => {
   if (cachedItems && now - cachedAt < MEMORY_CACHE_TTL_MS) {
     return cachedItems;
   }
+  if (cachedItems) {
+    void refreshGalleryItems();
+    return cachedItems;
+  }
+
+  const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  if (persistedCache?.data) {
+    cachedItems = persistedCache.data;
+    cachedAt = persistedCache.savedAt;
+
+    if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
+      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
+        void refreshGalleryItems();
+      }
+      return cachedItems;
+    }
+  }
+
   if (inflightItemsPromise) {
     return await inflightItemsPromise;
   }
 
-  inflightItemsPromise = fetchAndCacheItems().finally(() => {
-    inflightItemsPromise = null;
-  });
-
-  return await inflightItemsPromise;
+  try {
+    inflightItemsPromise = fetchAndCacheItems().finally(() => {
+      inflightItemsPromise = null;
+    });
+    return await inflightItemsPromise;
+  } catch (error) {
+    if (cachedItems) return cachedItems;
+    throw error;
+  }
 };
 
 export const refreshGalleryItems = async () => {

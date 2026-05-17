@@ -69,10 +69,10 @@ const probePackageStatus = async (url) => {
 };
 
 const iosSteps = [
-  '请使用 Safari 打开本站。',
+  '请先用 Safari 打开本站。',
   '点击底部“共享”按钮。',
   '选择“添加到主屏幕”。',
-  '点击右上角“添加”完成安装。'
+  '点击右上角“添加”即可放到主屏幕。'
 ];
 
 const AppPage = ({ onCopyPageLink }) => {
@@ -181,7 +181,7 @@ const AppPage = ({ onCopyPageLink }) => {
           <h2>iOS 使用方式（PWA）</h2>
         </div>
         <p className="app-ios-guide-note">
-          iOS 暂无APP，请按以下步骤将网页添加到主屏幕后使用。
+          iOS 目前提供主屏网页版，按下面几步添加后，打开会更像一个独立应用。
         </p>
         <ol>
           {iosSteps.map((step) => (

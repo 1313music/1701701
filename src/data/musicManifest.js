@@ -1,25 +1,23 @@
 const DEFAULT_MUSIC_INDEX_URL = String(
   import.meta.env.VITE_MUSIC_INDEX_URL || 'https://r2.1701701.xyz/json/music-index.json'
 ).trim();
-const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+import {
+  clearPersistentManifestCache,
+  readPersistentManifestCache,
+  writePersistentManifestCache
+} from './persistentManifestCache.js';
+import {
+  fetchJsonWithBundledFallback,
+  toAbsoluteUrl
+} from './manifestSourceUtils.js';
+
+const PERSISTENT_CACHE_KEY = 'manifest-cache:music:v1';
+const BUNDLED_SNAPSHOT_PATH = '/music-index.json';
+const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedAlbums = null;
 let cachedAt = 0;
 let inflightAlbumsPromise = null;
-
-const toAbsoluteUrl = (value, fallbackBase = '') => {
-  const input = String(value || '').trim();
-  if (!input) return '';
-  try {
-    return new URL(input).toString();
-  } catch {
-    if (!fallbackBase) return '';
-    try {
-      return new URL(input, fallbackBase).toString();
-    } catch {
-      return '';
-    }
-  }
-};
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -101,13 +99,12 @@ const loadRemoteAlbums = async () => {
     throw new Error('音乐清单地址为空');
   }
 
-  const response = await fetch(endpoint, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`音乐清单请求失败（HTTP ${response.status}）`);
-  }
-
-  const payload = await response.json();
-  const parsed = parseMusicManifest(payload, endpoint);
+  const { payload, resolvedUrl } = await fetchJsonWithBundledFallback({
+    primaryUrl: endpoint,
+    fallbackPath: BUNDLED_SNAPSHOT_PATH,
+    requestLabel: '音乐清单请求失败'
+  });
+  const parsed = parseMusicManifest(payload, resolvedUrl);
   if (!parsed) {
     throw new Error('音乐清单格式无效');
   }
@@ -118,13 +115,10 @@ export const __resetMusicManifestCacheForTests = () => {
   cachedAlbums = null;
   cachedAt = 0;
   inflightAlbumsPromise = null;
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
 
-export const loadMusicManifestAlbums = async () => {
-  const now = Date.now();
-  if (cachedAlbums && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedAlbums;
-  }
+const loadAndPersistAlbums = async () => {
   if (inflightAlbumsPromise) {
     return await inflightAlbumsPromise;
   }
@@ -133,6 +127,7 @@ export const loadMusicManifestAlbums = async () => {
     .then((albums) => {
       cachedAlbums = albums;
       cachedAt = Date.now();
+      writePersistentManifestCache(PERSISTENT_CACHE_KEY, albums);
       return albums;
     })
     .finally(() => {
@@ -140,4 +135,35 @@ export const loadMusicManifestAlbums = async () => {
     });
 
   return await inflightAlbumsPromise;
+};
+
+export const loadMusicManifestAlbums = async () => {
+  const now = Date.now();
+  if (cachedAlbums && now - cachedAt < MEMORY_CACHE_TTL_MS) {
+    return cachedAlbums;
+  }
+  if (cachedAlbums) {
+    void loadAndPersistAlbums();
+    return cachedAlbums;
+  }
+
+  const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  if (persistedCache?.data) {
+    cachedAlbums = persistedCache.data;
+    cachedAt = persistedCache.savedAt;
+
+    if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
+      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
+        void loadAndPersistAlbums();
+      }
+      return cachedAlbums;
+    }
+  }
+
+  try {
+    return await loadAndPersistAlbums();
+  } catch (error) {
+    if (cachedAlbums) return cachedAlbums;
+    throw error;
+  }
 };

@@ -1,25 +1,23 @@
 const DEFAULT_DOWNLOAD_INDEX_URL = String(
   import.meta.env.VITE_DOWNLOAD_INDEX_URL || 'https://r2.1701701.xyz/json/download-index.json'
 ).trim();
-const MEMORY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+import {
+  clearPersistentManifestCache,
+  readPersistentManifestCache,
+  writePersistentManifestCache
+} from './persistentManifestCache.js';
+import {
+  fetchJsonWithBundledFallback,
+  toAbsoluteUrl
+} from './manifestSourceUtils.js';
+
+const PERSISTENT_CACHE_KEY = 'manifest-cache:download:v1';
+const BUNDLED_SNAPSHOT_PATH = '/download-index.json';
+const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedSections = null;
 let cachedAt = 0;
 let inflightSectionsPromise = null;
-
-const toAbsoluteUrl = (value, fallbackBase = '') => {
-  const input = String(value || '').trim();
-  if (!input) return '';
-  try {
-    return new URL(input).toString();
-  } catch {
-    if (!fallbackBase) return '';
-    try {
-      return new URL(input, fallbackBase).toString();
-    } catch {
-      return '';
-    }
-  }
-};
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -108,13 +106,12 @@ const loadRemoteSections = async () => {
     throw new Error('下载清单地址为空');
   }
 
-  const response = await fetch(endpoint, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`下载清单请求失败（HTTP ${response.status}）`);
-  }
-
-  const payload = await response.json();
-  const parsed = parseDownloadManifest(payload, endpoint);
+  const { payload, resolvedUrl } = await fetchJsonWithBundledFallback({
+    primaryUrl: endpoint,
+    fallbackPath: BUNDLED_SNAPSHOT_PATH,
+    requestLabel: '下载清单请求失败'
+  });
+  const parsed = parseDownloadManifest(payload, resolvedUrl);
   if (!parsed) {
     throw new Error('下载清单格式无效');
   }
@@ -125,13 +122,10 @@ export const __resetDownloadManifestCacheForTests = () => {
   cachedSections = null;
   cachedAt = 0;
   inflightSectionsPromise = null;
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
 
-export const loadDownloadSections = async () => {
-  const now = Date.now();
-  if (cachedSections && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedSections;
-  }
+const loadAndPersistSections = async () => {
   if (inflightSectionsPromise) {
     return await inflightSectionsPromise;
   }
@@ -140,6 +134,7 @@ export const loadDownloadSections = async () => {
     .then((sections) => {
       cachedSections = sections;
       cachedAt = Date.now();
+      writePersistentManifestCache(PERSISTENT_CACHE_KEY, sections);
       return sections;
     })
     .finally(() => {
@@ -147,4 +142,35 @@ export const loadDownloadSections = async () => {
     });
 
   return await inflightSectionsPromise;
+};
+
+export const loadDownloadSections = async () => {
+  const now = Date.now();
+  if (cachedSections && now - cachedAt < MEMORY_CACHE_TTL_MS) {
+    return cachedSections;
+  }
+  if (cachedSections) {
+    void loadAndPersistSections();
+    return cachedSections;
+  }
+
+  const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  if (persistedCache?.data) {
+    cachedSections = persistedCache.data;
+    cachedAt = persistedCache.savedAt;
+
+    if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
+      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
+        void loadAndPersistSections();
+      }
+      return cachedSections;
+    }
+  }
+
+  try {
+    return await loadAndPersistSections();
+  } catch (error) {
+    if (cachedSections) return cachedSections;
+    throw error;
+  }
 };

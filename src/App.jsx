@@ -6,7 +6,6 @@ import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
-import IosPwaAudioNotice from './components/IosPwaAudioNotice.jsx';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAppShell } from './hooks/useAppShell.js';
 import { useLibraryState } from './hooks/useLibraryState.js';
@@ -47,16 +46,6 @@ const App = () => {
     toastPlacement,
     showToast
   } = useToast();
-
-  const handleCopyPwaLink = useCallback(async (href) => {
-    if (!href) return;
-    const copied = await copyTextToClipboard(href);
-    showToast(
-      copied ? '已复制，请用 Safari 打开' : '复制失败',
-      copied ? 'tone-add' : 'tone-warn',
-      { placement: 'bottom' }
-    );
-  }, [showToast]);
 
   const {
     themePreference,
@@ -713,10 +702,6 @@ const App = () => {
           </div>
         )}
 
-        <IosPwaAudioNotice
-          blocked={isWeChatBrowserHintOpen || isVideoAccessOpen || Boolean(sharePanelData)}
-          onCopyLink={handleCopyPwaLink}
-        />
       </div>
 
       <div
