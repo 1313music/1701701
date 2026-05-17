@@ -42,6 +42,13 @@ const readInsetValue = (value) => {
   return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
 };
 
+const VIEWPORT_SCROLL_SETTLE_DELAY_MS = 160;
+
+export const shouldDeferViewportUpdate = ({ reason, isScrollGestureActive }) => (
+  isScrollGestureActive
+  && (reason === 'visual-viewport-resize' || reason === 'visual-viewport-scroll')
+);
+
 const clearViewportVars = (root) => {
   root.style.setProperty('--mobile-browser-bottom-gap', '0px');
   root.style.removeProperty('--mobile-fullscreen-height');
@@ -136,15 +143,19 @@ export const useAndroidViewportVars = () => {
 
     const root = document.documentElement;
     const isAndroid = isAndroidDevice();
+    const isiOS = isIOSDevice();
+    const shouldTrackMobileViewport = isAndroid || isiOS;
     let rafId = 0;
+    let settleTimerId = 0;
+    let lastScrollActivityAt = 0;
     let probe = null;
 
-    if (isAndroid) {
+    if (shouldTrackMobileViewport) {
       probe = createSafeAreaProbe();
     }
 
     const updateViewportVars = () => {
-      if (!isAndroid) {
+      if (!shouldTrackMobileViewport) {
         clearViewportVars(root);
         return;
       }
@@ -206,28 +217,68 @@ export const useAndroidViewportVars = () => {
       });
     };
 
+    const requestSettledUpdate = () => {
+      if (settleTimerId) {
+        window.clearTimeout(settleTimerId);
+      }
+      settleTimerId = window.setTimeout(() => {
+        settleTimerId = 0;
+        requestUpdate();
+      }, VIEWPORT_SCROLL_SETTLE_DELAY_MS);
+    };
+
+    const handleViewportEvent = (reason) => {
+      const isScrollGestureActive = (
+        lastScrollActivityAt > 0
+        && Date.now() - lastScrollActivityAt < VIEWPORT_SCROLL_SETTLE_DELAY_MS
+      );
+      if (shouldDeferViewportUpdate({ reason, isScrollGestureActive })) {
+        requestSettledUpdate();
+        return;
+      }
+      requestUpdate();
+    };
+
+    const handleWindowScroll = () => {
+      lastScrollActivityAt = Date.now();
+      requestSettledUpdate();
+    };
+
+    const handleVisualViewportResize = () => {
+      handleViewportEvent('visual-viewport-resize');
+    };
+
+    const handleVisualViewportScroll = () => {
+      handleViewportEvent('visual-viewport-scroll');
+    };
+
     updateViewportVars();
 
     window.addEventListener('resize', requestUpdate);
     window.addEventListener('orientationchange', requestUpdate);
     window.addEventListener('pageshow', requestUpdate);
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
     document.addEventListener('visibilitychange', requestUpdate);
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', requestUpdate);
-      window.visualViewport.addEventListener('scroll', requestUpdate);
+      window.visualViewport.addEventListener('resize', handleVisualViewportResize);
+      window.visualViewport.addEventListener('scroll', handleVisualViewportScroll);
     }
 
     return () => {
       if (rafId) {
         window.cancelAnimationFrame(rafId);
       }
+      if (settleTimerId) {
+        window.clearTimeout(settleTimerId);
+      }
       window.removeEventListener('resize', requestUpdate);
       window.removeEventListener('orientationchange', requestUpdate);
       window.removeEventListener('pageshow', requestUpdate);
+      window.removeEventListener('scroll', handleWindowScroll);
       document.removeEventListener('visibilitychange', requestUpdate);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', requestUpdate);
-        window.visualViewport.removeEventListener('scroll', requestUpdate);
+        window.visualViewport.removeEventListener('resize', handleVisualViewportResize);
+        window.visualViewport.removeEventListener('scroll', handleVisualViewportScroll);
       }
       probe?.remove();
       clearViewportVars(root);
