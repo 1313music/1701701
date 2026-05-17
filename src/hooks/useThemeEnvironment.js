@@ -75,7 +75,7 @@ export const useDisplayModeTheme = ({ resolvedTheme }) => {
     const initialStandalone = mediaQuery.matches || (isiOS && window.navigator.standalone === true);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const standaloneThemeColor = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
-    const browserThemeColor = 'transparent';
+    const browserThemeColor = resolvedTheme === 'dark' ? '#121214' : '#ffffff';
     let stabilizeTimer1 = 0;
     let stabilizeTimer2 = 0;
 

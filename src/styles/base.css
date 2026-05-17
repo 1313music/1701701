@@ -26,8 +26,8 @@
   --mobile-player-safe-bottom: 0px;
   --mobile-player-float-offset: 12px;
   --mobile-browser-bottom-gap: 0px;
-  --mobile-main-bottom-padding: 98px;
-  --mobile-main-bottom-padding-no-player: 18px;
+  --mobile-main-bottom-padding: calc(98px + var(--mobile-browser-bottom-gap));
+  --mobile-main-bottom-padding-no-player: calc(18px + var(--mobile-browser-bottom-gap));
 }
 
 @supports (height: 100dvh) {
@@ -44,8 +44,8 @@
   --mobile-player-safe-bottom: env(safe-area-inset-bottom, 0px);
   --mobile-player-float-offset: 12px;
   --mobile-browser-bottom-gap: 0px;
-  --mobile-main-bottom-padding: calc(98px + env(safe-area-inset-bottom, 0px));
-  --mobile-main-bottom-padding-no-player: calc(18px + env(safe-area-inset-bottom, 0px));
+  --mobile-main-bottom-padding: calc(98px + env(safe-area-inset-bottom, 0px) + var(--mobile-browser-bottom-gap));
+  --mobile-main-bottom-padding-no-player: calc(18px + env(safe-area-inset-bottom, 0px) + var(--mobile-browser-bottom-gap));
 }
 
 :root.browser-mode {
@@ -54,8 +54,8 @@
   --mobile-layout-safe-bottom: 0px;
   --mobile-player-safe-bottom: 0px;
   --mobile-player-float-offset: 12px;
-  --mobile-main-bottom-padding: 98px;
-  --mobile-main-bottom-padding-no-player: 18px;
+  --mobile-main-bottom-padding: calc(98px + var(--mobile-browser-bottom-gap));
+  --mobile-main-bottom-padding-no-player: calc(18px + var(--mobile-browser-bottom-gap));
 }
 
 @media (prefers-color-scheme: dark) {

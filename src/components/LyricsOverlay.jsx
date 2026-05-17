@@ -54,6 +54,7 @@ const LyricsOverlay = ({
     const {
         mobileTitleRef,
         isMobileTitleMarquee,
+        isCompactMobileViewport,
         desktopLyricsWrapRef,
         desktopLyricsScrollerRef,
         mobileLyricsWrapRef,
@@ -219,7 +220,7 @@ const LyricsOverlay = ({
             <AnimatePresence>
                 {isLyricsOpen && (
                     <Motion.div
-                        className={`lyrics-overlay mobile-fullscreen-player ${isCommentDrawerOpen ? 'comment-drawer-open' : ''} ${coverAtmosphereAssets ? 'cover-assets-ready' : ''}`}
+                        className={`lyrics-overlay mobile-fullscreen-player ${isCompactMobileViewport ? 'mobile-compact-layout' : ''} ${isCommentDrawerOpen ? 'comment-drawer-open' : ''} ${coverAtmosphereAssets ? 'cover-assets-ready' : ''}`}
                         initial={overlayInitial}
                         animate={overlayAnimate}
                         exit={overlayExit}

@@ -34,6 +34,7 @@ export const useLyricsOverlayViewport = ({
 }) => {
   const mobileTitleRef = useRef(null);
   const [isMobileTitleMarquee, setIsMobileTitleMarquee] = useState(false);
+  const [isCompactMobileViewport, setIsCompactMobileViewport] = useState(false);
   const desktopLyricsWrapRef = useRef(null);
   const desktopLyricsScrollerRef = useRef(null);
   const mobileLyricsWrapRef = useRef(null);
@@ -58,6 +59,35 @@ export const useLyricsOverlayViewport = ({
     if (typeof window === 'undefined') return false;
     return window.innerWidth <= 1024;
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateCompactViewport = () => {
+      const viewportHeight = Math.round(window.visualViewport?.height ?? window.innerHeight ?? 0);
+      const compact = isMobileViewport() && viewportHeight > 0 && viewportHeight <= 720;
+      setIsCompactMobileViewport(compact);
+    };
+
+    updateCompactViewport();
+    window.addEventListener('resize', updateCompactViewport);
+    window.addEventListener('orientationchange', updateCompactViewport);
+    window.addEventListener('pageshow', updateCompactViewport);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateCompactViewport);
+      window.visualViewport.addEventListener('scroll', updateCompactViewport);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateCompactViewport);
+      window.removeEventListener('orientationchange', updateCompactViewport);
+      window.removeEventListener('pageshow', updateCompactViewport);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateCompactViewport);
+        window.visualViewport.removeEventListener('scroll', updateCompactViewport);
+      }
+    };
+  }, [isMobileViewport]);
 
   const resetMobileSwipeState = useCallback(() => {
     mobileSwipeRef.current.active = false;
@@ -254,6 +284,7 @@ export const useLyricsOverlayViewport = ({
   return {
     mobileTitleRef,
     isMobileTitleMarquee,
+    isCompactMobileViewport,
     desktopLyricsWrapRef,
     desktopLyricsScrollerRef,
     mobileLyricsWrapRef,

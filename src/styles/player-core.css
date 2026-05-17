@@ -347,7 +347,7 @@
 
   .player-bar {
     height: 64px;
-    bottom: calc(var(--mobile-player-float-offset) + var(--mobile-player-safe-bottom));
+    bottom: calc(var(--mobile-player-float-offset) + var(--mobile-player-safe-bottom) + var(--mobile-browser-bottom-gap));
     left: 12px;
     right: 12px;
     width: auto;

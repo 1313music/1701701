@@ -890,6 +890,11 @@
     bottom: calc(172px + var(--mobile-fullscreen-safe-bottom) + var(--mobile-browser-bottom-gap));
   }
 
+  :root.browser-mode:not(.android-browser-mode) .overlay-favorite-trigger.mobile-fab,
+  :root.browser-mode:not(.android-browser-mode) .overlay-comment-trigger.mobile-fab {
+    bottom: calc(144px + var(--mobile-fullscreen-safe-bottom));
+  }
+
   .song-comment-backdrop {
     background: rgba(6, 8, 12, 0.48);
     backdrop-filter: blur(4px);
@@ -921,6 +926,7 @@
 
 
   .mobile-player-content {
+    --mobile-cover-size: min(80vw, 360px);
     position: relative;
     z-index: 10;
     flex: 1;
@@ -933,16 +939,17 @@
   }
 
   .mobile-cover-section {
-    flex: 0 0 50%;
+    flex: 0 0 max(50%, calc(var(--mobile-cover-size) + 12px));
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
   }
 
   .mobile-xl-cover {
-    width: min(80vw, 360px);
+    width: var(--mobile-cover-size);
+    height: var(--mobile-cover-size);
     aspect-ratio: 1 / 1;
     border-radius: 22px;
     overflow: hidden;
@@ -1068,6 +1075,34 @@
     font-weight: 700;
     color: var(--text-main);
     text-shadow: none;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-cover-section {
+    flex: 0 0 calc(var(--mobile-cover-size) + 10px);
+    min-height: 0;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-player-content {
+    --mobile-cover-size: min(78vw, 344px);
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-track-info {
+    padding: 12px 0 8px;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-track-name {
+    font-size: 23px;
+    margin: 0;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-lyrics-section {
+    min-height: 124px;
+    max-height: 332px;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-lyrics-scroller {
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   .mobile-no-lyrics {
@@ -1251,6 +1286,15 @@
     transform: translateY(-24px);
   }
 
+  :root.browser-mode:not(.android-browser-mode) .mobile-player-controls {
+    padding-bottom: calc(12px + var(--mobile-fullscreen-safe-bottom));
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-player-controls {
+    gap: 15px;
+    padding-top: 12px;
+  }
+
 
   .mobile-progress-section {
     display: flex;
@@ -1300,6 +1344,10 @@
     gap: clamp(8px, 2.8vw, 16px);
   }
 
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-control-buttons {
+    gap: clamp(8px, 2.4vw, 14px);
+  }
+
   .mobile-mode-btn {
     background: none;
     border: none;
@@ -1319,6 +1367,12 @@
     appearance: none;
     box-shadow: none;
     outline: none;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-mode-btn,
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-playlist-btn {
+    width: 38px;
+    height: 38px;
   }
 
   .mobile-mode-btn:active {
@@ -1347,6 +1401,11 @@
     outline: none;
   }
 
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-control-btn {
+    width: 50px;
+    height: 50px;
+  }
+
   .mobile-control-btn:active {
     transform: scale(0.9);
   }
@@ -1369,6 +1428,11 @@
     appearance: none;
     box-shadow: none;
     outline: none;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .mobile-play-btn {
+    width: 58px;
+    height: 58px;
   }
 
   .mobile-play-btn:active {
@@ -1394,6 +1458,16 @@
     appearance: none;
     box-shadow: none;
     outline: none;
+  }
+
+  .mobile-fullscreen-player.mobile-compact-layout .overlay-favorite-trigger.mobile-fab,
+  .mobile-fullscreen-player.mobile-compact-layout .overlay-comment-trigger.mobile-fab {
+    bottom: calc(166px + var(--mobile-fullscreen-safe-bottom) + var(--mobile-browser-bottom-gap));
+  }
+
+  :root.browser-mode:not(.android-browser-mode) .mobile-fullscreen-player.mobile-compact-layout .overlay-favorite-trigger.mobile-fab,
+  :root.browser-mode:not(.android-browser-mode) .mobile-fullscreen-player.mobile-compact-layout .overlay-comment-trigger.mobile-fab {
+    bottom: calc(154px + var(--mobile-fullscreen-safe-bottom));
   }
 
   .mobile-playlist-btn:active {
