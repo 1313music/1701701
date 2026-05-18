@@ -14,3 +14,15 @@ bucket_name = "1701701-announcements"
 ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,http://localhost:8080"
 PUBLIC_OBJECT_KEY = "announcement.json"
 PUBLIC_ANNOUNCEMENT_BASE_URL = "https://notice.1701701.xyz"
+
+# Gallery publishing through GitHub.
+# Set GITHUB_TOKEN or GALLERY_GITHUB_TOKEN with `wrangler secret put`.
+GALLERY_GITHUB_OWNER = "Fhjsieorbxhjskslapqieuy"
+GALLERY_GITHUB_REPO = "1701701img"
+GALLERY_GITHUB_BRANCH = "main"
+GALLERY_REPO_INDEX_PATH = "public/data/images.json"
+GALLERY_REPO_IMAGE_ROOT = "public/images"
+GALLERY_PUBLIC_IMAGE_ROOT = "images"
+GALLERY_PUBLIC_BASE_URL = "https://imgs.1701701.xyz"
+GITHUB_COMMITTER_NAME = "1701701 Admin"
+GITHUB_COMMITTER_EMAIL = "admin@1701701.xyz"

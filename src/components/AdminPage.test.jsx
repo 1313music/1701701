@@ -12,6 +12,17 @@ vi.mock('../data/announcementAdminApi.js', () => ({
   }))
 }));
 
+vi.mock('../data/galleryAdminApi.js', () => ({
+  isGalleryAdminApiConfigured: () => true,
+  publishGalleryImages: vi.fn(async () => ({
+    items: [{ id: 'images/XKK/example.jpg' }],
+    commit: {
+      sha: 'abc123456789',
+      url: 'https://github.com/example/gallery/commit/abc123456789'
+    }
+  }))
+}));
+
 vi.mock('../data/announcementSource.js', () => ({
   loadAnnouncement: vi.fn(async () => ({
     announcement: {
@@ -69,5 +80,35 @@ describe('AdminPage', () => {
     });
 
     expect(await screen.findByText('公告已发布')).toBeInTheDocument();
+  });
+
+  it('publishes gallery images with the shared admin token', async () => {
+    const { publishGalleryImages } = await import('../data/galleryAdminApi.js');
+    const file = new File(['image-bytes'], 'example.jpg', { type: 'image/jpeg' });
+
+    render(<AdminPage />);
+
+    await screen.findByDisplayValue('当前公告');
+    fireEvent.change(screen.getByLabelText('管理员口令'), {
+      target: { value: 'secret-token' }
+    });
+    fireEvent.click(screen.getByRole('tab', { name: '图库' }));
+    fireEvent.change(screen.getByLabelText('分类'), {
+      target: { value: 'XKK' }
+    });
+    fireEvent.change(screen.getByLabelText('图片文件'), {
+      target: { files: [file] }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '发布图片' }));
+
+    await waitFor(() => {
+      expect(publishGalleryImages).toHaveBeenCalledWith(expect.objectContaining({
+        token: 'secret-token',
+        category: 'XKK',
+        files: [file]
+      }));
+    });
+
+    expect(await screen.findByText('已发布 1 张图片，等待 Cloudflare Pages 更新')).toBeInTheDocument();
   });
 });
