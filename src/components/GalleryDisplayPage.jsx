@@ -521,10 +521,12 @@ const GalleryDisplayPage = () => {
 
         <section ref={gallerySectionRef} className="gallery-list-card" aria-label="瀑布流图库">
           <div className="gallery-list-header">
-            <h2>图库展示</h2>
-            <div className="gallery-list-meta">
-              <span>{filteredItems.length} / {items.length} 张</span>
-              <span>{categoryCount} 个分类</span>
+            <div className="gallery-title-row">
+              <h2>图库展示</h2>
+              <div className="gallery-list-meta">
+                <span>{filteredItems.length} / {items.length} 张</span>
+                <span>{categoryCount} 个分类</span>
+              </div>
             </div>
           </div>
 

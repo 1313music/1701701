@@ -69,18 +69,6 @@
   font-weight: 800;
 }
 
-.announcement-close {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--glass-border) 68%, rgba(255, 255, 255, 0.18));
-  background: color-mix(in srgb, var(--bg-color) 60%, transparent);
-  color: var(--text-main);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-}
-
 .announcement-body {
   display: flex;
   flex-direction: column;
@@ -130,6 +118,52 @@
   color: var(--text-main);
 }
 
+.announcement-trigger {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 24px);
+  right: calc(env(safe-area-inset-right, 0px) + 18px);
+  z-index: 190;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 82%, rgba(255, 255, 255, 0.18));
+  background: color-mix(in srgb, var(--glass-bg) 78%, rgba(255, 255, 255, 0.08));
+  color: color-mix(in srgb, var(--text-main) 88%, var(--text-secondary));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.announcement-trigger:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--text-main) 28%, var(--glass-border));
+  background: color-mix(in srgb, var(--hover-bg) 72%, var(--glass-bg));
+  color: var(--text-main);
+}
+
+.announcement-trigger:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.announcement-trigger.is-unread::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #f05d4f;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--bg-color) 82%, transparent),
+    0 0 0 6px color-mix(in srgb, #f05d4f 14%, transparent);
+}
+
 @media (max-width: 600px) {
   .announcement-modal {
     padding: 16px;
@@ -154,4 +188,15 @@
     flex-direction: column;
   }
 
+  .announcement-trigger {
+    top: auto;
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+    bottom: calc(var(--mobile-player-safe-bottom) + var(--mobile-player-float-offset) + 126px);
+    width: 40px;
+    height: 40px;
+  }
+
+  .app-root.no-player .announcement-trigger {
+    bottom: calc(var(--mobile-layout-safe-bottom) + 64px);
+  }
 }

@@ -97,6 +97,13 @@
   flex-wrap: wrap;
 }
 
+.gallery-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .gallery-list-header h2 {
   font-size: 20px;
 }

@@ -47,16 +47,6 @@ const AnnouncementModal = ({ announcement, open = false, onConfirm }) => {
           <h3 className="announcement-title" id="announcement-title">
             {announcement.title || '站点公告'}
           </h3>
-          {!announcement.force && (
-            <button
-              type="button"
-              className="announcement-close"
-              onClick={onConfirm}
-              aria-label="关闭公告"
-            >
-              ×
-            </button>
-          )}
         </div>
         <div className="announcement-body">
           {paragraphs.map((paragraph) => (

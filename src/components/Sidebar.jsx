@@ -12,34 +12,21 @@ import {
     ChevronRight,
     Smartphone,
     Info,
-    MessageSquareMore,
-    Megaphone
+    MessageSquareMore
 } from 'lucide-react';
 
 const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
     String(import.meta.env.VITE_SHOW_COMMENT_NAV || '').trim().toLowerCase()
 );
 
-const NavItem = ({
-    icon,
-    label,
-    active = false,
-    onClick,
-    className = '',
-    badge = false,
-    ariaLabel
-}) => (
+const NavItem = ({ icon, label, active = false, onClick }) => (
     <button
         type="button"
-        className={`nav-item ${active ? 'active' : ''} ${className}`}
+        className={`nav-item ${active ? 'active' : ''}`}
         onClick={onClick}
         aria-pressed={active}
-        aria-label={ariaLabel || label}
     >
-        <span className="nav-item-icon">
-            {icon}
-            {badge && <span className="nav-item-badge" aria-hidden="true" />}
-        </span>
+        {icon}
         <span>{label}</span>
     </button>
 );
@@ -52,11 +39,7 @@ const Sidebar = ({
     isSidebarCollapsed = false,
     setIsSidebarCollapsed,
     themePreference = 'light',
-    onThemeToggle,
-    announcement,
-    hasActiveAnnouncement = false,
-    isAnnouncementUnread = false,
-    onOpenAnnouncement
+    onThemeToggle
 }) => {
     const handleNavClick = (newView) => {
         setIsSidebarOpen(false);
@@ -68,13 +51,6 @@ const Sidebar = ({
     const ThemeIcon = themePreference === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
     const sidebarToggleLabel = isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏';
-    const announcementTitle = announcement?.title || '站点公告';
-    const announcementLabel = isAnnouncementUnread ? '新公告' : '公告';
-    const announcementAriaLabel = `查看公告：${announcementTitle}`;
-    const handleAnnouncementClick = () => {
-        setIsSidebarOpen(false);
-        onOpenAnnouncement?.();
-    };
     const handleLogoKeyDown = (event) => {
         if (event.target !== event.currentTarget) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -109,31 +85,17 @@ const Sidebar = ({
                 >
                     1701701.xyz
                 </button>
-                <div className="mobile-topbar-actions">
-                    {hasActiveAnnouncement && (
-                        <button
-                            type="button"
-                            className={`mobile-announcement-toggle ${isAnnouncementUnread ? 'is-unread' : ''}`}
-                            onClick={handleAnnouncementClick}
-                            aria-label={announcementAriaLabel}
-                            title={announcementAriaLabel}
-                        >
-                            <Megaphone size={21} strokeWidth={2.4} absoluteStrokeWidth />
-                            {isAnnouncementUnread && <span className="mobile-announcement-badge" aria-hidden="true" />}
-                        </button>
-                    )}
-                    {onThemeToggle && (
-                        <button
-                            type="button"
-                            className="mobile-theme-toggle"
-                            onClick={onThemeToggle}
-                            aria-label={themeToggleLabel}
-                            title={themeToggleLabel}
-                        >
-                            <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
-                        </button>
-                    )}
-                </div>
+                {onThemeToggle && (
+                    <button
+                        type="button"
+                        className="mobile-theme-toggle"
+                        onClick={onThemeToggle}
+                        aria-label={themeToggleLabel}
+                        title={themeToggleLabel}
+                    >
+                        <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
+                    </button>
+                )}
             </div>
 
             <div
@@ -178,16 +140,6 @@ const Sidebar = ({
                             label="留言"
                             active={view === 'comment'}
                             onClick={() => handleNavClick('comment')}
-                        />
-                    )}
-                    {hasActiveAnnouncement && (
-                        <NavItem
-                            icon={<Megaphone size={20} strokeWidth={2.4} absoluteStrokeWidth />}
-                            label={announcementLabel}
-                            onClick={handleAnnouncementClick}
-                            className="nav-item-announcement"
-                            badge={isAnnouncementUnread}
-                            ariaLabel={announcementAriaLabel}
                         />
                     )}
                     <NavItem
@@ -264,16 +216,6 @@ const Sidebar = ({
                             label="留言"
                             active={view === 'comment'}
                             onClick={() => handleNavClick('comment')}
-                        />
-                    )}
-                    {hasActiveAnnouncement && (
-                        <NavItem
-                            icon={<Megaphone size={22} strokeWidth={2.4} absoluteStrokeWidth />}
-                            label={announcementLabel}
-                            onClick={handleAnnouncementClick}
-                            className="nav-item-announcement"
-                            badge={isAnnouncementUnread}
-                            ariaLabel={announcementAriaLabel}
                         />
                     )}
                     <NavItem
