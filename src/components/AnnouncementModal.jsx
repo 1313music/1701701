@@ -42,7 +42,6 @@ const AnnouncementModal = ({ announcement, open = false, onConfirm }) => {
         aria-modal="true"
         aria-labelledby="announcement-title"
       >
-        <div className="announcement-eyebrow">站点通知</div>
         <div className="announcement-title-row">
           <h3 className="announcement-title" id="announcement-title">
             {announcement.title || '站点公告'}
