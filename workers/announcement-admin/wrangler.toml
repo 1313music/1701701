@@ -16,6 +16,18 @@ id = "5d6fcbc9155b46e6baa9423e0b384a73"
 binding = "ANNOUNCEMENT_PUBLIC_BUCKET"
 bucket_name = "1701701-announcements"
 
+[[r2_buckets]]
+binding = "MUSIC_PUBLIC_BUCKET"
+bucket_name = "minyaoclub"
+
+[[r2_buckets]]
+binding = "VIDEO_PUBLIC_BUCKET"
+bucket_name = "minyaoclub"
+
+[[r2_buckets]]
+binding = "DOWNLOAD_PUBLIC_BUCKET"
+bucket_name = "minyaoclub"
+
 [vars]
 ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080"
 PUBLIC_OBJECT_KEY = "announcement.json"
@@ -32,3 +44,20 @@ GALLERY_PUBLIC_IMAGE_ROOT = "images"
 GALLERY_PUBLIC_BASE_URL = "https://imgs.1701701.xyz"
 GITHUB_COMMITTER_NAME = "1701701 Admin"
 GITHUB_COMMITTER_EMAIL = "admin@1701701.xyz"
+
+# Music publishing through R2.
+MUSIC_INDEX_KEY = "json/music-index.json"
+MUSIC_AUDIO_ROOT = "mp3"
+MUSIC_LRC_ROOT = "lrc"
+MUSIC_COVER_ROOT = "img/music"
+MUSIC_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
+
+# Video publishing and access password through R2.
+VIDEO_INDEX_KEY = "json/video-index.json"
+VIDEO_ACCESS_KEY = "json/video-access.json"
+VIDEO_ACCESS_DEFAULT_PASSWORD = "1701701xyz"
+VIDEO_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
+
+# Download publishing through R2.
+DOWNLOAD_INDEX_KEY = "json/download-index.json"
+DOWNLOAD_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
