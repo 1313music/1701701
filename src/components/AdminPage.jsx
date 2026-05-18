@@ -35,6 +35,9 @@ import {
 } from '../data/musicAdminApi.js';
 import {
   isVideoAdminApiConfigured,
+  isVideoAccessAdminApiConfigured,
+  loadVideoAccessSettings,
+  publishVideoAccessSettings,
   publishVideoLinks
 } from '../data/videoAdminApi.js';
 import {
@@ -108,6 +111,12 @@ const createDefaultVideoDraft = () => ({
   thumbUrls: ''
 });
 
+const createDefaultVideoAccessDraft = () => ({
+  password: '',
+  passwordVersion: '',
+  updatedAt: ''
+});
+
 const createDefaultDownloadDraft = () => ({
   sectionTitle: '',
   sectionSortOrder: '',
@@ -178,12 +187,14 @@ const AdminPage = () => {
   const galleryApiConfigured = useMemo(() => isGalleryAdminApiConfigured(), []);
   const musicApiConfigured = useMemo(() => isMusicAdminApiConfigured(), []);
   const videoApiConfigured = useMemo(() => isVideoAdminApiConfigured(), []);
+  const videoAccessApiConfigured = useMemo(() => isVideoAccessAdminApiConfigured(), []);
   const downloadApiConfigured = useMemo(() => isDownloadAdminApiConfigured(), []);
   const [activePanel, setActivePanel] = useState(ADMIN_PANEL_ANNOUNCEMENT);
   const [draft, setDraft] = useState(createDefaultDraft);
   const [galleryDraft, setGalleryDraft] = useState(createDefaultGalleryDraft);
   const [musicDraft, setMusicDraft] = useState(createDefaultMusicDraft);
   const [videoDraft, setVideoDraft] = useState(createDefaultVideoDraft);
+  const [videoAccessDraft, setVideoAccessDraft] = useState(createDefaultVideoAccessDraft);
   const [downloadDraft, setDownloadDraft] = useState(createDefaultDownloadDraft);
   const [videoFolderSelection, setVideoFolderSelection] = useState('');
   const [galleryCategories, setGalleryCategories] = useState([]);
@@ -198,6 +209,7 @@ const AdminPage = () => {
   const [galleryPublishResult, setGalleryPublishResult] = useState(null);
   const [musicPublishResult, setMusicPublishResult] = useState(null);
   const [videoPublishResult, setVideoPublishResult] = useState(null);
+  const [videoAccessPublishResult, setVideoAccessPublishResult] = useState(null);
   const [downloadPublishResult, setDownloadPublishResult] = useState(null);
   const [token, setToken] = useState(() => {
     try {
@@ -231,6 +243,8 @@ const AdminPage = () => {
   const [isGallerySaving, setIsGallerySaving] = useState(false);
   const [isMusicSaving, setIsMusicSaving] = useState(false);
   const [isVideoSaving, setIsVideoSaving] = useState(false);
+  const [isVideoAccessLoading, setIsVideoAccessLoading] = useState(false);
+  const [isVideoAccessSaving, setIsVideoAccessSaving] = useState(false);
   const [isDownloadSaving, setIsDownloadSaving] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -353,6 +367,13 @@ const AdminPage = () => {
 
   const updateVideoDraftField = (field, value) => {
     setVideoDraft((previous) => ({
+      ...previous,
+      [field]: value
+    }));
+  };
+
+  const updateVideoAccessDraftField = (field, value) => {
+    setVideoAccessDraft((previous) => ({
       ...previous,
       [field]: value
     }));
@@ -569,6 +590,51 @@ const AdminPage = () => {
       setMusicStatus({ tone: 'error', message: error?.message || '音乐发布失败' });
     } finally {
       setIsMusicSaving(false);
+    }
+  };
+
+  const applyVideoAccessSettings = (config) => {
+    setVideoAccessDraft({
+      password: String(config?.password || ''),
+      passwordVersion: String(config?.passwordVersion || ''),
+      updatedAt: String(config?.updatedAt || '')
+    });
+  };
+
+  const handleLoadVideoAccess = async () => {
+    setIsVideoAccessLoading(true);
+    try {
+      const config = await loadVideoAccessSettings({ token });
+      applyVideoAccessSettings(config);
+      setVideoStatus({ tone: 'success', message: '已读取当前视频访问口令' });
+    } catch (error) {
+      setVideoStatus({ tone: 'error', message: error?.message || '视频口令读取失败' });
+    } finally {
+      setIsVideoAccessLoading(false);
+    }
+  };
+
+  const handlePublishVideoAccess = async () => {
+    const password = String(videoAccessDraft.password || '').trim();
+    if (!password) {
+      setVideoStatus({ tone: 'error', message: '请填写视频访问口令' });
+      return;
+    }
+
+    setIsVideoAccessSaving(true);
+    setVideoAccessPublishResult(null);
+    try {
+      const result = await publishVideoAccessSettings({
+        password,
+        token
+      });
+      applyVideoAccessSettings(result?.config);
+      setVideoAccessPublishResult(result);
+      setVideoStatus({ tone: 'success', message: '视频访问口令已保存，旧授权已失效' });
+    } catch (error) {
+      setVideoStatus({ tone: 'error', message: error?.message || '视频口令保存失败' });
+    } finally {
+      setIsVideoAccessSaving(false);
     }
   };
 
@@ -1276,6 +1342,66 @@ const AdminPage = () => {
 
         {activePanel === ADMIN_PANEL_VIDEO && (
           <form className="admin-form" onSubmit={handlePublishVideo}>
+            <section className="admin-section">
+              <div className="admin-section-title">视频访问口令</div>
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>访问口令</span>
+                  <input
+                    value={videoAccessDraft.password}
+                    onChange={(event) => updateVideoAccessDraftField('password', event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        void handlePublishVideoAccess();
+                      }
+                    }}
+                    placeholder="例如 SongSharing"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>当前版本</span>
+                  <input
+                    value={videoAccessDraft.passwordVersion || '未读取'}
+                    readOnly
+                  />
+                </label>
+              </div>
+              {videoAccessDraft.updatedAt && (
+                <div className="admin-file-summary">
+                  上次保存：{new Date(videoAccessDraft.updatedAt).toLocaleString('zh-CN')}
+                </div>
+              )}
+              {videoAccessPublishResult?.publicTarget && (
+                <div className="admin-result">
+                  <span>口令配置</span>
+                  <a href={videoAccessPublishResult.publicTarget.url} target="_blank" rel="noreferrer">
+                    {videoAccessPublishResult.publicTarget.key || '查看 video-access.json'}
+                  </a>
+                </div>
+              )}
+              <div className="admin-actions">
+                <button
+                  type="button"
+                  className="admin-btn secondary"
+                  onClick={handleLoadVideoAccess}
+                  disabled={isVideoAccessLoading || !videoAccessApiConfigured}
+                >
+                  <RefreshCw size={17} className={isVideoAccessLoading ? 'is-spinning' : ''} />
+                  {isVideoAccessLoading ? '读取中...' : '读取口令'}
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn primary"
+                  onClick={handlePublishVideoAccess}
+                  disabled={isVideoAccessSaving || !videoAccessApiConfigured}
+                >
+                  <Save size={17} />
+                  {isVideoAccessSaving ? '保存中...' : '保存口令'}
+                </button>
+              </div>
+            </section>
+
             <section className="admin-section">
               <div className="admin-section-title">目标位置</div>
               <label className="admin-field">

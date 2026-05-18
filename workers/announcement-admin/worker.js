@@ -9,6 +9,8 @@ const DEFAULT_MUSIC_AUDIO_ROOT = 'mp3';
 const DEFAULT_MUSIC_LRC_ROOT = 'lrc';
 const DEFAULT_MUSIC_COVER_ROOT = 'img/music';
 const DEFAULT_VIDEO_INDEX_KEY = 'json/video-index.json';
+const DEFAULT_VIDEO_ACCESS_KEY = 'json/video-access.json';
+const DEFAULT_VIDEO_ACCESS_PASSWORD = '1701701xyz';
 const DEFAULT_DOWNLOAD_INDEX_KEY = 'json/download-index.json';
 const MAX_GALLERY_IMAGES_PER_REQUEST = 12;
 const MAX_GALLERY_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -270,6 +272,11 @@ const getMusicConfig = (env) => ({
 const getVideoConfig = (env) => ({
   bucket: env.VIDEO_PUBLIC_BUCKET || env.VIDEO_BUCKET || env.MUSIC_PUBLIC_BUCKET || env.MUSIC_BUCKET,
   indexKey: normalizeGitPath(env.VIDEO_INDEX_KEY, DEFAULT_VIDEO_INDEX_KEY),
+  accessKey: normalizeGitPath(env.VIDEO_ACCESS_KEY, DEFAULT_VIDEO_ACCESS_KEY),
+  defaultAccessPassword: normalizeText(
+    env.VIDEO_ACCESS_DEFAULT_PASSWORD || env.VITE_VIDEO_PASSWORD,
+    DEFAULT_VIDEO_ACCESS_PASSWORD
+  ),
   publicBaseUrl: normalizeText(
     env.VIDEO_PUBLIC_BASE_URL
       || env.PUBLIC_VIDEO_BASE_URL
@@ -1199,10 +1206,62 @@ const readVideoIndex = async (config) => {
   }
 };
 
-const buildPublicVideoIndexUrl = (config) => {
-  const relativePath = `/${stripSlashes(config.indexKey)}`;
+const buildPublicVideoUrl = (config, key = config.indexKey) => {
+  const relativePath = `/${stripSlashes(key)}`;
   if (!config.publicBaseUrl) return relativePath;
   return `${config.publicBaseUrl.replace(/\/+$/, '')}${relativePath}`;
+};
+
+const buildPublicVideoIndexUrl = (config) => buildPublicVideoUrl(config, config.indexKey);
+
+const createDefaultVideoAccessConfig = (config) => ({
+  schemaVersion: 1,
+  password: normalizeText(config.defaultAccessPassword, DEFAULT_VIDEO_ACCESS_PASSWORD),
+  passwordVersion: 'default',
+  updatedAt: ''
+});
+
+const normalizeVideoAccessConfig = (payload, config) => {
+  const fallback = createDefaultVideoAccessConfig(config);
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return fallback;
+
+  return {
+    schemaVersion: 1,
+    password: normalizeText(payload.password, fallback.password),
+    passwordVersion: normalizeText(payload.passwordVersion, fallback.passwordVersion),
+    updatedAt: normalizeText(payload.updatedAt, fallback.updatedAt)
+  };
+};
+
+const readVideoAccessConfig = async (config) => {
+  const object = await config.bucket.get(config.accessKey);
+  if (!object) return createDefaultVideoAccessConfig(config);
+
+  try {
+    return normalizeVideoAccessConfig(JSON.parse(await object.text()), config);
+  } catch {
+    return createDefaultVideoAccessConfig(config);
+  }
+};
+
+const createVideoAccessPasswordVersion = () => {
+  const randomId = globalThis.crypto?.randomUUID?.()
+    || Math.random().toString(36).slice(2);
+  return `${Date.now().toString(36)}-${randomId}`;
+};
+
+const publishVideoAccessConfigToR2 = async ({ config, videoAccess }) => {
+  await config.bucket.put(config.accessKey, `${JSON.stringify(videoAccess, null, 2)}\n`, {
+    httpMetadata: {
+      contentType: 'application/json; charset=utf-8',
+      cacheControl: 'no-store'
+    }
+  });
+
+  return {
+    key: config.accessKey,
+    url: buildPublicVideoUrl(config, config.accessKey)
+  };
 };
 
 const getMaxSortOrder = (items) => (Array.isArray(items) ? items : [])
@@ -1735,6 +1794,45 @@ const handleVideoPublish = async (request, env) => {
   });
 };
 
+const handleVideoAccessGet = async (request, env) => {
+  const config = getVideoConfig(env);
+  validateVideoConfig(config);
+  return jsonResponse(request, env, {
+    config: await readVideoAccessConfig(config),
+    indexKey: config.accessKey
+  });
+};
+
+const handleVideoAccessUpdate = async (request, env) => {
+  const config = getVideoConfig(env);
+  validateVideoConfig(config);
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return errorResponse(request, env, 400, '请求 JSON 无效');
+  }
+
+  const password = normalizeText(payload?.password);
+  if (!password) {
+    return errorResponse(request, env, 400, '视频访问口令不能为空');
+  }
+
+  const videoAccess = {
+    schemaVersion: 1,
+    password,
+    passwordVersion: createVideoAccessPasswordVersion(),
+    updatedAt: new Date().toISOString()
+  };
+  const publicTarget = await publishVideoAccessConfigToR2({ config, videoAccess });
+  return jsonResponse(request, env, {
+    ok: true,
+    config: videoAccess,
+    publicTarget
+  });
+};
+
 const handleDownloadGet = async (request, env) => {
   const config = getDownloadConfig(env);
   validateDownloadConfig(config);
@@ -1898,6 +1996,30 @@ export default {
         return await handleVideoPublish(request, env);
       } catch (error) {
         return errorResponse(request, env, error.status || 500, error.message || '视频发布失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/video-access' && request.method === 'GET') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleVideoAccessGet(request, env);
+      } catch (error) {
+        return errorResponse(request, env, 500, error.message || '视频口令读取失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/video-access' && request.method === 'PUT') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleVideoAccessUpdate(request, env);
+      } catch (error) {
+        return errorResponse(request, env, error.status || 500, error.message || '视频口令保存失败');
       }
     }
 

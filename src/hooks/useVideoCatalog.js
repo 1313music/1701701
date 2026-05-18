@@ -250,10 +250,17 @@ export const useVideoCatalog = ({ locationSearch, onInitialReady, requestVideoVi
       setWatchCategory((prev) => (prev === nextCategoryId ? prev : nextCategoryId));
     }
     setFolderStack((prev) => (prev.length === 0 ? prev : []));
-    setActiveVideo((prev) => (
-      (prev ? buildVideoKey(prev) : '') === buildVideoKey(nextVideo) ? prev : nextVideo
-    ));
-  }, [allVideos, normalizeVideoItem, sharedLocationSearch]);
+    const openVideo = () => {
+      setActiveVideo((prev) => (
+        (prev ? buildVideoKey(prev) : '') === buildVideoKey(nextVideo) ? prev : nextVideo
+      ));
+    };
+    if (typeof requestVideoView === 'function') {
+      requestVideoView(openVideo);
+      return;
+    }
+    openVideo();
+  }, [allVideos, normalizeVideoItem, requestVideoView, sharedLocationSearch]);
 
   useEffect(() => {
     const availableGroupKeys = new Set(watchEpisodeGroups.map((group) => group.key));

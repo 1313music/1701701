@@ -5,7 +5,7 @@ export const VIEW_PATHS = Object.freeze({
   gallery: '/gallery',
   app: '/app',
   about: '/about',
-  admin: '/admin',
+  admin: '/myadmin',
   comment: '/comment'
 });
 

@@ -13,6 +13,84 @@ export const isVideoAdminApiConfigured = () => Boolean(
   buildAdminApiUrl('/api/admin/video')
 );
 
+export const isVideoAccessAdminApiConfigured = () => Boolean(
+  buildAdminApiUrl('/api/admin/video-access')
+);
+
+export const loadVideoAccessSettings = async ({ token, signal } = {}) => {
+  const endpoint = buildAdminApiUrl('/api/admin/video-access');
+  if (!endpoint) {
+    throw new Error('视频口令后台接口未配置');
+  }
+
+  const normalizedToken = String(token || '').trim();
+  if (!normalizedToken) {
+    throw new Error('请输入管理员口令');
+  }
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'GET',
+      cache: 'no-store',
+      signal,
+      headers: {
+        Authorization: `Bearer ${normalizedToken}`
+      }
+    });
+  } catch (error) {
+    const reason = error?.message ? `：${error.message}` : '';
+    throw new Error(`无法连接视频口令后台${reason}。请确认当前网址已加入后台允许列表，或稍后重试。`);
+  }
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, `视频口令读取失败（HTTP ${response.status}）`));
+  }
+
+  const payload = await response.json();
+  return payload?.config || payload;
+};
+
+export const publishVideoAccessSettings = async ({ password, token, signal } = {}) => {
+  const endpoint = buildAdminApiUrl('/api/admin/video-access');
+  if (!endpoint) {
+    throw new Error('视频口令后台接口未配置');
+  }
+
+  const normalizedToken = String(token || '').trim();
+  if (!normalizedToken) {
+    throw new Error('请输入管理员口令');
+  }
+
+  const normalizedPassword = String(password || '').trim();
+  if (!normalizedPassword) {
+    throw new Error('请填写视频访问口令');
+  }
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'PUT',
+      cache: 'no-store',
+      signal,
+      headers: {
+        Authorization: `Bearer ${normalizedToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: normalizedPassword })
+    });
+  } catch (error) {
+    const reason = error?.message ? `：${error.message}` : '';
+    throw new Error(`无法连接视频口令后台${reason}。请确认当前网址已加入后台允许列表，或稍后重试。`);
+  }
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, `视频口令保存失败（HTTP ${response.status}）`));
+  }
+
+  return await response.json();
+};
+
 export const publishVideoLinks = async ({
   categoryId,
   categoryName,

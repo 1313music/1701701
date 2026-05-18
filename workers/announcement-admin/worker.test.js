@@ -454,6 +454,65 @@ describe('announcement admin worker', () => {
     ]);
   });
 
+  it('stores the video access password in R2 with a new version', async () => {
+    const env = createEnv();
+    const initialResponse = await worker.fetch(new Request('https://worker.test/api/admin/video-access', {
+      headers: {
+        Authorization: 'Bearer secret-token'
+      }
+    }), env);
+
+    expect(initialResponse.status).toBe(200);
+    await expect(initialResponse.json()).resolves.toMatchObject({
+      config: {
+        password: '1701701xyz',
+        passwordVersion: 'default'
+      },
+      indexKey: 'json/video-access.json'
+    });
+
+    const saveResponse = await worker.fetch(new Request('https://worker.test/api/admin/video-access', {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer secret-token',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        password: 'SongSharing2026'
+      })
+    }), env);
+
+    expect(saveResponse.status).toBe(200);
+    const payload = await saveResponse.json();
+    expect(payload).toMatchObject({
+      ok: true,
+      config: {
+        password: 'SongSharing2026'
+      },
+      publicTarget: {
+        key: 'json/video-access.json',
+        url: 'https://r2.example.com/json/video-access.json'
+      }
+    });
+    expect(payload.config.passwordVersion).toBeTruthy();
+    expect(payload.config.passwordVersion).not.toBe('default');
+
+    const storedEntry = env.VIDEO_PUBLIC_BUCKET.store.get('json/video-access.json');
+    expect(storedEntry).toMatchObject({
+      options: {
+        httpMetadata: expect.objectContaining({
+          contentType: 'application/json; charset=utf-8',
+          cacheControl: 'no-store'
+        })
+      }
+    });
+    const storedConfig = JSON.parse(storedEntry.value);
+    expect(storedConfig).toMatchObject({
+      password: 'SongSharing2026',
+      passwordVersion: payload.config.passwordVersion
+    });
+  });
+
   it('publishes download links to the download index without uploading files', async () => {
     const env = createEnv();
     await env.DOWNLOAD_PUBLIC_BUCKET.put('json/download-index.json', JSON.stringify({

@@ -42,6 +42,23 @@ vi.mock('../data/musicAdminApi.js', () => ({
 
 vi.mock('../data/videoAdminApi.js', () => ({
   isVideoAdminApiConfigured: () => true,
+  isVideoAccessAdminApiConfigured: () => true,
+  loadVideoAccessSettings: vi.fn(async () => ({
+    password: 'SongSharing',
+    passwordVersion: 'v1',
+    updatedAt: '2026-05-18T00:00:00.000Z'
+  })),
+  publishVideoAccessSettings: vi.fn(async ({ password }) => ({
+    config: {
+      password,
+      passwordVersion: 'v2',
+      updatedAt: '2026-05-18T01:00:00.000Z'
+    },
+    publicTarget: {
+      key: 'json/video-access.json',
+      url: 'https://r2.example.com/json/video-access.json'
+    }
+  })),
   publishVideoLinks: vi.fn(async () => ({
     items: [
       {
@@ -368,6 +385,49 @@ describe('AdminPage', () => {
     });
 
     expect(await screen.findByText('已发布 1 个视频链接')).toBeInTheDocument();
+  });
+
+  it('loads and saves the video access password from the video admin panel', async () => {
+    const {
+      loadVideoAccessSettings,
+      publishVideoAccessSettings
+    } = await import('../data/videoAdminApi.js');
+
+    render(<AdminPage />);
+
+    await screen.findByDisplayValue('当前公告');
+    fireEvent.change(screen.getByLabelText('管理员口令'), {
+      target: { value: 'secret-token' }
+    });
+    fireEvent.click(screen.getByRole('tab', { name: '视频' }));
+    fireEvent.click(screen.getByRole('button', { name: '读取口令' }));
+
+    await waitFor(() => {
+      expect(loadVideoAccessSettings).toHaveBeenCalledWith(expect.objectContaining({
+        token: 'secret-token'
+      }));
+    });
+    expect(await screen.findByDisplayValue('SongSharing')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('v1')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('访问口令'), {
+      target: { value: 'SongSharing2026' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '保存口令' }));
+
+    await waitFor(() => {
+      expect(publishVideoAccessSettings).toHaveBeenCalledWith(expect.objectContaining({
+        token: 'secret-token',
+        password: 'SongSharing2026'
+      }));
+    });
+
+    expect(await screen.findByText('视频访问口令已保存，旧授权已失效')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('v2')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'json/video-access.json' })).toHaveAttribute(
+      'href',
+      'https://r2.example.com/json/video-access.json'
+    );
   });
 
   it('keeps the new video folder option selected so the title can be filled', async () => {

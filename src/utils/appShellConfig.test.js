@@ -19,7 +19,7 @@ describe('appShellConfig', () => {
 
   it('resolves the hidden admin route from pathname', () => {
     expect(resolveViewFromLocation({
-      pathname: '/admin',
+      pathname: '/myadmin',
       search: ''
     })).toBe('admin');
   });
