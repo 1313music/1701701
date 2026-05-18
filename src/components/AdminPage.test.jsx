@@ -23,6 +23,14 @@ vi.mock('../data/galleryAdminApi.js', () => ({
   }))
 }));
 
+vi.mock('../data/galleryManifest.js', () => ({
+  loadGalleryItems: vi.fn(async () => [
+    { id: 'images/BB/a.jpg', category: 'BB', name: 'a.jpg' },
+    { id: 'images/XKK/b.jpg', category: 'XKK', name: 'b.jpg' },
+    { id: 'images/封面/c.jpg', category: '封面', name: 'c.jpg' }
+  ])
+}));
+
 vi.mock('../data/announcementSource.js', () => ({
   loadAnnouncement: vi.fn(async () => ({
     announcement: {
@@ -93,9 +101,7 @@ describe('AdminPage', () => {
       target: { value: 'secret-token' }
     });
     fireEvent.click(screen.getByRole('tab', { name: '图库' }));
-    fireEvent.change(screen.getByLabelText('分类'), {
-      target: { value: 'XKK' }
-    });
+    fireEvent.click(await screen.findByRole('button', { name: 'XKK' }));
     fireEvent.change(screen.getByLabelText('图片文件'), {
       target: { files: [file] }
     });
@@ -110,5 +116,20 @@ describe('AdminPage', () => {
     });
 
     expect(await screen.findByText('已发布 1 张图片，等待 Cloudflare Pages 更新')).toBeInTheDocument();
+  });
+
+  it('keeps gallery categories editable while offering existing category shortcuts', async () => {
+    render(<AdminPage />);
+
+    await screen.findByDisplayValue('当前公告');
+    fireEvent.click(screen.getByRole('tab', { name: '图库' }));
+
+    expect(await screen.findByRole('button', { name: 'BB' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '封面' })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('分类'), {
+      target: { value: '新分类' }
+    });
+    expect(screen.getByLabelText('分类')).toHaveValue('新分类');
   });
 });

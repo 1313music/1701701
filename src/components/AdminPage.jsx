@@ -14,6 +14,7 @@ import '../styles/admin.css';
 
 import AnnouncementModal from './AnnouncementModal.jsx';
 import { loadAnnouncement } from '../data/announcementSource.js';
+import { loadGalleryItems } from '../data/galleryManifest.js';
 import {
   isAnnouncementAdminApiConfigured,
   publishAnnouncement
@@ -84,12 +85,23 @@ const serializeDraft = (draft) => ({
   updatedAt: new Date().toISOString()
 });
 
+const getUniqueGalleryCategories = (items) => {
+  const categories = new Set();
+  for (const item of items || []) {
+    const category = String(item?.category || '').trim();
+    if (category) categories.add(category);
+  }
+
+  return Array.from(categories).sort((left, right) => left.localeCompare(right, 'zh-Hans-CN'));
+};
+
 const AdminPage = () => {
   const announcementApiConfigured = useMemo(() => isAnnouncementAdminApiConfigured(), []);
   const galleryApiConfigured = useMemo(() => isGalleryAdminApiConfigured(), []);
   const [activePanel, setActivePanel] = useState(ADMIN_PANEL_ANNOUNCEMENT);
   const [draft, setDraft] = useState(createDefaultDraft);
   const [galleryDraft, setGalleryDraft] = useState(createDefaultGalleryDraft);
+  const [galleryCategories, setGalleryCategories] = useState([]);
   const [galleryFileInputKey, setGalleryFileInputKey] = useState(0);
   const [galleryPublishResult, setGalleryPublishResult] = useState(null);
   const [token, setToken] = useState(() => {
@@ -129,9 +141,24 @@ const AdminPage = () => {
     }
   };
 
+  const loadGalleryCategories = async () => {
+    try {
+      const items = await loadGalleryItems();
+      setGalleryCategories(getUniqueGalleryCategories(items));
+    } catch {
+      setGalleryCategories([]);
+    }
+  };
+
   useEffect(() => {
     void loadCurrentAnnouncement();
   }, []);
+
+  useEffect(() => {
+    if (activePanel === ADMIN_PANEL_GALLERY && galleryCategories.length === 0) {
+      void loadGalleryCategories();
+    }
+  }, [activePanel, galleryCategories.length]);
 
   useEffect(() => {
     try {
@@ -199,6 +226,13 @@ const AdminPage = () => {
         token
       });
       const publishedCount = Array.isArray(result?.items) ? result.items.length : galleryDraft.files.length;
+      const publishedCategories = getUniqueGalleryCategories(result?.items);
+      if (publishedCategories.length > 0) {
+        setGalleryCategories((previous) => getUniqueGalleryCategories([
+          ...previous.map((category) => ({ category })),
+          ...publishedCategories.map((category) => ({ category }))
+        ]));
+      }
       setGalleryDraft(createDefaultGalleryDraft());
       setGalleryFileInputKey((value) => value + 1);
       setGalleryPublishResult(result);
@@ -430,10 +464,16 @@ const AdminPage = () => {
                 <label className="admin-field">
                   <span>分类</span>
                   <input
+                    list="admin-gallery-category-list"
                     value={galleryDraft.category}
                     onChange={(event) => updateGalleryDraftField('category', event.target.value)}
                     placeholder="XKK"
                   />
+                  <datalist id="admin-gallery-category-list">
+                    {galleryCategories.map((category) => (
+                      <option key={category} value={category} />
+                    ))}
+                  </datalist>
                 </label>
                 <label className="admin-field">
                   <span>显示名称</span>
@@ -444,6 +484,21 @@ const AdminPage = () => {
                   />
                 </label>
               </div>
+
+              {galleryCategories.length > 0 && (
+                <div className="admin-category-options" aria-label="已有分类">
+                  {galleryCategories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      className={`admin-category-option ${galleryDraft.category === category ? 'is-active' : ''}`}
+                      onClick={() => updateGalleryDraftField('category', category)}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <label className="admin-field admin-file-field">
                 <span>图片文件</span>
