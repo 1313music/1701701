@@ -5,6 +5,7 @@ export const VIEW_PATHS = Object.freeze({
   gallery: '/gallery',
   app: '/app',
   about: '/about',
+  admin: '/admin',
   comment: '/comment'
 });
 
@@ -15,6 +16,7 @@ export const VIEW_QUERY_KEYS = Object.freeze({
   gallery: [],
   app: [],
   about: [],
+  admin: [],
   comment: []
 });
 

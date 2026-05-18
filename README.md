@@ -67,6 +67,52 @@ VITE_GALLERY_INDEX_URL=
 - `VITE_GALLERY_INDEX_URL` 为空时，会回退到默认索引地址。
 - 前端不提供公开上传接口；图片上传和索引更新在你自己的图床项目中完成。
 
+## 公告弹窗
+
+站点已支持“远程公告 JSON + 全局弹窗 + 本地已读”模式。
+
+默认公告文件：
+
+- `public/announcement.json`
+
+可选环境变量（构建时注入）：
+
+```bash
+VITE_ANNOUNCEMENT_URL=
+VITE_ANNOUNCEMENT_API_BASE_URL=
+```
+
+说明：
+
+- `VITE_ANNOUNCEMENT_URL` 是普通用户读取的公告 JSON 地址，建议指向 R2 自定义域名下的静态文件，例如 `https://notice.1701701.xyz/announcement.json`。
+- `VITE_ANNOUNCEMENT_API_BASE_URL` 只给 `/admin` 后台发布时使用，普通用户打开网站不会请求这个 Worker。
+- `VITE_ANNOUNCEMENT_URL` 为空时，会回退到站点内置的 `/announcement.json`。
+- 用户关闭某条公告后，会按 `id` 写入本地已读记录；如果你希望重新弹出，需要更新公告 `id`。
+- 前端会定时轮询 `VITE_ANNOUNCEMENT_URL`；在线用户在轮询周期内也能收到新公告。
+
+### 公告后台
+
+仓库内置了一个极简公告后台：
+
+- 前端管理页：`/admin`
+- Worker 接口：`workers/announcement-admin/worker.js`
+- Worker 配置示例：`workers/announcement-admin/wrangler.example.toml`
+
+当前线上配置：
+
+- 公告静态 JSON：`https://notice.1701701.xyz/announcement.json`
+- 公告后台 API：`https://1701701-announcement-admin.lzbb.workers.dev`
+- 本地管理员口令文件：`workers/announcement-admin/admin-token.local`（已被 git 忽略）
+
+部署思路：
+
+1. 在 Cloudflare 创建 KV namespace。
+2. 在 Cloudflare 创建 R2 bucket，并给它绑定自定义域名，例如 `notice.1701701.xyz`。
+3. 复制 `workers/announcement-admin/wrangler.example.toml` 为 `wrangler.toml`，填入 KV namespace id、R2 bucket 名称和 `PUBLIC_ANNOUNCEMENT_BASE_URL`。
+4. 通过 Wrangler 设置 Worker secret：`ADMIN_TOKEN`。
+5. 部署 Worker 后，把前端环境变量 `VITE_ANNOUNCEMENT_API_BASE_URL` 设置为 Worker 地址，把 `VITE_ANNOUNCEMENT_URL` 设置为 R2 静态公告地址。
+6. 重新构建前端，访问 `/admin`，输入 `ADMIN_TOKEN` 后即可发布公告。发布时 Worker 会写入 KV，并同步写出 R2 的 `announcement.json` 给普通用户读取。
+
 ## 桌面版（Win/Mac）
 
 桌面壳使用 Pake，默认加载线上站点 `https://1701701.xyz`，不会影响网页站点运行。

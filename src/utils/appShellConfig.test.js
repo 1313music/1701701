@@ -16,4 +16,11 @@ describe('appShellConfig', () => {
   it('builds encoded preview paths for standalone preview pages', () => {
     expect(getDownloadPreviewPath('李志自传')).toBe('/download/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0');
   });
+
+  it('resolves the hidden admin route from pathname', () => {
+    expect(resolveViewFromLocation({
+      pathname: '/admin',
+      search: ''
+    })).toBe('admin');
+  });
 });

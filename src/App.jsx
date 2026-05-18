@@ -5,8 +5,10 @@ import Sidebar from './components/Sidebar';
 import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
+import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
+import { useAnnouncement } from './hooks/useAnnouncement.js';
 import { useAppShell } from './hooks/useAppShell.js';
 import { useLibraryState } from './hooks/useLibraryState.js';
 import { useSeoMeta } from './hooks/useSeoMeta.js';
@@ -34,6 +36,7 @@ const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
 const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
+const AdminPage = lazy(() => import('./components/AdminPage.jsx'));
 const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
 
 const App = () => {
@@ -48,6 +51,11 @@ const App = () => {
     toastPlacement,
     showToast
   } = useToast();
+  const {
+    announcement,
+    isAnnouncementOpen,
+    dismissAnnouncement
+  } = useAnnouncement();
 
   const {
     themePreference,
@@ -360,6 +368,7 @@ const App = () => {
 
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
+  const hasPlayerChrome = view !== 'video' && view !== 'admin';
 
   const signalBootReady = useCallback(() => {
     if (hasSignaledBootReadyRef.current || typeof window === 'undefined') return;
@@ -382,7 +391,7 @@ const App = () => {
 
   return (
     <>
-      <div className={`app-root ${view === 'video' ? 'no-player' : ''}`}>
+      <div className={`app-root ${hasPlayerChrome ? '' : 'no-player'}`}>
         <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
           <div className="app-layout">
             <Sidebar
@@ -495,6 +504,13 @@ const App = () => {
                   </Suspense>
                 </div>
               )}
+              {view === 'admin' && (
+                <div className="view-panel view-panel-admin">
+                  <Suspense fallback={pageLoadingFallback}>
+                    <AdminPage />
+                  </Suspense>
+                </div>
+              )}
             </main>
           </div>
         </div>
@@ -502,7 +518,7 @@ const App = () => {
         {showBackToTop && (
           <button
             type="button"
-            className={`back-to-top-btn ${view === 'video' ? 'is-no-player' : ''}`}
+            className={`back-to-top-btn ${hasPlayerChrome ? '' : 'is-no-player'}`}
             onClick={handleBackToTop}
             aria-label="返回顶部"
             title="返回顶部"
@@ -511,7 +527,7 @@ const App = () => {
           </button>
         )}
 
-        {view !== 'video' && isLibraryReady && (
+        {hasPlayerChrome && isLibraryReady && (
           <>
             <PlayerBar
               currentTrack={currentTrack}
@@ -693,6 +709,12 @@ const App = () => {
             </div>
           </div>
         )}
+
+        <AnnouncementModal
+          announcement={announcement}
+          open={isAnnouncementOpen}
+          onConfirm={dismissAnnouncement}
+        />
 
         {isWeChatBrowserHintOpen && (
           <div className="wechat-browser-modal" onClick={closeWeChatBrowserHint}>

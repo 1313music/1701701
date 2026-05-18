@@ -1,0 +1,93 @@
+import { toAbsoluteUrl } from './manifestSourceUtils.js';
+
+const DEFAULT_ANNOUNCEMENT_PATH = '/announcement.json';
+const PRIMARY_ANNOUNCEMENT_URL = String(import.meta.env.VITE_ANNOUNCEMENT_URL || '').trim();
+
+const normalizeText = (value, fallback = '') => {
+  const normalized = String(value ?? fallback).trim();
+  return normalized || fallback;
+};
+
+const parseAnnouncement = (payload) => {
+  const source = payload?.announcement && typeof payload.announcement === 'object'
+    ? payload.announcement
+    : payload;
+
+  if (!source || typeof source !== 'object') return null;
+
+  const id = normalizeText(source.id);
+  const content = normalizeText(source.content || source.message);
+  if (!id || !content) return null;
+
+  return {
+    id,
+    enabled: source.enabled !== false,
+    title: normalizeText(source.title, '站点公告'),
+    content,
+    type: normalizeText(source.type, 'info'),
+    force: source.force === true,
+    confirmText: normalizeText(source.confirmText, '我知道了'),
+    linkText: normalizeText(source.linkText),
+    linkUrl: normalizeText(source.linkUrl),
+    startAt: normalizeText(source.startAt),
+    endAt: normalizeText(source.endAt),
+    updatedAt: normalizeText(source.updatedAt)
+  };
+};
+
+const fetchAnnouncementJson = async (url, signal) => {
+  const response = await fetch(url, {
+    cache: 'no-store',
+    signal
+  });
+
+  if (!response.ok) {
+    throw new Error(`公告请求失败（HTTP ${response.status}）`);
+  }
+
+  return await response.json();
+};
+
+const resolveBundledAnnouncementUrl = () => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  return toAbsoluteUrl(DEFAULT_ANNOUNCEMENT_PATH, origin) || DEFAULT_ANNOUNCEMENT_PATH;
+};
+
+export const isAnnouncementActive = (announcement, now = Date.now()) => {
+  if (!announcement?.enabled) return false;
+
+  const startTime = Date.parse(announcement.startAt);
+  if (Number.isFinite(startTime) && now < startTime) return false;
+
+  const endTime = Date.parse(announcement.endAt);
+  if (Number.isFinite(endTime) && now > endTime) return false;
+
+  return true;
+};
+
+export const loadAnnouncement = async ({ signal } = {}) => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const primaryUrl = toAbsoluteUrl(PRIMARY_ANNOUNCEMENT_URL, origin) || '';
+  const fallbackUrl = resolveBundledAnnouncementUrl();
+  const targets = [
+    primaryUrl,
+    fallbackUrl
+  ].filter((target, index, list) => target && list.indexOf(target) === index);
+
+  let lastError = null;
+
+  for (const target of targets) {
+    try {
+      const payload = await fetchAnnouncementJson(target, signal);
+      return {
+        announcement: parseAnnouncement(payload),
+        resolvedUrl: target,
+        usedFallback: target === fallbackUrl && target !== primaryUrl
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('公告加载失败');
+};

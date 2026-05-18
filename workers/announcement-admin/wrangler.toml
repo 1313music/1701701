@@ -1,0 +1,16 @@
+name = "1701701-announcement-admin"
+main = "./worker.js"
+compatibility_date = "2026-05-18"
+
+[[kv_namespaces]]
+binding = "ANNOUNCEMENT_KV"
+id = "5d6fcbc9155b46e6baa9423e0b384a73"
+
+[[r2_buckets]]
+binding = "ANNOUNCEMENT_PUBLIC_BUCKET"
+bucket_name = "1701701-announcements"
+
+[vars]
+ALLOWED_ORIGIN = "https://1701701.xyz"
+PUBLIC_OBJECT_KEY = "announcement.json"
+PUBLIC_ANNOUNCEMENT_BASE_URL = "https://notice.1701701.xyz"

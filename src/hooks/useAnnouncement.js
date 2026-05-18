@@ -1,0 +1,99 @@
+import { useEffect, useState } from 'react';
+
+import { isAnnouncementActive, loadAnnouncement } from '../data/announcementSource.js';
+
+const ANNOUNCEMENT_READ_KEY = 'announcement:last-read-id:v1';
+const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+
+const readDismissedAnnouncementId = () => {
+  if (typeof window === 'undefined') return '';
+
+  try {
+    return String(window.localStorage.getItem(ANNOUNCEMENT_READ_KEY) || '');
+  } catch {
+    return '';
+  }
+};
+
+const persistDismissedAnnouncementId = (announcementId) => {
+  if (typeof window === 'undefined' || !announcementId) return;
+
+  try {
+    window.localStorage.setItem(ANNOUNCEMENT_READ_KEY, announcementId);
+  } catch {
+    // ignore storage failures
+  }
+};
+
+export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = {}) => {
+  const [announcement, setAnnouncement] = useState(null);
+  const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false);
+  const [isLoadingAnnouncement, setIsLoadingAnnouncement] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshAnnouncement = async (signal) => {
+      try {
+        const result = await loadAnnouncement({ signal });
+        if (cancelled) return;
+
+        const nextAnnouncement = result.announcement;
+        setAnnouncement(nextAnnouncement);
+
+        if (!isAnnouncementActive(nextAnnouncement)) {
+          setIsAnnouncementOpen(false);
+          return;
+        }
+
+        const lastReadId = readDismissedAnnouncementId();
+        if (lastReadId === nextAnnouncement.id) {
+          setIsAnnouncementOpen(false);
+          return;
+        }
+
+        setIsAnnouncementOpen(true);
+      } catch {
+        if (cancelled) return;
+      } finally {
+        if (!cancelled) {
+          setIsLoadingAnnouncement(false);
+        }
+      }
+    };
+
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    void refreshAnnouncement(controller?.signal);
+
+    if (!(pollIntervalMs > 0)) {
+      return () => {
+        cancelled = true;
+        controller?.abort();
+      };
+    }
+
+    const timerId = window.setInterval(() => {
+      void refreshAnnouncement();
+    }, pollIntervalMs);
+
+    return () => {
+      cancelled = true;
+      controller?.abort();
+      window.clearInterval(timerId);
+    };
+  }, [pollIntervalMs]);
+
+  const dismissAnnouncement = () => {
+    if (announcement?.id) {
+      persistDismissedAnnouncementId(announcement.id);
+    }
+    setIsAnnouncementOpen(false);
+  };
+
+  return {
+    announcement,
+    isAnnouncementOpen,
+    isLoadingAnnouncement,
+    dismissAnnouncement
+  };
+};

@@ -1,0 +1,156 @@
+.announcement-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 29500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255, 212, 139, 0.22) 0%, rgba(255, 212, 139, 0) 54%),
+    radial-gradient(120% 120% at 100% 100%, rgba(141, 192, 255, 0.18) 0%, rgba(141, 192, 255, 0) 58%),
+    rgba(7, 10, 16, 0.56);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+}
+
+.announcement-card {
+  width: min(520px, calc(100vw - 32px));
+  border-radius: 24px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 58%, rgba(255, 255, 255, 0.34));
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--bg-color) 82%, rgba(255, 255, 255, 0.36)),
+      color-mix(in srgb, var(--bg-color) 68%, rgba(255, 255, 255, 0.12))
+    );
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  color: var(--text-main);
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.announcement-card.type-warning {
+  border-color: color-mix(in srgb, #d58a00 40%, var(--glass-border));
+}
+
+.announcement-card.type-success {
+  border-color: color-mix(in srgb, #32a067 36%, var(--glass-border));
+}
+
+.announcement-eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--main-color) 16%, transparent);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.announcement-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.announcement-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.announcement-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 68%, rgba(255, 255, 255, 0.18));
+  background: color-mix(in srgb, var(--bg-color) 60%, transparent);
+  color: var(--text-main);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.announcement-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.announcement-body p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.announcement-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.announcement-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 64%, rgba(255, 255, 255, 0.18));
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.announcement-btn:hover {
+  filter: saturate(1.08);
+  transform: translateY(-1px);
+}
+
+.announcement-btn.primary {
+  background: color-mix(in srgb, var(--main-color) 24%, transparent);
+  color: var(--text-main);
+}
+
+.announcement-btn.ghost {
+  background: color-mix(in srgb, var(--bg-color) 62%, transparent);
+  color: var(--text-main);
+}
+
+@media (max-width: 600px) {
+  .announcement-modal {
+    padding: 16px;
+  }
+
+  .announcement-card {
+    width: min(520px, calc(100vw - 20px));
+    padding: 18px 16px;
+    border-radius: 20px;
+  }
+
+  .announcement-title {
+    font-size: 19px;
+  }
+
+  .announcement-body p {
+    font-size: 14px;
+    line-height: 1.68;
+  }
+
+  .announcement-actions {
+    flex-direction: column;
+  }
+}
