@@ -1184,12 +1184,17 @@
     opacity: 1;
   }
 
-  .mobile-topbar-spacer {
-    width: 40px;
-    height: 40px;
+  .mobile-topbar-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    min-width: 40px;
   }
 
-  .mobile-theme-toggle {
+  .mobile-theme-toggle,
+  .mobile-announcement-toggle {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1206,13 +1211,30 @@
     background: transparent;
   }
 
-  .mobile-theme-toggle:active {
+  .mobile-announcement-toggle.is-unread {
+    color: color-mix(in srgb, var(--main-color) 70%, var(--text-main));
+  }
+
+  .mobile-announcement-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #f05d4f;
+    box-shadow: 0 0 0 3px var(--mobile-topbar-surface);
+  }
+
+  .mobile-theme-toggle:active,
+  .mobile-announcement-toggle:active {
     transform: none;
     opacity: 1;
   }
 
   .mobile-menu-btn,
   .mobile-theme-toggle,
+  .mobile-announcement-toggle,
   .mobile-brand,
   .mobile-menu-panel .nav-item {
     -webkit-tap-highlight-color: transparent;
@@ -1220,6 +1242,7 @@
 
   .mobile-menu-btn:focus-visible,
   .mobile-theme-toggle:focus-visible,
+  .mobile-announcement-toggle:focus-visible,
   .mobile-brand:focus-visible,
   .mobile-menu-panel .nav-item:focus-visible {
     outline: none;

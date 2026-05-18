@@ -410,6 +410,35 @@ body {
   line-height: 1.25;
 }
 
+.nav-item-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.nav-item-badge {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f05d4f;
+  box-shadow:
+    0 0 0 2px var(--sidebar-bg),
+    0 0 0 5px color-mix(in srgb, #f05d4f 16%, transparent);
+}
+
+.nav-item-announcement {
+  color: color-mix(in srgb, var(--text-main) 88%, var(--main-color));
+}
+
+.nav-item-announcement .nav-item-icon {
+  color: color-mix(in srgb, var(--main-color) 66%, var(--text-main));
+}
+
 .nav-item:hover {
   background: var(--hover-bg);
   transform: translateY(-1px);

@@ -5,7 +5,6 @@ import Sidebar from './components/Sidebar';
 import PlayerBar from './components/PlayerBar';
 import AlbumGrid from './components/AlbumGrid';
 import SearchHeader from './components/SearchHeader';
-import AnnouncementEntry from './components/AnnouncementEntry.jsx';
 import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
@@ -373,7 +372,7 @@ const App = () => {
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
   const hasPlayerChrome = view !== 'video' && view !== 'admin';
-  const shouldShowAnnouncementEntry = view !== 'admin' && hasActiveAnnouncement;
+  const shouldShowAnnouncementNav = view !== 'admin' && hasActiveAnnouncement;
 
   const signalBootReady = useCallback(() => {
     if (hasSignaledBootReadyRef.current || typeof window === 'undefined') return;
@@ -408,6 +407,10 @@ const App = () => {
               setIsSidebarCollapsed={setIsSidebarCollapsed}
               themePreference={themePreference}
               onThemeToggle={handleThemeToggle}
+              announcement={announcement}
+              hasActiveAnnouncement={shouldShowAnnouncementNav}
+              isAnnouncementUnread={isAnnouncementUnread}
+              onOpenAnnouncement={openAnnouncement}
             />
 
             <main className="main-view">
@@ -714,13 +717,6 @@ const App = () => {
             </div>
           </div>
         )}
-
-        <AnnouncementEntry
-          announcement={announcement}
-          visible={shouldShowAnnouncementEntry}
-          unread={isAnnouncementUnread}
-          onOpen={openAnnouncement}
-        />
 
         <AnnouncementModal
           announcement={announcement}
