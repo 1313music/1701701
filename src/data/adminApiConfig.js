@@ -6,7 +6,21 @@ const ADMIN_API_BASE_URL = String(
   || ''
 ).trim();
 
+const getSameOriginAdminApiBaseUrl = () => {
+  if (typeof window === 'undefined') return '';
+
+  const { origin, hostname } = window.location;
+  if (hostname === '1701701.xyz' || hostname === 'www.1701701.xyz') {
+    return origin;
+  }
+
+  return '';
+};
+
 export const getAdminApiBaseUrl = () => {
+  const sameOriginBaseUrl = getSameOriginAdminApiBaseUrl();
+  if (sameOriginBaseUrl) return sameOriginBaseUrl;
+
   if (!ADMIN_API_BASE_URL) return '';
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';

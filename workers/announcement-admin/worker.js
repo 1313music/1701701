@@ -86,14 +86,29 @@ const timingSafeEqual = (left, right) => {
   return diff === 0;
 };
 
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const isAllowedOrigin = (origin, configuredOrigin) => {
+  const normalizedOrigin = normalizeText(origin);
+  const normalizedConfigured = normalizeText(configuredOrigin);
+  if (!normalizedOrigin || !normalizedConfigured) return false;
+  if (normalizedConfigured === '*') return true;
+  if (!normalizedConfigured.includes('*')) return normalizedOrigin === normalizedConfigured;
+
+  const pattern = `^${normalizedConfigured.split('*').map(escapeRegExp).join('.*')}$`;
+  return new RegExp(pattern).test(normalizedOrigin);
+};
+
 const corsHeaders = (request, env) => {
   const origin = request.headers.get('Origin') || '*';
   const configured = String(env.ALLOWED_ORIGIN || '*').trim();
+  const configuredOrigins = configured.split(',').map((item) => item.trim()).filter(Boolean);
+  const matchedOrigin = configuredOrigins.find((item) => isAllowedOrigin(origin, item));
   const allowOrigin = configured === '*'
     ? '*'
-    : configured.split(',').map((item) => item.trim()).includes(origin)
+    : matchedOrigin
       ? origin
-      : configured.split(',')[0].trim();
+      : configuredOrigins[0] || origin;
 
   return {
     'Access-Control-Allow-Origin': allowOrigin,

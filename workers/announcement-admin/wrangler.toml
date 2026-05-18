@@ -1,6 +1,12 @@
 name = "1701701-announcement-admin"
 main = "./worker.js"
 compatibility_date = "2026-05-18"
+workers_dev = true
+
+routes = [
+  { pattern = "1701701.xyz/api/admin/*", zone_name = "1701701.xyz" },
+  { pattern = "www.1701701.xyz/api/admin/*", zone_name = "1701701.xyz" }
+]
 
 [[kv_namespaces]]
 binding = "ANNOUNCEMENT_KV"
@@ -11,7 +17,7 @@ binding = "ANNOUNCEMENT_PUBLIC_BUCKET"
 bucket_name = "1701701-announcements"
 
 [vars]
-ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,http://localhost:8080"
+ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080"
 PUBLIC_OBJECT_KEY = "announcement.json"
 PUBLIC_ANNOUNCEMENT_BASE_URL = "https://notice.1701701.xyz"
 
