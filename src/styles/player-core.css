@@ -820,6 +820,7 @@
 .share-panel-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .share-panel-btn {
@@ -858,6 +859,44 @@
 .share-panel-btn.ghost {
   background: color-mix(in srgb, var(--bg-color) 58%, transparent);
   color: var(--text-main);
+}
+
+.share-panel-mini-program {
+  border: 1px solid color-mix(in srgb, var(--glass-border) 62%, rgba(255, 255, 255, 0.22));
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: color-mix(in srgb, var(--bg-color) 64%, transparent);
+}
+
+.share-panel-mini-program img {
+  width: 110px;
+  height: 110px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.share-panel-mini-program-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-panel-mini-program-text p {
+  margin: 0;
+}
+
+.share-panel-mini-program-text p:first-child {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.share-panel-mini-program-text p:last-child {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .wechat-browser-modal {
@@ -1425,6 +1464,7 @@
   .album-inline-hero-actions {
     margin-top: 14px;
     gap: 8px;
+    justify-content: center;
   }
 
   .album-inline-hero-actions .play-all-btn,
@@ -1436,6 +1476,35 @@
 
   .album-inline-panel .song-item {
     padding: 10px 12px;
+  }
+
+  .album-inline-side-qr {
+    display: none;
+  }
+
+  .album-inline-mobile-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin: 18px auto 0;
+    padding-top: 18px;
+    border-top: 1px solid color-mix(in srgb, var(--glass-border) 80%, transparent);
+    pointer-events: auto;
+  }
+
+  .album-inline-mobile-qr img {
+    width: 132px;
+    border-radius: 10px;
+  }
+
+  .album-inline-mobile-qr p {
+    width: 160px;
+    max-width: 160px;
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 
   .album-inline-bottom-actions {
@@ -1496,6 +1565,16 @@
 
   .album-sheet-song-list {
     padding: 0 10px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .share-panel-mini-program {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .share-panel-mini-program img {
+    width: 132px;
+    height: 132px;
   }
 
 }

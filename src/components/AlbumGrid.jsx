@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Heart, Play } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
+import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 
 const PANEL_EXIT_MS = 280;
 const PANEL_OPEN_TICK_MS = 24;
@@ -271,6 +272,7 @@ const AlbumGrid = ({
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
+    const panelAlbumMiniProgram = getAlbumMiniProgram(panelAlbum?.id);
     const expandedMarginTop = isMobileLayout ? 8 : 12;
     const expandedMarginBottom = isMobileLayout ? 20 : 30;
 
@@ -336,7 +338,17 @@ const AlbumGrid = ({
                     willChange: 'height, opacity, margin-top, margin-bottom'
                 }}
             >
-                <div className="album-inline-panel" ref={panelContentRef}>
+                <div className={`album-inline-panel ${panelAlbumMiniProgram ? 'has-mini-program' : ''}`} ref={panelContentRef}>
+                    {panelAlbumMiniProgram && (
+                        <div className="album-inline-side-qr" aria-label="上传云盘二维码" title={panelAlbumMiniProgram.hint}>
+                            <img
+                                loading="lazy"
+                                src={panelAlbumMiniProgram.codeUrl}
+                                alt={`${panelAlbum.name} 小程序码`}
+                            />
+                            <p>{panelAlbumMiniProgram.hint}</p>
+                        </div>
+                    )}
                     <div className="album-inline-header">
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
@@ -412,6 +424,16 @@ const AlbumGrid = ({
                             </div>
                         ))}
                     </div>
+                    {panelAlbumMiniProgram && (
+                        <div className="album-inline-mobile-qr" aria-label="上传云盘二维码" title={panelAlbumMiniProgram.hint}>
+                            <img
+                                loading="lazy"
+                                src={panelAlbumMiniProgram.codeUrl}
+                                alt={`${panelAlbum.name} 小程序码`}
+                            />
+                            <p>{panelAlbumMiniProgram.hint}</p>
+                        </div>
+                    )}
                     <div className="album-inline-bottom-actions">
                         <button
                             type="button"

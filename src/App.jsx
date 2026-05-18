@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { ChevronUp } from 'lucide-react';
 
 import Sidebar from './components/Sidebar';
@@ -14,6 +14,7 @@ import { useSharePanel } from './hooks/useSharePanel.js';
 import { useTheme } from './hooks/useTheme.js';
 import { useToast } from './hooks/useToast.js';
 import { useVideoAccess } from './hooks/useVideoAccess.js';
+import { getAlbumMiniProgram } from './data/miniProgramAlbums.js';
 import { copyTextToClipboard } from './utils/appDomUtils.js';
 import { resolveMusicShareTarget } from './utils/musicShareUtils.js';
 import {
@@ -38,6 +39,7 @@ const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
 const App = () => {
   const hasSignaledBootReadyRef = useRef(false);
   const sharedTargetRef = useRef(null);
+  const [shareMiniProgramVisibleUrl, setShareMiniProgramVisibleUrl] = useState('');
 
   const {
     toastMessage,
@@ -295,6 +297,7 @@ const App = () => {
     }
     if (matchedIndex === -1) matchedIndex = 0;
     const shareTrack = resolvedAlbum.songs[matchedIndex] || currentTrack;
+    const miniProgram = getAlbumMiniProgram(resolvedAlbum.id);
     const url = new URL(getPathForView('library'), window.location.origin);
     url.searchParams.set('albumId', String(resolvedAlbum.id));
     url.searchParams.set('songId', String(shareTrack.id || ''));
@@ -308,7 +311,8 @@ const App = () => {
       trackName: shareTrack.name,
       albumName: resolvedAlbum.name,
       artistName: resolvedAlbum.artist || '李志',
-      cover: shareTrack.cover || resolvedAlbum.cover || ''
+      cover: shareTrack.cover || resolvedAlbum.cover || '',
+      miniProgram
     };
   }, [currentAlbum, currentSongInfo, currentTrack]);
 
@@ -326,6 +330,8 @@ const App = () => {
     getCurrentTrackSharePayload: buildCurrentSharePayload,
     showToast
   });
+  const activeShareUrl = sharePanelData?.url || '';
+  const isShareMiniProgramVisible = Boolean(activeShareUrl) && shareMiniProgramVisibleUrl === activeShareUrl;
 
   const handleCopyCurrentPageUrl = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -637,6 +643,19 @@ const App = () => {
                 {sharePanelData.url}
               </div>
               <div className="share-panel-actions">
+                {sharePanelData.miniProgram && (
+                  <button
+                    type="button"
+                    className="share-panel-btn ghost"
+                    onClick={() => {
+                      setShareMiniProgramVisibleUrl((previous) => (
+                        previous === activeShareUrl ? '' : activeShareUrl
+                      ));
+                    }}
+                  >
+                    {isShareMiniProgramVisible ? '隐藏上传云盘' : '上传云盘'}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="share-panel-btn ghost"
@@ -658,6 +677,19 @@ const App = () => {
                   分享卡片
                 </button>
               </div>
+              {sharePanelData.miniProgram && isShareMiniProgramVisible && (
+                <div className="share-panel-mini-program">
+                  <img
+                    loading="lazy"
+                    src={sharePanelData.miniProgram.codeUrl}
+                    alt={`${sharePanelData.albumName || sharePanelData.title || '专辑'} 小程序码`}
+                  />
+                  <div className="share-panel-mini-program-text">
+                    <p>{sharePanelData.miniProgram.title}</p>
+                    <p>{sharePanelData.miniProgram.hint}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
