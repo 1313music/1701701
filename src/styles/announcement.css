@@ -35,11 +35,11 @@
 }
 
 .announcement-card.type-warning {
-  border-color: color-mix(in srgb, #d58a00 40%, var(--glass-border));
+  border-color: color-mix(in srgb, #d63f3f 52%, var(--glass-border));
 }
 
 .announcement-card.type-success {
-  border-color: color-mix(in srgb, #32a067 36%, var(--glass-border));
+  border-color: color-mix(in srgb, #2f7dde 48%, var(--glass-border));
 }
 
 .announcement-title-row {

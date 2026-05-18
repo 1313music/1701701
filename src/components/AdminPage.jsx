@@ -795,7 +795,7 @@ const AdminPage = () => {
                   >
                     <option value="info">普通</option>
                     <option value="warning">重要</option>
-                    <option value="success">完成</option>
+                    <option value="success">更新</option>
                   </select>
                 </label>
               </div>
