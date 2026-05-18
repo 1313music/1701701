@@ -2,10 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
+  Download,
   Eye,
+  Film,
   ImagePlus,
   KeyRound,
   Megaphone,
+  Music,
   RefreshCw,
   Save,
   UploadCloud
@@ -15,6 +18,9 @@ import '../styles/admin.css';
 import AnnouncementModal from './AnnouncementModal.jsx';
 import { loadAnnouncement } from '../data/announcementSource.js';
 import { loadGalleryItems } from '../data/galleryManifest.js';
+import { loadDownloadSections } from '../data/downloadManifest.js';
+import { loadMusicManifestAlbums } from '../data/musicManifest.js';
+import { loadVideoCatalog } from '../data/videoManifest.js';
 import {
   isAnnouncementAdminApiConfigured,
   publishAnnouncement
@@ -23,10 +29,26 @@ import {
   isGalleryAdminApiConfigured,
   publishGalleryImages
 } from '../data/galleryAdminApi.js';
+import {
+  isMusicAdminApiConfigured,
+  publishMusicAlbum
+} from '../data/musicAdminApi.js';
+import {
+  isVideoAdminApiConfigured,
+  publishVideoLinks
+} from '../data/videoAdminApi.js';
+import {
+  isDownloadAdminApiConfigured,
+  publishDownloadLinks
+} from '../data/downloadAdminApi.js';
 
 const ADMIN_TOKEN_STORAGE_KEY = 'announcement-admin-token:v1';
 const ADMIN_PANEL_ANNOUNCEMENT = 'announcement';
 const ADMIN_PANEL_GALLERY = 'gallery';
+const ADMIN_PANEL_MUSIC = 'music';
+const ADMIN_PANEL_VIDEO = 'video';
+const ADMIN_PANEL_DOWNLOAD = 'download';
+const NEW_VIDEO_FOLDER_VALUE = '__new_video_folder__';
 
 const createDefaultDraft = () => ({
   id: new Date().toISOString().slice(0, 10),
@@ -48,6 +70,54 @@ const createDefaultGalleryDraft = () => ({
   name: '',
   message: '',
   files: []
+});
+
+const createDefaultMusicDraft = () => ({
+  albumId: '',
+  albumName: '',
+  artist: '李志',
+  coverUrl: '',
+  year: '',
+  type: 'live',
+  sortOrder: '',
+  startTrackNumber: '',
+  songNames: '',
+  audioUrls: '',
+  lyricUrls: '',
+  songCoverUrls: '',
+  audioFiles: [],
+  lyricFiles: [],
+  coverFile: null,
+  songCoverFiles: []
+});
+
+const createDefaultVideoDraft = () => ({
+  categoryId: '',
+  categoryName: '',
+  categoryIcon: 'video',
+  categorySortOrder: '',
+  folderId: '',
+  folderTitle: '',
+  folderThumb: '',
+  folderSortOrder: '',
+  startSortOrder: '',
+  videoIds: '',
+  videoTitles: '',
+  videoUrls: '',
+  backupUrls: '',
+  thumbUrls: ''
+});
+
+const createDefaultDownloadDraft = () => ({
+  sectionTitle: '',
+  sectionSortOrder: '',
+  groupTitle: '',
+  groupSortOrder: '',
+  startSortOrder: '',
+  itemTitles: '',
+  itemUrls: '',
+  filenames: '',
+  previewUrls: ''
 });
 
 const toDatetimeInputValue = (value) => {
@@ -95,15 +165,40 @@ const getUniqueGalleryCategories = (items) => {
   return Array.from(categories).sort((left, right) => left.localeCompare(right, 'zh-Hans-CN'));
 };
 
+const countNonEmptyLines = (value) => String(value || '')
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter(Boolean)
+  .length;
+
+const toAdminIconName = (value) => String(value || 'video').replace(/^#?icon-/, '') || 'video';
+
 const AdminPage = () => {
   const announcementApiConfigured = useMemo(() => isAnnouncementAdminApiConfigured(), []);
   const galleryApiConfigured = useMemo(() => isGalleryAdminApiConfigured(), []);
+  const musicApiConfigured = useMemo(() => isMusicAdminApiConfigured(), []);
+  const videoApiConfigured = useMemo(() => isVideoAdminApiConfigured(), []);
+  const downloadApiConfigured = useMemo(() => isDownloadAdminApiConfigured(), []);
   const [activePanel, setActivePanel] = useState(ADMIN_PANEL_ANNOUNCEMENT);
   const [draft, setDraft] = useState(createDefaultDraft);
   const [galleryDraft, setGalleryDraft] = useState(createDefaultGalleryDraft);
+  const [musicDraft, setMusicDraft] = useState(createDefaultMusicDraft);
+  const [videoDraft, setVideoDraft] = useState(createDefaultVideoDraft);
+  const [downloadDraft, setDownloadDraft] = useState(createDefaultDownloadDraft);
+  const [videoFolderSelection, setVideoFolderSelection] = useState('');
   const [galleryCategories, setGalleryCategories] = useState([]);
+  const [musicAlbums, setMusicAlbums] = useState([]);
+  const [videoCatalog, setVideoCatalog] = useState({ videoCategories: [], videoData: {} });
+  const [downloadSections, setDownloadSections] = useState([]);
   const [galleryFileInputKey, setGalleryFileInputKey] = useState(0);
+  const [musicAudioInputKey, setMusicAudioInputKey] = useState(0);
+  const [musicLyricInputKey, setMusicLyricInputKey] = useState(0);
+  const [musicCoverInputKey, setMusicCoverInputKey] = useState(0);
+  const [musicSongCoverInputKey, setMusicSongCoverInputKey] = useState(0);
   const [galleryPublishResult, setGalleryPublishResult] = useState(null);
+  const [musicPublishResult, setMusicPublishResult] = useState(null);
+  const [videoPublishResult, setVideoPublishResult] = useState(null);
+  const [downloadPublishResult, setDownloadPublishResult] = useState(null);
   const [token, setToken] = useState(() => {
     try {
       return window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || '';
@@ -119,9 +214,24 @@ const AdminPage = () => {
     tone: galleryApiConfigured ? 'info' : 'error',
     message: galleryApiConfigured ? '选择图片后可发布到图床仓库' : '图库后台接口未配置'
   });
+  const [musicStatus, setMusicStatus] = useState({
+    tone: musicApiConfigured ? 'info' : 'error',
+    message: musicApiConfigured ? '上传音频或填写外链后可发布到曲库' : '音乐后台接口未配置'
+  });
+  const [videoStatus, setVideoStatus] = useState({
+    tone: videoApiConfigured ? 'info' : 'error',
+    message: videoApiConfigured ? '填写视频链接后可更新视频清单' : '视频后台接口未配置'
+  });
+  const [downloadStatus, setDownloadStatus] = useState({
+    tone: downloadApiConfigured ? 'info' : 'error',
+    message: downloadApiConfigured ? '填写下载链接后可更新下载清单' : '下载后台接口未配置'
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isGallerySaving, setIsGallerySaving] = useState(false);
+  const [isMusicSaving, setIsMusicSaving] = useState(false);
+  const [isVideoSaving, setIsVideoSaving] = useState(false);
+  const [isDownloadSaving, setIsDownloadSaving] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const loadCurrentAnnouncement = async () => {
@@ -150,6 +260,36 @@ const AdminPage = () => {
     }
   };
 
+  const loadMusicAlbumsForAdmin = async () => {
+    try {
+      const albums = await loadMusicManifestAlbums();
+      setMusicAlbums(Array.isArray(albums) ? albums : []);
+    } catch {
+      setMusicAlbums([]);
+    }
+  };
+
+  const loadVideoCatalogForAdmin = async () => {
+    try {
+      const catalog = await loadVideoCatalog();
+      setVideoCatalog({
+        videoCategories: Array.isArray(catalog?.videoCategories) ? catalog.videoCategories : [],
+        videoData: catalog?.videoData && typeof catalog.videoData === 'object' ? catalog.videoData : {}
+      });
+    } catch {
+      setVideoCatalog({ videoCategories: [], videoData: {} });
+    }
+  };
+
+  const loadDownloadSectionsForAdmin = async () => {
+    try {
+      const sections = await loadDownloadSections();
+      setDownloadSections(Array.isArray(sections) ? sections : []);
+    } catch {
+      setDownloadSections([]);
+    }
+  };
+
   useEffect(() => {
     void loadCurrentAnnouncement();
   }, []);
@@ -159,6 +299,24 @@ const AdminPage = () => {
       void loadGalleryCategories();
     }
   }, [activePanel, galleryCategories.length]);
+
+  useEffect(() => {
+    if (activePanel === ADMIN_PANEL_MUSIC && musicAlbums.length === 0) {
+      void loadMusicAlbumsForAdmin();
+    }
+  }, [activePanel, musicAlbums.length]);
+
+  useEffect(() => {
+    if (activePanel === ADMIN_PANEL_VIDEO && videoCatalog.videoCategories.length === 0) {
+      void loadVideoCatalogForAdmin();
+    }
+  }, [activePanel, videoCatalog.videoCategories.length]);
+
+  useEffect(() => {
+    if (activePanel === ADMIN_PANEL_DOWNLOAD && downloadSections.length === 0) {
+      void loadDownloadSectionsForAdmin();
+    }
+  }, [activePanel, downloadSections.length]);
 
   useEffect(() => {
     try {
@@ -184,6 +342,136 @@ const AdminPage = () => {
       ...previous,
       [field]: value
     }));
+  };
+
+  const updateMusicDraftField = (field, value) => {
+    setMusicDraft((previous) => ({
+      ...previous,
+      [field]: value
+    }));
+  };
+
+  const updateVideoDraftField = (field, value) => {
+    setVideoDraft((previous) => ({
+      ...previous,
+      [field]: value
+    }));
+  };
+
+  const updateDownloadDraftField = (field, value) => {
+    setDownloadDraft((previous) => ({
+      ...previous,
+      [field]: value
+    }));
+  };
+
+  const applyMusicAlbum = (album) => {
+    if (!album) return;
+    setMusicDraft((previous) => ({
+      ...previous,
+      albumId: String(album.id || ''),
+      albumName: String(album.name || ''),
+      artist: String(album.artist || previous.artist || ''),
+      coverUrl: String(album.cover || ''),
+      year: album.year ? String(album.year) : previous.year,
+      type: String(album.type || previous.type || 'live'),
+      startTrackNumber: String((album.songs?.length || 0) + 1)
+    }));
+  };
+
+  const handleMusicAlbumSelect = (value) => {
+    const selectedAlbum = musicAlbums.find((album) => album.id === value);
+    if (selectedAlbum) {
+      applyMusicAlbum(selectedAlbum);
+      return;
+    }
+    updateMusicDraftField('albumId', value);
+  };
+
+  const applyVideoCategory = (category) => {
+    if (!category) return;
+    setVideoFolderSelection('');
+    setVideoDraft((previous) => ({
+      ...previous,
+      categoryId: String(category.id || ''),
+      categoryName: String(category.name || ''),
+      categoryIcon: toAdminIconName(category.icon),
+      folderId: '',
+      folderTitle: '',
+      folderThumb: '',
+      folderSortOrder: ''
+    }));
+  };
+
+  const handleVideoCategorySelect = (value) => {
+    setVideoFolderSelection('');
+    const selectedCategory = videoCategories.find((category) => category.id === value);
+    if (selectedCategory) {
+      applyVideoCategory(selectedCategory);
+      return;
+    }
+    setVideoDraft((previous) => ({
+      ...previous,
+      categoryId: value,
+      folderId: '',
+      folderTitle: '',
+      folderThumb: '',
+      folderSortOrder: ''
+    }));
+  };
+
+  const applyVideoFolder = (folder) => {
+    if (!folder) return;
+    setVideoFolderSelection(String(folder.folderId || folder.id || ''));
+    setVideoDraft((previous) => ({
+      ...previous,
+      folderId: String(folder.folderId || folder.id || ''),
+      folderTitle: String(folder.title || ''),
+      folderThumb: String(folder.thumb || '')
+    }));
+  };
+
+  const handleVideoFolderSelect = (value) => {
+    setVideoFolderSelection(value);
+    if (!value) {
+      setVideoDraft((previous) => ({
+        ...previous,
+        folderId: '',
+        folderTitle: '',
+        folderThumb: '',
+        folderSortOrder: ''
+      }));
+      return;
+    }
+    if (value === NEW_VIDEO_FOLDER_VALUE) {
+      setVideoDraft((previous) => ({
+        ...previous,
+        folderId: '',
+        folderTitle: '',
+        folderThumb: '',
+        folderSortOrder: ''
+      }));
+      return;
+    }
+    const selectedFolder = videoFolders.find((folder) => (folder.folderId || folder.id) === value);
+    if (selectedFolder) {
+      applyVideoFolder(selectedFolder);
+      return;
+    }
+    updateVideoDraftField('folderId', value);
+  };
+
+  const handleDownloadSectionSelect = (value) => {
+    const selectedSection = downloadSections.find((section) => section.title === value);
+    setDownloadDraft((previous) => ({
+      ...previous,
+      sectionTitle: value,
+      groupTitle: selectedSection?.groups?.[0]?.title || ''
+    }));
+  };
+
+  const handleDownloadGroupSelect = (value) => {
+    updateDownloadDraftField('groupTitle', value);
   };
 
   const handlePublish = async (event) => {
@@ -244,14 +532,152 @@ const AdminPage = () => {
     }
   };
 
+  const handlePublishMusic = async (event) => {
+    event.preventDefault();
+
+    if (!String(musicDraft.albumId || '').trim()) {
+      setMusicStatus({ tone: 'error', message: '请填写专辑 ID' });
+      return;
+    }
+    if (!String(musicDraft.albumName || '').trim()) {
+      setMusicStatus({ tone: 'error', message: '请填写专辑名' });
+      return;
+    }
+    if (!musicDraft.audioFiles.length && !String(musicDraft.audioUrls || '').trim()) {
+      setMusicStatus({ tone: 'error', message: '请选择要发布的音频文件或填写音频链接' });
+      return;
+    }
+
+    setIsMusicSaving(true);
+    setMusicPublishResult(null);
+    try {
+      const result = await publishMusicAlbum({
+        ...musicDraft,
+        token
+      });
+      const publishedCount = Array.isArray(result?.songs)
+        ? result.songs.length
+        : musicDraft.audioFiles.length + countNonEmptyLines(musicDraft.audioUrls);
+      setMusicDraft(createDefaultMusicDraft());
+      setMusicAudioInputKey((value) => value + 1);
+      setMusicLyricInputKey((value) => value + 1);
+      setMusicCoverInputKey((value) => value + 1);
+      setMusicSongCoverInputKey((value) => value + 1);
+      setMusicPublishResult(result);
+      setMusicStatus({ tone: 'success', message: `已发布 ${publishedCount} 首歌曲到 R2` });
+    } catch (error) {
+      setMusicStatus({ tone: 'error', message: error?.message || '音乐发布失败' });
+    } finally {
+      setIsMusicSaving(false);
+    }
+  };
+
+  const handlePublishVideo = async (event) => {
+    event.preventDefault();
+
+    if (!String(videoDraft.categoryId || '').trim()) {
+      setVideoStatus({ tone: 'error', message: '请填写分类 ID' });
+      return;
+    }
+    if (!String(videoDraft.categoryName || '').trim()) {
+      setVideoStatus({ tone: 'error', message: '请填写分类名称' });
+      return;
+    }
+    if (!String(videoDraft.videoUrls || '').trim()) {
+      setVideoStatus({ tone: 'error', message: '请填写视频链接' });
+      return;
+    }
+
+    setIsVideoSaving(true);
+    setVideoPublishResult(null);
+    try {
+      const result = await publishVideoLinks({
+        ...videoDraft,
+        token
+      });
+      const publishedCount = Array.isArray(result?.items)
+        ? result.items.length
+        : countNonEmptyLines(videoDraft.videoUrls);
+      setVideoDraft(createDefaultVideoDraft());
+      setVideoFolderSelection('');
+      setVideoPublishResult(result);
+      setVideoStatus({ tone: 'success', message: `已发布 ${publishedCount} 个视频链接` });
+    } catch (error) {
+      setVideoStatus({ tone: 'error', message: error?.message || '视频发布失败' });
+    } finally {
+      setIsVideoSaving(false);
+    }
+  };
+
+  const handlePublishDownload = async (event) => {
+    event.preventDefault();
+
+    if (!String(downloadDraft.sectionTitle || '').trim()) {
+      setDownloadStatus({ tone: 'error', message: '请填写下载栏目' });
+      return;
+    }
+    if (!String(downloadDraft.groupTitle || '').trim()) {
+      setDownloadStatus({ tone: 'error', message: '请填写下载分组' });
+      return;
+    }
+    if (!String(downloadDraft.itemUrls || '').trim()) {
+      setDownloadStatus({ tone: 'error', message: '请填写下载链接' });
+      return;
+    }
+
+    setIsDownloadSaving(true);
+    setDownloadPublishResult(null);
+    try {
+      const result = await publishDownloadLinks({
+        ...downloadDraft,
+        token
+      });
+      const publishedCount = Array.isArray(result?.items)
+        ? result.items.length
+        : countNonEmptyLines(downloadDraft.itemUrls);
+      setDownloadDraft(createDefaultDownloadDraft());
+      setDownloadPublishResult(result);
+      setDownloadStatus({ tone: 'success', message: `已发布 ${publishedCount} 个下载链接` });
+    } catch (error) {
+      setDownloadStatus({ tone: 'error', message: error?.message || '下载发布失败' });
+    } finally {
+      setIsDownloadSaving(false);
+    }
+  };
+
   const previewAnnouncement = serializeDraft(draft);
-  const activeStatus = activePanel === ADMIN_PANEL_GALLERY ? galleryStatus : announcementStatus;
+  const activeStatus = activePanel === ADMIN_PANEL_GALLERY
+    ? galleryStatus
+    : activePanel === ADMIN_PANEL_MUSIC
+      ? musicStatus
+      : activePanel === ADMIN_PANEL_VIDEO
+        ? videoStatus
+        : activePanel === ADMIN_PANEL_DOWNLOAD
+          ? downloadStatus
+          : announcementStatus;
   const StatusIcon = activeStatus.tone === 'error'
     ? AlertTriangle
     : activeStatus.tone === 'success'
       ? CheckCircle2
       : null;
   const selectedFileSummary = galleryDraft.files.map((file) => file.name).join('、');
+  const selectedAudioSummary = musicDraft.audioFiles.map((file) => file.name).join('、');
+  const selectedLyricSummary = musicDraft.lyricFiles.map((file) => file.name).join('、');
+  const selectedAlbumCoverSummary = musicDraft.coverFile?.name || '';
+  const selectedSongCoverSummary = musicDraft.songCoverFiles.map((file) => file.name).join('、');
+  const videoCategories = videoCatalog.videoCategories;
+  const videoFolders = (videoCatalog.videoData?.[videoDraft.categoryId] || [])
+    .filter((item) => item?.isFolder || item?.folderId);
+  const selectedDownloadSection = downloadSections.find((section) => section.title === downloadDraft.sectionTitle);
+  const downloadGroups = Array.isArray(selectedDownloadSection?.groups) ? selectedDownloadSection.groups : [];
+  const selectedVideoFolderValue = videoFolderSelection || (
+    videoFolders.some((folder) => (folder.folderId || folder.id) === videoDraft.folderId)
+      ? videoDraft.folderId
+      : videoDraft.folderId || videoDraft.folderTitle
+        ? NEW_VIDEO_FOLDER_VALUE
+        : ''
+  );
+  const usesVideoFolder = selectedVideoFolderValue !== '';
 
   return (
     <div className="admin-page">
@@ -315,6 +741,36 @@ const AdminPage = () => {
           >
             <ImagePlus size={16} />
             图库
+          </button>
+          <button
+            type="button"
+            className={`admin-tab ${activePanel === ADMIN_PANEL_MUSIC ? 'is-active' : ''}`}
+            onClick={() => setActivePanel(ADMIN_PANEL_MUSIC)}
+            role="tab"
+            aria-selected={activePanel === ADMIN_PANEL_MUSIC}
+          >
+            <Music size={16} />
+            音乐
+          </button>
+          <button
+            type="button"
+            className={`admin-tab ${activePanel === ADMIN_PANEL_VIDEO ? 'is-active' : ''}`}
+            onClick={() => setActivePanel(ADMIN_PANEL_VIDEO)}
+            role="tab"
+            aria-selected={activePanel === ADMIN_PANEL_VIDEO}
+          >
+            <Film size={16} />
+            视频
+          </button>
+          <button
+            type="button"
+            className={`admin-tab ${activePanel === ADMIN_PANEL_DOWNLOAD ? 'is-active' : ''}`}
+            onClick={() => setActivePanel(ADMIN_PANEL_DOWNLOAD)}
+            role="tab"
+            aria-selected={activePanel === ADMIN_PANEL_DOWNLOAD}
+          >
+            <Download size={16} />
+            下载
           </button>
         </div>
 
@@ -547,6 +1003,666 @@ const AdminPage = () => {
               >
                 <UploadCloud size={17} />
                 {isGallerySaving ? '发布中...' : '发布图片'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {activePanel === ADMIN_PANEL_MUSIC && (
+          <form className="admin-form" onSubmit={handlePublishMusic}>
+            <section className="admin-section">
+              <div className="admin-section-title">目标专辑</div>
+              <label className="admin-field">
+                <span>选择专辑</span>
+                <select
+                  value={musicAlbums.some((album) => album.id === musicDraft.albumId) ? musicDraft.albumId : ''}
+                  onChange={(event) => handleMusicAlbumSelect(event.target.value)}
+                >
+                  <option value="">新建专辑</option>
+                  {musicAlbums.map((album) => (
+                    <option key={album.id} value={album.id}>
+                      {album.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>专辑 ID</span>
+                  <input
+                    value={musicDraft.albumId}
+                    onChange={(event) => updateMusicDraftField('albumId', event.target.value)}
+                    placeholder="例如 san-que-yi-kuala-lumpur"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>专辑名</span>
+                  <input
+                    value={musicDraft.albumName}
+                    onChange={(event) => updateMusicDraftField('albumName', event.target.value)}
+                    placeholder="例如 叁缺壹吉隆坡站"
+                  />
+                </label>
+              </div>
+
+              <details className="admin-details">
+                <summary>专辑设置</summary>
+                <div className="admin-details-body">
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>艺术家</span>
+                      <input
+                        value={musicDraft.artist}
+                        onChange={(event) => updateMusicDraftField('artist', event.target.value)}
+                        placeholder="李志"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>专辑封面 URL</span>
+                      <input
+                        value={musicDraft.coverUrl}
+                        onChange={(event) => updateMusicDraftField('coverUrl', event.target.value)}
+                        placeholder="https://r2.1701701.xyz/img/music/专辑/cover.jpg"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="admin-field admin-file-field">
+                    <span>上传专辑封面</span>
+                    <input
+                      key={musicCoverInputKey}
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => updateMusicDraftField(
+                        'coverFile',
+                        Array.from(event.target.files || [])[0] || null
+                      )}
+                    />
+                  </label>
+
+                  {selectedAlbumCoverSummary && (
+                    <div className="admin-file-summary" title={selectedAlbumCoverSummary}>
+                      专辑封面：{selectedAlbumCoverSummary}
+                    </div>
+                  )}
+
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>年份</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={musicDraft.year}
+                        onChange={(event) => updateMusicDraftField('year', event.target.value)}
+                        placeholder="2026"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>类型</span>
+                      <select
+                        value={musicDraft.type}
+                        onChange={(event) => updateMusicDraftField('type', event.target.value)}
+                      >
+                        <option value="live">live</option>
+                        <option value="studio">studio</option>
+                        <option value="compilation">compilation</option>
+                        <option value="single">single</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>专辑排序</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={musicDraft.sortOrder}
+                        onChange={(event) => updateMusicDraftField('sortOrder', event.target.value)}
+                        placeholder="留空自动追加"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>起始曲序</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min="1"
+                        value={musicDraft.startTrackNumber}
+                        onChange={(event) => updateMusicDraftField('startTrackNumber', event.target.value)}
+                        placeholder="留空自动追加"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </details>
+            </section>
+
+            <section className="admin-section">
+              <div className="admin-section-title">歌曲来源</div>
+              <div className="admin-grid">
+                <label className="admin-field admin-file-field">
+                  <span>上传音频</span>
+                  <input
+                    key={musicAudioInputKey}
+                    type="file"
+                    accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus,.webm"
+                    multiple
+                    onChange={(event) => updateMusicDraftField(
+                      'audioFiles',
+                      Array.from(event.target.files || [])
+                    )}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>音频链接</span>
+                  <textarea
+                    className="admin-textarea-compact"
+                    value={musicDraft.audioUrls}
+                    onChange={(event) => updateMusicDraftField('audioUrls', event.target.value)}
+                    rows={3}
+                    placeholder="每行一个音频 URL"
+                  />
+                </label>
+              </div>
+
+              {selectedAudioSummary && (
+                <div className="admin-file-summary" title={selectedAudioSummary}>
+                  {musicDraft.audioFiles.length} 个音频：{selectedAudioSummary}
+                </div>
+              )}
+
+              <label className="admin-field">
+                <span>歌曲名称</span>
+                <textarea
+                  className="admin-textarea-compact"
+                  value={musicDraft.songNames}
+                  onChange={(event) => updateMusicDraftField('songNames', event.target.value)}
+                  rows={3}
+                  placeholder="可选，每行对应一个音频"
+                />
+              </label>
+
+              <details className="admin-details">
+                <summary>单曲资料（可选）</summary>
+                <div className="admin-details-body">
+                  <div className="admin-grid">
+                    <label className="admin-field admin-file-field">
+                      <span>歌词文件</span>
+                      <input
+                        key={musicLyricInputKey}
+                        type="file"
+                        accept=".lrc,.txt,text/plain"
+                        multiple
+                        onChange={(event) => updateMusicDraftField(
+                          'lyricFiles',
+                          Array.from(event.target.files || [])
+                        )}
+                      />
+                    </label>
+                    <label className="admin-field admin-file-field">
+                      <span>上传单曲封面</span>
+                      <input
+                        key={musicSongCoverInputKey}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(event) => updateMusicDraftField(
+                          'songCoverFiles',
+                          Array.from(event.target.files || [])
+                        )}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>歌词链接</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={musicDraft.lyricUrls}
+                        onChange={(event) => updateMusicDraftField('lyricUrls', event.target.value)}
+                        rows={3}
+                        placeholder="每行一个歌词 URL"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>单曲封面链接</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={musicDraft.songCoverUrls}
+                        onChange={(event) => updateMusicDraftField('songCoverUrls', event.target.value)}
+                        rows={3}
+                        placeholder="每行一个封面 URL；空行或 - 用专辑封面"
+                      />
+                    </label>
+                  </div>
+
+                  {selectedLyricSummary && (
+                    <div className="admin-file-summary" title={selectedLyricSummary}>
+                      {musicDraft.lyricFiles.length} 个歌词：{selectedLyricSummary}
+                    </div>
+                  )}
+                  {selectedSongCoverSummary && (
+                    <div className="admin-file-summary" title={selectedSongCoverSummary}>
+                      {musicDraft.songCoverFiles.length} 个单曲封面：{selectedSongCoverSummary}
+                    </div>
+                  )}
+                </div>
+              </details>
+            </section>
+
+            {musicPublishResult?.manifestTarget && (
+              <div className="admin-result">
+                <span>音乐清单</span>
+                <a href={musicPublishResult.manifestTarget.url} target="_blank" rel="noreferrer">
+                  {musicPublishResult.manifestTarget.key || '查看 music-index.json'}
+                </a>
+              </div>
+            )}
+
+            <div className="admin-actions">
+              <button
+                type="submit"
+                className="admin-btn primary"
+                disabled={isMusicSaving || !musicApiConfigured}
+              >
+                <UploadCloud size={17} />
+                {isMusicSaving ? '发布中...' : '发布音乐'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {activePanel === ADMIN_PANEL_VIDEO && (
+          <form className="admin-form" onSubmit={handlePublishVideo}>
+            <section className="admin-section">
+              <div className="admin-section-title">目标位置</div>
+              <label className="admin-field">
+                <span>选择分类</span>
+                <select
+                  value={videoCategories.some((category) => category.id === videoDraft.categoryId) ? videoDraft.categoryId : ''}
+                  onChange={(event) => handleVideoCategorySelect(event.target.value)}
+                >
+                  <option value="">新建分类或手动填写</option>
+                  {videoCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>分类 ID</span>
+                  <input
+                    value={videoDraft.categoryId}
+                    onChange={(event) => updateVideoDraftField('categoryId', event.target.value)}
+                    placeholder="knxy"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>分类名称</span>
+                  <input
+                    value={videoDraft.categoryName}
+                    onChange={(event) => updateVideoDraftField('categoryName', event.target.value)}
+                    placeholder="跨年音乐会"
+                  />
+                </label>
+              </div>
+
+              <div className="admin-grid">
+                <label className={`admin-field ${usesVideoFolder ? '' : 'admin-field-full'}`}>
+                  <span>选择文件夹</span>
+                  <select
+                    value={selectedVideoFolderValue}
+                    onChange={(event) => handleVideoFolderSelect(event.target.value)}
+                  >
+                    <option value="">直接放在分类下</option>
+                    {videoFolders.map((folder) => (
+                      <option key={folder.folderId || folder.id} value={folder.folderId || folder.id}>
+                        {folder.title}
+                      </option>
+                    ))}
+                    <option value={NEW_VIDEO_FOLDER_VALUE}>新建文件夹</option>
+                  </select>
+                </label>
+                {usesVideoFolder && (
+                  <label className="admin-field">
+                    <span>文件夹标题</span>
+                    <input
+                      value={videoDraft.folderTitle}
+                      onChange={(event) => updateVideoDraftField('folderTitle', event.target.value)}
+                      placeholder={selectedVideoFolderValue === NEW_VIDEO_FOLDER_VALUE ? '例如 叁缺壹吉隆坡站' : '可按需修改'}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <details className="admin-details">
+                <summary>分类与文件夹设置</summary>
+                <div className="admin-details-body">
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>分类图标</span>
+                      <input
+                        value={videoDraft.categoryIcon}
+                        onChange={(event) => updateVideoDraftField('categoryIcon', event.target.value)}
+                        placeholder="video"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>分类排序</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={videoDraft.categorySortOrder}
+                        onChange={(event) => updateVideoDraftField('categorySortOrder', event.target.value)}
+                        placeholder="留空自动追加"
+                      />
+                    </label>
+                  </div>
+
+                  {usesVideoFolder && (
+                    <>
+                      <div className="admin-grid">
+                        <label className="admin-field">
+                          <span>文件夹 ID</span>
+                          <input
+                            value={videoDraft.folderId}
+                            onChange={(event) => updateVideoDraftField('folderId', event.target.value)}
+                            placeholder="留空按标题生成"
+                          />
+                        </label>
+                        <label className="admin-field">
+                          <span>文件夹封面</span>
+                          <input
+                            value={videoDraft.folderThumb}
+                            onChange={(event) => updateVideoDraftField('folderThumb', event.target.value)}
+                            placeholder="https://r2.1701701.xyz/img/dian2.jpg"
+                          />
+                        </label>
+                      </div>
+
+                      <label className="admin-field">
+                        <span>文件夹排序</span>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          value={videoDraft.folderSortOrder}
+                          onChange={(event) => updateVideoDraftField('folderSortOrder', event.target.value)}
+                          placeholder="留空自动追加"
+                        />
+                      </label>
+                    </>
+                  )}
+                </div>
+              </details>
+            </section>
+
+            <section className="admin-section">
+              <div className="admin-section-title">视频链接</div>
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>视频 URL</span>
+                  <textarea
+                    className="admin-textarea-compact"
+                    value={videoDraft.videoUrls}
+                    onChange={(event) => updateVideoDraftField('videoUrls', event.target.value)}
+                    rows={3}
+                    placeholder="每行一个 m3u8 或 mp4 链接"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>视频标题</span>
+                  <textarea
+                    className="admin-textarea-compact"
+                    value={videoDraft.videoTitles}
+                    onChange={(event) => updateVideoDraftField('videoTitles', event.target.value)}
+                    rows={3}
+                    placeholder="可选，每行对应一个视频"
+                  />
+                </label>
+              </div>
+
+              <details className="admin-details">
+                <summary>视频设置</summary>
+                <div className="admin-details-body">
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>封面 URL</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={videoDraft.thumbUrls}
+                        onChange={(event) => updateVideoDraftField('thumbUrls', event.target.value)}
+                        rows={3}
+                        placeholder="每行对应一个视频；只填一行会套用给全部"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>备用 URL</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={videoDraft.backupUrls}
+                        onChange={(event) => updateVideoDraftField('backupUrls', event.target.value)}
+                        rows={3}
+                        placeholder="可选，每行对应一个视频"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>视频 ID</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={videoDraft.videoIds}
+                        onChange={(event) => updateVideoDraftField('videoIds', event.target.value)}
+                        rows={3}
+                        placeholder="可选，每行一个；留空自动生成"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>起始排序</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={videoDraft.startSortOrder}
+                        onChange={(event) => updateVideoDraftField('startSortOrder', event.target.value)}
+                        placeholder="留空自动追加"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </details>
+            </section>
+
+            {videoPublishResult?.manifestTarget && (
+              <div className="admin-result">
+                <span>视频清单</span>
+                <a href={videoPublishResult.manifestTarget.url} target="_blank" rel="noreferrer">
+                  {videoPublishResult.manifestTarget.key || '查看 video-index.json'}
+                </a>
+              </div>
+            )}
+
+            <div className="admin-actions">
+              <button
+                type="submit"
+                className="admin-btn primary"
+                disabled={isVideoSaving || !videoApiConfigured}
+              >
+                <UploadCloud size={17} />
+                {isVideoSaving ? '发布中...' : '发布视频'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {activePanel === ADMIN_PANEL_DOWNLOAD && (
+          <form className="admin-form" onSubmit={handlePublishDownload}>
+            <section className="admin-section">
+              <div className="admin-section-title">目标位置</div>
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>选择栏目</span>
+                  <select
+                    value={downloadSections.some((section) => section.title === downloadDraft.sectionTitle) ? downloadDraft.sectionTitle : ''}
+                    onChange={(event) => handleDownloadSectionSelect(event.target.value)}
+                  >
+                    <option value="">新建栏目</option>
+                    {downloadSections.map((section) => (
+                      <option key={section.title} value={section.title}>
+                        {section.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="admin-field">
+                  <span>选择分组</span>
+                  <select
+                    value={downloadGroups.some((group) => group.title === downloadDraft.groupTitle) ? downloadDraft.groupTitle : ''}
+                    onChange={(event) => handleDownloadGroupSelect(event.target.value)}
+                  >
+                    <option value="">新建分组</option>
+                    {downloadGroups.map((group) => (
+                      <option key={group.title} value={group.title}>
+                        {group.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>栏目标题</span>
+                  <input
+                    value={downloadDraft.sectionTitle}
+                    onChange={(event) => updateDownloadDraftField('sectionTitle', event.target.value)}
+                    placeholder="例如 叁缺壹吉隆坡站"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>分组标题</span>
+                  <input
+                    value={downloadDraft.groupTitle}
+                    onChange={(event) => updateDownloadDraftField('groupTitle', event.target.value)}
+                    placeholder="例如 11月11日现场"
+                  />
+                </label>
+              </div>
+
+              <details className="admin-details">
+                <summary>排序设置（可选）</summary>
+                <div className="admin-details-body">
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>栏目排序</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={downloadDraft.sectionSortOrder}
+                        onChange={(event) => updateDownloadDraftField('sectionSortOrder', event.target.value)}
+                        placeholder="留空自动追加"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>分组排序</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={downloadDraft.groupSortOrder}
+                        onChange={(event) => updateDownloadDraftField('groupSortOrder', event.target.value)}
+                        placeholder="留空自动追加"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </details>
+            </section>
+
+            <section className="admin-section">
+              <div className="admin-section-title">下载链接</div>
+              <label className="admin-field">
+                <span>显示标题</span>
+                <textarea
+                  className="admin-textarea-compact"
+                  value={downloadDraft.itemTitles}
+                  onChange={(event) => updateDownloadDraftField('itemTitles', event.target.value)}
+                  rows={3}
+                  placeholder="可选，每行对应一个链接；留空用文件名"
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>下载 URL</span>
+                <textarea
+                  className="admin-textarea-primary"
+                  value={downloadDraft.itemUrls}
+                  onChange={(event) => updateDownloadDraftField('itemUrls', event.target.value)}
+                  rows={4}
+                  placeholder="每行一个下载链接"
+                />
+              </label>
+
+              <details className="admin-details">
+                <summary>文件名与预览（可选）</summary>
+                <div className="admin-details-body">
+                  <div className="admin-grid">
+                    <label className="admin-field">
+                      <span>下载文件名</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={downloadDraft.filenames}
+                        onChange={(event) => updateDownloadDraftField('filenames', event.target.value)}
+                        rows={3}
+                        placeholder="可选，留空用链接里的文件名"
+                      />
+                    </label>
+                    <label className="admin-field">
+                      <span>预览 URL</span>
+                      <textarea
+                        className="admin-textarea-compact"
+                        value={downloadDraft.previewUrls}
+                        onChange={(event) => updateDownloadDraftField('previewUrls', event.target.value)}
+                        rows={3}
+                        placeholder="可选，文档预览链接；每行对应一个下载"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="admin-field">
+                    <span>起始排序</span>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      value={downloadDraft.startSortOrder}
+                      onChange={(event) => updateDownloadDraftField('startSortOrder', event.target.value)}
+                      placeholder="留空自动追加"
+                    />
+                  </label>
+                </div>
+              </details>
+            </section>
+
+            {downloadPublishResult?.manifestTarget && (
+              <div className="admin-result">
+                <span>下载清单</span>
+                <a href={downloadPublishResult.manifestTarget.url} target="_blank" rel="noreferrer">
+                  {downloadPublishResult.manifestTarget.key || '查看 download-index.json'}
+                </a>
+              </div>
+            )}
+
+            <div className="admin-actions">
+              <button
+                type="submit"
+                className="admin-btn primary"
+                disabled={isDownloadSaving || !downloadApiConfigured}
+              >
+                <UploadCloud size={17} />
+                {isDownloadSaving ? '发布中...' : '发布下载'}
               </button>
             </div>
           </form>

@@ -4,8 +4,17 @@ const DEFAULT_GALLERY_BRANCH = 'main';
 const DEFAULT_GALLERY_INDEX_PATH = 'public/data/images.json';
 const DEFAULT_GALLERY_REPO_IMAGE_ROOT = 'public/images';
 const DEFAULT_GALLERY_PUBLIC_IMAGE_ROOT = 'images';
+const DEFAULT_MUSIC_INDEX_KEY = 'json/music-index.json';
+const DEFAULT_MUSIC_AUDIO_ROOT = 'mp3';
+const DEFAULT_MUSIC_LRC_ROOT = 'lrc';
+const DEFAULT_MUSIC_COVER_ROOT = 'img/music';
+const DEFAULT_VIDEO_INDEX_KEY = 'json/video-index.json';
+const DEFAULT_DOWNLOAD_INDEX_KEY = 'json/download-index.json';
 const MAX_GALLERY_IMAGES_PER_REQUEST = 12;
 const MAX_GALLERY_IMAGE_BYTES = 12 * 1024 * 1024;
+const MAX_MUSIC_AUDIO_FILES_PER_REQUEST = 40;
+const MAX_MUSIC_AUDIO_BYTES = 100 * 1024 * 1024;
+const MAX_MUSIC_LYRIC_BYTES = 1024 * 1024;
 const GALLERY_ALLOWED_EXTENSIONS = new Set([
   '.jpg',
   '.jpeg',
@@ -19,6 +28,17 @@ const GALLERY_ALLOWED_EXTENSIONS = new Set([
   '.bmp',
   '.ico'
 ]);
+const MUSIC_AUDIO_ALLOWED_EXTENSIONS = new Set([
+  '.mp3',
+  '.m4a',
+  '.aac',
+  '.wav',
+  '.flac',
+  '.ogg',
+  '.opus',
+  '.webm'
+]);
+const MUSIC_LYRIC_ALLOWED_EXTENSIONS = new Set(['.lrc', '.txt']);
 
 const DEFAULT_ANNOUNCEMENT = Object.freeze({
   id: 'default-disabled',
@@ -238,6 +258,44 @@ const getGalleryConfig = (env) => ({
   committerEmail: normalizeText(env.GITHUB_COMMITTER_EMAIL, 'admin@1701701.xyz')
 });
 
+const getMusicConfig = (env) => ({
+  bucket: env.MUSIC_PUBLIC_BUCKET || env.MUSIC_BUCKET,
+  indexKey: normalizeGitPath(env.MUSIC_INDEX_KEY, DEFAULT_MUSIC_INDEX_KEY),
+  audioRoot: normalizeGitPath(env.MUSIC_AUDIO_ROOT, DEFAULT_MUSIC_AUDIO_ROOT),
+  lyricRoot: normalizeGitPath(env.MUSIC_LRC_ROOT || env.MUSIC_LYRIC_ROOT, DEFAULT_MUSIC_LRC_ROOT),
+  coverRoot: normalizeGitPath(env.MUSIC_COVER_ROOT, DEFAULT_MUSIC_COVER_ROOT),
+  publicBaseUrl: normalizeText(env.MUSIC_PUBLIC_BASE_URL || env.PUBLIC_MUSIC_BASE_URL)
+});
+
+const getVideoConfig = (env) => ({
+  bucket: env.VIDEO_PUBLIC_BUCKET || env.VIDEO_BUCKET || env.MUSIC_PUBLIC_BUCKET || env.MUSIC_BUCKET,
+  indexKey: normalizeGitPath(env.VIDEO_INDEX_KEY, DEFAULT_VIDEO_INDEX_KEY),
+  publicBaseUrl: normalizeText(
+    env.VIDEO_PUBLIC_BASE_URL
+      || env.PUBLIC_VIDEO_BASE_URL
+      || env.MUSIC_PUBLIC_BASE_URL
+      || env.PUBLIC_MUSIC_BASE_URL
+  )
+});
+
+const getDownloadConfig = (env) => ({
+  bucket: env.DOWNLOAD_PUBLIC_BUCKET
+    || env.DOWNLOAD_BUCKET
+    || env.VIDEO_PUBLIC_BUCKET
+    || env.VIDEO_BUCKET
+    || env.MUSIC_PUBLIC_BUCKET
+    || env.MUSIC_BUCKET,
+  indexKey: normalizeGitPath(env.DOWNLOAD_INDEX_KEY, DEFAULT_DOWNLOAD_INDEX_KEY),
+  publicBaseUrl: normalizeText(
+    env.DOWNLOAD_PUBLIC_BASE_URL
+      || env.PUBLIC_DOWNLOAD_BASE_URL
+      || env.VIDEO_PUBLIC_BASE_URL
+      || env.PUBLIC_VIDEO_BASE_URL
+      || env.MUSIC_PUBLIC_BASE_URL
+      || env.PUBLIC_MUSIC_BASE_URL
+  )
+});
+
 const validateGalleryConfig = (config) => {
   const missing = [];
   if (!config.token) missing.push('GITHUB_TOKEN');
@@ -245,6 +303,24 @@ const validateGalleryConfig = (config) => {
   if (!config.repo) missing.push('GALLERY_GITHUB_REPO');
   if (missing.length > 0) {
     throw new Error(`图库 GitHub 配置不完整：${missing.join(', ')}`);
+  }
+};
+
+const validateMusicConfig = (config) => {
+  if (!config.bucket) {
+    throw new Error('音乐 R2 配置不完整：MUSIC_PUBLIC_BUCKET');
+  }
+};
+
+const validateVideoConfig = (config) => {
+  if (!config.bucket) {
+    throw new Error('视频 R2 配置不完整：VIDEO_PUBLIC_BUCKET');
+  }
+};
+
+const validateDownloadConfig = (config) => {
+  if (!config.bucket) {
+    throw new Error('下载 R2 配置不完整：DOWNLOAD_PUBLIC_BUCKET');
   }
 };
 
@@ -386,6 +462,19 @@ const getExtensionFromType = (type) => {
   return '';
 };
 
+const getAudioExtensionFromType = (type) => {
+  const normalized = normalizeText(type).toLowerCase();
+  if (normalized === 'audio/mpeg' || normalized === 'audio/mp3') return '.mp3';
+  if (normalized === 'audio/mp4' || normalized === 'audio/x-m4a') return '.m4a';
+  if (normalized === 'audio/aac') return '.aac';
+  if (normalized === 'audio/wav' || normalized === 'audio/x-wav') return '.wav';
+  if (normalized === 'audio/flac' || normalized === 'audio/x-flac') return '.flac';
+  if (normalized === 'audio/ogg') return '.ogg';
+  if (normalized === 'audio/opus') return '.opus';
+  if (normalized === 'audio/webm') return '.webm';
+  return '';
+};
+
 const getExtensionFromFilename = (filename) => {
   const match = normalizeText(filename).match(/(\.[^.]+)$/);
   return normalizeText(match?.[1]).toLowerCase();
@@ -398,6 +487,19 @@ const sanitizeFilename = (name, type, fallbackBase) => {
   return `${cleaned}${getExtensionFromType(type) || '.jpg'}`;
 };
 
+const sanitizeUploadFilename = ({
+  name,
+  type,
+  fallbackBase,
+  defaultExtension,
+  extensionFromType = () => ''
+}) => {
+  const rawName = normalizeText(String(name || '').split(/[\\/]/).pop(), fallbackBase);
+  const cleaned = normalizePathSegment(rawName, fallbackBase);
+  if (/\.[a-z0-9]{2,5}$/i.test(cleaned)) return cleaned;
+  return `${cleaned}${extensionFromType(type) || defaultExtension}`;
+};
+
 const splitFilename = (filename) => {
   const match = normalizeText(filename).match(/^(.*?)(\.[^.]+)?$/);
   return {
@@ -405,6 +507,13 @@ const splitFilename = (filename) => {
     extension: normalizeText(match?.[2])
   };
 };
+
+const stripTrackPrefix = (value) => {
+  const text = normalizeText(value);
+  return text.replace(/^\d{1,3}\s*[._-]\s*/, '').trim() || text;
+};
+
+const getFileMatchKey = (filename) => stripTrackPrefix(splitFilename(filename).base).toLowerCase();
 
 const createUniqueImagePath = ({ imageRoot, category, filename, usedPaths }) => {
   const normalizedCategory = normalizePathSegment(category, '未分类');
@@ -429,11 +538,13 @@ const toRepoImagePath = ({ config, publicPath }) => {
   return `${stripSlashes(config.repoImageRoot)}/${relativeImagePath}`;
 };
 
-const isGalleryImageFile = (value) => (
+const isUploadedFile = (value) => (
   value
   && typeof value.arrayBuffer === 'function'
   && typeof value.name === 'string'
 );
+
+const isGalleryImageFile = isUploadedFile;
 
 const readGalleryImageFiles = (formData) => {
   const files = [
@@ -538,6 +649,886 @@ const buildGalleryPublish = async ({ config, formData, currentIndex }) => {
       formData.get('message'),
       `Publish gallery image${newItems.length > 1 ? 's' : ''}: ${newItems.map((item) => item.name).join(', ')}`
     ).slice(0, 180)
+  };
+};
+
+const createEmptyMusicIndex = () => ({
+  schemaVersion: 1,
+  updatedAt: new Date().toISOString(),
+  albums: []
+});
+
+const readMusicIndex = async (config) => {
+  const object = await config.bucket.get(config.indexKey);
+  if (!object) return createEmptyMusicIndex();
+
+  try {
+    const parsed = JSON.parse(await object.text());
+    return {
+      schemaVersion: 1,
+      updatedAt: normalizeText(parsed?.updatedAt, new Date().toISOString()),
+      albums: Array.isArray(parsed?.albums) ? parsed.albums : []
+    };
+  } catch {
+    return createEmptyMusicIndex();
+  }
+};
+
+const buildPublicMusicUrl = (config, key) => {
+  const relativePath = `/${stripSlashes(key)}`;
+  if (!config.publicBaseUrl) return relativePath;
+  return `${config.publicBaseUrl.replace(/\/+$/, '')}${relativePath}`;
+};
+
+const extractObjectKey = (value) => {
+  const source = normalizeText(value);
+  if (!source) return '';
+  try {
+    return decodeURIComponent(new URL(source).pathname.replace(/^\/+/, ''));
+  } catch {
+    try {
+      return decodeURIComponent(source.replace(/^\/+/, ''));
+    } catch {
+      return source.replace(/^\/+/, '');
+    }
+  }
+};
+
+const collectMusicObjectKeys = (index) => {
+  const keys = new Set([DEFAULT_MUSIC_INDEX_KEY]);
+  for (const album of index?.albums || []) {
+    const albumCover = extractObjectKey(album?.cover);
+    if (albumCover) keys.add(albumCover);
+    for (const song of album?.songs || []) {
+      for (const value of [song?.src, song?.lrc, song?.cover]) {
+        const key = extractObjectKey(value);
+        if (key) keys.add(key);
+      }
+    }
+  }
+  return keys;
+};
+
+const createUniqueObjectKey = ({ root, folder, filename, usedKeys }) => {
+  const normalizedRoot = stripSlashes(root);
+  const normalizedFolder = normalizePathSegment(folder, 'album');
+  const normalizedFilename = normalizePathSegment(filename, 'file');
+  const { base, extension } = splitFilename(normalizedFilename);
+  let candidate = `${normalizedRoot}/${normalizedFolder}/${normalizedFilename}`;
+  let suffix = 2;
+  while (usedKeys.has(candidate)) {
+    candidate = `${normalizedRoot}/${normalizedFolder}/${base}-${suffix}${extension}`;
+    suffix += 1;
+  }
+  usedKeys.add(candidate);
+  return candidate;
+};
+
+const parseOptionalInteger = (value) => {
+  const text = normalizeText(value);
+  if (!text) return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.trunc(number) : undefined;
+};
+
+const getMaxTrackNumber = (songs) => (Array.isArray(songs) ? songs : [])
+  .reduce((max, song) => {
+    const trackNumber = Number(song?.trackNumber);
+    return Number.isFinite(trackNumber) && trackNumber > max ? trackNumber : max;
+  }, 0);
+
+const createUniqueSongId = ({ albumId, trackNumber, usedSongIds }) => {
+  const base = `${albumId}-${String(trackNumber).padStart(2, '0')}`;
+  let candidate = base;
+  let suffix = 2;
+  while (usedSongIds.has(candidate)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  usedSongIds.add(candidate);
+  return candidate;
+};
+
+const readMusicAudioFiles = (formData) => {
+  const files = [
+    ...formData.getAll('audios'),
+    ...formData.getAll('audio')
+  ].filter(isUploadedFile);
+  const names = formData.getAll('audioNames').map((name) => normalizeText(name));
+
+  if (files.length > MAX_MUSIC_AUDIO_FILES_PER_REQUEST) {
+    throw new Error(`单次最多发布 ${MAX_MUSIC_AUDIO_FILES_PER_REQUEST} 首歌曲`);
+  }
+
+  return files.map((file, index) => ({
+    kind: 'file',
+    file,
+    name: names[index] || file.name
+  }));
+};
+
+const readMusicLyricFiles = (formData) => {
+  const files = [
+    ...formData.getAll('lyrics'),
+    ...formData.getAll('lyric')
+  ].filter(isUploadedFile);
+  const names = formData.getAll('lyricNames').map((name) => normalizeText(name));
+  return files.map((file, index) => ({
+    file,
+    name: names[index] || file.name
+  }));
+};
+
+const readMusicSongCoverFiles = (formData) => {
+  const files = [
+    ...formData.getAll('songCovers'),
+    ...formData.getAll('songCoverImages'),
+    ...formData.getAll('songCover')
+  ].filter(isUploadedFile);
+  const names = formData.getAll('songCoverNames').map((name) => normalizeText(name));
+  return files.map((file, index) => ({
+    file,
+    name: names[index] || file.name
+  }));
+};
+
+const getLineValues = (value) => String(value || '')
+  .split(/\r?\n/)
+  .map((line) => normalizeText(line))
+  .filter(Boolean);
+
+const getLineSlots = (value) => String(value || '')
+  .split(/\r?\n/)
+  .map((line) => normalizeText(line));
+
+const isEmptyMusicSlot = (value) => {
+  const normalized = normalizeText(value).toLowerCase();
+  return !normalized || normalized === '-' || normalized === 'default' || normalized === 'album';
+};
+
+const assertHttpUrl = (value, label) => {
+  try {
+    const url = new URL(value);
+    if (url.protocol === 'http:' || url.protocol === 'https:') {
+      return url.toString();
+    }
+  } catch {
+    // handled below
+  }
+  throw new Error(`${label}不是有效的 http(s) 链接：${value}`);
+};
+
+const getFilenameFromUrl = (value, fallback = '') => {
+  try {
+    const url = new URL(value);
+    const rawName = url.pathname.split('/').filter(Boolean).pop() || fallback;
+    return decodeURIComponent(rawName);
+  } catch {
+    return fallback;
+  }
+};
+
+const readMusicAudioUrls = (formData) => getLineValues(
+  formData.get('audioUrls') || formData.get('audioUrl')
+).map((url, index) => {
+  const normalizedUrl = assertHttpUrl(url, '音频链接');
+  return {
+    kind: 'url',
+    url: normalizedUrl,
+    name: getFilenameFromUrl(normalizedUrl, `remote-${index + 1}`)
+  };
+});
+
+const readMusicLyricUrls = (formData) => getLineValues(
+  formData.get('lyricUrls') || formData.get('lyricsUrls') || formData.get('lyricUrl')
+).map((url, index) => {
+  const normalizedUrl = assertHttpUrl(url, '歌词链接');
+  return {
+    url: normalizedUrl,
+    name: getFilenameFromUrl(normalizedUrl, `remote-${index + 1}.lrc`)
+  };
+});
+
+const readMusicSongCoverUrls = (formData) => getLineSlots(
+  formData.get('songCoverUrls') || formData.get('songCoverUrl')
+).map((url, index) => {
+  if (isEmptyMusicSlot(url)) return null;
+  const normalizedUrl = assertHttpUrl(url, '单曲封面链接');
+  return {
+    url: normalizedUrl,
+    name: getFilenameFromUrl(normalizedUrl, `cover-${index + 1}.jpg`)
+  };
+});
+
+const readMusicCoverFile = (formData) => {
+  const file = formData.get('coverImage') || formData.get('cover');
+  return isUploadedFile(file) ? file : null;
+};
+
+const validateMusicAudioFile = (file, name) => {
+  const displayName = name || file.name || 'audio';
+  const extension = getExtensionFromFilename(displayName);
+  const mimeType = String(file.type || '').toLowerCase();
+  const isAllowedExtension = MUSIC_AUDIO_ALLOWED_EXTENSIONS.has(extension);
+  const isAllowedMime = !mimeType
+    || mimeType.startsWith('audio/')
+    || mimeType === 'application/octet-stream';
+
+  if (!isAllowedExtension || !isAllowedMime) {
+    throw new Error(`文件不是支持的音频格式：${displayName}`);
+  }
+  if (file.size > MAX_MUSIC_AUDIO_BYTES) {
+    throw new Error(`音频超过 ${Math.round(MAX_MUSIC_AUDIO_BYTES / 1024 / 1024)}MB：${displayName}`);
+  }
+};
+
+const validateMusicLyricFile = (file, name) => {
+  const displayName = name || file.name || 'lyric';
+  const extension = getExtensionFromFilename(displayName);
+  if (!MUSIC_LYRIC_ALLOWED_EXTENSIONS.has(extension)) {
+    throw new Error(`歌词文件仅支持 .lrc 或 .txt：${displayName}`);
+  }
+  if (file.size > MAX_MUSIC_LYRIC_BYTES) {
+    throw new Error(`歌词文件超过 ${Math.round(MAX_MUSIC_LYRIC_BYTES / 1024 / 1024)}MB：${displayName}`);
+  }
+};
+
+const getMusicSongNames = (formData) => String(formData.get('songNames') || '')
+  .split(/\r?\n/)
+  .map((line) => normalizeText(line));
+
+const buildLyricFileLookup = (lyricFiles) => {
+  const lookup = new Map();
+  for (const lyricFile of lyricFiles) {
+    const key = getFileMatchKey(lyricFile.name || lyricFile.file.name);
+    if (key && !lookup.has(key)) lookup.set(key, lyricFile);
+  }
+  return lookup;
+};
+
+const buildLyricUrlLookup = (lyricUrls) => {
+  const lookup = new Map();
+  for (const lyricUrl of lyricUrls) {
+    if (!lyricUrl) continue;
+    const key = getFileMatchKey(lyricUrl.name);
+    if (key && !lookup.has(key)) lookup.set(key, lyricUrl);
+  }
+  return lookup;
+};
+
+const buildSongCoverFileLookup = (songCoverFiles) => {
+  const lookup = new Map();
+  for (const songCoverFile of songCoverFiles) {
+    const key = getFileMatchKey(songCoverFile.name || songCoverFile.file.name);
+    if (key && !lookup.has(key)) lookup.set(key, songCoverFile);
+  }
+  return lookup;
+};
+
+const buildSongCoverUrlLookup = (songCoverUrls) => {
+  const lookup = new Map();
+  for (const songCoverUrl of songCoverUrls) {
+    if (!songCoverUrl) continue;
+    const key = getFileMatchKey(songCoverUrl.name);
+    if (key && !lookup.has(key)) lookup.set(key, songCoverUrl);
+  }
+  return lookup;
+};
+
+const buildMusicPublish = ({ config, formData, currentIndex }) => {
+  const rawAlbumId = normalizeText(formData.get('albumId') || formData.get('id'));
+  if (!rawAlbumId) throw new Error('专辑 ID 不能为空');
+
+  const albumId = normalizePathSegment(rawAlbumId, 'album');
+  const albumName = normalizeText(formData.get('albumName') || formData.get('name'));
+  const artist = normalizeText(formData.get('artist'));
+  const coverUrl = normalizeText(formData.get('coverUrl'));
+  const albumType = normalizeText(formData.get('type'));
+  const year = parseOptionalInteger(formData.get('year'));
+  const sortOrder = parseOptionalInteger(formData.get('sortOrder'));
+  const requestedStartTrackNumber = parseOptionalInteger(formData.get('startTrackNumber'));
+  const audioFiles = readMusicAudioFiles(formData);
+  const audioUrls = readMusicAudioUrls(formData);
+  const lyricFiles = readMusicLyricFiles(formData);
+  const lyricUrls = readMusicLyricUrls(formData);
+  const coverFile = readMusicCoverFile(formData);
+  const songCoverFiles = readMusicSongCoverFiles(formData);
+  const songCoverUrls = readMusicSongCoverUrls(formData);
+  const songNames = getMusicSongNames(formData);
+  const audioSources = [...audioFiles, ...audioUrls];
+  const albums = Array.isArray(currentIndex?.albums) ? currentIndex.albums : [];
+  const existingAlbumIndex = albums.findIndex((album) => String(album?.id || '') === albumId);
+  const existingAlbum = existingAlbumIndex >= 0 ? albums[existingAlbumIndex] : null;
+
+  if (audioSources.length === 0) {
+    throw new Error('请选择要发布的音频文件或填写音频链接');
+  }
+  if (audioSources.length > MAX_MUSIC_AUDIO_FILES_PER_REQUEST) {
+    throw new Error(`单次最多发布 ${MAX_MUSIC_AUDIO_FILES_PER_REQUEST} 首歌曲`);
+  }
+
+  if (!albumName && !existingAlbum) {
+    throw new Error('新专辑需要填写专辑名');
+  }
+  if (!artist && !existingAlbum) {
+    throw new Error('新专辑需要填写艺术家');
+  }
+
+  const existingSongs = Array.isArray(existingAlbum?.songs) ? existingAlbum.songs : [];
+  const firstTrackNumber = requestedStartTrackNumber && requestedStartTrackNumber > 0
+    ? requestedStartTrackNumber
+    : getMaxTrackNumber(existingSongs) + 1 || 1;
+  const albumFolder = albumName || existingAlbum?.name || albumId;
+  const usedKeys = collectMusicObjectKeys(currentIndex);
+  usedKeys.add(config.indexKey);
+  const usedSongIds = new Set();
+  for (const album of albums) {
+    for (const song of album?.songs || []) {
+      if (song?.id) usedSongIds.add(String(song.id));
+    }
+  }
+
+  const uploads = [];
+  const lyricLookup = buildLyricFileLookup(lyricFiles);
+  const lyricUrlLookup = buildLyricUrlLookup(lyricUrls);
+  const songCoverLookup = buildSongCoverFileLookup(songCoverFiles);
+  const songCoverUrlLookup = buildSongCoverUrlLookup(songCoverUrls);
+  let nextCover = coverUrl || existingAlbum?.cover || '';
+
+  if (coverFile) {
+    validateGalleryImageFile(coverFile, coverFile.name);
+    const coverFilename = sanitizeUploadFilename({
+      name: coverFile.name,
+      type: coverFile.type,
+      fallbackBase: `${albumId}.jpg`,
+      defaultExtension: '.jpg',
+      extensionFromType: getExtensionFromType
+    });
+    const coverKey = createUniqueObjectKey({
+      root: config.coverRoot,
+      folder: albumFolder,
+      filename: coverFilename,
+      usedKeys
+    });
+    nextCover = buildPublicMusicUrl(config, coverKey);
+    uploads.push({
+      key: coverKey,
+      file: coverFile,
+      contentType: normalizeText(coverFile.type, 'image/jpeg')
+    });
+  }
+
+  const newSongs = [];
+  audioSources.forEach((audioSource, index) => {
+    const trackNumber = firstTrackNumber + index;
+    let audioFilename = audioSource.name || `remote-${trackNumber}`;
+    let songSrc = audioSource.url || '';
+
+    if (audioSource.kind === 'file') {
+      validateMusicAudioFile(audioSource.file, audioSource.name || audioSource.file.name);
+      audioFilename = sanitizeUploadFilename({
+        name: audioSource.name || audioSource.file.name,
+        type: audioSource.file.type,
+        fallbackBase: `${String(trackNumber).padStart(2, '0')}.mp3`,
+        defaultExtension: '.mp3',
+        extensionFromType: getAudioExtensionFromType
+      });
+      const audioKey = createUniqueObjectKey({
+        root: config.audioRoot,
+        folder: albumFolder,
+        filename: audioFilename,
+        usedKeys
+      });
+      songSrc = buildPublicMusicUrl(config, audioKey);
+      uploads.push({
+        key: audioKey,
+        file: audioSource.file,
+        contentType: normalizeText(audioSource.file.type, 'audio/mpeg')
+      });
+    }
+
+    const fallbackSongName = stripTrackPrefix(splitFilename(audioFilename).base);
+    const songName = songNames[index] || fallbackSongName || `Track ${trackNumber}`;
+    const songId = createUniqueSongId({ albumId, trackNumber, usedSongIds });
+    const lyricFile = lyricLookup.get(getFileMatchKey(audioFilename)) || lyricFiles[index];
+    const linkedLyric = lyricUrlLookup.get(getFileMatchKey(audioFilename)) || lyricUrls[index];
+    const songCoverFile = songCoverLookup.get(getFileMatchKey(audioFilename)) || songCoverFiles[index];
+    const linkedSongCover = songCoverUrlLookup.get(getFileMatchKey(audioFilename)) || songCoverUrls[index];
+    let lyricUrl = '';
+    let songCoverUrl = '';
+
+    if (lyricFile) {
+      validateMusicLyricFile(lyricFile.file, lyricFile.name || lyricFile.file.name);
+      const lyricFilename = sanitizeUploadFilename({
+        name: lyricFile.name || lyricFile.file.name,
+        type: lyricFile.file.type,
+        fallbackBase: `${splitFilename(audioFilename).base}.lrc`,
+        defaultExtension: '.lrc'
+      });
+      const lyricKey = createUniqueObjectKey({
+        root: config.lyricRoot,
+        folder: albumFolder,
+        filename: lyricFilename,
+        usedKeys
+      });
+      lyricUrl = buildPublicMusicUrl(config, lyricKey);
+      uploads.push({
+        key: lyricKey,
+        file: lyricFile.file,
+        contentType: 'text/plain; charset=utf-8'
+      });
+    } else if (linkedLyric?.url) {
+      lyricUrl = linkedLyric.url;
+    }
+
+    if (songCoverFile) {
+      validateGalleryImageFile(songCoverFile.file, songCoverFile.name || songCoverFile.file.name);
+      const songCoverFilename = sanitizeUploadFilename({
+        name: songCoverFile.name || songCoverFile.file.name,
+        type: songCoverFile.file.type,
+        fallbackBase: `${splitFilename(audioFilename).base}.jpg`,
+        defaultExtension: '.jpg',
+        extensionFromType: getExtensionFromType
+      });
+      const songCoverKey = createUniqueObjectKey({
+        root: config.coverRoot,
+        folder: albumFolder,
+        filename: songCoverFilename,
+        usedKeys
+      });
+      songCoverUrl = buildPublicMusicUrl(config, songCoverKey);
+      uploads.push({
+        key: songCoverKey,
+        file: songCoverFile.file,
+        contentType: normalizeText(songCoverFile.file.type, 'image/jpeg')
+      });
+    } else if (linkedSongCover?.url) {
+      songCoverUrl = linkedSongCover.url;
+    }
+
+    newSongs.push({
+      id: songId,
+      trackNumber,
+      name: songName,
+      src: songSrc,
+      lrc: lyricUrl,
+      cover: songCoverUrl,
+      enabled: true
+    });
+  });
+
+  const nextAlbum = {
+    id: albumId,
+    name: albumName || existingAlbum?.name || albumId,
+    artist: artist || existingAlbum?.artist || '',
+    cover: nextCover,
+    ...(year ? { year } : Number.isFinite(Number(existingAlbum?.year)) ? { year: Number(existingAlbum.year) } : {}),
+    ...(albumType ? { type: albumType } : existingAlbum?.type ? { type: String(existingAlbum.type) } : {}),
+    ...(Number.isFinite(sortOrder)
+      ? { sortOrder }
+      : Number.isFinite(Number(existingAlbum?.sortOrder))
+        ? { sortOrder: Number(existingAlbum.sortOrder) }
+        : { sortOrder: (albums.length + 1) * 10 }),
+    enabled: existingAlbum?.enabled === false ? false : true,
+    songs: [
+      ...existingSongs,
+      ...newSongs
+    ]
+  };
+
+  const nextAlbums = existingAlbumIndex >= 0
+    ? albums.map((album, index) => (index === existingAlbumIndex ? nextAlbum : album))
+    : [...albums, nextAlbum];
+  const now = new Date().toISOString();
+  const nextIndex = {
+    schemaVersion: 1,
+    updatedAt: now,
+    albums: nextAlbums
+  };
+
+  return {
+    uploads,
+    newSongs,
+    nextAlbum,
+    nextIndex
+  };
+};
+
+const publishMusicToR2 = async ({ config, publish }) => {
+  for (const upload of publish.uploads) {
+    await config.bucket.put(upload.key, await upload.file.arrayBuffer(), {
+      httpMetadata: {
+        contentType: upload.contentType,
+        cacheControl: 'public, max-age=31536000, immutable'
+      }
+    });
+  }
+
+  await config.bucket.put(config.indexKey, `${JSON.stringify(publish.nextIndex, null, 2)}\n`, {
+    httpMetadata: {
+      contentType: 'application/json; charset=utf-8',
+      cacheControl: 'public, max-age=60'
+    }
+  });
+
+  return {
+    key: config.indexKey,
+    url: buildPublicMusicUrl(config, config.indexKey)
+  };
+};
+
+const createEmptyVideoIndex = () => ({
+  schemaVersion: 1,
+  updatedAt: new Date().toISOString(),
+  categories: []
+});
+
+const readVideoIndex = async (config) => {
+  const object = await config.bucket.get(config.indexKey);
+  if (!object) return createEmptyVideoIndex();
+
+  try {
+    const parsed = JSON.parse(await object.text());
+    return {
+      schemaVersion: 1,
+      updatedAt: normalizeText(parsed?.updatedAt, new Date().toISOString()),
+      categories: Array.isArray(parsed?.categories) ? parsed.categories : []
+    };
+  } catch {
+    return createEmptyVideoIndex();
+  }
+};
+
+const buildPublicVideoIndexUrl = (config) => {
+  const relativePath = `/${stripSlashes(config.indexKey)}`;
+  if (!config.publicBaseUrl) return relativePath;
+  return `${config.publicBaseUrl.replace(/\/+$/, '')}${relativePath}`;
+};
+
+const getMaxSortOrder = (items) => (Array.isArray(items) ? items : [])
+  .reduce((max, item) => {
+    const sortOrder = Number(item?.sortOrder);
+    return Number.isFinite(sortOrder) && sortOrder > max ? sortOrder : max;
+  }, 0);
+
+const collectVideoItemIds = (items, ids = new Set()) => {
+  for (const item of items || []) {
+    if (item?.id) ids.add(String(item.id));
+    if (Array.isArray(item?.items)) collectVideoItemIds(item.items, ids);
+  }
+  return ids;
+};
+
+const createUniqueVideoItemId = ({ categoryId, title, index, usedIds }) => {
+  const fallbackBase = normalizePathSegment(title, `video-${index + 1}`).toLowerCase();
+  const base = `${categoryId}-${fallbackBase || `video-${index + 1}`}`;
+  let candidate = base;
+  let suffix = 2;
+  while (usedIds.has(candidate)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  usedIds.add(candidate);
+  return candidate;
+};
+
+const getIndexedLineValue = (values, index) => {
+  if (values[index]) return values[index];
+  return values.length === 1 ? values[0] : '';
+};
+
+const inferVideoTitleFromUrl = (value, fallback) => {
+  const filename = getFilenameFromUrl(value, fallback);
+  const base = stripTrackPrefix(splitFilename(filename).base);
+  return base || fallback;
+};
+
+const createVideoItemsFromForm = ({ formData, categoryId, targetItems }) => {
+  const videoUrls = getLineValues(formData.get('videoUrls') || formData.get('url'))
+    .map((url) => assertHttpUrl(url, '视频链接'));
+  if (videoUrls.length === 0) {
+    throw new Error('请填写视频链接');
+  }
+
+  const titles = getLineValues(formData.get('videoTitles') || formData.get('title'));
+  const ids = getLineValues(formData.get('videoIds') || formData.get('id'));
+  const backupUrls = getLineValues(formData.get('backupUrls') || formData.get('backupUrl'))
+    .map((url) => assertHttpUrl(url, '备用链接'));
+  const thumbUrls = getLineValues(formData.get('thumbUrls') || formData.get('thumbUrl'))
+    .map((url) => assertHttpUrl(url, '封面链接'));
+  const requestedStartSortOrder = parseOptionalInteger(formData.get('startSortOrder'));
+  const firstSortOrder = Number.isFinite(requestedStartSortOrder)
+    ? requestedStartSortOrder
+    : getMaxSortOrder(targetItems) + 10;
+  const usedIds = collectVideoItemIds(targetItems);
+
+  return videoUrls.map((url, index) => {
+    const title = titles[index] || inferVideoTitleFromUrl(url, `视频 ${index + 1}`);
+    const itemId = ids[index] || createUniqueVideoItemId({
+      categoryId,
+      title,
+      index,
+      usedIds
+    });
+    if (ids[index]) usedIds.add(ids[index]);
+
+    return {
+      type: 'video',
+      id: itemId,
+      title,
+      url,
+      backupUrl: getIndexedLineValue(backupUrls, index),
+      thumb: getIndexedLineValue(thumbUrls, index),
+      sortOrder: firstSortOrder + index * 10,
+      enabled: true
+    };
+  });
+};
+
+const buildVideoPublish = ({ config, formData, currentIndex }) => {
+  const categoryId = normalizeText(formData.get('categoryId'));
+  if (!categoryId) throw new Error('分类 ID 不能为空');
+
+  const categoryName = normalizeText(formData.get('categoryName'));
+  const categoryIcon = normalizeText(formData.get('categoryIcon'), 'video');
+  const categorySortOrder = parseOptionalInteger(formData.get('categorySortOrder'));
+  const folderId = normalizeText(formData.get('folderId'));
+  const folderTitle = normalizeText(formData.get('folderTitle'));
+  const folderThumb = normalizeText(formData.get('folderThumb'));
+  const folderSortOrder = parseOptionalInteger(formData.get('folderSortOrder'));
+  const categories = Array.isArray(currentIndex?.categories) ? currentIndex.categories : [];
+  const existingCategoryIndex = categories.findIndex((category) => String(category?.id || '') === categoryId);
+  const existingCategory = existingCategoryIndex >= 0 ? categories[existingCategoryIndex] : null;
+
+  if (!categoryName && !existingCategory) {
+    throw new Error('新分类需要填写分类名称');
+  }
+
+  const existingCategoryItems = Array.isArray(existingCategory?.items) ? existingCategory.items : [];
+  let targetItems = existingCategoryItems;
+  let nextCategoryItems = existingCategoryItems;
+  let nextFolder = null;
+
+  if (folderId || folderTitle) {
+    const safeFolderId = folderId || normalizePathSegment(folderTitle, 'folder');
+    const existingFolderIndex = existingCategoryItems.findIndex((item) => (
+      String(item?.id || '') === safeFolderId && (item?.type === 'folder' || Array.isArray(item?.items))
+    ));
+    const existingFolder = existingFolderIndex >= 0 ? existingCategoryItems[existingFolderIndex] : null;
+    targetItems = Array.isArray(existingFolder?.items) ? existingFolder.items : [];
+    const newItems = createVideoItemsFromForm({ formData, categoryId, targetItems });
+    nextFolder = {
+      type: 'folder',
+      id: safeFolderId,
+      title: folderTitle || existingFolder?.title || safeFolderId,
+      thumb: folderThumb || existingFolder?.thumb || '',
+      ...(Number.isFinite(folderSortOrder)
+        ? { sortOrder: folderSortOrder }
+        : Number.isFinite(Number(existingFolder?.sortOrder))
+          ? { sortOrder: Number(existingFolder.sortOrder) }
+          : { sortOrder: getMaxSortOrder(existingCategoryItems) + 10 }),
+      enabled: existingFolder?.enabled === false ? false : true,
+      items: [...targetItems, ...newItems]
+    };
+    nextCategoryItems = existingFolderIndex >= 0
+      ? existingCategoryItems.map((item, index) => (index === existingFolderIndex ? nextFolder : item))
+      : [...existingCategoryItems, nextFolder];
+  }
+
+  const newItems = nextFolder
+    ? nextFolder.items.slice(targetItems.length)
+    : createVideoItemsFromForm({ formData, categoryId, targetItems });
+  if (!nextFolder) {
+    nextCategoryItems = [...existingCategoryItems, ...newItems];
+  }
+
+  const nextCategory = {
+    id: categoryId,
+    name: categoryName || existingCategory?.name || categoryId,
+    icon: categoryIcon || existingCategory?.icon || 'video',
+    ...(Number.isFinite(categorySortOrder)
+      ? { sortOrder: categorySortOrder }
+      : Number.isFinite(Number(existingCategory?.sortOrder))
+        ? { sortOrder: Number(existingCategory.sortOrder) }
+        : { sortOrder: (categories.length + 1) * 10 }),
+    enabled: existingCategory?.enabled === false ? false : true,
+    items: nextCategoryItems
+  };
+
+  const nextCategories = existingCategoryIndex >= 0
+    ? categories.map((category, index) => (index === existingCategoryIndex ? nextCategory : category))
+    : [...categories, nextCategory];
+  const nextIndex = {
+    schemaVersion: 1,
+    updatedAt: new Date().toISOString(),
+    categories: nextCategories
+  };
+
+  return {
+    newItems,
+    nextCategory,
+    nextIndex,
+    manifestKey: config.indexKey
+  };
+};
+
+const publishVideoToR2 = async ({ config, publish }) => {
+  await config.bucket.put(config.indexKey, `${JSON.stringify(publish.nextIndex, null, 2)}\n`, {
+    httpMetadata: {
+      contentType: 'application/json; charset=utf-8',
+      cacheControl: 'public, max-age=60'
+    }
+  });
+
+  return {
+    key: config.indexKey,
+    url: buildPublicVideoIndexUrl(config)
+  };
+};
+
+const createEmptyDownloadIndex = () => ({
+  schemaVersion: 1,
+  updatedAt: new Date().toISOString(),
+  sections: []
+});
+
+const readDownloadIndex = async (config) => {
+  const object = await config.bucket.get(config.indexKey);
+  if (!object) return createEmptyDownloadIndex();
+
+  try {
+    const parsed = JSON.parse(await object.text());
+    return {
+      schemaVersion: 1,
+      updatedAt: normalizeText(parsed?.updatedAt, new Date().toISOString()),
+      sections: Array.isArray(parsed?.sections) ? parsed.sections : []
+    };
+  } catch {
+    return createEmptyDownloadIndex();
+  }
+};
+
+const buildPublicDownloadIndexUrl = (config) => {
+  const relativePath = `/${stripSlashes(config.indexKey)}`;
+  if (!config.publicBaseUrl) return relativePath;
+  return `${config.publicBaseUrl.replace(/\/+$/, '')}${relativePath}`;
+};
+
+const inferDownloadTitleFromUrl = (value, fallback) => {
+  const filename = getFilenameFromUrl(value, fallback);
+  const base = stripTrackPrefix(splitFilename(filename).base);
+  return base || fallback;
+};
+
+const createDownloadItemsFromForm = ({ formData, targetItems }) => {
+  const itemUrls = getLineValues(formData.get('itemUrls') || formData.get('downloadUrls') || formData.get('url'))
+    .map((url) => assertHttpUrl(url, '下载链接'));
+  if (itemUrls.length === 0) {
+    throw new Error('请填写下载链接');
+  }
+
+  const titles = getLineSlots(formData.get('itemTitles') || formData.get('titles') || formData.get('title'));
+  const filenames = getLineSlots(formData.get('filenames') || formData.get('filename'));
+  const previewUrls = getLineSlots(formData.get('previewUrls') || formData.get('previewUrl'));
+  const requestedStartSortOrder = parseOptionalInteger(formData.get('startSortOrder'));
+  const firstSortOrder = Number.isFinite(requestedStartSortOrder)
+    ? requestedStartSortOrder
+    : getMaxSortOrder(targetItems) + 10;
+
+  return itemUrls.map((url, index) => {
+    const filename = isEmptyMusicSlot(filenames[index])
+      ? getFilenameFromUrl(url, `download-${index + 1}`)
+      : filenames[index];
+    const previewUrl = isEmptyMusicSlot(previewUrls[index])
+      ? ''
+      : assertHttpUrl(previewUrls[index], '预览链接');
+
+    return {
+      title: titles[index] || inferDownloadTitleFromUrl(url, `下载 ${index + 1}`),
+      url,
+      filename,
+      ...(previewUrl ? { previewUrl } : {}),
+      sortOrder: firstSortOrder + index * 10,
+      enabled: true
+    };
+  });
+};
+
+const buildDownloadPublish = ({ config, formData, currentIndex }) => {
+  const sectionTitle = normalizeText(formData.get('sectionTitle'));
+  if (!sectionTitle) throw new Error('下载栏目不能为空');
+
+  const groupTitle = normalizeText(formData.get('groupTitle'));
+  if (!groupTitle) throw new Error('下载分组不能为空');
+
+  const sectionSortOrder = parseOptionalInteger(formData.get('sectionSortOrder'));
+  const groupSortOrder = parseOptionalInteger(formData.get('groupSortOrder'));
+  const sections = Array.isArray(currentIndex?.sections) ? currentIndex.sections : [];
+  const existingSectionIndex = sections.findIndex((section) => String(section?.title || '') === sectionTitle);
+  const existingSection = existingSectionIndex >= 0 ? sections[existingSectionIndex] : null;
+  const existingGroups = Array.isArray(existingSection?.groups) ? existingSection.groups : [];
+  const existingGroupIndex = existingGroups.findIndex((group) => String(group?.title || '') === groupTitle);
+  const existingGroup = existingGroupIndex >= 0 ? existingGroups[existingGroupIndex] : null;
+  const existingItems = Array.isArray(existingGroup?.items) ? existingGroup.items : [];
+  const newItems = createDownloadItemsFromForm({ formData, targetItems: existingItems });
+
+  const nextGroup = {
+    ...(existingGroup || {}),
+    title: groupTitle,
+    ...(Number.isFinite(groupSortOrder)
+      ? { sortOrder: groupSortOrder }
+      : Number.isFinite(Number(existingGroup?.sortOrder))
+        ? { sortOrder: Number(existingGroup.sortOrder) }
+        : { sortOrder: getMaxSortOrder(existingGroups) + 10 }),
+    enabled: existingGroup?.enabled === false ? false : true,
+    items: [...existingItems, ...newItems]
+  };
+
+  const nextGroups = existingGroupIndex >= 0
+    ? existingGroups.map((group, index) => (index === existingGroupIndex ? nextGroup : group))
+    : [...existingGroups, nextGroup];
+
+  const nextSection = {
+    ...(existingSection || {}),
+    title: sectionTitle,
+    ...(Number.isFinite(sectionSortOrder)
+      ? { sortOrder: sectionSortOrder }
+      : Number.isFinite(Number(existingSection?.sortOrder))
+        ? { sortOrder: Number(existingSection.sortOrder) }
+        : { sortOrder: (sections.length + 1) * 10 }),
+    enabled: existingSection?.enabled === false ? false : true,
+    groups: nextGroups
+  };
+
+  const nextSections = existingSectionIndex >= 0
+    ? sections.map((section, index) => (index === existingSectionIndex ? nextSection : section))
+    : [...sections, nextSection];
+  const nextIndex = {
+    schemaVersion: 1,
+    updatedAt: new Date().toISOString(),
+    sections: nextSections
+  };
+
+  return {
+    newItems,
+    nextSection,
+    nextGroup,
+    nextIndex,
+    manifestKey: config.indexKey
+  };
+};
+
+const publishDownloadToR2 = async ({ config, publish }) => {
+  await config.bucket.put(config.indexKey, `${JSON.stringify(publish.nextIndex, null, 2)}\n`, {
+    httpMetadata: {
+      contentType: 'application/json; charset=utf-8',
+      cacheControl: 'public, max-age=60'
+    }
+  });
+
+  return {
+    key: config.indexKey,
+    url: buildPublicDownloadIndexUrl(config)
   };
 };
 
@@ -664,6 +1655,127 @@ const handleGalleryPublish = async (request, env) => {
   });
 };
 
+const handleMusicGet = async (request, env) => {
+  const config = getMusicConfig(env);
+  validateMusicConfig(config);
+  return jsonResponse(request, env, {
+    music: await readMusicIndex(config),
+    indexKey: config.indexKey
+  });
+};
+
+const handleMusicPublish = async (request, env) => {
+  const config = getMusicConfig(env);
+  validateMusicConfig(config);
+
+  let formData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return errorResponse(request, env, 400, '请求表单无效');
+  }
+
+  let publish;
+  try {
+    publish = buildMusicPublish({
+      config,
+      formData,
+      currentIndex: await readMusicIndex(config)
+    });
+  } catch (error) {
+    return errorResponse(request, env, 400, error.message);
+  }
+
+  const manifestTarget = await publishMusicToR2({ config, publish });
+  return jsonResponse(request, env, {
+    ok: true,
+    album: publish.nextAlbum,
+    songs: publish.newSongs,
+    manifestTarget
+  });
+};
+
+const handleVideoGet = async (request, env) => {
+  const config = getVideoConfig(env);
+  validateVideoConfig(config);
+  return jsonResponse(request, env, {
+    video: await readVideoIndex(config),
+    indexKey: config.indexKey
+  });
+};
+
+const handleVideoPublish = async (request, env) => {
+  const config = getVideoConfig(env);
+  validateVideoConfig(config);
+
+  let formData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return errorResponse(request, env, 400, '请求表单无效');
+  }
+
+  let publish;
+  try {
+    publish = buildVideoPublish({
+      config,
+      formData,
+      currentIndex: await readVideoIndex(config)
+    });
+  } catch (error) {
+    return errorResponse(request, env, 400, error.message);
+  }
+
+  const manifestTarget = await publishVideoToR2({ config, publish });
+  return jsonResponse(request, env, {
+    ok: true,
+    category: publish.nextCategory,
+    items: publish.newItems,
+    manifestTarget
+  });
+};
+
+const handleDownloadGet = async (request, env) => {
+  const config = getDownloadConfig(env);
+  validateDownloadConfig(config);
+  return jsonResponse(request, env, {
+    download: await readDownloadIndex(config),
+    indexKey: config.indexKey
+  });
+};
+
+const handleDownloadPublish = async (request, env) => {
+  const config = getDownloadConfig(env);
+  validateDownloadConfig(config);
+
+  let formData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return errorResponse(request, env, 400, '请求表单无效');
+  }
+
+  let publish;
+  try {
+    publish = buildDownloadPublish({
+      config,
+      formData,
+      currentIndex: await readDownloadIndex(config)
+    });
+  } catch (error) {
+    return errorResponse(request, env, 400, error.message);
+  }
+
+  const manifestTarget = await publishDownloadToR2({ config, publish });
+  return jsonResponse(request, env, {
+    ok: true,
+    section: publish.nextSection,
+    group: publish.nextGroup,
+    items: publish.newItems,
+    manifestTarget
+  });
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -738,6 +1850,78 @@ export default {
         return await handleGalleryPublish(request, env);
       } catch (error) {
         return errorResponse(request, env, error.status || 500, error.message || '图库发布失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/music' && request.method === 'GET') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleMusicGet(request, env);
+      } catch (error) {
+        return errorResponse(request, env, 500, error.message || '音乐清单读取失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/music' && request.method === 'POST') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleMusicPublish(request, env);
+      } catch (error) {
+        return errorResponse(request, env, error.status || 500, error.message || '音乐发布失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/video' && request.method === 'GET') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleVideoGet(request, env);
+      } catch (error) {
+        return errorResponse(request, env, 500, error.message || '视频清单读取失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/video' && request.method === 'POST') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleVideoPublish(request, env);
+      } catch (error) {
+        return errorResponse(request, env, error.status || 500, error.message || '视频发布失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/download' && request.method === 'GET') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleDownloadGet(request, env);
+      } catch (error) {
+        return errorResponse(request, env, 500, error.message || '下载清单读取失败');
+      }
+    }
+
+    if (url.pathname === '/api/admin/download' && request.method === 'POST') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      try {
+        return await handleDownloadPublish(request, env);
+      } catch (error) {
+        return errorResponse(request, env, error.status || 500, error.message || '下载发布失败');
       }
     }
 

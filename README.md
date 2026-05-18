@@ -99,6 +99,76 @@ GALLERY_PUBLIC_BASE_URL = "https://imgs.1701701.xyz"
 
 GitHub token 只需要能写目标图床仓库内容。图片不会长期存放在 Worker；Worker 只在请求期间临时读取文件并提交到 GitHub。
 
+### 音乐后台
+
+音乐后台发布链路：
+
+1. `/admin` 选择“音乐”，填写专辑信息，可上传音频、歌词、专辑封面和单曲封面，也可直接粘贴外链。
+2. 前端把上传文件和外链发给 Worker，不接触 R2 凭据。
+3. Worker 校验 `ADMIN_TOKEN` 后，把上传的歌曲写入 `mp3/专辑名/文件名.mp3`，歌词写入 `lrc/专辑名/文件名.lrc`，封面写入 `img/music/专辑名/文件名.jpg`，并同步更新 `json/music-index.json`。单曲封面不填时，播放器会使用专辑封面。
+4. 主站曲库继续读取 `https://r2.1701701.xyz/json/music-index.json`。
+
+Worker 需要绑定音乐 R2 bucket：
+
+```toml
+[[r2_buckets]]
+binding = "MUSIC_PUBLIC_BUCKET"
+bucket_name = "minyaoclub"
+preview_bucket_name = "minyaoclub"
+```
+
+`workers/announcement-admin/wrangler.toml` 或 Cloudflare Worker 变量：
+
+```toml
+MUSIC_INDEX_KEY = "json/music-index.json"
+MUSIC_AUDIO_ROOT = "mp3"
+MUSIC_LRC_ROOT = "lrc"
+MUSIC_COVER_ROOT = "img/music"
+MUSIC_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
+```
+
+### 视频后台
+
+视频后台只发布链接，不上传视频文件：
+
+1. `/admin` 选择“视频”，填写分类、可选文件夹、视频链接、封面和备用链接。
+2. 前端把表单发给 Worker，不接触 R2 凭据。
+3. Worker 校验 `ADMIN_TOKEN` 后，更新 R2 里的 `json/video-index.json`。
+4. 主站视频页继续读取 `https://r2.1701701.xyz/json/video-index.json`。
+
+Worker 需要绑定视频 JSON 所在的 R2 bucket，可与音乐使用同一个 `minyaoclub` bucket：
+
+```toml
+[[r2_buckets]]
+binding = "VIDEO_PUBLIC_BUCKET"
+bucket_name = "minyaoclub"
+preview_bucket_name = "minyaoclub"
+
+VIDEO_INDEX_KEY = "json/video-index.json"
+VIDEO_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
+```
+
+### 下载后台
+
+下载后台只发布链接，不上传文件：
+
+1. `/admin` 选择“下载”，选择或新建栏目、分组。
+2. 每行粘贴一个下载链接，可选填写显示标题、下载文件名和预览链接。
+3. Worker 校验 `ADMIN_TOKEN` 后，更新 R2 里的 `json/download-index.json`。
+4. 主站下载页继续读取 `https://r2.1701701.xyz/json/download-index.json`。
+
+Worker 需要绑定下载 JSON 所在的 R2 bucket，可与音乐、视频使用同一个 `minyaoclub` bucket：
+
+```toml
+[[r2_buckets]]
+binding = "DOWNLOAD_PUBLIC_BUCKET"
+bucket_name = "minyaoclub"
+preview_bucket_name = "minyaoclub"
+
+DOWNLOAD_INDEX_KEY = "json/download-index.json"
+DOWNLOAD_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
+```
+
 ## 公告弹窗
 
 站点已支持“远程公告 JSON + 全局弹窗 + 本地已读”模式。

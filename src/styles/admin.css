@@ -129,6 +129,10 @@
   gap: 7px;
 }
 
+.admin-field-full {
+  grid-column: 1 / -1;
+}
+
 .admin-field span,
 .admin-toggle span {
   color: var(--text-secondary);
@@ -153,6 +157,14 @@
   resize: vertical;
   min-height: 160px;
   line-height: 1.65;
+}
+
+.admin-field textarea.admin-textarea-compact {
+  min-height: 104px;
+}
+
+.admin-field textarea.admin-textarea-primary {
+  min-height: 132px;
 }
 
 .admin-field input:focus,
@@ -266,6 +278,34 @@
 .admin-category-option.is-active {
   background: color-mix(in srgb, var(--main-color) 18%, transparent);
   color: var(--text-main);
+}
+
+.admin-details {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-color) 64%, transparent);
+}
+
+.admin-details summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-details[open] summary {
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.admin-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
 }
 
 .admin-file-field input {
