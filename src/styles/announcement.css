@@ -151,6 +151,18 @@
     0 0 0 6px color-mix(in srgb, #f05d4f 14%, transparent);
 }
 
+@media (max-width: 1024px) {
+  .announcement-trigger {
+    top: auto;
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+    bottom: calc(var(--mobile-player-safe-bottom) + var(--mobile-player-float-offset) + 126px);
+  }
+
+  .app-root.no-player .announcement-trigger {
+    bottom: calc(var(--mobile-layout-safe-bottom) + 64px);
+  }
+}
+
 @media (max-width: 600px) {
   .announcement-modal {
     padding: 16px;
@@ -176,14 +188,7 @@
   }
 
   .announcement-trigger {
-    top: auto;
-    right: calc(env(safe-area-inset-right, 0px) + 12px);
-    bottom: calc(var(--mobile-player-safe-bottom) + var(--mobile-player-float-offset) + 126px);
     width: 40px;
     height: 40px;
-  }
-
-  .app-root.no-player .announcement-trigger {
-    bottom: calc(var(--mobile-layout-safe-bottom) + 64px);
   }
 }
