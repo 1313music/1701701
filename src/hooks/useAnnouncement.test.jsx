@@ -10,8 +10,10 @@ const AnnouncementHarness = ({ pollIntervalMs = 1000 }) => {
   const {
     announcement,
     isAnnouncementOpen,
+    isAnnouncementUnread,
     isLoadingAnnouncement,
-    dismissAnnouncement
+    dismissAnnouncement,
+    openAnnouncement
   } = useAnnouncement({ pollIntervalMs });
 
   return (
@@ -19,7 +21,9 @@ const AnnouncementHarness = ({ pollIntervalMs = 1000 }) => {
       <div data-testid="loading">{isLoadingAnnouncement ? 'loading' : 'ready'}</div>
       <div data-testid="announcement-id">{announcement?.id || 'none'}</div>
       <div data-testid="announcement-open">{isAnnouncementOpen ? 'open' : 'closed'}</div>
+      <div data-testid="announcement-unread">{isAnnouncementUnread ? 'unread' : 'read'}</div>
       <button type="button" onClick={dismissAnnouncement}>dismiss</button>
+      <button type="button" onClick={openAnnouncement}>open announcement</button>
     </div>
   );
 };
@@ -64,6 +68,10 @@ describe('useAnnouncement', () => {
 
     expect(window.localStorage.getItem(ANNOUNCEMENT_READ_KEY)).toBe('announcement-1');
     expect(screen.getByTestId('announcement-open')).toHaveTextContent('closed');
+    expect(screen.getByTestId('announcement-unread')).toHaveTextContent('read');
+
+    fireEvent.click(screen.getByRole('button', { name: 'open announcement' }));
+    expect(screen.getByTestId('announcement-open')).toHaveTextContent('open');
   });
 
   it('reopens when polling discovers a newer announcement id', async () => {

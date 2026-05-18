@@ -29,6 +29,7 @@ export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = 
   const [announcement, setAnnouncement] = useState(null);
   const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false);
   const [isLoadingAnnouncement, setIsLoadingAnnouncement] = useState(true);
+  const [dismissedAnnouncementId, setDismissedAnnouncementId] = useState(readDismissedAnnouncementId);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +48,7 @@ export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = 
         }
 
         const lastReadId = readDismissedAnnouncementId();
+        setDismissedAnnouncementId(lastReadId);
         if (lastReadId === nextAnnouncement.id) {
           setIsAnnouncementOpen(false);
           return;
@@ -86,14 +88,31 @@ export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = 
   const dismissAnnouncement = () => {
     if (announcement?.id) {
       persistDismissedAnnouncementId(announcement.id);
+      setDismissedAnnouncementId(announcement.id);
     }
     setIsAnnouncementOpen(false);
   };
 
+  const openAnnouncement = () => {
+    if (isAnnouncementActive(announcement)) {
+      setIsAnnouncementOpen(true);
+    }
+  };
+
+  const hasActiveAnnouncement = isAnnouncementActive(announcement);
+  const isAnnouncementUnread = Boolean(
+    hasActiveAnnouncement
+    && announcement?.id
+    && dismissedAnnouncementId !== announcement.id
+  );
+
   return {
     announcement,
+    hasActiveAnnouncement,
     isAnnouncementOpen,
+    isAnnouncementUnread,
     isLoadingAnnouncement,
-    dismissAnnouncement
+    dismissAnnouncement,
+    openAnnouncement
   };
 };

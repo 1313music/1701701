@@ -11,6 +11,6 @@ binding = "ANNOUNCEMENT_PUBLIC_BUCKET"
 bucket_name = "1701701-announcements"
 
 [vars]
-ALLOWED_ORIGIN = "https://1701701.xyz,https://1701701.pages.dev,http://localhost:8080"
+ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,http://localhost:8080"
 PUBLIC_OBJECT_KEY = "announcement.json"
 PUBLIC_ANNOUNCEMENT_BASE_URL = "https://notice.1701701.xyz"

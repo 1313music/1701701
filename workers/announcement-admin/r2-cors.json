@@ -4,6 +4,7 @@
       "allowed": {
         "origins": [
           "https://1701701.xyz",
+          "https://www.1701701.xyz",
           "https://1701701.pages.dev",
           "http://localhost:8080"
         ],

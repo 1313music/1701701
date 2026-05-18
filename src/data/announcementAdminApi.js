@@ -24,16 +24,22 @@ export const publishAnnouncement = async ({ announcement, token, signal } = {}) 
     throw new Error('请输入管理员口令');
   }
 
-  const response = await fetch(endpoint, {
-    method: 'PUT',
-    cache: 'no-store',
-    signal,
-    headers: {
-      Authorization: `Bearer ${normalizedToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ announcement })
-  });
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'PUT',
+      cache: 'no-store',
+      signal,
+      headers: {
+        Authorization: `Bearer ${normalizedToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ announcement })
+    });
+  } catch (error) {
+    const reason = error?.message ? `：${error.message}` : '';
+    throw new Error(`无法连接公告后台${reason}。请确认当前网址已加入后台允许列表，或稍后重试。`);
+  }
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response, `公告保存失败（HTTP ${response.status}）`));
