@@ -1345,8 +1345,8 @@
 
   .mobile-theme-switch {
     width: 100%;
-    min-height: 72px;
-    padding: 18px 20px;
+    min-height: 56px;
+    padding: 12px 20px;
     border-top: 1px solid var(--glass-border);
     background: color-mix(in srgb, var(--hover-bg) 54%, transparent);
     color: var(--text-main);
@@ -1359,6 +1359,14 @@
 
   .mobile-theme-switch:active {
     background: color-mix(in srgb, var(--hover-bg) 84%, transparent);
+  }
+
+  [data-theme='dark'] .mobile-theme-switch {
+    background: transparent;
+  }
+
+  [data-theme='dark'] .mobile-theme-switch:active {
+    background: color-mix(in srgb, var(--hover-bg) 42%, transparent);
   }
 
   .mobile-theme-switch-track {
