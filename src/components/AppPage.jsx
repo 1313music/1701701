@@ -37,6 +37,14 @@ const appPackages = [
   }
 ];
 
+const getPackageAnalyticsAttributes = (pkg, action) => ({
+  'data-umami-event': 'app_download_click',
+  'data-umami-event-platform': pkg.key,
+  'data-umami-event-title': pkg.title,
+  'data-umami-event-filename': pkg.filename,
+  'data-umami-event-action': action
+});
+
 const isValidPackageResponse = (response) => {
   if (!response?.ok) return false;
   const contentType = (response.headers.get('content-type') || '').toLowerCase();
@@ -153,6 +161,7 @@ const AppPage = ({ onCopyPageLink }) => {
                   className="app-download-btn"
                   href={pkg.href}
                   download={pkg.filename}
+                  {...getPackageAnalyticsAttributes(pkg, 'download')}
                 >
                   立即下载
                 </a>
@@ -162,6 +171,7 @@ const AppPage = ({ onCopyPageLink }) => {
                   href={pkg.href}
                   target="_blank"
                   rel="noreferrer"
+                  {...getPackageAnalyticsAttributes(pkg, 'open_link')}
                 >
                   打开下载链接
                 </a>

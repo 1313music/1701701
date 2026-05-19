@@ -21,6 +21,15 @@ describe('AppPage', () => {
       expect(screen.getAllByRole('link', { name: '打开下载链接' })).toHaveLength(3);
     });
 
+    const openLinks = screen.getAllByRole('link', { name: '打开下载链接' });
+    expect(openLinks[0]).toHaveAttribute(
+      'data-umami-event',
+      'app_download_click'
+    );
+    expect(openLinks[0]).toHaveAttribute(
+      'data-umami-event-action',
+      'open_link'
+    );
     expect(screen.queryByRole('link', { name: '立即下载' })).not.toBeInTheDocument();
     expect(screen.getAllByText('无法自动校验，已提供直链')).toHaveLength(3);
   });
@@ -38,5 +47,11 @@ describe('AppPage', () => {
     await waitFor(() => {
       expect(screen.getAllByRole('link', { name: '立即下载' })).toHaveLength(3);
     });
+
+    const downloadLinks = screen.getAllByRole('link', { name: '立即下载' });
+    expect(downloadLinks[0]).toHaveAttribute('data-umami-event', 'app_download_click');
+    expect(downloadLinks[0]).toHaveAttribute('data-umami-event-platform', 'mac');
+    expect(downloadLinks[0]).toHaveAttribute('data-umami-event-filename', '1701701.dmg');
+    expect(downloadLinks[0]).toHaveAttribute('data-umami-event-action', 'download');
   });
 });

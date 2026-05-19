@@ -33,6 +33,18 @@ npm run check
 
 说明：项目使用单页应用路由，Cloudflare Pages 通过 `public/_redirects` 将这些路径统一回退到首页入口。
 
+## 访问统计（Umami）
+
+主站通过 Umami 统计访问，统计服务单独部署在 `tongji.1701701.xyz`。
+
+前端统计代码直接写在 `index.html`：
+
+```html
+<script defer src="https://tongji.1701701.xyz/script.js" data-website-id="620f8452-9530-409a-9fa5-909ea0297d88" data-host-url="https://tongji.1701701.xyz" data-domains="1701701.xyz"></script>
+```
+
+说明：访问主站不会再额外请求 `https://r2.1701701.xyz/json/umami-config.json`。如需更换 Umami 站点或 Website ID，修改 `index.html` 后重新部署主站。Netlify 部署清单见 `docs/umami-netlify.md`。
+
 ## 视频访问口令（后台可轮换）
 
 视频访问口令优先读取 R2 JSON：
