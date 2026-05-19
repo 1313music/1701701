@@ -154,4 +154,31 @@ describe('useAnnouncement', () => {
       expect(screen.getByTestId('announcement-history-count')).toHaveTextContent('1');
     });
   });
+
+  it('keeps silent unread announcements closed until the trigger opens them', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'announcement-silent',
+        enabled: true,
+        title: '更新',
+        content: '静默公告',
+        deliveryMode: 'silent'
+      })
+    });
+
+    render(<AnnouncementHarness pollIntervalMs={0} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('announcement-id')).toHaveTextContent('announcement-silent');
+      expect(screen.getByTestId('announcement-open')).toHaveTextContent('closed');
+      expect(screen.getByTestId('announcement-unread')).toHaveTextContent('unread');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'open announcement' }));
+    expect(screen.getByTestId('announcement-open')).toHaveTextContent('open');
+  });
 });

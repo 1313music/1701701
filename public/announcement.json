@@ -5,6 +5,7 @@
     "title": "站点公告",
     "content": "把 enabled 改成 true，并更新 id、标题与内容后，用户下次进入站点就会看到这条公告。",
     "type": "info",
+    "deliveryMode": "modal",
     "force": false,
     "confirmText": "我知道了",
     "imageUrl": "",

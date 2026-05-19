@@ -5,6 +5,11 @@ import { isAnnouncementActive, loadAnnouncement } from '../data/announcementSour
 const ANNOUNCEMENT_READ_KEY = 'announcement:last-read-id:v1';
 const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
 
+const shouldAutoOpenAnnouncement = (announcement) => (
+  isAnnouncementActive(announcement)
+  && announcement?.deliveryMode !== 'silent'
+);
+
 const readDismissedAnnouncementId = () => {
   if (typeof window === 'undefined') return '';
 
@@ -56,7 +61,7 @@ export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = 
           return;
         }
 
-        setIsAnnouncementOpen(true);
+        setIsAnnouncementOpen((wasOpen) => wasOpen || shouldAutoOpenAnnouncement(nextAnnouncement));
       } catch {
         if (cancelled) return;
       } finally {

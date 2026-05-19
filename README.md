@@ -201,6 +201,7 @@ VITE_ADMIN_API_BASE_URL=
 - 用户关闭某条公告后，会按 `id` 写入本地已读记录；如果你希望重新弹出，需要更新公告 `id`。
 - 前端会定时轮询 `VITE_ANNOUNCEMENT_URL`；在线用户在轮询周期内也能收到新公告。
 - 公告 JSON 支持 `{ "announcement": 当前公告, "history": [历史公告] }` 格式；旧的单条公告对象格式仍可读取。
+- 公告支持可选通知方式字段：`deliveryMode`，`modal` 会自动弹窗，`silent` 只显示公告入口小圆点。
 - 公告支持可选图片字段：`imageUrl`、`imageAlt`、`imageCaption`、`imageMaxWidth`、`imageMaxHeight`。
 - 后台发布新 `id` 公告时，会自动把上一条公告归档到 `history`，前台公告入口可回看历史公告；后台也可单条删除历史公告。
 

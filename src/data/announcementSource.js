@@ -15,6 +15,12 @@ const normalizeImageSize = (value) => {
   return Math.min(Math.max(size, 80), 1600);
 };
 
+const normalizeDeliveryMode = (value) => {
+  const mode = normalizeText(value).toLowerCase();
+  if (['silent', 'quiet', 'dot', 'badge'].includes(mode)) return 'silent';
+  return 'modal';
+};
+
 const parseAnnouncement = (payload) => {
   const source = payload?.announcement && typeof payload.announcement === 'object'
     ? payload.announcement
@@ -33,6 +39,7 @@ const parseAnnouncement = (payload) => {
     title: normalizeText(source.title, '站点公告'),
     content,
     type: normalizeText(source.type, 'info'),
+    deliveryMode: normalizeDeliveryMode(source.deliveryMode || source.notifyMode || source.notificationMode),
     force: source.force === true,
     confirmText: normalizeText(source.confirmText, '我知道了'),
     imageUrl,

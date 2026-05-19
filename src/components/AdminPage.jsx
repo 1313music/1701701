@@ -61,6 +61,7 @@ const createDefaultDraft = () => ({
   title: '站点公告',
   content: '',
   type: 'info',
+  deliveryMode: 'modal',
   force: false,
   confirmText: '我知道了',
   imageUrl: '',
@@ -179,6 +180,7 @@ const serializeDraft = (draft) => ({
   title: String(draft.title || '').trim(),
   content: String(draft.content || '').trim(),
   type: String(draft.type || 'info').trim(),
+  deliveryMode: draft.deliveryMode === 'silent' ? 'silent' : 'modal',
   confirmText: String(draft.confirmText || '').trim() || '我知道了',
   imageUrl: String(draft.imageUrl || '').trim(),
   imageAlt: String(draft.imageAlt || '').trim(),
@@ -918,6 +920,16 @@ const AdminPage = () => {
                     <option value="info">普通</option>
                     <option value="warning">重要</option>
                     <option value="success">更新</option>
+                  </select>
+                </label>
+                <label className="admin-field">
+                  <span>通知方式</span>
+                  <select
+                    value={draft.deliveryMode}
+                    onChange={(event) => updateDraftField('deliveryMode', event.target.value)}
+                  >
+                    <option value="modal">弹窗通知</option>
+                    <option value="silent">小圆点静默通知</option>
                   </select>
                 </label>
               </div>

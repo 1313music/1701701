@@ -211,6 +211,9 @@ describe('AdminPage', () => {
     fireEvent.change(screen.getByLabelText('标题'), {
       target: { value: '新的公告' }
     });
+    fireEvent.change(screen.getByLabelText('通知方式'), {
+      target: { value: 'silent' }
+    });
     fireEvent.change(screen.getByLabelText('正文'), {
       target: { value: '新的正文' }
     });
@@ -235,6 +238,7 @@ describe('AdminPage', () => {
           id: 'current-notice',
           title: '新的公告',
           content: '新的正文',
+          deliveryMode: 'silent',
           imageUrl: 'https://cdn.example.com/notice.jpg',
           imageAlt: '公告配图',
           imageMaxWidth: '360',
