@@ -113,6 +113,59 @@ describe('announcement admin worker', () => {
     });
   });
 
+  it('archives the previous announcement when publishing a new id', async () => {
+    const env = createEnv();
+
+    for (const announcement of [
+      {
+        id: 'notice-1',
+        enabled: true,
+        title: '第一次公告',
+        content: '第一条正文',
+        updatedAt: '2026-05-18T00:00:00+08:00'
+      },
+      {
+        id: 'notice-2',
+        enabled: true,
+        title: '第二次公告',
+        content: '第二条正文',
+        updatedAt: '2026-05-19T00:00:00+08:00'
+      }
+    ]) {
+      const response = await worker.fetch(new Request('https://worker.test/api/admin/announcement', {
+        method: 'PUT',
+        headers: {
+          Authorization: 'Bearer secret-token',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ announcement })
+      }), env);
+      expect(response.status).toBe(200);
+    }
+
+    const publicResponse = await worker.fetch(
+      new Request('https://worker.test/api/announcement'),
+      env
+    );
+    const payload = await publicResponse.json();
+
+    expect(payload.announcement).toMatchObject({
+      id: 'notice-2',
+      title: '第二次公告'
+    });
+    expect(payload.history).toHaveLength(1);
+    expect(payload.history[0]).toMatchObject({
+      id: 'notice-1',
+      title: '第一次公告',
+      content: '第一条正文'
+    });
+
+    const publicObject = env.ANNOUNCEMENT_PUBLIC_BUCKET.store.get('announcement.json');
+    expect(JSON.parse(publicObject.value).history[0]).toMatchObject({
+      id: 'notice-1'
+    });
+  });
+
   it('publishes gallery images to GitHub in one commit', async () => {
     const treeRequests = [];
     const githubFetch = vi.fn(async (url, init = {}) => {

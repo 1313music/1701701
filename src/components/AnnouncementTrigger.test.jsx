@@ -31,4 +31,10 @@ describe('AnnouncementTrigger', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('renders a default announcement entry without announcement data', () => {
+    render(<AnnouncementTrigger visible onOpen={() => {}} />);
+
+    expect(screen.getByRole('button', { name: '查看公告：站点公告' })).toBeInTheDocument();
+  });
 });

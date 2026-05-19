@@ -14,6 +14,7 @@ import {
     Info,
     MessageSquareMore
 } from 'lucide-react';
+import AnnouncementTrigger from './AnnouncementTrigger.jsx';
 
 const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
     String(import.meta.env.VITE_SHOW_COMMENT_NAV || '').trim().toLowerCase()
@@ -39,7 +40,11 @@ const Sidebar = ({
     isSidebarCollapsed = false,
     setIsSidebarCollapsed,
     themePreference = 'light',
-    onThemeToggle
+    onThemeToggle,
+    announcement,
+    showAnnouncementTrigger = false,
+    isAnnouncementUnread = false,
+    onOpenAnnouncement
 }) => {
     const handleNavClick = (newView) => {
         setIsSidebarOpen(false);
@@ -51,6 +56,10 @@ const Sidebar = ({
     const ThemeIcon = themePreference === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
     const sidebarToggleLabel = isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏';
+    const handleMobileThemeToggle = (event) => {
+        if (!onThemeToggle) return;
+        onThemeToggle(event);
+    };
     const handleLogoKeyDown = (event) => {
         if (event.target !== event.currentTarget) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -85,17 +94,15 @@ const Sidebar = ({
                 >
                     1701701.xyz
                 </button>
-                {onThemeToggle && (
-                    <button
-                        type="button"
-                        className="mobile-theme-toggle"
-                        onClick={onThemeToggle}
-                        aria-label={themeToggleLabel}
-                        title={themeToggleLabel}
-                    >
-                        <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
-                    </button>
-                )}
+                <div className="mobile-topbar-actions" aria-hidden={!showAnnouncementTrigger}>
+                    <AnnouncementTrigger
+                        announcement={announcement}
+                        visible={showAnnouncementTrigger}
+                        unread={isAnnouncementUnread}
+                        onOpen={onOpenAnnouncement}
+                        className="mobile-announcement-trigger"
+                    />
+                </div>
             </div>
 
             <div
@@ -148,6 +155,23 @@ const Sidebar = ({
                         active={view === 'about'}
                         onClick={() => handleNavClick('about')}
                     />
+                    {onThemeToggle && (
+                        <button
+                            type="button"
+                            className={`mobile-theme-switch ${themePreference === 'dark' ? 'is-dark' : ''}`}
+                            role="switch"
+                            aria-checked={themePreference === 'dark'}
+                            aria-label={themeToggleLabel}
+                            title={themeToggleLabel}
+                            onClick={handleMobileThemeToggle}
+                        >
+                            <span className="mobile-theme-switch-track" aria-hidden="true">
+                                <span className="mobile-theme-switch-thumb">
+                                    <ThemeIcon size={14} strokeWidth={2.6} absoluteStrokeWidth />
+                                </span>
+                            </span>
+                        </button>
+                    )}
                 </div>
             </div>
 

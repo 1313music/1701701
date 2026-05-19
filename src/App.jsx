@@ -40,10 +40,21 @@ const AppPage = lazy(() => import('./components/AppPage.jsx'));
 const AdminPage = lazy(() => import('./components/AdminPage.jsx'));
 const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
 
+const EMPTY_ANNOUNCEMENT = {
+  id: 'empty-announcement',
+  enabled: true,
+  title: '站点公告',
+  content: '暂无新的公告。',
+  type: 'info',
+  force: false,
+  confirmText: '我知道了'
+};
+
 const App = () => {
   const hasSignaledBootReadyRef = useRef(false);
   const sharedTargetRef = useRef(null);
   const [shareMiniProgramVisibleUrl, setShareMiniProgramVisibleUrl] = useState('');
+  const [isEmptyAnnouncementOpen, setIsEmptyAnnouncementOpen] = useState(false);
 
   const {
     toastMessage,
@@ -54,6 +65,7 @@ const App = () => {
   } = useToast();
   const {
     announcement,
+    announcementHistory,
     hasActiveAnnouncement,
     isAnnouncementOpen,
     isAnnouncementUnread,
@@ -373,7 +385,32 @@ const App = () => {
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
   const hasPlayerChrome = view !== 'video' && view !== 'admin';
-  const shouldShowAnnouncementTrigger = view !== 'admin' && hasActiveAnnouncement;
+  const shouldShowAnnouncementTrigger = view !== 'admin';
+  const emptyAnnouncement = useMemo(() => ({
+    ...EMPTY_ANNOUNCEMENT,
+    title: announcementHistory.length > 0 ? '历史公告' : EMPTY_ANNOUNCEMENT.title,
+    content: announcementHistory.length > 0
+      ? '暂无新的公告，可查看历史公告。'
+      : EMPTY_ANNOUNCEMENT.content
+  }), [announcementHistory.length]);
+  const displayedAnnouncement = hasActiveAnnouncement ? announcement : emptyAnnouncement;
+
+  const handleOpenAnnouncementTrigger = useCallback(() => {
+    if (hasActiveAnnouncement) {
+      openAnnouncement();
+      return;
+    }
+    setIsEmptyAnnouncementOpen(true);
+  }, [hasActiveAnnouncement, openAnnouncement]);
+
+  const handleConfirmAnnouncement = useCallback(() => {
+    if (isEmptyAnnouncementOpen && !hasActiveAnnouncement) {
+      setIsEmptyAnnouncementOpen(false);
+      return;
+    }
+    setIsEmptyAnnouncementOpen(false);
+    dismissAnnouncement();
+  }, [dismissAnnouncement, hasActiveAnnouncement, isEmptyAnnouncementOpen]);
 
   const signalBootReady = useCallback(() => {
     if (hasSignaledBootReadyRef.current || typeof window === 'undefined') return;
@@ -408,6 +445,10 @@ const App = () => {
               setIsSidebarCollapsed={setIsSidebarCollapsed}
               themePreference={themePreference}
               onThemeToggle={handleThemeToggle}
+              announcement={announcement}
+              showAnnouncementTrigger={shouldShowAnnouncementTrigger}
+              isAnnouncementUnread={isAnnouncementUnread}
+              onOpenAnnouncement={handleOpenAnnouncementTrigger}
             />
 
             <main className="main-view">
@@ -536,7 +577,7 @@ const App = () => {
           announcement={announcement}
           visible={shouldShowAnnouncementTrigger}
           unread={isAnnouncementUnread}
-          onOpen={openAnnouncement}
+          onOpen={handleOpenAnnouncementTrigger}
         />
 
         {hasPlayerChrome && isLibraryReady && (
@@ -723,9 +764,10 @@ const App = () => {
         )}
 
         <AnnouncementModal
-          announcement={announcement}
-          open={isAnnouncementOpen}
-          onConfirm={dismissAnnouncement}
+          announcement={displayedAnnouncement}
+          history={announcementHistory}
+          open={isAnnouncementOpen || isEmptyAnnouncementOpen}
+          onConfirm={handleConfirmAnnouncement}
         />
 
         {isWeChatBrowserHintOpen && (

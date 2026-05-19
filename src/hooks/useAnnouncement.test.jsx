@@ -9,6 +9,7 @@ const ANNOUNCEMENT_READ_KEY = 'announcement:last-read-id:v1';
 const AnnouncementHarness = ({ pollIntervalMs = 1000 }) => {
   const {
     announcement,
+    announcementHistory,
     isAnnouncementOpen,
     isAnnouncementUnread,
     isLoadingAnnouncement,
@@ -20,6 +21,7 @@ const AnnouncementHarness = ({ pollIntervalMs = 1000 }) => {
     <div>
       <div data-testid="loading">{isLoadingAnnouncement ? 'loading' : 'ready'}</div>
       <div data-testid="announcement-id">{announcement?.id || 'none'}</div>
+      <div data-testid="announcement-history-count">{announcementHistory.length}</div>
       <div data-testid="announcement-open">{isAnnouncementOpen ? 'open' : 'closed'}</div>
       <div data-testid="announcement-unread">{isAnnouncementUnread ? 'unread' : 'read'}</div>
       <button type="button" onClick={dismissAnnouncement}>dismiss</button>
@@ -117,6 +119,39 @@ describe('useAnnouncement', () => {
     await waitFor(() => {
       expect(screen.getByTestId('announcement-id')).toHaveTextContent('announcement-2');
       expect(screen.getByTestId('announcement-open')).toHaveTextContent('open');
+    });
+  });
+
+  it('loads announcement history from the announcement payload', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        announcement: {
+          id: 'announcement-2',
+          enabled: true,
+          title: '更新',
+          content: '第二次公告'
+        },
+        history: [
+          {
+            id: 'announcement-1',
+            enabled: false,
+            title: '历史公告',
+            content: '第一次公告',
+            updatedAt: '2026-05-18T00:00:00+08:00'
+          }
+        ]
+      })
+    });
+
+    render(<AnnouncementHarness pollIntervalMs={0} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('announcement-id')).toHaveTextContent('announcement-2');
+      expect(screen.getByTestId('announcement-history-count')).toHaveTextContent('1');
     });
   });
 });

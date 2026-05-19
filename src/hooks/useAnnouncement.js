@@ -27,6 +27,7 @@ const persistDismissedAnnouncementId = (announcementId) => {
 
 export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = {}) => {
   const [announcement, setAnnouncement] = useState(null);
+  const [announcementHistory, setAnnouncementHistory] = useState([]);
   const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false);
   const [isLoadingAnnouncement, setIsLoadingAnnouncement] = useState(true);
   const [dismissedAnnouncementId, setDismissedAnnouncementId] = useState(readDismissedAnnouncementId);
@@ -41,6 +42,7 @@ export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = 
 
         const nextAnnouncement = result.announcement;
         setAnnouncement(nextAnnouncement);
+        setAnnouncementHistory(Array.isArray(result.history) ? result.history : []);
 
         if (!isAnnouncementActive(nextAnnouncement)) {
           setIsAnnouncementOpen(false);
@@ -108,6 +110,7 @@ export const useAnnouncement = ({ pollIntervalMs = DEFAULT_POLL_INTERVAL_MS } = 
 
   return {
     announcement,
+    announcementHistory,
     hasActiveAnnouncement,
     isAnnouncementOpen,
     isAnnouncementUnread,

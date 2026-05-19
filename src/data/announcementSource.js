@@ -2,6 +2,7 @@ import { toAbsoluteUrl } from './manifestSourceUtils.js';
 
 const DEFAULT_ANNOUNCEMENT_PATH = '/announcement.json';
 const PRIMARY_ANNOUNCEMENT_URL = String(import.meta.env.VITE_ANNOUNCEMENT_URL || '').trim();
+const MAX_HISTORY_ITEMS = 50;
 
 const normalizeText = (value, fallback = '') => {
   const normalized = String(value ?? fallback).trim();
@@ -31,7 +32,59 @@ const parseAnnouncement = (payload) => {
     linkUrl: normalizeText(source.linkUrl),
     startAt: normalizeText(source.startAt),
     endAt: normalizeText(source.endAt),
-    updatedAt: normalizeText(source.updatedAt)
+    updatedAt: normalizeText(source.updatedAt),
+    archivedAt: normalizeText(source.archivedAt)
+  };
+};
+
+const getAnnouncementSortTime = (announcement) => {
+  const values = [
+    announcement?.archivedAt,
+    announcement?.updatedAt,
+    announcement?.startAt,
+    announcement?.endAt
+  ];
+
+  for (const value of values) {
+    const time = Date.parse(value);
+    if (Number.isFinite(time)) return time;
+  }
+
+  return 0;
+};
+
+const parseAnnouncementHistory = (payload, currentAnnouncement) => {
+  const candidates = [
+    ...(Array.isArray(payload?.history) ? payload.history : []),
+    ...(Array.isArray(payload?.announcements) ? payload.announcements : [])
+  ];
+  const seenIds = new Set(currentAnnouncement?.id ? [currentAnnouncement.id] : []);
+
+  return candidates
+    .map((item, index) => ({
+      announcement: parseAnnouncement(item),
+      index
+    }))
+    .filter(({ announcement }) => {
+      if (!announcement?.id || seenIds.has(announcement.id)) return false;
+      seenIds.add(announcement.id);
+      return true;
+    })
+    .sort((left, right) => {
+      const rightTime = getAnnouncementSortTime(right.announcement);
+      const leftTime = getAnnouncementSortTime(left.announcement);
+      if (rightTime !== leftTime) return rightTime - leftTime;
+      return left.index - right.index;
+    })
+    .slice(0, MAX_HISTORY_ITEMS)
+    .map(({ announcement }) => announcement);
+};
+
+const parseAnnouncementPayload = (payload) => {
+  const announcement = parseAnnouncement(payload);
+  return {
+    announcement,
+    history: parseAnnouncementHistory(payload, announcement)
   };
 };
 
@@ -79,8 +132,9 @@ export const loadAnnouncement = async ({ signal } = {}) => {
   for (const target of targets) {
     try {
       const payload = await fetchAnnouncementJson(target, signal);
+      const parsed = parseAnnouncementPayload(payload);
       return {
-        announcement: parseAnnouncement(payload),
+        ...parsed,
         resolvedUrl: target,
         usedFallback: target === fallbackUrl && target !== primaryUrl
       };

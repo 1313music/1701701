@@ -1,5 +1,6 @@
 const ANNOUNCEMENT_KEY = 'current';
 const DEFAULT_PUBLIC_OBJECT_KEY = 'announcement.json';
+const ANNOUNCEMENT_HISTORY_LIMIT = 50;
 const DEFAULT_GALLERY_BRANCH = 'main';
 const DEFAULT_GALLERY_INDEX_PATH = 'public/data/images.json';
 const DEFAULT_GALLERY_REPO_IMAGE_ROOT = 'public/images';
@@ -55,6 +56,11 @@ const DEFAULT_ANNOUNCEMENT = Object.freeze({
   startAt: '',
   endAt: '',
   updatedAt: ''
+});
+
+const DEFAULT_ANNOUNCEMENT_BUNDLE = Object.freeze({
+  announcement: DEFAULT_ANNOUNCEMENT,
+  history: []
 });
 
 const normalizeText = (value, fallback = '') => {
@@ -158,17 +164,59 @@ const errorResponse = (request, env, status, message) => jsonResponse(
   { status }
 );
 
-const readAnnouncement = async (env) => {
+const normalizeStoredHistory = (history, currentAnnouncement) => {
+  const seenIds = new Set(currentAnnouncement?.id ? [currentAnnouncement.id] : []);
+  const entries = Array.isArray(history) ? history : [];
+
+  return entries
+    .filter((entry) => entry && typeof entry === 'object')
+    .map((entry) => ({
+      ...DEFAULT_ANNOUNCEMENT,
+      ...entry,
+      id: normalizeText(entry.id),
+      title: normalizeText(entry.title, '站点公告'),
+      content: normalizeText(entry.content || entry.message),
+      type: allowedType(normalizeText(entry.type, 'info')),
+      confirmText: normalizeText(entry.confirmText, '我知道了'),
+      linkText: normalizeText(entry.linkText),
+      linkUrl: normalizeText(entry.linkUrl),
+      startAt: normalizeText(entry.startAt),
+      endAt: normalizeText(entry.endAt),
+      updatedAt: normalizeText(entry.updatedAt),
+      archivedAt: normalizeText(entry.archivedAt)
+    }))
+    .filter((entry) => {
+      if (!entry.id || !entry.content || seenIds.has(entry.id)) return false;
+      seenIds.add(entry.id);
+      return true;
+    })
+    .slice(0, ANNOUNCEMENT_HISTORY_LIMIT);
+};
+
+const readAnnouncementBundle = async (env) => {
   const raw = await env.ANNOUNCEMENT_KV?.get(ANNOUNCEMENT_KEY);
-  if (!raw) return { ...DEFAULT_ANNOUNCEMENT };
+  if (!raw) return {
+    announcement: { ...DEFAULT_ANNOUNCEMENT_BUNDLE.announcement },
+    history: []
+  };
 
   try {
-    return {
+    const payload = JSON.parse(raw);
+    const announcementSource = payload?.announcement && typeof payload.announcement === 'object'
+      ? payload.announcement
+      : payload;
+    const announcement = {
       ...DEFAULT_ANNOUNCEMENT,
-      ...JSON.parse(raw)
+      ...announcementSource
     };
+    const history = normalizeStoredHistory(payload?.history, announcement);
+
+    return { announcement, history };
   } catch {
-    return { ...DEFAULT_ANNOUNCEMENT };
+    return {
+      announcement: { ...DEFAULT_ANNOUNCEMENT_BUNDLE.announcement },
+      history: []
+    };
   }
 };
 
@@ -204,16 +252,48 @@ const normalizeAnnouncement = (payload, previousAnnouncement) => {
   };
 };
 
+const shouldArchiveAnnouncement = (previousAnnouncement, nextAnnouncement) => (
+  previousAnnouncement
+  && previousAnnouncement.id
+  && previousAnnouncement.content
+  && previousAnnouncement.id !== DEFAULT_ANNOUNCEMENT.id
+  && previousAnnouncement.id !== nextAnnouncement.id
+);
+
+const buildAnnouncementBundle = (previousBundle, announcement) => {
+  const archivedAt = new Date().toISOString();
+  const previousAnnouncement = previousBundle?.announcement || DEFAULT_ANNOUNCEMENT;
+  const history = normalizeStoredHistory(previousBundle?.history, announcement);
+
+  if (shouldArchiveAnnouncement(previousAnnouncement, announcement)) {
+    history.unshift({
+      ...previousAnnouncement,
+      archivedAt: previousAnnouncement.archivedAt || archivedAt
+    });
+  }
+
+  return {
+    announcement,
+    history: normalizeStoredHistory(history, announcement)
+  };
+};
+
+const buildPublicAnnouncementPayload = ({ announcement, history }) => ({
+  ...announcement,
+  announcement,
+  history
+});
+
 const getPublicObjectKey = (env) => normalizeText(
   env.PUBLIC_OBJECT_KEY,
   DEFAULT_PUBLIC_OBJECT_KEY
 ).replace(/^\/+/, '') || DEFAULT_PUBLIC_OBJECT_KEY;
 
-const publishPublicAnnouncement = async (env, announcement) => {
+const publishPublicAnnouncement = async (env, bundle) => {
   if (!env.ANNOUNCEMENT_PUBLIC_BUCKET) return null;
 
   const key = getPublicObjectKey(env);
-  await env.ANNOUNCEMENT_PUBLIC_BUCKET.put(key, JSON.stringify(announcement, null, 2), {
+  await env.ANNOUNCEMENT_PUBLIC_BUCKET.put(key, JSON.stringify(buildPublicAnnouncementPayload(bundle), null, 2), {
     httpMetadata: {
       contentType: 'application/json; charset=utf-8',
       cacheControl: 'public, max-age=60'
@@ -1886,7 +1966,7 @@ export default {
     }
 
     if (url.pathname === '/api/announcement' && request.method === 'GET') {
-      return jsonResponse(request, env, await readAnnouncement(env));
+      return jsonResponse(request, env, buildPublicAnnouncementPayload(await readAnnouncementBundle(env)));
     }
 
     if (url.pathname === '/api/admin/announcement' && request.method === 'GET') {
@@ -1895,7 +1975,7 @@ export default {
       }
 
       return jsonResponse(request, env, {
-        announcement: await readAnnouncement(env)
+        ...(await readAnnouncementBundle(env))
       });
     }
 
@@ -1912,17 +1992,20 @@ export default {
       }
 
       let announcement;
+      let previousBundle;
       try {
-        announcement = normalizeAnnouncement(payload, await readAnnouncement(env));
+        previousBundle = await readAnnouncementBundle(env);
+        announcement = normalizeAnnouncement(payload, previousBundle.announcement);
       } catch (error) {
         return errorResponse(request, env, 400, error.message);
       }
 
-      await env.ANNOUNCEMENT_KV.put(ANNOUNCEMENT_KEY, JSON.stringify(announcement));
-      const publicTarget = await publishPublicAnnouncement(env, announcement);
+      const bundle = buildAnnouncementBundle(previousBundle, announcement);
+      await env.ANNOUNCEMENT_KV.put(ANNOUNCEMENT_KEY, JSON.stringify(bundle));
+      const publicTarget = await publishPublicAnnouncement(env, bundle);
       return jsonResponse(request, env, {
         ok: true,
-        announcement,
+        ...bundle,
         publicTarget
       });
     }
