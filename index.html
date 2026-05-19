@@ -13,9 +13,12 @@
   <meta name="theme-color" content="transparent" />
   <meta name="description" content="1701701.xyz 是一个分享李志音乐与视频的网站，提供专辑、歌曲播放列表、现场视频与相关资源整理。" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
+  <meta name="keywords" content="李志,李志音乐,李志专辑,李志现场,叁缺壹吉隆坡站,334计划,1701701.xyz" />
   <meta name="author" content="1701701.xyz" />
+  <meta name="applicable-device" content="pc,mobile" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="1701701.xyz" />
+  <meta property="og:locale" content="zh_CN" />
   <meta property="og:title" content="1701701.xyz | 李志音乐与视频分享站" />
   <meta property="og:description" content="一个分享李志音乐与视频的网站，支持专辑浏览、播放列表与视频内容。" />
   <meta property="og:url" content="https://1701701.xyz/" />
@@ -116,7 +119,164 @@
         transform: rotate(360deg);
       }
     }
+
+    .seo-static-shell {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 42px 22px 96px;
+      color: #f5f5f7;
+      font: 16px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .seo-static-shell h1 {
+      margin: 0 0 14px;
+      font-size: 30px;
+      line-height: 1.25;
+    }
+
+    .seo-static-shell h2 {
+      margin: 28px 0 12px;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .seo-static-shell p {
+      margin: 0 0 18px;
+      color: rgba(245, 245, 247, 0.78);
+    }
+
+    .seo-static-shell a {
+      color: inherit;
+    }
+
+    .seo-static-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin: 18px 0 22px;
+    }
+
+    .seo-static-shell ul {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .seo-static-section {
+      margin-top: 26px;
+    }
+
+    .seo-static-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .seo-static-card {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid rgba(245, 245, 247, 0.14);
+      border-radius: 8px;
+      background: rgba(245, 245, 247, 0.04);
+    }
+
+    .seo-static-card-text {
+      grid-template-columns: 1fr;
+    }
+
+    .seo-static-card h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .seo-static-thumb {
+      width: 86px;
+      height: 86px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: rgba(245, 245, 247, 0.08);
+    }
+
+    .seo-static-meta {
+      margin: 0 0 8px;
+      font-size: 13px;
+    }
+
+    .seo-static-items {
+      display: grid;
+      gap: 4px;
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13px;
+      color: rgba(245, 245, 247, 0.72);
+    }
+
+    .seo-static-shell li span {
+      display: block;
+      color: rgba(245, 245, 247, 0.7);
+      font-size: 14px;
+    }
+
+    html[data-theme='light'] .seo-static-shell {
+      color: #111827;
+    }
+
+    html[data-theme='light'] .seo-static-shell p,
+    html[data-theme='light'] .seo-static-shell li span,
+    html[data-theme='light'] .seo-static-items {
+      color: rgba(17, 24, 39, 0.72);
+    }
+
+    html[data-theme='light'] .seo-static-card {
+      border-color: rgba(17, 24, 39, 0.12);
+      background: rgba(17, 24, 39, 0.03);
+    }
+
+    @media (prefers-color-scheme: light) {
+      .seo-static-shell {
+        color: #111827;
+      }
+
+      .seo-static-shell p,
+      .seo-static-shell li span,
+      .seo-static-items {
+        color: rgba(17, 24, 39, 0.72);
+      }
+
+      .seo-static-card {
+        border-color: rgba(17, 24, 39, 0.12);
+        background: rgba(17, 24, 39, 0.03);
+      }
+    }
+
+    @media (max-width: 540px) {
+      .seo-static-card {
+        grid-template-columns: 72px minmax(0, 1fr);
+      }
+
+      .seo-static-card-text {
+        grid-template-columns: 1fr;
+      }
+
+      .seo-static-thumb {
+        width: 72px;
+        height: 72px;
+      }
+    }
   </style>
+  <noscript>
+    <style>
+      #app-boot-splash {
+        display: none !important;
+      }
+    </style>
+  </noscript>
   <script>
     (function () {
       try {
@@ -138,9 +298,80 @@
       }
     })();
   </script>
-  <title>1701701.xyz</title>
-  <script defer src="https://tongji.1701701.xyz/1701701.xyz"
-    data-website-id="620f8452-9530-409a-9fa5-909ea0297d88"></script>
+  <title>李志音乐 | 1701701.xyz</title>
+  <script>
+    (function () {
+      var configUrl = 'https://r2.1701701.xyz/json/umami-config.json';
+      var fallbackConfig = {
+        enabled: true,
+        scriptUrl: 'https://tongji.1701701.xyz/1701701.xyz',
+        websiteId: '620f8452-9530-409a-9fa5-909ea0297d88',
+        hostUrl: 'https://tongji.1701701.xyz',
+        domains: '1701701.xyz'
+      };
+
+      function normalizeText(value, fallback) {
+        var text = String(value || '').trim();
+        return text || fallback || '';
+      }
+
+      function toAbsoluteUrl(value) {
+        var input = normalizeText(value);
+        if (!input) return '';
+        try {
+          return new URL(input, window.location.origin).toString();
+        } catch (error) {
+          return '';
+        }
+      }
+
+      function installUmami(config) {
+        var nextConfig = Object.assign({}, fallbackConfig, config || {});
+        if (nextConfig.enabled === false) return;
+
+        var scriptUrl = toAbsoluteUrl(nextConfig.scriptUrl);
+        var websiteId = normalizeText(nextConfig.websiteId);
+        if (!scriptUrl || !websiteId || document.querySelector('script[data-umami-loader="runtime"]')) {
+          return;
+        }
+
+        var script = document.createElement('script');
+        script.defer = true;
+        script.src = scriptUrl;
+        script.dataset.websiteId = websiteId;
+        script.dataset.umamiLoader = 'runtime';
+
+        var hostUrl = toAbsoluteUrl(nextConfig.hostUrl);
+        if (hostUrl) {
+          script.dataset.hostUrl = hostUrl;
+        }
+
+        var domains = normalizeText(nextConfig.domains);
+        if (domains) {
+          script.dataset.domains = domains;
+        }
+
+        document.head.appendChild(script);
+      }
+
+      if (!window.fetch) {
+        installUmami(fallbackConfig);
+        return;
+      }
+
+      window.fetch(configUrl, { cache: 'no-store' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Umami config unavailable');
+          return response.json();
+        })
+        .then(function (payload) {
+          installUmami(payload && payload.config ? payload.config : payload);
+        })
+        .catch(function () {
+          installUmami(fallbackConfig);
+        });
+    })();
+  </script>
 </head>
 
 <body>
@@ -151,7 +382,20 @@
       <p class="app-boot-text">正在加载...</p>
     </div>
   </div>
-  <div id="root"></div>
+  <div id="root">
+    <main class="seo-static-shell" aria-label="李志音乐与现场资料">
+      <h1>李志音乐与现场资料</h1>
+      <p>1701701.xyz 收录李志代表作与现场内容，包含《被禁忌的游戏》《梵高先生》《1701》及叁缺壹吉隆坡站等，支持歌词查看、播放列表与收藏管理。</p>
+      <nav class="seo-static-nav" aria-label="主要页面">
+        <a href="/">音乐</a>
+        <a href="/video/">视频</a>
+        <a href="/download/">下载</a>
+        <a href="/gallery/">图库</a>
+        <a href="/app/">APP</a>
+        <a href="/about/">关于</a>
+      </nav>
+    </main>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

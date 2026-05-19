@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "./scripts/with-node22.sh vite",
-    "build": "./scripts/with-node22.sh vite build",
+    "build": "npm run build:vite && npm run seo:generate",
+    "build:vite": "./scripts/with-node22.sh vite build",
+    "seo:generate": "./scripts/with-node22.sh node ./scripts/generate-seo-pages.mjs",
     "lint": "./scripts/with-node22.sh eslint .",
     "test": "./scripts/with-node22.sh vitest run",
     "test:watch": "./scripts/with-node22.sh vitest",

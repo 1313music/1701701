@@ -119,7 +119,6 @@ const LyricsOverlay = ({
         let cancelled = false;
 
         if (!coverSrc) {
-            setCoverAtmosphereAssets(null);
             return () => {
                 cancelled = true;
             };
@@ -134,6 +133,8 @@ const LyricsOverlay = ({
             cancelled = true;
         };
     }, [coverSrc]);
+
+    const activeCoverAtmosphereAssets = coverSrc ? coverAtmosphereAssets : null;
 
     const currentTrackSrc = currentTrack?.src || '';
     const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
@@ -202,25 +203,25 @@ const LyricsOverlay = ({
             '--cover-image': `url(${coverSrc})`
         };
 
-        if (coverAtmosphereAssets?.palette) {
-            style['--cover-accent-rgb'] = coverAtmosphereAssets.palette.accent;
-            style['--cover-glow-rgb'] = coverAtmosphereAssets.palette.glow;
-            style['--cover-shadow-rgb'] = coverAtmosphereAssets.palette.shadow;
+        if (activeCoverAtmosphereAssets?.palette) {
+            style['--cover-accent-rgb'] = activeCoverAtmosphereAssets.palette.accent;
+            style['--cover-glow-rgb'] = activeCoverAtmosphereAssets.palette.glow;
+            style['--cover-shadow-rgb'] = activeCoverAtmosphereAssets.palette.shadow;
         }
 
-        if (coverAtmosphereAssets?.topCover) {
-            style['--cover-top-image'] = `url(${coverAtmosphereAssets.topCover})`;
+        if (activeCoverAtmosphereAssets?.topCover) {
+            style['--cover-top-image'] = `url(${activeCoverAtmosphereAssets.topCover})`;
         }
 
         return style;
-    }, [coverAtmosphereAssets, coverSrc]);
+    }, [activeCoverAtmosphereAssets, coverSrc]);
     // 使用 Portal 渲染到 body，确保不受父级样式限制（如 overflow, transform 等），实现真正的全屏
     return createPortal(
         <>
             <AnimatePresence>
                 {isLyricsOpen && (
                     <Motion.div
-                        className={`lyrics-overlay mobile-fullscreen-player ${isCompactMobileViewport ? 'mobile-compact-layout' : ''} ${isCommentDrawerOpen ? 'comment-drawer-open' : ''} ${coverAtmosphereAssets ? 'cover-assets-ready' : ''}`}
+                        className={`lyrics-overlay mobile-fullscreen-player ${isCompactMobileViewport ? 'mobile-compact-layout' : ''} ${isCommentDrawerOpen ? 'comment-drawer-open' : ''} ${activeCoverAtmosphereAssets ? 'cover-assets-ready' : ''}`}
                         initial={overlayInitial}
                         animate={overlayAnimate}
                         exit={overlayExit}

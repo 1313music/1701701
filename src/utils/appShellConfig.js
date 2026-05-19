@@ -1,3 +1,5 @@
+import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from './seoConfig.js';
+
 export const VIEW_PATHS = Object.freeze({
   library: '/',
   video: '/video',
@@ -22,9 +24,7 @@ export const VIEW_QUERY_KEYS = Object.freeze({
 
 export const AVAILABLE_VIEWS = new Set(Object.keys(VIEW_PATHS));
 
-export const SITE_URL = 'https://1701701.xyz';
-export const SITE_NAME = '1701701.xyz';
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
+export { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL };
 export const WALINE_SERVER_URL = import.meta.env.VITE_WALINE_SERVER_URL || 'https://hello.1701701.xyz';
 export const WECHAT_OFFICIAL_ACCOUNT_NAME = '民谣俱乐部';
 export const WECHAT_VIDEO_PASSWORD_KEYWORD = '密码';

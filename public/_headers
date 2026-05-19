@@ -12,3 +12,15 @@
   Content-Type: application/vnd.android.package-archive
   Content-Disposition: attachment; filename="1701701-android-release.apk"
   X-Content-Type-Options: nosniff
+
+/myadmin
+  X-Robots-Tag: noindex, nofollow
+
+/comment
+  X-Robots-Tag: noindex, nofollow
+
+/download/preview/*
+  X-Robots-Tag: noindex, follow
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
