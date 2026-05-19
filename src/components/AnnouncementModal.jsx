@@ -34,6 +34,21 @@ const getAnnouncementPreview = (content) => {
   return `${preview.slice(0, 56)}...`;
 };
 
+const getImageSizeStyle = (announcement) => {
+  const style = {};
+  const maxWidth = Number.parseInt(announcement?.imageMaxWidth, 10);
+  const maxHeight = Number.parseInt(announcement?.imageMaxHeight, 10);
+
+  if (Number.isFinite(maxWidth) && maxWidth > 0) {
+    style['--announcement-image-max-width'] = `${maxWidth}px`;
+  }
+  if (Number.isFinite(maxHeight) && maxHeight > 0) {
+    style['--announcement-image-max-height'] = `${maxHeight}px`;
+  }
+
+  return style;
+};
+
 const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm }) => {
   const [selectedHistoryId, setSelectedHistoryId] = useState('');
   const handleClose = useCallback(() => {
@@ -63,6 +78,7 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
   const displayedAnnouncement = selectedHistory || announcement;
   const paragraphs = renderAnnouncementParagraphs(displayedAnnouncement.content);
   const hasLink = Boolean(displayedAnnouncement.linkText && displayedAnnouncement.linkUrl);
+  const hasImage = Boolean(displayedAnnouncement.imageUrl);
   const isViewingHistory = Boolean(selectedHistory);
   const displayDate = formatAnnouncementDate(displayedAnnouncement);
 
@@ -89,6 +105,18 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
           </div>
         </div>
         <div className="announcement-body">
+          {hasImage && (
+            <figure className="announcement-media" style={getImageSizeStyle(displayedAnnouncement)}>
+              <img
+                src={displayedAnnouncement.imageUrl}
+                alt={displayedAnnouncement.imageAlt || displayedAnnouncement.title || '公告图片'}
+                loading="lazy"
+              />
+              {displayedAnnouncement.imageCaption && (
+                <figcaption>{displayedAnnouncement.imageCaption}</figcaption>
+              )}
+            </figure>
+          )}
           {paragraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}

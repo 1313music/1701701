@@ -85,7 +85,11 @@ describe('announcement admin worker', () => {
           id: 'notice-1',
           enabled: true,
           title: '更新',
-          content: '公告正文'
+          content: '公告正文',
+          imageUrl: 'https://cdn.example.com/notice.jpg',
+          imageAlt: '公告配图',
+          imageMaxWidth: 360,
+          imageMaxHeight: 280
         }
       })
     }), env);
@@ -102,7 +106,11 @@ describe('announcement admin worker', () => {
       id: 'notice-1',
       enabled: true,
       title: '更新',
-      content: '公告正文'
+      content: '公告正文',
+      imageUrl: 'https://cdn.example.com/notice.jpg',
+      imageAlt: '公告配图',
+      imageMaxWidth: 360,
+      imageMaxHeight: 280
     });
     expect(env.ANNOUNCEMENT_PUBLIC_BUCKET.store.get('announcement.json')).toMatchObject({
       options: {
@@ -163,6 +171,57 @@ describe('announcement admin worker', () => {
     const publicObject = env.ANNOUNCEMENT_PUBLIC_BUCKET.store.get('announcement.json');
     expect(JSON.parse(publicObject.value).history[0]).toMatchObject({
       id: 'notice-1'
+    });
+  });
+
+  it('deletes a history announcement and republishes the public payload', async () => {
+    const env = createEnv();
+
+    for (const announcement of [
+      {
+        id: 'notice-1',
+        enabled: true,
+        title: '第一次公告',
+        content: '第一条正文'
+      },
+      {
+        id: 'notice-2',
+        enabled: true,
+        title: '第二次公告',
+        content: '第二条正文'
+      }
+    ]) {
+      const response = await worker.fetch(new Request('https://worker.test/api/admin/announcement', {
+        method: 'PUT',
+        headers: {
+          Authorization: 'Bearer secret-token',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ announcement })
+      }), env);
+      expect(response.status).toBe(200);
+    }
+
+    const deleteResponse = await worker.fetch(new Request('https://worker.test/api/admin/announcement/history/notice-1', {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer secret-token'
+      }
+    }), env);
+    expect(deleteResponse.status).toBe(200);
+
+    const payload = await deleteResponse.json();
+    expect(payload.history).toHaveLength(0);
+    expect(payload.announcement).toMatchObject({
+      id: 'notice-2'
+    });
+
+    const publicObject = env.ANNOUNCEMENT_PUBLIC_BUCKET.store.get('announcement.json');
+    expect(JSON.parse(publicObject.value)).toMatchObject({
+      announcement: {
+        id: 'notice-2'
+      },
+      history: []
     });
   });
 

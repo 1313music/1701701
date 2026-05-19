@@ -51,6 +51,11 @@ const DEFAULT_ANNOUNCEMENT = Object.freeze({
   type: 'info',
   force: false,
   confirmText: '我知道了',
+  imageUrl: '',
+  imageAlt: '',
+  imageCaption: '',
+  imageMaxWidth: '',
+  imageMaxHeight: '',
   linkText: '',
   linkUrl: '',
   startAt: '',
@@ -66,6 +71,12 @@ const DEFAULT_ANNOUNCEMENT_BUNDLE = Object.freeze({
 const normalizeText = (value, fallback = '') => {
   const normalized = String(value ?? fallback).trim();
   return normalized || fallback;
+};
+
+const normalizeImageSize = (value) => {
+  const size = Number.parseInt(value, 10);
+  if (!Number.isFinite(size) || size <= 0) return '';
+  return Math.min(Math.max(size, 80), 1600);
 };
 
 const stripSlashes = (value) => normalizeText(value).replace(/^\/+|\/+$/g, '');
@@ -140,7 +151,7 @@ const corsHeaders = (request, env) => {
 
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: configured === '*' ? 'Accept-Encoding' : 'Origin'
@@ -170,21 +181,29 @@ const normalizeStoredHistory = (history, currentAnnouncement) => {
 
   return entries
     .filter((entry) => entry && typeof entry === 'object')
-    .map((entry) => ({
-      ...DEFAULT_ANNOUNCEMENT,
-      ...entry,
-      id: normalizeText(entry.id),
-      title: normalizeText(entry.title, '站点公告'),
-      content: normalizeText(entry.content || entry.message),
-      type: allowedType(normalizeText(entry.type, 'info')),
-      confirmText: normalizeText(entry.confirmText, '我知道了'),
-      linkText: normalizeText(entry.linkText),
-      linkUrl: normalizeText(entry.linkUrl),
-      startAt: normalizeText(entry.startAt),
-      endAt: normalizeText(entry.endAt),
-      updatedAt: normalizeText(entry.updatedAt),
-      archivedAt: normalizeText(entry.archivedAt)
-    }))
+    .map((entry) => {
+      const imageUrl = normalizeText(entry.imageUrl || entry.image);
+      return {
+        ...DEFAULT_ANNOUNCEMENT,
+        ...entry,
+        id: normalizeText(entry.id),
+        title: normalizeText(entry.title, '站点公告'),
+        content: normalizeText(entry.content || entry.message),
+        type: allowedType(normalizeText(entry.type, 'info')),
+        confirmText: normalizeText(entry.confirmText, '我知道了'),
+        imageUrl,
+        imageAlt: imageUrl ? normalizeText(entry.imageAlt || entry.imageTitle || entry.title, '公告图片') : normalizeText(entry.imageAlt || entry.imageTitle),
+        imageCaption: imageUrl ? normalizeText(entry.imageCaption || entry.caption) : '',
+        imageMaxWidth: normalizeImageSize(entry.imageMaxWidth || entry.imageWidth),
+        imageMaxHeight: normalizeImageSize(entry.imageMaxHeight || entry.imageHeight),
+        linkText: normalizeText(entry.linkText),
+        linkUrl: normalizeText(entry.linkUrl),
+        startAt: normalizeText(entry.startAt),
+        endAt: normalizeText(entry.endAt),
+        updatedAt: normalizeText(entry.updatedAt),
+        archivedAt: normalizeText(entry.archivedAt)
+      };
+    })
     .filter((entry) => {
       if (!entry.id || !entry.content || seenIds.has(entry.id)) return false;
       seenIds.add(entry.id);
@@ -233,6 +252,7 @@ const normalizeAnnouncement = (payload, previousAnnouncement) => {
   const content = normalizeText(source.content || source.message);
   if (!id) throw new Error('公告 id 不能为空');
   if (!content) throw new Error('公告正文不能为空');
+  const imageUrl = normalizeText(source.imageUrl || source.image);
 
   return {
     id,
@@ -244,6 +264,11 @@ const normalizeAnnouncement = (payload, previousAnnouncement) => {
     type: allowedType(normalizeText(source.type, 'info')),
     force: source.force === true,
     confirmText: normalizeText(source.confirmText, '我知道了'),
+    imageUrl,
+    imageAlt: imageUrl ? normalizeText(source.imageAlt || source.imageTitle || source.title, '公告图片') : normalizeText(source.imageAlt || source.imageTitle),
+    imageCaption: imageUrl ? normalizeText(source.imageCaption || source.caption) : '',
+    imageMaxWidth: normalizeImageSize(source.imageMaxWidth || source.imageWidth),
+    imageMaxHeight: normalizeImageSize(source.imageMaxHeight || source.imageHeight),
     linkText: normalizeText(source.linkText),
     linkUrl: normalizeText(source.linkUrl),
     startAt: normalizeText(source.startAt),
@@ -275,6 +300,29 @@ const buildAnnouncementBundle = (previousBundle, announcement) => {
   return {
     announcement,
     history: normalizeStoredHistory(history, announcement)
+  };
+};
+
+const removeAnnouncementHistoryItem = (previousBundle, historyId) => {
+  const id = normalizeText(historyId);
+  if (!id) {
+    const error = new Error('历史公告 id 不能为空');
+    error.status = 400;
+    throw error;
+  }
+
+  const announcement = previousBundle?.announcement || DEFAULT_ANNOUNCEMENT;
+  const history = normalizeStoredHistory(previousBundle?.history, announcement);
+  const nextHistory = history.filter((item) => item.id !== id);
+  if (nextHistory.length === history.length) {
+    const error = new Error('没有找到这条历史公告');
+    error.status = 404;
+    throw error;
+  }
+
+  return {
+    announcement,
+    history: nextHistory
   };
 };
 
@@ -2001,6 +2049,28 @@ export default {
       }
 
       const bundle = buildAnnouncementBundle(previousBundle, announcement);
+      await env.ANNOUNCEMENT_KV.put(ANNOUNCEMENT_KEY, JSON.stringify(bundle));
+      const publicTarget = await publishPublicAnnouncement(env, bundle);
+      return jsonResponse(request, env, {
+        ok: true,
+        ...bundle,
+        publicTarget
+      });
+    }
+
+    if (url.pathname.startsWith('/api/admin/announcement/history/') && request.method === 'DELETE') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(request, env, 401, '管理员口令无效');
+      }
+
+      const historyId = decodeURIComponent(url.pathname.slice('/api/admin/announcement/history/'.length));
+      let bundle;
+      try {
+        bundle = removeAnnouncementHistoryItem(await readAnnouncementBundle(env), historyId);
+      } catch (error) {
+        return errorResponse(request, env, error.status || 400, error.message);
+      }
+
       await env.ANNOUNCEMENT_KV.put(ANNOUNCEMENT_KEY, JSON.stringify(bundle));
       const publicTarget = await publishPublicAnnouncement(env, bundle);
       return jsonResponse(request, env, {

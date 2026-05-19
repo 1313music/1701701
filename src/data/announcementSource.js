@@ -9,6 +9,12 @@ const normalizeText = (value, fallback = '') => {
   return normalized || fallback;
 };
 
+const normalizeImageSize = (value) => {
+  const size = Number.parseInt(value, 10);
+  if (!Number.isFinite(size) || size <= 0) return '';
+  return Math.min(Math.max(size, 80), 1600);
+};
+
 const parseAnnouncement = (payload) => {
   const source = payload?.announcement && typeof payload.announcement === 'object'
     ? payload.announcement
@@ -19,6 +25,7 @@ const parseAnnouncement = (payload) => {
   const id = normalizeText(source.id);
   const content = normalizeText(source.content || source.message);
   if (!id || !content) return null;
+  const imageUrl = normalizeText(source.imageUrl || source.image);
 
   return {
     id,
@@ -28,6 +35,11 @@ const parseAnnouncement = (payload) => {
     type: normalizeText(source.type, 'info'),
     force: source.force === true,
     confirmText: normalizeText(source.confirmText, '我知道了'),
+    imageUrl,
+    imageAlt: imageUrl ? normalizeText(source.imageAlt || source.imageTitle || source.title, '公告图片') : normalizeText(source.imageAlt || source.imageTitle),
+    imageCaption: imageUrl ? normalizeText(source.imageCaption || source.caption) : '',
+    imageMaxWidth: normalizeImageSize(source.imageMaxWidth || source.imageWidth),
+    imageMaxHeight: normalizeImageSize(source.imageMaxHeight || source.imageHeight),
     linkText: normalizeText(source.linkText),
     linkUrl: normalizeText(source.linkUrl),
     startAt: normalizeText(source.startAt),

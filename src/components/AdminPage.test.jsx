@@ -6,6 +6,10 @@ import AdminPage from './AdminPage.jsx';
 
 vi.mock('../data/announcementAdminApi.js', () => ({
   isAnnouncementAdminApiConfigured: () => true,
+  deleteAnnouncementHistoryItem: vi.fn(async () => ({
+    ok: true,
+    history: []
+  })),
   publishAnnouncement: vi.fn(async ({ announcement }) => ({
     ...announcement,
     updatedAt: '2026-05-18T00:00:00.000Z'
@@ -174,7 +178,15 @@ vi.mock('../data/announcementSource.js', () => ({
       startAt: '',
       endAt: '',
       updatedAt: ''
-    }
+    },
+    history: [
+      {
+        id: 'history-notice',
+        title: '历史旧公告',
+        content: '旧公告正文',
+        updatedAt: '2026-05-17T00:00:00.000Z'
+      }
+    ]
   }))
 }));
 
@@ -202,6 +214,18 @@ describe('AdminPage', () => {
     fireEvent.change(screen.getByLabelText('正文'), {
       target: { value: '新的正文' }
     });
+    fireEvent.change(screen.getByLabelText('图片地址'), {
+      target: { value: 'https://cdn.example.com/notice.jpg' }
+    });
+    fireEvent.change(screen.getByLabelText('图片描述'), {
+      target: { value: '公告配图' }
+    });
+    fireEvent.change(screen.getByLabelText('图片最大宽度(px)'), {
+      target: { value: '360' }
+    });
+    fireEvent.change(screen.getByLabelText('图片最大高度(px)'), {
+      target: { value: '280' }
+    });
     fireEvent.click(screen.getByRole('button', { name: '发布公告' }));
 
     await waitFor(() => {
@@ -210,12 +234,40 @@ describe('AdminPage', () => {
         announcement: expect.objectContaining({
           id: 'current-notice',
           title: '新的公告',
-          content: '新的正文'
+          content: '新的正文',
+          imageUrl: 'https://cdn.example.com/notice.jpg',
+          imageAlt: '公告配图',
+          imageMaxWidth: '360',
+          imageMaxHeight: '280'
         })
       }));
     });
 
     expect(await screen.findByText('公告已发布')).toBeInTheDocument();
+  });
+
+  it('deletes announcement history items from the admin list', async () => {
+    const { deleteAnnouncementHistoryItem } = await import('../data/announcementAdminApi.js');
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<AdminPage />);
+
+    await screen.findByText('历史旧公告');
+    fireEvent.change(screen.getByLabelText('管理员口令'), {
+      target: { value: 'secret-token' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '删除历史公告：历史旧公告' }));
+
+    await waitFor(() => {
+      expect(deleteAnnouncementHistoryItem).toHaveBeenCalledWith({
+        id: 'history-notice',
+        token: 'secret-token'
+      });
+    });
+    expect(await screen.findByText('历史公告已删除')).toBeInTheDocument();
+    expect(screen.getByText('暂无历史公告')).toBeInTheDocument();
+
+    confirmSpy.mockRestore();
   });
 
   it('publishes gallery images with the shared admin token', async () => {

@@ -46,6 +46,15 @@
   opacity: 0.58;
 }
 
+.admin-icon-btn.danger {
+  color: #b33b3b;
+}
+
+.admin-icon-btn.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, #b33b3b 12%, transparent);
+  border-color: color-mix(in srgb, #b33b3b 32%, var(--glass-border));
+}
+
 .admin-icon-btn .is-spinning {
   animation: admin-spin 0.9s linear infinite;
 }
@@ -346,6 +355,56 @@
 
 .admin-result a:hover {
   text-decoration: underline;
+}
+
+.admin-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--hover-bg);
+  padding: 10px 10px 10px 12px;
+}
+
+.admin-history-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-history-copy strong,
+.admin-history-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-history-copy strong {
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.admin-history-copy span,
+.admin-empty {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin-empty {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--hover-bg);
+  padding: 11px 12px;
 }
 
 .admin-actions {

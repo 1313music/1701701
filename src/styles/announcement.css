@@ -47,8 +47,13 @@
 .announcement-title-row {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
+  text-align: center;
+}
+
+.announcement-title-row > div {
+  width: 100%;
 }
 
 .announcement-title {
@@ -56,6 +61,7 @@
   font-size: 22px;
   line-height: 1.3;
   font-weight: 800;
+  text-align: center;
 }
 
 .announcement-meta {
@@ -63,6 +69,7 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.3;
+  text-align: center;
 }
 
 .announcement-body {
@@ -76,6 +83,33 @@
   color: var(--text-secondary);
   font-size: 15px;
   line-height: 1.75;
+}
+
+.announcement-media {
+  margin: 0 0 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.announcement-media img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, var(--announcement-image-max-width, 420px));
+  max-height: min(38vh, var(--announcement-image-max-height, 340px));
+  object-fit: contain;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 68%, rgba(255, 255, 255, 0.18));
+  background: color-mix(in srgb, var(--hover-bg) 58%, transparent);
+}
+
+.announcement-media figcaption {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .announcement-history {

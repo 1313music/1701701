@@ -15,6 +15,11 @@ describe('AnnouncementModal', () => {
           id: 'current',
           title: '站点公告',
           content: '暂无新的公告。',
+          imageUrl: '/img/notice.jpg',
+          imageAlt: '公告配图',
+          imageCaption: '公告图片说明',
+          imageMaxWidth: 360,
+          imageMaxHeight: 280,
           confirmText: '我知道了'
         }}
         history={[
@@ -31,6 +36,11 @@ describe('AnnouncementModal', () => {
     );
 
     expect(screen.getByText('历史公告')).toBeInTheDocument();
+    const image = screen.getByRole('img', { name: '公告配图' });
+    expect(image).toHaveAttribute('src', '/img/notice.jpg');
+    expect(image.closest('figure')?.style.getPropertyValue('--announcement-image-max-width')).toBe('360px');
+    expect(image.closest('figure')?.style.getPropertyValue('--announcement-image-max-height')).toBe('280px');
+    expect(screen.getByText('公告图片说明')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '查看历史公告：历史公告一' }));
 
     expect(screen.getByRole('heading', { name: '历史公告一' })).toBeInTheDocument();

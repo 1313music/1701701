@@ -11,6 +11,7 @@ import {
   Music,
   RefreshCw,
   Save,
+  Trash2,
   UploadCloud
 } from 'lucide-react';
 import '../styles/admin.css';
@@ -22,6 +23,7 @@ import { loadDownloadSections } from '../data/downloadManifest.js';
 import { loadMusicManifestAlbums } from '../data/musicManifest.js';
 import { loadVideoCatalog } from '../data/videoManifest.js';
 import {
+  deleteAnnouncementHistoryItem,
   isAnnouncementAdminApiConfigured,
   publishAnnouncement
 } from '../data/announcementAdminApi.js';
@@ -61,6 +63,11 @@ const createDefaultDraft = () => ({
   type: 'info',
   force: false,
   confirmText: '我知道了',
+  imageUrl: '',
+  imageAlt: '',
+  imageCaption: '',
+  imageMaxWidth: '',
+  imageMaxHeight: '',
   linkText: '',
   linkUrl: '',
   startAt: '',
@@ -143,6 +150,22 @@ const fromDatetimeInputValue = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toISOString();
 };
 
+const getAdminAnnouncementDate = (announcement) => {
+  const value = announcement?.archivedAt
+    || announcement?.updatedAt
+    || announcement?.startAt
+    || announcement?.endAt
+    || '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date);
+};
+
 const createDraftFromAnnouncement = (announcement) => ({
   ...createDefaultDraft(),
   ...(announcement || {}),
@@ -157,6 +180,11 @@ const serializeDraft = (draft) => ({
   content: String(draft.content || '').trim(),
   type: String(draft.type || 'info').trim(),
   confirmText: String(draft.confirmText || '').trim() || '我知道了',
+  imageUrl: String(draft.imageUrl || '').trim(),
+  imageAlt: String(draft.imageAlt || '').trim(),
+  imageCaption: String(draft.imageCaption || '').trim(),
+  imageMaxWidth: String(draft.imageMaxWidth || '').trim(),
+  imageMaxHeight: String(draft.imageMaxHeight || '').trim(),
   linkText: String(draft.linkText || '').trim(),
   linkUrl: String(draft.linkUrl || '').trim(),
   startAt: fromDatetimeInputValue(draft.startAt),
@@ -191,6 +219,7 @@ const AdminPage = () => {
   const downloadApiConfigured = useMemo(() => isDownloadAdminApiConfigured(), []);
   const [activePanel, setActivePanel] = useState(ADMIN_PANEL_ANNOUNCEMENT);
   const [draft, setDraft] = useState(createDefaultDraft);
+  const [announcementHistory, setAnnouncementHistory] = useState([]);
   const [galleryDraft, setGalleryDraft] = useState(createDefaultGalleryDraft);
   const [musicDraft, setMusicDraft] = useState(createDefaultMusicDraft);
   const [videoDraft, setVideoDraft] = useState(createDefaultVideoDraft);
@@ -246,19 +275,23 @@ const AdminPage = () => {
   const [isVideoAccessLoading, setIsVideoAccessLoading] = useState(false);
   const [isVideoAccessSaving, setIsVideoAccessSaving] = useState(false);
   const [isDownloadSaving, setIsDownloadSaving] = useState(false);
+  const [deletingHistoryId, setDeletingHistoryId] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const loadCurrentAnnouncement = async () => {
     setIsLoading(true);
     try {
       const result = await loadAnnouncement();
+      setAnnouncementHistory(Array.isArray(result.history) ? result.history : []);
       if (result.announcement) {
         setDraft(createDraftFromAnnouncement(result.announcement));
         setAnnouncementStatus({ tone: 'success', message: '已读取当前公告' });
       } else {
+        setAnnouncementHistory([]);
         setAnnouncementStatus({ tone: 'info', message: '当前没有可用公告，可直接新建' });
       }
     } catch (error) {
+      setAnnouncementHistory([]);
       setAnnouncementStatus({ tone: 'error', message: error?.message || '公告读取失败' });
     } finally {
       setIsLoading(false);
@@ -508,11 +541,34 @@ const AdminPage = () => {
     try {
       const published = await publishAnnouncement({ announcement, token });
       setDraft(createDraftFromAnnouncement(published));
+      if (Array.isArray(published?.history)) {
+        setAnnouncementHistory(published.history);
+      }
       setAnnouncementStatus({ tone: 'success', message: '公告已发布' });
     } catch (error) {
       setAnnouncementStatus({ tone: 'error', message: error?.message || '公告发布失败' });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteHistoryItem = async (historyItem) => {
+    if (!historyItem?.id || deletingHistoryId) return;
+    const confirmed = window.confirm(`确定删除历史公告「${historyItem.title || historyItem.id}」吗？`);
+    if (!confirmed) return;
+
+    setDeletingHistoryId(historyItem.id);
+    try {
+      const result = await deleteAnnouncementHistoryItem({
+        id: historyItem.id,
+        token
+      });
+      setAnnouncementHistory(Array.isArray(result?.history) ? result.history : []);
+      setAnnouncementStatus({ tone: 'success', message: '历史公告已删除' });
+    } catch (error) {
+      setAnnouncementStatus({ tone: 'error', message: error?.message || '历史公告删除失败' });
+    } finally {
+      setDeletingHistoryId('');
     }
   };
 
@@ -884,6 +940,61 @@ const AdminPage = () => {
                   placeholder="输入要弹给用户看的内容"
                 />
               </label>
+
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>图片地址</span>
+                  <input
+                    value={draft.imageUrl}
+                    onChange={(event) => updateDraftField('imageUrl', event.target.value)}
+                    placeholder="https://.../notice.jpg 或 /img/notice.jpg"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>图片描述</span>
+                  <input
+                    value={draft.imageAlt}
+                    onChange={(event) => updateDraftField('imageAlt', event.target.value)}
+                    placeholder="用于无障碍和图片加载失败时显示"
+                  />
+                </label>
+              </div>
+
+              <label className="admin-field">
+                <span>图片说明</span>
+                <input
+                  value={draft.imageCaption}
+                  onChange={(event) => updateDraftField('imageCaption', event.target.value)}
+                  placeholder="可选，会显示在图片下方"
+                />
+              </label>
+
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>图片最大宽度(px)</span>
+                  <input
+                    type="number"
+                    min="80"
+                    max="1600"
+                    step="10"
+                    value={draft.imageMaxWidth}
+                    onChange={(event) => updateDraftField('imageMaxWidth', event.target.value)}
+                    placeholder="420"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>图片最大高度(px)</span>
+                  <input
+                    type="number"
+                    min="80"
+                    max="1600"
+                    step="10"
+                    value={draft.imageMaxHeight}
+                    onChange={(event) => updateDraftField('imageMaxHeight', event.target.value)}
+                    placeholder="340"
+                  />
+                </label>
+              </div>
             </section>
 
             <section className="admin-section">
@@ -955,6 +1066,36 @@ const AdminPage = () => {
                   placeholder="/about"
                 />
               </label>
+            </section>
+
+            <section className="admin-section">
+              <div className="admin-section-title">历史公告</div>
+              {announcementHistory.length > 0 ? (
+                <div className="admin-history-list">
+                  {announcementHistory.map((item) => (
+                    <div className="admin-history-item" key={item.id}>
+                      <div className="admin-history-copy">
+                        <strong>{item.title || '站点公告'}</strong>
+                        <span>
+                          {[item.id, getAdminAnnouncementDate(item)].filter(Boolean).join(' · ')}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="admin-icon-btn danger"
+                        onClick={() => handleDeleteHistoryItem(item)}
+                        disabled={Boolean(deletingHistoryId)}
+                        aria-label={`删除历史公告：${item.title || item.id}`}
+                        title="删除历史公告"
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="admin-empty">暂无历史公告</div>
+              )}
             </section>
 
             <div className="admin-actions">
