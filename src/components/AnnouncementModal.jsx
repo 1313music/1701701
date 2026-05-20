@@ -28,12 +28,6 @@ const formatAnnouncementDate = (announcement) => {
   }).format(date);
 };
 
-const getAnnouncementPreview = (content) => {
-  const preview = renderAnnouncementParagraphs(content).join(' ');
-  if (preview.length <= 56) return preview;
-  return `${preview.slice(0, 56)}...`;
-};
-
 const getImageSizeStyle = (announcement) => {
   const style = {};
   const maxWidth = Number.parseInt(announcement?.imageMaxWidth, 10);
@@ -51,10 +45,12 @@ const getImageSizeStyle = (announcement) => {
 
 const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm }) => {
   const [selectedHistoryId, setSelectedHistoryId] = useState('');
+  const [isHistoryListOpen, setIsHistoryListOpen] = useState(false);
   const handleClose = useCallback(() => {
     setSelectedHistoryId('');
+    setIsHistoryListOpen(false);
     onConfirm?.();
-  }, [onConfirm, setSelectedHistoryId]);
+  }, [onConfirm, setIsHistoryListOpen, setSelectedHistoryId]);
 
   useEffect(() => {
     if (!open || announcement?.force) return undefined;
@@ -75,12 +71,15 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
 
   const historyItems = Array.isArray(history) ? history : [];
   const selectedHistory = historyItems.find((item) => item.id === selectedHistoryId);
+  const isHistoryListView = isHistoryListOpen && !selectedHistory;
   const displayedAnnouncement = selectedHistory || announcement;
   const paragraphs = renderAnnouncementParagraphs(displayedAnnouncement.content);
-  const hasLink = Boolean(displayedAnnouncement.linkText && displayedAnnouncement.linkUrl);
+  const hasLink = !isHistoryListView && Boolean(displayedAnnouncement.linkText && displayedAnnouncement.linkUrl);
   const hasImage = Boolean(displayedAnnouncement.imageUrl);
   const isViewingHistory = Boolean(selectedHistory);
-  const displayDate = formatAnnouncementDate(displayedAnnouncement);
+  const displayTitle = isHistoryListView ? '历史公告' : displayedAnnouncement.title || '站点公告';
+  const displayDate = isHistoryListView ? '' : formatAnnouncementDate(displayedAnnouncement);
+  const showHistoryList = historyItems.length > 0 && isHistoryListView;
 
   return (
     <div
@@ -97,69 +96,81 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
         <div className="announcement-title-row">
           <div>
             <h3 className="announcement-title" id="announcement-title">
-              {displayedAnnouncement.title || '站点公告'}
+              {displayTitle}
             </h3>
             {displayDate && (
               <div className="announcement-meta">{displayDate}</div>
             )}
           </div>
         </div>
-        <div className="announcement-body">
-          {hasImage && (
-            <figure className="announcement-media" style={getImageSizeStyle(displayedAnnouncement)}>
-              <img
-                src={displayedAnnouncement.imageUrl}
-                alt={displayedAnnouncement.imageAlt || displayedAnnouncement.title || '公告图片'}
-                loading="lazy"
-              />
-              {displayedAnnouncement.imageCaption && (
-                <figcaption>{displayedAnnouncement.imageCaption}</figcaption>
-              )}
-            </figure>
-          )}
-          {paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </div>
-        <div className="announcement-history" aria-label="历史公告">
-          <div className="announcement-history-title">历史公告</div>
-          {historyItems.length > 0 ? (
+        {!isHistoryListView && (
+          <div className="announcement-body">
+            {hasImage && (
+              <figure className="announcement-media" style={getImageSizeStyle(displayedAnnouncement)}>
+                <img
+                  src={displayedAnnouncement.imageUrl}
+                  alt={displayedAnnouncement.imageAlt || displayedAnnouncement.title || '公告图片'}
+                  loading="lazy"
+                />
+                {displayedAnnouncement.imageCaption && (
+                  <figcaption>{displayedAnnouncement.imageCaption}</figcaption>
+                )}
+              </figure>
+            )}
+            {paragraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+        )}
+        {showHistoryList && (
+          <div className="announcement-history" aria-label="历史公告">
             <div className="announcement-history-list">
               {historyItems.map((item) => (
                 <button
                   type="button"
                   key={item.id}
                   className={`announcement-history-item ${selectedHistoryId === item.id ? 'is-active' : ''}`}
-                  onClick={() => setSelectedHistoryId(item.id)}
+                  onClick={() => {
+                    setSelectedHistoryId(item.id);
+                    setIsHistoryListOpen(false);
+                  }}
                   aria-pressed={selectedHistoryId === item.id}
                   aria-label={`查看历史公告：${item.title || '站点公告'}`}
                 >
-                  <span className="announcement-history-item-head">
-                    <span>{item.title || '站点公告'}</span>
-                    {formatAnnouncementDate(item) && (
-                      <time dateTime={getAnnouncementDate(item)}>
-                        {formatAnnouncementDate(item)}
-                      </time>
-                    )}
+                  <span className="announcement-history-item-title">
+                    {item.title || '站点公告'}
                   </span>
-                  <span className="announcement-history-preview">
-                    {getAnnouncementPreview(item.content)}
-                  </span>
+                  {formatAnnouncementDate(item) && (
+                    <time dateTime={getAnnouncementDate(item)}>
+                      {formatAnnouncementDate(item)}
+                    </time>
+                  )}
                 </button>
               ))}
             </div>
-          ) : (
-            <div className="announcement-history-empty">暂无历史公告</div>
-          )}
-        </div>
+          </div>
+        )}
         <div className="announcement-actions">
-          {isViewingHistory && (
+          {(isViewingHistory || isHistoryListView) && (
             <button
               type="button"
               className="announcement-btn ghost"
-              onClick={() => setSelectedHistoryId('')}
+              onClick={() => {
+                setSelectedHistoryId('');
+                setIsHistoryListOpen(false);
+              }}
             >
               返回最新
+            </button>
+          )}
+          {!isViewingHistory && !isHistoryListView && historyItems.length > 0 && (
+            <button
+              type="button"
+              className="announcement-btn ghost"
+              onClick={() => setIsHistoryListOpen((value) => !value)}
+              aria-expanded={isHistoryListOpen}
+            >
+              {isHistoryListOpen ? '收起历史' : '历史公告'}
             </button>
           )}
           {hasLink && (

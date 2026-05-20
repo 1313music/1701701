@@ -113,36 +113,30 @@
 }
 
 .announcement-history {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  margin-top: 2px;
-  padding-top: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--glass-border) 76%, transparent);
-}
-
-.announcement-history-title {
-  color: var(--text-main);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.2;
+  margin-top: -2px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 54%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--hover-bg) 34%, transparent);
 }
 
 .announcement-history-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .announcement-history-item {
   width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--glass-border) 70%, transparent);
-  background: color-mix(in srgb, var(--bg-color) 46%, transparent);
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
   color: var(--text-main);
   text-align: left;
   cursor: pointer;
@@ -150,40 +144,24 @@
 
 .announcement-history-item:hover,
 .announcement-history-item.is-active {
-  border-color: color-mix(in srgb, var(--text-main) 22%, var(--glass-border));
   background: color-mix(in srgb, var(--hover-bg) 72%, transparent);
 }
 
-.announcement-history-item-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.announcement-history-item-title {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 14px;
   font-weight: 750;
   line-height: 1.3;
 }
 
-.announcement-history-item-head span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.announcement-history-item-head time {
+.announcement-history-item time {
   flex: 0 0 auto;
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 650;
-}
-
-.announcement-history-preview,
-.announcement-history-empty {
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
 }
 
 .announcement-actions {

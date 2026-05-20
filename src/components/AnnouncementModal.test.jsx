@@ -20,6 +20,8 @@ describe('AnnouncementModal', () => {
           imageCaption: '公告图片说明',
           imageMaxWidth: 360,
           imageMaxHeight: 280,
+          linkText: '查看关于页',
+          linkUrl: '/about',
           confirmText: '我知道了'
         }}
         history={[
@@ -35,16 +37,25 @@ describe('AnnouncementModal', () => {
       />
     );
 
-    expect(screen.getByText('历史公告')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '历史公告' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '查看历史公告：历史公告一' })).not.toBeInTheDocument();
     const image = screen.getByRole('img', { name: '公告配图' });
     expect(image).toHaveAttribute('src', '/img/notice.jpg');
     expect(image.closest('figure')?.style.getPropertyValue('--announcement-image-max-width')).toBe('360px');
     expect(image.closest('figure')?.style.getPropertyValue('--announcement-image-max-height')).toBe('280px');
     expect(screen.getByText('公告图片说明')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '历史公告' }));
+
+    expect(screen.getByRole('heading', { name: '历史公告' })).toBeInTheDocument();
+    expect(screen.queryByText('暂无新的公告。')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '查看关于页' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '收起历史' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '返回最新' })).toBeInTheDocument();
+
     fireEvent.click(screen.getByRole('button', { name: '查看历史公告：历史公告一' }));
 
     expect(screen.getByRole('heading', { name: '历史公告一' })).toBeInTheDocument();
-    expect(screen.getAllByText('历史公告正文')).toHaveLength(2);
+    expect(screen.getByText('历史公告正文')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '返回最新' }));
     expect(screen.getByRole('heading', { name: '站点公告' })).toBeInTheDocument();
