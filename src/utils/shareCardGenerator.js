@@ -305,16 +305,23 @@ export const createShareCardDataUrl = async ({
   trackName,
   albumName,
   url,
-  cover
+  cover,
+  miniProgram
 }) => {
   if (typeof document === 'undefined' || !url) return '';
   const isVideoCard = type === 'video';
   const isDark = resolveIsDarkTheme();
   const useManualBlur = shouldUseManualCanvasBlur();
   const width = isVideoCard ? 1600 : 1080;
-  const brandFontSize = isVideoCard ? 30 : 36;
-  const brandGapTop = isVideoCard ? 0 : 32;
-  const brandGapBottom = isVideoCard ? 0 : 44;
+  const shouldLoadMiniProgramCode = !isVideoCard && Boolean(miniProgram?.codeUrl);
+  const [coverImage, miniProgramCodeImage] = await Promise.all([
+    loadCanvasImageWithFallback(cover),
+    shouldLoadMiniProgramCode ? loadCanvasImageWithFallback(miniProgram.codeUrl) : Promise.resolve(null)
+  ]);
+  const hasMiniProgramCode = Boolean(miniProgramCodeImage);
+  const brandFontSize = isVideoCard ? 30 : (hasMiniProgramCode ? 42 : 36);
+  const brandGapTop = isVideoCard ? 0 : (hasMiniProgramCode ? 76 : 32);
+  const brandGapBottom = isVideoCard ? 0 : (hasMiniProgramCode ? 90 : 44);
   const brandAreaHeight = isVideoCard ? 0 : brandGapTop + brandFontSize + brandGapBottom;
   const cardBodyHeight = isVideoCard ? 760 : 1460;
   const cardHeight = cardBodyHeight + brandAreaHeight;
@@ -324,9 +331,6 @@ export const createShareCardDataUrl = async ({
   canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
-
-  let coverImage = null;
-  coverImage = await loadCanvasImageWithFallback(cover);
 
   const defaultAccent = isDark
     ? { r: 96, g: 146, b: 206 }
@@ -368,6 +372,7 @@ export const createShareCardDataUrl = async ({
   const cardY = 0;
   const cardWidth = width;
   const cardRadius = 0;
+  let miniProgramQrLayout = null;
 
   if (coverImage) {
     drawBlurredCover(
@@ -698,6 +703,33 @@ export const createShareCardDataUrl = async ({
     drawSkipIcon(prevX, controlsY, skipIconSize, 'prev');
     drawPauseIcon(pauseX, controlsY, pauseIconSize);
     drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
+
+    if (hasMiniProgramCode) {
+      const qrSize = 148;
+      const qrRightGap = width - contentRight;
+      const qrX = contentRight - qrSize;
+      const qrY = cardHeight - qrSize - qrRightGap;
+      miniProgramQrLayout = {
+        bottomY: qrY + qrSize
+      };
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, 16);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, 16);
+      ctx.clip();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(qrX, qrY, qrSize, qrSize);
+      drawImageCover(ctx, miniProgramCodeImage, qrX, qrY, qrSize, qrSize);
+      ctx.restore();
+    }
   }
 
   const brandText = '1701701.xyz';
@@ -711,11 +743,11 @@ export const createShareCardDataUrl = async ({
     ctx.font = `600 ${brandFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
     ctx.fillText(brandText, brandX, brandY);
   } else {
-    const infoBrandY = cardBodyHeight + brandGapTop;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    ctx.textBaseline = miniProgramQrLayout ? 'bottom' : 'top';
     ctx.fillStyle = palette.text;
     ctx.font = `600 ${brandFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
+    const infoBrandY = miniProgramQrLayout?.bottomY || cardBodyHeight + brandGapTop;
     ctx.fillText(brandText, width / 2, infoBrandY);
   }
 
