@@ -344,7 +344,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   useEffect(() => {
     const audio = audioRef.current;
-    audio.preload = 'auto';
+    audio.preload = 'metadata';
     audio.playsInline = true;
     const updateProgress = () => {
       const nextTime = audio.currentTime || 0;
@@ -445,11 +445,16 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       audio.pause();
       return;
     }
-    if (isPlaying) {
-      const normalizedTrackSrc = toAbsoluteUrl(currentTrackSrc);
-      if (normalizedTrackSrc && audio.src !== normalizedTrackSrc) {
-        audio.src = normalizedTrackSrc;
+    audio.preload = isPlaying ? 'auto' : 'metadata';
+    const normalizedTrackSrc = toAbsoluteUrl(currentTrackSrc);
+    const didSetSource = Boolean(normalizedTrackSrc && audio.src !== normalizedTrackSrc);
+    if (didSetSource) {
+      audio.src = normalizedTrackSrc;
+      if (!isPlaying && typeof audio.load === 'function') {
+        audio.load();
       }
+    }
+    if (isPlaying) {
       applyPendingRestore(audio);
       markPlaybackWaiting(audio.currentTime || 0);
       audio.play().catch(() => { });

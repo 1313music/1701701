@@ -256,4 +256,22 @@ describe('LyricsOverlay comment drawer requests', () => {
     expect(screen.getByRole('button', { name: '下一首' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '打开歌曲列表' })).toBeInTheDocument();
   });
+
+  it('previews the pointed seek time while hovering the desktop progress bar', () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0
+    });
+
+    render(<LyricsOverlay {...props} />);
+    const progressBar = document.body.querySelector('.overlay-progress-container');
+    progressBar.getBoundingClientRect = () => ({
+      left: 10,
+      width: 200
+    });
+
+    fireEvent.mouseEnter(progressBar, { clientX: 110 });
+
+    expect(screen.getByText('1:30 / 3:00')).toBeInTheDocument();
+  });
 });

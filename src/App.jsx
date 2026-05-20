@@ -10,6 +10,7 @@ import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAnnouncement } from './hooks/useAnnouncement.js';
+import { useAudioPlaybackShortcuts } from './hooks/useAudioPlaybackShortcuts.js';
 import { useAppShell } from './hooks/useAppShell.js';
 import { useLibraryState } from './hooks/useLibraryState.js';
 import { useSeoMeta } from './hooks/useSeoMeta.js';
@@ -386,6 +387,16 @@ const App = () => {
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
   const hasPlayerChrome = view !== 'video' && view !== 'admin';
   const shouldShowAnnouncementTrigger = view !== 'admin';
+
+  useAudioPlaybackShortcuts({
+    audioRef,
+    duration,
+    enabled: hasPlayerChrome && isLibraryReady,
+    handleNext,
+    handlePlayPause,
+    handlePrev
+  });
+
   const emptyAnnouncement = useMemo(() => ({
     ...EMPTY_ANNOUNCEMENT,
     title: announcementHistory.length > 0 ? '历史公告' : EMPTY_ANNOUNCEMENT.title,

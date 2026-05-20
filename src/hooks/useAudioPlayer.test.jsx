@@ -217,6 +217,45 @@ describe('useAudioPlayer lyric race', () => {
     });
   });
 
+  it('preloads current track metadata before playback starts', async () => {
+    const album = {
+      id: 'album-preload',
+      name: 'Album Preload',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      ['song-1.mp3', { album, song: album.songs[0] }]
+    ]);
+    const loadSpy = vi.spyOn(AudioMock.prototype, 'load');
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    await waitFor(() => {
+      expect(result.current.audioRef.current.src).toBe(
+        new URL('song-1.mp3', window.location.href).href
+      );
+    });
+
+    expect(result.current.audioRef.current.preload).toBe('metadata');
+    expect(result.current.audioRef.current.paused).toBe(true);
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      result.current.handlePlayPause();
+    });
+
+    await waitFor(() => {
+      expect(result.current.audioRef.current.preload).toBe('auto');
+    });
+  });
+
   it('keeps playback position when pausing and resuming the same track', async () => {
     const album = {
       id: 'album-2',

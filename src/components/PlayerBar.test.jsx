@@ -44,6 +44,20 @@ describe('PlayerBar', () => {
     expect(screen.getByText('01:02 / 02:22')).toBeInTheDocument();
   });
 
+  it('previews the pointed seek time while hovering the desktop progress bar', () => {
+    const props = createProps();
+    const { container } = render(<PlayerBar {...props} />);
+    const progressContainer = container.querySelector('.progress-container');
+    progressContainer.getBoundingClientRect = () => ({
+      left: 10,
+      width: 200
+    });
+
+    fireEvent.mouseEnter(progressContainer, { clientX: 110 });
+
+    expect(screen.getByText('01:11 / 02:22')).toBeInTheDocument();
+  });
+
   it('opens the full-screen player from the footer and expand button', () => {
     const props = createProps();
     const { container } = render(<PlayerBar {...props} />);

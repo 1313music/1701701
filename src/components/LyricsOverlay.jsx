@@ -49,6 +49,7 @@ const LyricsOverlay = ({
     const burstTimerRef = useRef([]);
     const [mobileLikeBursts, setMobileLikeBursts] = useState([]);
     const [desktopLikeBursts, setDesktopLikeBursts] = useState([]);
+    const [desktopProgressHover, setDesktopProgressHover] = useState(null);
     const [coverAtmosphereAssets, setCoverAtmosphereAssets] = useState(null);
 
     const {
@@ -139,6 +140,24 @@ const LyricsOverlay = ({
     const currentTrackSrc = currentTrack?.src || '';
     const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
     const canToggleFavorite = Boolean(currentTrackSrc);
+    const canShowDesktopProgressPreview = Number.isFinite(duration) && duration > 0;
+    const getDesktopProgressFromPointer = (event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (!rect.width) return null;
+        return Math.min(Math.max(((event.clientX - rect.left) / rect.width) * 100, 0), 100);
+    };
+    const handleDesktopProgressMouseMove = (event) => {
+        const nextProgress = getDesktopProgressFromPointer(event);
+        if (nextProgress == null) return;
+        setDesktopProgressHover(nextProgress);
+    };
+    const handleDesktopProgressMouseLeave = () => {
+        setDesktopProgressHover(null);
+    };
+    const desktopPreviewProgress = desktopProgressHover ?? 0;
+    const desktopPreviewTime = canShowDesktopProgressPreview
+        ? (duration * desktopPreviewProgress) / 100
+        : 0;
     const getLyricDistanceBucket = (index) => {
         if (currentLyricIndex < 0) return 6;
         return Math.min(Math.abs(index - currentLyricIndex), 6);
@@ -437,10 +456,22 @@ const LyricsOverlay = ({
                                             onClick={handleSeek}
                                             onPointerDown={handlePointerDown}
                                             onMouseDown={handleMouseDown}
+                                            onMouseEnter={handleDesktopProgressMouseMove}
+                                            onMouseMove={handleDesktopProgressMouseMove}
+                                            onMouseLeave={handleDesktopProgressMouseLeave}
                                             onTouchStart={handleTouchStart}
                                         >
                                             <div className="overlay-progress-fill" style={{ width: `${progress}%` }} />
                                             <div className={`overlay-progress-thumb ${isDragActive ? 'is-visible' : ''}`} style={{ left: `${progress}%` }} />
+                                            {canShowDesktopProgressPreview && desktopProgressHover != null && (
+                                                <div
+                                                    className="overlay-progress-hover-time"
+                                                    style={{ left: `clamp(44px, ${desktopProgressHover}%, calc(100% - 44px))` }}
+                                                    aria-hidden="true"
+                                                >
+                                                    {formatTime(desktopPreviewTime)} / {formatTime(duration)}
+                                                </div>
+                                            )}
                                             <div className="overlay-time-info">
                                                 <span>{formatTime(currentTime)}</span>
                                                 <span>{formatTime(duration)}</span>

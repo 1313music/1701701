@@ -51,6 +51,7 @@
   justify-content: center;
   border-radius: 999px;
   cursor: pointer;
+  position: relative;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -71,7 +72,34 @@
   justify-content: center;
   border-radius: 999px;
   cursor: pointer;
+  position: relative;
   transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.lyrics-overlay button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 42%, transparent);
+}
+
+.lyrics-overlay .icon-btn,
+.overlay-share-btn,
+.close-btn,
+.overlay-play-btn,
+.overlay-favorite-trigger,
+.overlay-comment-trigger {
+  position: relative;
+}
+
+.lyrics-overlay .icon-btn::before,
+.overlay-share-btn::before,
+.close-btn::before,
+.overlay-play-btn::before,
+.overlay-favorite-trigger::before,
+.overlay-comment-trigger::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
 }
 
 .close-btn:hover {
@@ -213,6 +241,25 @@
   height: 100%;
   background: white;
   border-radius: 4px;
+}
+
+.overlay-progress-hover-time {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(7, 8, 12, 0.88);
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2;
 }
 
 .overlay-time-info {
