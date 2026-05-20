@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { isAnnouncementActive, loadAnnouncement } from '../data/announcementSource.js';
 
 const ANNOUNCEMENT_READ_KEY = 'announcement:last-read-id:v1';
-const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const DEFAULT_POLL_INTERVAL_MS = 0;
 
 const shouldAutoOpenAnnouncement = (announcement) => (
   isAnnouncementActive(announcement)

@@ -51,8 +51,9 @@ npm run check
 
 - 默认地址：`https://r2.1701701.xyz/json/video-access.json`
 - 可选变量：`VITE_VIDEO_ACCESS_CONFIG_URL`
+- 可选缓存变量：`VITE_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS`，默认 `43200000`（12 小时），用于减少每次点视频都读取 R2
 - JSON 内含 `password` 和 `passwordVersion`
-- `/myadmin` 保存口令后会写入 R2，并自动生成新的 `passwordVersion`，旧的本地 30 天授权会失效
+- `/myadmin` 保存口令后会写入 R2，并自动生成新的 `passwordVersion`；旧的本地 365 天授权会在口令配置缓存过期后失效（默认最多 12 小时）
 
 `VITE_VIDEO_PASSWORD` 仍保留为兜底口令：当 R2 JSON 不存在或读取失败时使用，兼容现有行为。
 
@@ -61,6 +62,7 @@ npm run check
 ```bash
 VITE_VIDEO_PASSWORD=your-video-password
 VITE_VIDEO_ACCESS_CONFIG_URL=https://r2.1701701.xyz/json/video-access.json
+VITE_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS=43200000
 ```
 
 说明：这属于前端体验门禁，不作为安全认证使用。
@@ -211,7 +213,7 @@ VITE_ADMIN_API_BASE_URL=
 - `VITE_ADMIN_API_BASE_URL` 是新的通用后台 API 地址；如果设置了它，会优先于 `VITE_ANNOUNCEMENT_API_BASE_URL` 使用。
 - `VITE_ANNOUNCEMENT_URL` 为空时，会回退到站点内置的 `/announcement.json`。
 - 用户关闭某条公告后，会按 `id` 写入本地已读记录；如果你希望重新弹出，需要更新公告 `id`。
-- 前端会定时轮询 `VITE_ANNOUNCEMENT_URL`；在线用户在轮询周期内也能收到新公告。
+- 前端默认只在页面打开时读取一次 `VITE_ANNOUNCEMENT_URL`；发布新公告后，用户刷新或重新打开页面即可看到。
 - 公告 JSON 支持 `{ "announcement": 当前公告, "history": [历史公告] }` 格式；旧的单条公告对象格式仍可读取。
 - 公告支持可选通知方式字段：`deliveryMode`，`modal` 会自动弹窗，`silent` 只显示公告入口小圆点。
 - 公告支持可选图片字段：`imageUrl`、`imageAlt`、`imageCaption`、`imageMaxWidth`、`imageMaxHeight`。

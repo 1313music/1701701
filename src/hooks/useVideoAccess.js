@@ -6,7 +6,7 @@ import {
 } from '../data/videoAccessConfig.js';
 
 const VIDEO_ACCESS_KEY = 'videoAccessGranted';
-const VIDEO_ACCESS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const VIDEO_ACCESS_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 const LEGACY_VIDEO_ACCESS_VERSION = 'build-time';
 
 const getPasswordVersion = (config) => String(
@@ -95,8 +95,8 @@ export const useVideoAccess = () => {
     return { config: nextConfig, granted };
   }, [setVideoAccessGrantedState]);
 
-  const refreshVideoAccessConfig = useCallback(async () => {
-    const config = await loadVideoAccessConfig();
+  const refreshVideoAccessConfig = useCallback(async (options) => {
+    const config = await loadVideoAccessConfig(options);
     return applyVideoAccessConfig(config);
   }, [applyVideoAccessConfig]);
 

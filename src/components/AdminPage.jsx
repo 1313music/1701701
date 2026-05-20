@@ -688,7 +688,7 @@ const AdminPage = () => {
       });
       applyVideoAccessSettings(result?.config);
       setVideoAccessPublishResult(result);
-      setVideoStatus({ tone: 'success', message: '视频访问口令已保存，旧授权已失效' });
+      setVideoStatus({ tone: 'success', message: '视频访问口令已保存，旧授权将在缓存更新后失效' });
     } catch (error) {
       setVideoStatus({ tone: 'error', message: error?.message || '视频口令保存失败' });
     } finally {

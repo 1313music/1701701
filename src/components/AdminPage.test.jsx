@@ -478,7 +478,7 @@ describe('AdminPage', () => {
       }));
     });
 
-    expect(await screen.findByText('视频访问口令已保存，旧授权已失效')).toBeInTheDocument();
+    expect(await screen.findByText('视频访问口令已保存，旧授权将在缓存更新后失效')).toBeInTheDocument();
     expect(screen.getByDisplayValue('v2')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'json/video-access.json' })).toHaveAttribute(
       'href',

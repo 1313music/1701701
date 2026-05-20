@@ -6,7 +6,7 @@ import { useAnnouncement } from './useAnnouncement.js';
 
 const ANNOUNCEMENT_READ_KEY = 'announcement:last-read-id:v1';
 
-const AnnouncementHarness = ({ pollIntervalMs = 1000 }) => {
+const AnnouncementHarness = ({ pollIntervalMs }) => {
   const {
     announcement,
     announcementHistory,
@@ -120,6 +120,33 @@ describe('useAnnouncement', () => {
       expect(screen.getByTestId('announcement-id')).toHaveTextContent('announcement-2');
       expect(screen.getByTestId('announcement-open')).toHaveTextContent('open');
     });
+  });
+
+  it('does not poll for announcements by default', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'announcement-1',
+        enabled: true,
+        title: '更新',
+        content: '默认只加载一次'
+      })
+    });
+
+    render(<AnnouncementHarness />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('announcement-id')).toHaveTextContent('announcement-1');
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+    });
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('loads announcement history from the announcement payload', async () => {

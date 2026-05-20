@@ -78,7 +78,7 @@ describe('useVideoAccess', () => {
       granted: true,
       passwordVersion: 'v1'
     });
-    expect(stored.expiresAt).toBeGreaterThan(Date.now());
+    expect(stored.expiresAt).toBeGreaterThan(Date.now() + 360 * 24 * 60 * 60 * 1000);
   });
 
   it('invalidates a stored grant when the remote password version changes', async () => {
