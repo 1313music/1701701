@@ -35,15 +35,30 @@ npm run check
 
 ## 访问统计（Umami）
 
-主站通过 Umami 统计访问，统计服务单独部署在 `tongji.1701701.xyz`。
+主站通过 Umami Cloud 统计访问，不再依赖 Netlify 上的自建 `tongji.1701701.xyz` 服务。
 
-前端统计代码直接写在 `index.html`：
+前端入口会默认加载 Umami Cloud tracker，当前 Website ID 是 `51ff5826-49f4-459e-b5b3-2557bc898922`。如果以后更换 Umami 站点，可用 `VITE_UMAMI_WEBSITE_ID` 覆盖。
 
-```html
-<script defer src="https://tongji.1701701.xyz/script.js" data-website-id="620f8452-9530-409a-9fa5-909ea0297d88" data-host-url="https://tongji.1701701.xyz" data-domains="1701701.xyz"></script>
+Umami Cloud 设置：
+
+1. 登录或注册 `https://cloud.umami.is/signup`。
+2. 新建 Website，域名填 `1701701.xyz`。
+3. 在 Website 的 Tracking code 中复制 `data-website-id`。
+4. 如需替换当前默认站点，在 Cloudflare Pages 或本地 `.env.local` 中设置：
+
+```bash
+VITE_UMAMI_WEBSITE_ID=<website-id-from-umami-cloud>
+VITE_UMAMI_SCRIPT_URL=https://cloud.umami.is/script.js
+VITE_UMAMI_DOMAINS=1701701.xyz
+VITE_UMAMI_HOST_URL=
 ```
 
-说明：访问主站不会再额外请求 `https://r2.1701701.xyz/json/umami-config.json`。如需更换 Umami 站点或 Website ID，修改 `index.html` 后重新部署主站。Netlify 部署清单见 `docs/umami-netlify.md`。
+说明：
+
+- `VITE_UMAMI_SCRIPT_URL` 默认回退到 `https://cloud.umami.is/script.js`。
+- `VITE_UMAMI_DOMAINS` 默认回退到 `1701701.xyz`，用于避免本地开发和预览域名误记入线上统计。
+- `VITE_UMAMI_HOST_URL` 仅在自建或代理 tracker 时需要；Umami Cloud 保持为空。
+- 现有 `data-umami-event` 下载事件属性会继续生效。
 
 ## 视频访问口令（后台可轮换）
 

@@ -1,5 +1,9 @@
 # Umami Netlify Deployment
 
+> Historical note: this Netlify deployment path is no longer recommended for `1701701.xyz`.
+> The Netlify-hosted Umami service at `tongji.1701701.xyz` was paused after reaching usage limits.
+> Prefer Umami Cloud by setting `VITE_UMAMI_WEBSITE_ID` for the main site.
+
 This is for the standalone Umami service at `tongji.1701701.xyz`. Do not deploy the `1701701` Vite app as the Umami service; the main site only loads the tracker script.
 
 ## What Failed Last Time
