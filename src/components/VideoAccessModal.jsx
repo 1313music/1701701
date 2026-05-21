@@ -20,7 +20,7 @@ const VideoAccessModal = ({
       <div className="video-access-card" onClick={(event) => event.stopPropagation()}>
         <div className="video-access-copy-hint">
           <p className="video-access-copy-line">关注【{officialAccountName}】公众号</p>
-          <p className="video-access-copy-line">发送【{keyword}】获取视频密码</p>
+          <p className="video-access-copy-line">回复【{keyword}】获取视频密码</p>
         </div>
         <button
           type="button"
@@ -31,6 +31,7 @@ const VideoAccessModal = ({
         >
           <img loading="lazy" src={qrUrl} alt="公众号二维码" />
         </button>
+        <p className="video-access-password-note">如密码失效，请重新回复获取最新密码</p>
         <input
           className="video-access-input"
           type="password"
