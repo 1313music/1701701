@@ -48,8 +48,11 @@
 .comment-section-title {
   font-size: 20px;
   font-weight: 650;
+  line-height: 1.35;
   margin: 0;
   color: var(--text-main);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .comment-section-subtitle {

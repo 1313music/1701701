@@ -13,8 +13,7 @@ const CommentPage = ({ serverURL }) => (
     <CommentSection
       serverURL={serverURL}
       path="page:guestbook"
-      title="留言板"
-      subtitle="到此一游 留个印记"
+      title="一壶浊酒尽余欢 今宵别梦寒"
     />
   </div>
 );
