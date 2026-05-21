@@ -705,7 +705,7 @@ export const createShareCardDataUrl = async ({
     drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
 
     if (hasMiniProgramCode) {
-      const qrSize = 148;
+      const qrSize = 132;
       const qrRightGap = width - contentRight;
       const qrX = contentRight - qrSize;
       const qrY = cardHeight - qrSize - qrRightGap;
