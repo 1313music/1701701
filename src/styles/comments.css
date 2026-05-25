@@ -278,6 +278,25 @@
   gap: 14px;
 }
 
+.comment-section .wl-card .wl-content .wl-reply-to {
+  float: none;
+  display: inline;
+  margin: 0 0.35em 0 0;
+}
+
+.comment-section .wl-card .wl-content .wl-reply-to + div {
+  display: inline;
+}
+
+.comment-section .wl-card .wl-content .wl-reply-to + div > p:first-child {
+  display: inline;
+  margin: 0;
+}
+
+.comment-section .wl-card .wl-content .wl-reply-to + div > p:first-child + * {
+  margin-top: 0.55em;
+}
+
 .comment-section .wl-actions .wl-action[title="Markdown Guide"],
 .comment-section .wl-actions .wl-action[aria-label="Markdown is supported"],
 .comment-section .wl-actions .wl-action[title="GIF"],
