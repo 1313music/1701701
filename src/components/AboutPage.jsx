@@ -43,7 +43,7 @@ const AboutPage = () => {
         </section>
 
         <section className="about-v3-section">
-            <div className="about-v3-grid about-v3-grid-2">
+            <div className="about-v3-grid about-v3-grid-single">
                 <button
                     type="button"
                     className="about-v3-card about-v3-card--cta"
