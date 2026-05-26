@@ -1,19 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/about.css';
 
-const followItems = [
-    {
-        title: 'SongSharing',
-        subtitle: '一键上传·网易云盘',
-        image: 'https://p1.music.126.net/h1WFXzKQ6qpjB1STRsD5Qg==/109951172851448634.jpg'
-    },
-    {
-        title: '民谣俱乐部',
-        subtitle: '关注我们',
-        image: 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg'
-    },
-];
-
 const officialCd = {
     title: '官方专辑',
     subtitle: '购买正版',
@@ -70,17 +57,6 @@ const AboutPage = () => {
                         <span>购买正版</span>
                     </div>
                 </button>
-                {followItems.map((item) => (
-                    <div className="about-v3-card" key={item.title}>
-                        <div className="about-v3-card-media">
-                            <img loading="lazy" src={item.image} alt={item.title} />
-                        </div>
-                        <div className="about-v3-card-body">
-                            <h3>{item.title}</h3>
-                            <span>{item.subtitle}</span>
-                        </div>
-                    </div>
-                ))}
             </div>
         </section>
         {isJumpOpen && (
