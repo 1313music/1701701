@@ -226,31 +226,50 @@ const normalizeStoredHistory = (history, currentAnnouncement) => {
     .slice(0, ANNOUNCEMENT_HISTORY_LIMIT);
 };
 
+const createDefaultAnnouncementBundle = () => ({
+  announcement: { ...DEFAULT_ANNOUNCEMENT_BUNDLE.announcement },
+  history: []
+});
+
+const normalizeAnnouncementBundlePayload = (payload) => {
+  if (!payload || typeof payload !== 'object') {
+    return createDefaultAnnouncementBundle();
+  }
+
+  const announcementSource = payload?.announcement && typeof payload.announcement === 'object'
+    ? payload.announcement
+    : payload;
+  const announcement = {
+    ...DEFAULT_ANNOUNCEMENT,
+    ...announcementSource
+  };
+  const history = normalizeStoredHistory(payload?.history, announcement);
+
+  return { announcement, history };
+};
+
+const readPublicAnnouncementBundle = async (env) => {
+  try {
+    const object = await env.ANNOUNCEMENT_PUBLIC_BUCKET?.get(getPublicObjectKey(env));
+    if (!object) return null;
+
+    return normalizeAnnouncementBundlePayload(JSON.parse(await object.text()));
+  } catch {
+    return null;
+  }
+};
+
 const readAnnouncementBundle = async (env) => {
   const raw = await env.ANNOUNCEMENT_KV?.get(ANNOUNCEMENT_KEY);
-  if (!raw) return {
-    announcement: { ...DEFAULT_ANNOUNCEMENT_BUNDLE.announcement },
-    history: []
-  };
-
-  try {
-    const payload = JSON.parse(raw);
-    const announcementSource = payload?.announcement && typeof payload.announcement === 'object'
-      ? payload.announcement
-      : payload;
-    const announcement = {
-      ...DEFAULT_ANNOUNCEMENT,
-      ...announcementSource
-    };
-    const history = normalizeStoredHistory(payload?.history, announcement);
-
-    return { announcement, history };
-  } catch {
-    return {
-      announcement: { ...DEFAULT_ANNOUNCEMENT_BUNDLE.announcement },
-      history: []
-    };
+  if (raw) {
+    try {
+      return normalizeAnnouncementBundlePayload(JSON.parse(raw));
+    } catch {
+      // Fall through to the public object so early deployments can recover.
+    }
   }
+
+  return await readPublicAnnouncementBundle(env) || createDefaultAnnouncementBundle();
 };
 
 const normalizeAnnouncement = (payload, previousAnnouncement) => {
@@ -2087,7 +2106,18 @@ export default {
       const historyId = decodeURIComponent(url.pathname.slice('/api/admin/announcement/history/'.length));
       let bundle;
       try {
-        bundle = removeAnnouncementHistoryItem(await readAnnouncementBundle(env), historyId);
+        const storedBundle = await readAnnouncementBundle(env);
+        try {
+          bundle = removeAnnouncementHistoryItem(storedBundle, historyId);
+        } catch (error) {
+          if (error.status !== 404) throw error;
+          const publicBundle = await readPublicAnnouncementBundle(env);
+          if (!publicBundle) throw error;
+          bundle = removeAnnouncementHistoryItem({
+            announcement: storedBundle.announcement || publicBundle.announcement,
+            history: publicBundle.history
+          }, historyId);
+        }
       } catch (error) {
         return errorResponse(request, env, error.status || 400, error.message);
       }

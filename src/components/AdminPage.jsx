@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -25,6 +25,7 @@ import { loadVideoCatalog } from '../data/videoManifest.js';
 import {
   deleteAnnouncementHistoryItem,
   isAnnouncementAdminApiConfigured,
+  loadAdminAnnouncement,
   publishAnnouncement
 } from '../data/announcementAdminApi.js';
 import {
@@ -252,6 +253,7 @@ const AdminPage = () => {
       return '';
     }
   });
+  const initialTokenRef = useRef(token);
   const [announcementStatus, setAnnouncementStatus] = useState({
     tone: announcementApiConfigured ? 'idle' : 'error',
     message: announcementApiConfigured ? '正在读取当前公告...' : '公告后台接口未配置'
@@ -283,14 +285,21 @@ const AdminPage = () => {
   const [deletingHistoryId, setDeletingHistoryId] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const loadCurrentAnnouncement = async () => {
+  const loadCurrentAnnouncement = useCallback(async (adminToken = '') => {
     setIsLoading(true);
     try {
-      const result = await loadAnnouncement();
+      const normalizedToken = String(adminToken || '').trim();
+      const shouldUseAdminApi = announcementApiConfigured && normalizedToken;
+      const result = shouldUseAdminApi
+        ? await loadAdminAnnouncement({ token: normalizedToken })
+        : await loadAnnouncement();
       setAnnouncementHistory(Array.isArray(result.history) ? result.history : []);
       if (result.announcement) {
         setDraft(createDraftFromAnnouncement(result.announcement));
-        setAnnouncementStatus({ tone: 'success', message: '已读取当前公告' });
+        setAnnouncementStatus({
+          tone: 'success',
+          message: shouldUseAdminApi ? '已读取后台公告' : '已读取当前公告'
+        });
       } else {
         setAnnouncementHistory([]);
         setAnnouncementStatus({ tone: 'info', message: '当前没有可用公告，可直接新建' });
@@ -301,7 +310,7 @@ const AdminPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [announcementApiConfigured]);
 
   const loadGalleryCategories = async () => {
     try {
@@ -343,8 +352,8 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
-    void loadCurrentAnnouncement();
-  }, []);
+    void loadCurrentAnnouncement(initialTokenRef.current);
+  }, [loadCurrentAnnouncement]);
 
   useEffect(() => {
     if (activePanel === ADMIN_PANEL_GALLERY && galleryCategories.length === 0) {
@@ -819,7 +828,7 @@ const AdminPage = () => {
         <button
           type="button"
           className="admin-icon-btn"
-          onClick={loadCurrentAnnouncement}
+          onClick={() => loadCurrentAnnouncement(token)}
           disabled={isLoading}
           aria-label="刷新当前公告"
           title="刷新当前公告"

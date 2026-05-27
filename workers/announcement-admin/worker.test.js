@@ -229,6 +229,56 @@ describe('announcement admin worker', () => {
     });
   });
 
+  it('can delete history that only exists in the public announcement object', async () => {
+    const env = createEnv();
+    await env.ANNOUNCEMENT_KV.put('current', JSON.stringify({
+      announcement: {
+        id: 'notice-2',
+        enabled: true,
+        title: '第二次公告',
+        content: '第二条正文'
+      },
+      history: []
+    }));
+    await env.ANNOUNCEMENT_PUBLIC_BUCKET.put('announcement.json', JSON.stringify({
+      announcement: {
+        id: 'notice-2',
+        enabled: true,
+        title: '第二次公告',
+        content: '第二条正文'
+      },
+      history: [
+        {
+          id: 'notice-1',
+          enabled: true,
+          title: '第一次公告',
+          content: '第一条正文'
+        }
+      ]
+    }));
+
+    const deleteResponse = await worker.fetch(new Request('https://worker.test/api/admin/announcement/history/notice-1', {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer secret-token'
+      }
+    }), env);
+    expect(deleteResponse.status).toBe(200);
+
+    const payload = await deleteResponse.json();
+    expect(payload.history).toEqual([]);
+
+    const storedBundle = JSON.parse(await env.ANNOUNCEMENT_KV.get('current'));
+    expect(storedBundle).toMatchObject({
+      announcement: {
+        id: 'notice-2'
+      },
+      history: []
+    });
+    const publicObject = env.ANNOUNCEMENT_PUBLIC_BUCKET.store.get('announcement.json');
+    expect(JSON.parse(publicObject.value).history).toEqual([]);
+  });
+
   it('publishes gallery images to GitHub in one commit', async () => {
     const treeRequests = [];
     const githubFetch = vi.fn(async (url, init = {}) => {

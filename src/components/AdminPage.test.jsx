@@ -6,6 +6,31 @@ import AdminPage from './AdminPage.jsx';
 
 vi.mock('../data/announcementAdminApi.js', () => ({
   isAnnouncementAdminApiConfigured: () => true,
+  loadAdminAnnouncement: vi.fn(async () => ({
+    announcement: {
+      id: 'admin-current-notice',
+      enabled: true,
+      title: '后台当前公告',
+      content: '后台当前正文',
+      contentAlign: 'left',
+      type: 'info',
+      force: false,
+      confirmText: '我知道了',
+      linkText: '',
+      linkUrl: '',
+      startAt: '',
+      endAt: '',
+      updatedAt: ''
+    },
+    history: [
+      {
+        id: 'admin-history-notice',
+        title: '后台历史公告',
+        content: '后台历史正文',
+        updatedAt: '2026-05-16T00:00:00.000Z'
+      }
+    ]
+  })),
   deleteAnnouncementHistoryItem: vi.fn(async () => ({
     ok: true,
     history: []
@@ -255,6 +280,24 @@ describe('AdminPage', () => {
     });
 
     expect(await screen.findByText('公告已发布')).toBeInTheDocument();
+  });
+
+  it('refreshes announcement data from the admin API when a token is available', async () => {
+    const { loadAdminAnnouncement } = await import('../data/announcementAdminApi.js');
+
+    render(<AdminPage />);
+
+    await screen.findByDisplayValue('当前公告');
+    fireEvent.change(screen.getByLabelText('管理员口令'), {
+      target: { value: 'secret-token' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '刷新当前公告' }));
+
+    await waitFor(() => {
+      expect(loadAdminAnnouncement).toHaveBeenCalledWith({ token: 'secret-token' });
+    });
+    expect(await screen.findByDisplayValue('后台当前公告')).toBeInTheDocument();
+    expect(screen.getByText('后台历史公告')).toBeInTheDocument();
   });
 
   it('deletes announcement history items from the admin list', async () => {
