@@ -15,6 +15,11 @@ const PERSISTENT_CACHE_KEY = 'manifest-cache:music:v1';
 const BUNDLED_SNAPSHOT_PATH = '/music-index.json';
 const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const ALBUM_SORT_ORDER_OVERRIDES = Object.freeze({
+  'forbidden-games': 10,
+  'san-que-yi-kl': 1000000,
+  'tokyo-live': 1000010
+});
 let cachedAlbums = null;
 let cachedAt = 0;
 let inflightAlbumsPromise = null;
@@ -25,11 +30,14 @@ const resolveAssetUrl = (value, fallbackBase = '') => {
   return toAbsoluteUrl(input, fallbackBase) || input;
 };
 
-const toSortedList = (input) => {
+const toSortedList = (input, getSortOrderOverride) => {
   const list = Array.isArray(input) ? input : [];
   return list
     .map((item, index) => {
-      const sortOrder = Number(item?.sortOrder);
+      const overrideSortOrder = typeof getSortOrderOverride === 'function'
+        ? getSortOrderOverride(item)
+        : undefined;
+      const sortOrder = Number(overrideSortOrder ?? item?.sortOrder);
       return {
         item,
         index,
@@ -40,6 +48,11 @@ const toSortedList = (input) => {
       left.sortOrder - right.sortOrder || left.index - right.index
     ))
     .map((entry) => entry.item);
+};
+
+const getAlbumSortOrderOverride = (album) => {
+  const albumId = String(album?.id || '').trim();
+  return ALBUM_SORT_ORDER_OVERRIDES[albumId];
 };
 
 const normalizeSong = (song, albumId, index, assetBase = '') => {
@@ -85,7 +98,7 @@ const normalizeAlbum = (album, assetBase = '') => {
 };
 
 const parseMusicManifest = (payload, assetBase = '') => {
-  const albums = toSortedList(payload?.albums)
+  const albums = toSortedList(payload?.albums, getAlbumSortOrderOverride)
     .map((album) => normalizeAlbum(album, assetBase))
     .filter(Boolean);
 

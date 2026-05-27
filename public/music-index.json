@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-03-12T14:17:53.565Z",
+  "updatedAt": "2026-05-27T03:11:01.000Z",
   "albums": [
     {
       "id": "san-que-yi-kl",
       "name": "叁缺壹吉隆坡站",
       "artist": "李志",
       "cover": "https://p2.music.126.net/VRQtcwQGGkNwiGcMLgo-Ng==/109951172265350030.jpg",
-      "sortOrder": 10,
+      "sortOrder": 350,
       "enabled": true,
       "songs": [
         {
@@ -566,7 +566,7 @@
       "name": "THREE MISSING ONE JAPAN Tour 2024 in Tokyo",
       "artist": "李志",
       "cover": "https://p1.music.126.net/s0pY2nxYPcmQ8Z9vkZGilg==/109951172703721399.jpg",
-      "sortOrder": 20,
+      "sortOrder": 360,
       "enabled": true,
       "songs": [
         {
@@ -702,7 +702,7 @@
       "name": "被禁忌的游戏",
       "artist": "李志",
       "cover": "https://p1.music.126.net/YPNEygiht3aCVwTtIeU5Rw==/109951167318516217.jpg",
-      "sortOrder": 30,
+      "sortOrder": 10,
       "enabled": true,
       "songs": [
         {

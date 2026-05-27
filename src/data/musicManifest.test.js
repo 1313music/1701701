@@ -50,6 +50,47 @@ describe('musicManifest asset normalization', () => {
     expect(albums[0].songs[0].cover).toBe('https://r2.1701701.xyz/covers/song.jpg');
   });
 
+  it('pins the requested default album first and the tour albums last', async () => {
+    const createAlbum = (id, name, sortOrder) => ({
+      id,
+      name,
+      artist: '李志',
+      cover: '',
+      sortOrder,
+      songs: [
+        {
+          id: `${id}-song`,
+          trackNumber: 1,
+          name: `${name} Song`,
+          src: `https://example.com/${id}.mp3`
+        }
+      ]
+    });
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        albums: [
+          createAlbum('san-que-yi-kl', '叁缺壹吉隆坡站', 10),
+          createAlbum('tokyo-live', 'THREE MISSING ONE JAPAN Tour 2024 in Tokyo', 20),
+          createAlbum('forbidden-games', '被禁忌的游戏', 30),
+          createAlbum('van-gogh', '梵高先生', 40),
+          createAlbum('other', '其他', 340)
+        ]
+      })
+    });
+
+    const albums = await loadMusicManifestAlbums();
+
+    expect(albums.map((album) => album.id)).toEqual([
+      'forbidden-games',
+      'van-gogh',
+      'other',
+      'san-que-yi-kl',
+      'tokyo-live'
+    ]);
+  });
+
   it('reuses persisted cache after module memory is reset', async () => {
     const cachedAlbums = [
       {
