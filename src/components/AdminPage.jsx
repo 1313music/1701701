@@ -120,6 +120,7 @@ const createDefaultVideoDraft = () => ({
 });
 
 const createDefaultVideoAccessDraft = () => ({
+  enabled: true,
   password: '',
   passwordVersion: '',
   updatedAt: ''
@@ -653,6 +654,7 @@ const AdminPage = () => {
 
   const applyVideoAccessSettings = (config) => {
     setVideoAccessDraft({
+      enabled: config?.enabled !== false,
       password: String(config?.password || ''),
       passwordVersion: String(config?.passwordVersion || ''),
       updatedAt: String(config?.updatedAt || '')
@@ -664,7 +666,7 @@ const AdminPage = () => {
     try {
       const config = await loadVideoAccessSettings({ token });
       applyVideoAccessSettings(config);
-      setVideoStatus({ tone: 'success', message: '已读取当前视频访问口令' });
+      setVideoStatus({ tone: 'success', message: '已读取当前视频访问设置' });
     } catch (error) {
       setVideoStatus({ tone: 'error', message: error?.message || '视频口令读取失败' });
     } finally {
@@ -673,8 +675,9 @@ const AdminPage = () => {
   };
 
   const handlePublishVideoAccess = async () => {
+    const enabled = videoAccessDraft.enabled !== false;
     const password = String(videoAccessDraft.password || '').trim();
-    if (!password) {
+    if (enabled && !password) {
       setVideoStatus({ tone: 'error', message: '请填写视频访问口令' });
       return;
     }
@@ -683,12 +686,13 @@ const AdminPage = () => {
     setVideoAccessPublishResult(null);
     try {
       const result = await publishVideoAccessSettings({
+        enabled,
         password,
         token
       });
       applyVideoAccessSettings(result?.config);
       setVideoAccessPublishResult(result);
-      setVideoStatus({ tone: 'success', message: '视频访问口令已保存，旧授权将在缓存更新后失效' });
+      setVideoStatus({ tone: 'success', message: '视频访问设置已保存，前台将在缓存更新后生效' });
     } catch (error) {
       setVideoStatus({ tone: 'error', message: error?.message || '视频口令保存失败' });
     } finally {
@@ -1496,7 +1500,17 @@ const AdminPage = () => {
         {activePanel === ADMIN_PANEL_VIDEO && (
           <form className="admin-form" onSubmit={handlePublishVideo}>
             <section className="admin-section">
-              <div className="admin-section-title">视频访问口令</div>
+              <div className="admin-section-title">视频访问设置</div>
+              <div className="admin-toggle-row">
+                <label className="admin-toggle">
+                  <input
+                    type="checkbox"
+                    checked={videoAccessDraft.enabled !== false}
+                    onChange={(event) => updateVideoAccessDraftField('enabled', event.target.checked)}
+                  />
+                  <span>启用视频访问验证</span>
+                </label>
+              </div>
               <div className="admin-grid">
                 <label className="admin-field">
                   <span>访问口令</span>
@@ -1541,7 +1555,7 @@ const AdminPage = () => {
                   disabled={isVideoAccessLoading || !videoAccessApiConfigured}
                 >
                   <RefreshCw size={17} className={isVideoAccessLoading ? 'is-spinning' : ''} />
-                  {isVideoAccessLoading ? '读取中...' : '读取口令'}
+                  {isVideoAccessLoading ? '读取中...' : '读取设置'}
                 </button>
                 <button
                   type="button"
@@ -1550,7 +1564,7 @@ const AdminPage = () => {
                   disabled={isVideoAccessSaving || !videoAccessApiConfigured}
                 >
                   <Save size={17} />
-                  {isVideoAccessSaving ? '保存中...' : '保存口令'}
+                  {isVideoAccessSaving ? '保存中...' : '保存设置'}
                 </button>
               </div>
             </section>

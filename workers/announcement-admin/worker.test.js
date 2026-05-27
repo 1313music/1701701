@@ -579,6 +579,7 @@ describe('announcement admin worker', () => {
     expect(initialResponse.status).toBe(200);
     await expect(initialResponse.json()).resolves.toMatchObject({
       config: {
+        enabled: true,
         password: '1701701xyz',
         passwordVersion: 'default'
       },
@@ -601,6 +602,7 @@ describe('announcement admin worker', () => {
     expect(payload).toMatchObject({
       ok: true,
       config: {
+        enabled: true,
         password: 'SongSharing2026'
       },
       publicTarget: {
@@ -622,6 +624,44 @@ describe('announcement admin worker', () => {
     });
     const storedConfig = JSON.parse(storedEntry.value);
     expect(storedConfig).toMatchObject({
+      enabled: true,
+      password: 'SongSharing2026',
+      passwordVersion: payload.config.passwordVersion
+    });
+  });
+
+  it('can disable video access password checks while preserving the password', async () => {
+    const env = createEnv();
+    await env.VIDEO_PUBLIC_BUCKET.put('json/video-access.json', JSON.stringify({
+      schemaVersion: 1,
+      enabled: true,
+      password: 'SongSharing2026',
+      passwordVersion: 'v1',
+      updatedAt: '2026-05-18T00:00:00.000Z'
+    }));
+
+    const response = await worker.fetch(new Request('https://worker.test/api/admin/video-access', {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer secret-token',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        enabled: false
+      })
+    }), env);
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.config).toMatchObject({
+      enabled: false,
+      password: 'SongSharing2026'
+    });
+    expect(payload.config.passwordVersion).not.toBe('v1');
+
+    const storedConfig = JSON.parse(env.VIDEO_PUBLIC_BUCKET.store.get('json/video-access.json').value);
+    expect(storedConfig).toMatchObject({
+      enabled: false,
       password: 'SongSharing2026',
       passwordVersion: payload.config.passwordVersion
     });

@@ -7,6 +7,7 @@ import { useVideoAccess } from './useVideoAccess.js';
 
 vi.mock('../data/videoAccessConfig.js', () => ({
   DEFAULT_VIDEO_ACCESS_CONFIG: {
+    enabled: true,
     password: 'fallback-password',
     passwordVersion: 'build-time',
     updatedAt: ''
@@ -53,6 +54,7 @@ describe('useVideoAccess', () => {
 
   it('stores the current password version after a successful unlock', async () => {
     loadVideoAccessConfig.mockResolvedValue({
+      enabled: true,
       password: 'SongSharing',
       passwordVersion: 'v1',
       updatedAt: '2026-05-18T00:00:00.000Z'
@@ -88,6 +90,7 @@ describe('useVideoAccess', () => {
       passwordVersion: 'v1'
     }));
     loadVideoAccessConfig.mockResolvedValue({
+      enabled: true,
       password: 'SongSharing2026',
       passwordVersion: 'v2',
       updatedAt: '2026-05-18T01:00:00.000Z'
@@ -111,6 +114,7 @@ describe('useVideoAccess', () => {
       passwordVersion: 'v2'
     }));
     loadVideoAccessConfig.mockResolvedValue({
+      enabled: true,
       password: 'SongSharing2026',
       passwordVersion: 'v2',
       updatedAt: '2026-05-18T01:00:00.000Z'
@@ -125,5 +129,25 @@ describe('useVideoAccess', () => {
       expect(onGranted).toHaveBeenCalledTimes(1);
     });
     expect(screen.getByTestId('modal-state')).toHaveTextContent('closed');
+  });
+
+  it('bypasses the password modal when remote access checks are disabled', async () => {
+    loadVideoAccessConfig.mockResolvedValue({
+      enabled: false,
+      password: 'SongSharing2026',
+      passwordVersion: 'v2',
+      updatedAt: '2026-05-18T01:00:00.000Z'
+    });
+    const onGranted = vi.fn();
+
+    render(<Harness onGranted={onGranted} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'request video' }));
+
+    await waitFor(() => {
+      expect(onGranted).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByTestId('modal-state')).toHaveTextContent('closed');
+    expect(window.localStorage.getItem('videoAccessGranted')).toBeNull();
   });
 });

@@ -23,6 +23,7 @@ describe('videoAccessConfig cache', () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
+        enabled: true,
         password: 'SongSharing',
         passwordVersion: 'v1',
         updatedAt: '2026-05-18T00:00:00.000Z'
@@ -35,6 +36,23 @@ describe('videoAccessConfig cache', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     expect(secondConfig).toBe(firstConfig);
     expect(secondConfig.passwordVersion).toBe('v1');
+  });
+
+  it('normalizes disabled access checks from the remote config', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        enabled: false,
+        password: 'SongSharing',
+        passwordVersion: 'v1'
+      })
+    });
+
+    await expect(loadVideoAccessConfig()).resolves.toMatchObject({
+      enabled: false,
+      password: 'SongSharing',
+      passwordVersion: 'v1'
+    });
   });
 
   it('reuses persisted access config across page sessions within the cache window', async () => {

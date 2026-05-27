@@ -21,6 +21,7 @@ let cachedVideoAccessConfigAt = 0;
 let inflightVideoAccessConfigPromise = null;
 
 export const DEFAULT_VIDEO_ACCESS_CONFIG = Object.freeze({
+  enabled: true,
   password: BUILD_TIME_VIDEO_PASSWORD,
   passwordVersion: 'build-time',
   updatedAt: ''
@@ -37,6 +38,7 @@ const normalizeVideoAccessConfig = (payload) => {
     || DEFAULT_VIDEO_ACCESS_CONFIG.passwordVersion;
 
   return {
+    enabled: payload.enabled !== false,
     password,
     passwordVersion,
     updatedAt: String(payload.updatedAt || '').trim()

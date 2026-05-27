@@ -1353,6 +1353,7 @@ const buildPublicVideoIndexUrl = (config) => buildPublicVideoUrl(config, config.
 
 const createDefaultVideoAccessConfig = (config) => ({
   schemaVersion: 1,
+  enabled: true,
   password: normalizeText(config.defaultAccessPassword, DEFAULT_VIDEO_ACCESS_PASSWORD),
   passwordVersion: 'default',
   updatedAt: ''
@@ -1364,6 +1365,7 @@ const normalizeVideoAccessConfig = (payload, config) => {
 
   return {
     schemaVersion: 1,
+    enabled: payload.enabled !== false,
     password: normalizeText(payload.password, fallback.password),
     passwordVersion: normalizeText(payload.passwordVersion, fallback.passwordVersion),
     updatedAt: normalizeText(payload.updatedAt, fallback.updatedAt)
@@ -1951,13 +1953,16 @@ const handleVideoAccessUpdate = async (request, env) => {
     return errorResponse(request, env, 400, '请求 JSON 无效');
   }
 
-  const password = normalizeText(payload?.password);
-  if (!password) {
+  const currentVideoAccess = await readVideoAccessConfig(config);
+  const enabled = payload?.enabled !== false;
+  const password = normalizeText(payload?.password, currentVideoAccess.password);
+  if (enabled && !password) {
     return errorResponse(request, env, 400, '视频访问口令不能为空');
   }
 
   const videoAccess = {
     schemaVersion: 1,
+    enabled,
     password,
     passwordVersion: createVideoAccessPasswordVersion(),
     updatedAt: new Date().toISOString()

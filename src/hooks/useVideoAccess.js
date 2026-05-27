@@ -111,7 +111,17 @@ export const useVideoAccess = () => {
     pendingGrantActionRef.current = typeof onGranted === 'function' ? onGranted : null;
 
     const resolveAccess = async () => {
-      const { granted } = await refreshVideoAccessConfig();
+      const { config, granted } = await refreshVideoAccessConfig();
+      if (config.enabled === false) {
+        const callback = pendingGrantActionRef.current || onGranted;
+        pendingGrantActionRef.current = null;
+        setIsVideoAccessOpen(false);
+        setVideoPassword('');
+        setVideoPasswordError('');
+        callback?.();
+        return true;
+      }
+
       if (!granted) {
         setVideoPassword('');
         setVideoPasswordError('');

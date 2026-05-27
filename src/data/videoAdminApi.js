@@ -51,7 +51,7 @@ export const loadVideoAccessSettings = async ({ token, signal } = {}) => {
   return payload?.config || payload;
 };
 
-export const publishVideoAccessSettings = async ({ password, token, signal } = {}) => {
+export const publishVideoAccessSettings = async ({ enabled = true, password, token, signal } = {}) => {
   const endpoint = buildAdminApiUrl('/api/admin/video-access');
   if (!endpoint) {
     throw new Error('视频口令后台接口未配置');
@@ -63,7 +63,8 @@ export const publishVideoAccessSettings = async ({ password, token, signal } = {
   }
 
   const normalizedPassword = String(password || '').trim();
-  if (!normalizedPassword) {
+  const normalizedEnabled = enabled !== false;
+  if (normalizedEnabled && !normalizedPassword) {
     throw new Error('请填写视频访问口令');
   }
 
@@ -77,7 +78,10 @@ export const publishVideoAccessSettings = async ({ password, token, signal } = {
         Authorization: `Bearer ${normalizedToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ password: normalizedPassword })
+      body: JSON.stringify({
+        enabled: normalizedEnabled,
+        password: normalizedPassword
+      })
     });
   } catch (error) {
     const reason = error?.message ? `：${error.message}` : '';
