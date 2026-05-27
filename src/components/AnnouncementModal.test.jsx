@@ -15,6 +15,7 @@ describe('AnnouncementModal', () => {
           id: 'current',
           title: '站点公告',
           content: '暂无新的公告。',
+          contentAlign: 'center',
           imageUrl: '/img/notice.jpg',
           imageAlt: '公告配图',
           imageCaption: '公告图片说明',
@@ -39,6 +40,7 @@ describe('AnnouncementModal', () => {
 
     expect(screen.getByRole('button', { name: '历史公告' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '查看历史公告：历史公告一' })).not.toBeInTheDocument();
+    expect(screen.getByText('暂无新的公告。').closest('.announcement-body')).toHaveClass('align-center');
     const image = screen.getByRole('img', { name: '公告配图' });
     expect(image).toHaveAttribute('src', '/img/notice.jpg');
     expect(image.closest('figure')?.style.getPropertyValue('--announcement-image-max-width')).toBe('360px');

@@ -5,7 +5,8 @@ import {
   AVAILABLE_VIEWS,
   getCanonicalSearchForView,
   getPathForView,
-  resolveViewFromLocation
+  resolveViewFromLocation,
+  shouldRedirectDisabledDownloadPath
 } from '../utils/appShellConfig.js';
 
 const createInitialLyricsCommentRequest = () => ({
@@ -24,7 +25,9 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
   const [locationSearch, setLocationSearch] = useState(() => (
     typeof window === 'undefined'
       ? ''
-      : getCanonicalSearchForView(resolveViewFromLocation(window.location), window.location.search)
+      : shouldRedirectDisabledDownloadPath(window.location)
+        ? ''
+        : getCanonicalSearchForView(resolveViewFromLocation(window.location), window.location.search)
   ));
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
   const [lyricsOverlaySessionId, setLyricsOverlaySessionId] = useState(0);
@@ -176,6 +179,11 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
 
   const closeWeChatBrowserHint = useCallback(() => {
     setIsWeChatBrowserHintOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !shouldRedirectDisabledDownloadPath(window.location)) return;
+    window.history.replaceState(null, '', getPathForView('library'));
   }, []);
 
   const handleBackToTop = useCallback(() => {

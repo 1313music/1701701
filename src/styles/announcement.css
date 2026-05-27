@@ -78,6 +78,14 @@
   gap: 10px;
 }
 
+.announcement-body.align-left {
+  text-align: left;
+}
+
+.announcement-body.align-center {
+  text-align: center;
+}
+
 .announcement-body p {
   margin: 0;
   color: var(--text-secondary);

@@ -26,12 +26,13 @@ npm run check
 
 - `https://1701701.xyz/`
 - `https://1701701.xyz/video`
-- `https://1701701.xyz/download`
 - `https://1701701.xyz/gallery`
 - `https://1701701.xyz/app`
 - `https://1701701.xyz/about`
 
 说明：项目使用单页应用路由，Cloudflare Pages 通过 `public/_redirects` 将这些路径统一回退到首页入口。
+资源下载页 `/download` 默认隐藏；需要重新展示时，在构建环境设置 `VITE_SHOW_DOWNLOAD_PAGE=true`。
+专辑详情里的“扫码保存到网易云盘”小程序码默认展示；需要隐藏时，在构建环境设置 `VITE_SHOW_MINI_PROGRAM_QR=false`。
 
 ## 访问统计（Umami）
 
@@ -231,6 +232,7 @@ VITE_ADMIN_API_BASE_URL=
 - 前端默认只在页面打开时读取一次 `VITE_ANNOUNCEMENT_URL`；发布新公告后，用户刷新或重新打开页面即可看到。
 - 公告 JSON 支持 `{ "announcement": 当前公告, "history": [历史公告] }` 格式；旧的单条公告对象格式仍可读取。
 - 公告支持可选通知方式字段：`deliveryMode`，`modal` 会自动弹窗，`silent` 只显示公告入口小圆点。
+- 公告支持可选正文对齐字段：`contentAlign`，可填 `left` 或 `center`。
 - 公告支持可选图片字段：`imageUrl`、`imageAlt`、`imageCaption`、`imageMaxWidth`、`imageMaxHeight`。
 - 后台发布新 `id` 公告时，会自动把上一条公告归档到 `history`，前台公告入口可回看历史公告；后台也可单条删除历史公告。
 

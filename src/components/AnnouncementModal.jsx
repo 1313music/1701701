@@ -43,6 +43,10 @@ const getImageSizeStyle = (announcement) => {
   return style;
 };
 
+const getContentAlign = (announcement) => (
+  announcement?.contentAlign === 'center' ? 'center' : 'left'
+);
+
 const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm }) => {
   const [selectedHistoryId, setSelectedHistoryId] = useState('');
   const [isHistoryListOpen, setIsHistoryListOpen] = useState(false);
@@ -104,7 +108,7 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
           </div>
         </div>
         {!isHistoryListView && (
-          <div className="announcement-body">
+          <div className={`announcement-body align-${getContentAlign(displayedAnnouncement)}`}>
             {hasImage && (
               <figure className="announcement-media" style={getImageSizeStyle(displayedAnnouncement)}>
                 <img

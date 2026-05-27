@@ -1,16 +1,26 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AVAILABLE_VIEWS,
   getDownloadPreviewPath,
-  resolveViewFromLocation
+  resolveViewFromLocation,
+  shouldRedirectDisabledDownloadPath
 } from './appShellConfig.js';
 
 describe('appShellConfig', () => {
-  it('treats nested download preview paths as the download view', () => {
+  it('keeps the download view disabled by default', () => {
+    expect(AVAILABLE_VIEWS.has('download')).toBe(false);
+    expect(resolveViewFromLocation({
+      pathname: '/download',
+      search: ''
+    })).toBe('library');
     expect(resolveViewFromLocation({
       pathname: '/download/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0',
       search: ''
-    })).toBe('download');
+    })).toBe('library');
+    expect(shouldRedirectDisabledDownloadPath({
+      pathname: '/download/'
+    })).toBe(true);
   });
 
   it('builds encoded preview paths for standalone preview pages', () => {

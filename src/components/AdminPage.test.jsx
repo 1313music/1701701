@@ -172,6 +172,7 @@ vi.mock('../data/announcementSource.js', () => ({
       enabled: true,
       title: '当前公告',
       content: '当前正文',
+      contentAlign: 'left',
       type: 'info',
       force: false,
       confirmText: '我知道了',
@@ -216,6 +217,9 @@ describe('AdminPage', () => {
     fireEvent.change(screen.getByLabelText('通知方式'), {
       target: { value: 'silent' }
     });
+    fireEvent.change(screen.getByLabelText('正文对齐'), {
+      target: { value: 'center' }
+    });
     fireEvent.change(screen.getByLabelText('正文'), {
       target: { value: '新的正文' }
     });
@@ -240,6 +244,7 @@ describe('AdminPage', () => {
           id: 'current-notice',
           title: '新的公告',
           content: '新的正文',
+          contentAlign: 'center',
           deliveryMode: 'silent',
           imageUrl: 'https://cdn.example.com/notice.jpg',
           imageAlt: '公告配图',

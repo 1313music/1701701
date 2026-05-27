@@ -1,3 +1,5 @@
+import { SHOW_MINI_PROGRAM_QR } from '../utils/featureFlags.js';
+
 const MINI_PROGRAM_HINT = '扫码保存到网易云盘';
 const MINI_PROGRAM_TITLE = '微信扫一扫打开小程序';
 
@@ -37,6 +39,7 @@ const MINI_PROGRAM_ALBUMS = Object.freeze(
 );
 
 export const getAlbumMiniProgram = (albumId) => {
+  if (!SHOW_MINI_PROGRAM_QR) return null;
   if (!albumId) return null;
   return MINI_PROGRAM_ALBUMS[albumId] || null;
 };

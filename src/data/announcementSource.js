@@ -21,6 +21,10 @@ const normalizeDeliveryMode = (value) => {
   return 'modal';
 };
 
+const normalizeContentAlign = (value) => (
+  normalizeText(value).toLowerCase() === 'center' ? 'center' : 'left'
+);
+
 const parseAnnouncement = (payload) => {
   const source = payload?.announcement && typeof payload.announcement === 'object'
     ? payload.announcement
@@ -38,6 +42,7 @@ const parseAnnouncement = (payload) => {
     enabled: source.enabled !== false,
     title: normalizeText(source.title, '站点公告'),
     content,
+    contentAlign: normalizeContentAlign(source.contentAlign || source.textAlign),
     type: normalizeText(source.type, 'info'),
     deliveryMode: normalizeDeliveryMode(source.deliveryMode || source.notifyMode || source.notificationMode),
     force: source.force === true,

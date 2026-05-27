@@ -33,6 +33,19 @@ describe('Sidebar', () => {
     expect(screen.queryByRole('button', { name: '公告' })).not.toBeInTheDocument();
   });
 
+  it('hides the download navigation while the page switch is off', () => {
+    render(
+      <Sidebar
+        view="library"
+        setView={vi.fn()}
+        isSidebarOpen={false}
+        setIsSidebarOpen={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: '下载' })).not.toBeInTheDocument();
+  });
+
   it('shows announcement trigger in the mobile topbar slot', () => {
     const handleOpenAnnouncement = vi.fn();
 

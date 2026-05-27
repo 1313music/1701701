@@ -915,44 +915,6 @@
   color: var(--text-main);
 }
 
-.share-panel-mini-program {
-  border: 1px solid color-mix(in srgb, var(--glass-border) 62%, rgba(255, 255, 255, 0.22));
-  border-radius: 14px;
-  padding: 12px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  background: color-mix(in srgb, var(--bg-color) 64%, transparent);
-}
-
-.share-panel-mini-program img {
-  width: 110px;
-  height: 110px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.share-panel-mini-program-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.share-panel-mini-program-text p {
-  margin: 0;
-}
-
-.share-panel-mini-program-text p:first-child {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.share-panel-mini-program-text p:last-child {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
 .wechat-browser-modal {
   position: fixed;
   inset: 0;
@@ -1669,16 +1631,6 @@
 
   .album-sheet-song-list {
     padding: 0 10px calc(18px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .share-panel-mini-program {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .share-panel-mini-program img {
-    width: 132px;
-    height: 132px;
   }
 
 }

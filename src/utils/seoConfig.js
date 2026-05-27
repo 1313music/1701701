@@ -1,3 +1,5 @@
+import { SHOW_DOWNLOAD_PAGE } from './featureFlags.js';
+
 export const SITE_URL = 'https://1701701.xyz';
 export const SITE_NAME = '1701701.xyz';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
@@ -18,7 +20,7 @@ export const PUBLIC_SEO_VIEWS = Object.freeze([
   'gallery',
   'app',
   'about'
-]);
+].filter((view) => SHOW_DOWNLOAD_PAGE || view !== 'download'));
 
 export const LI_ZHI_ENTITY_LINKS = Object.freeze([
   'https://musicbrainz.org/artist/e54bc357-19aa-4e1f-9795-3346e486d5db',

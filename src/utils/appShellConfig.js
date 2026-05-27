@@ -1,4 +1,5 @@
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from './seoConfig.js';
+import { SHOW_DOWNLOAD_PAGE } from './featureFlags.js';
 
 export const VIEW_PATHS = Object.freeze({
   library: '/',
@@ -22,7 +23,9 @@ export const VIEW_QUERY_KEYS = Object.freeze({
   comment: []
 });
 
-export const AVAILABLE_VIEWS = new Set(Object.keys(VIEW_PATHS));
+export const AVAILABLE_VIEWS = new Set(
+  Object.keys(VIEW_PATHS).filter((view) => SHOW_DOWNLOAD_PAGE || view !== 'download')
+);
 
 export { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL };
 export const WALINE_SERVER_URL = import.meta.env.VITE_WALINE_SERVER_URL || 'https://hello.1701701.xyz';
@@ -60,13 +63,23 @@ export const getDownloadPreviewSlugFromPathname = (pathname = '/') => {
   }
 };
 
+const isDownloadPathname = (pathname = '/') => {
+  const normalized = normalizePathname(pathname);
+  return normalized === VIEW_PATHS.download || Boolean(getDownloadPreviewSlugFromPathname(normalized));
+};
+
+export const shouldRedirectDisabledDownloadPath = (locationLike) => (
+  !SHOW_DOWNLOAD_PAGE && isDownloadPathname(locationLike?.pathname)
+);
+
 const getViewFromPathname = (pathname = '/') => {
   const normalized = normalizePathname(pathname);
-  if (getDownloadPreviewSlugFromPathname(normalized)) {
+  if (SHOW_DOWNLOAD_PAGE && getDownloadPreviewSlugFromPathname(normalized)) {
     return 'download';
   }
   const matched = Object.entries(VIEW_PATHS).find(([, path]) => path === normalized);
-  return matched ? matched[0] : null;
+  if (!matched) return null;
+  return AVAILABLE_VIEWS.has(matched[0]) ? matched[0] : null;
 };
 
 export const getCanonicalSearchForView = (view, search = '') => {

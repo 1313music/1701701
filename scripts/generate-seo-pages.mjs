@@ -302,12 +302,16 @@ const buildStatsSection = ({ musicAlbums, videoCategories, downloadSections }) =
   const downloadCount = enabledSorted(downloadSections).reduce((total, section) => (
     total + countDownloadItems(section)
   ), 0);
-
-  return buildListSection('站内内容概览', [
+  const stats = [
     `<li><strong>音乐曲库</strong><span>${albumCount} 个专辑/现场条目，约 ${songCount} 首曲目</span></li>`,
-    `<li><strong>视频内容</strong><span>${countEnabled(videoCategories)} 个分类，约 ${videoCount} 个视频条目</span></li>`,
-    `<li><strong>下载资源</strong><span>${countEnabled(downloadSections)} 个分区，约 ${downloadCount} 个资源条目</span></li>`
-  ]);
+    `<li><strong>视频内容</strong><span>${countEnabled(videoCategories)} 个分类，约 ${videoCount} 个视频条目</span></li>`
+  ];
+
+  if (PUBLIC_SEO_VIEWS.includes('download')) {
+    stats.push(`<li><strong>下载资源</strong><span>${countEnabled(downloadSections)} 个分区，约 ${downloadCount} 个资源条目</span></li>`);
+  }
+
+  return buildListSection('站内内容概览', stats);
 };
 
 const buildGenericSection = (view) => {

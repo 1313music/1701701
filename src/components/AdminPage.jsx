@@ -60,6 +60,7 @@ const createDefaultDraft = () => ({
   enabled: true,
   title: '站点公告',
   content: '',
+  contentAlign: 'left',
   type: 'info',
   deliveryMode: 'modal',
   force: false,
@@ -180,6 +181,7 @@ const serializeDraft = (draft) => ({
   id: String(draft.id || '').trim(),
   title: String(draft.title || '').trim(),
   content: String(draft.content || '').trim(),
+  contentAlign: draft.contentAlign === 'center' ? 'center' : 'left',
   type: String(draft.type || 'info').trim(),
   deliveryMode: draft.deliveryMode === 'silent' ? 'silent' : 'modal',
   confirmText: String(draft.confirmText || '').trim() || '我知道了',
@@ -934,6 +936,16 @@ const AdminPage = () => {
                   >
                     <option value="modal">弹窗通知</option>
                     <option value="silent">小圆点静默通知</option>
+                  </select>
+                </label>
+                <label className="admin-field">
+                  <span>正文对齐</span>
+                  <select
+                    value={draft.contentAlign}
+                    onChange={(event) => updateDraftField('contentAlign', event.target.value)}
+                  >
+                    <option value="left">左对齐</option>
+                    <option value="center">居中</option>
                   </select>
                 </label>
               </div>

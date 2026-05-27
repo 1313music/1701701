@@ -48,6 +48,7 @@ const DEFAULT_ANNOUNCEMENT = Object.freeze({
   enabled: false,
   title: '站点公告',
   content: '当前没有启用的公告。',
+  contentAlign: 'left',
   type: 'info',
   deliveryMode: 'modal',
   force: false,
@@ -85,6 +86,10 @@ const normalizeDeliveryMode = (value) => {
   if (['silent', 'quiet', 'dot', 'badge'].includes(mode)) return 'silent';
   return 'modal';
 };
+
+const normalizeContentAlign = (value) => (
+  normalizeText(value).toLowerCase() === 'center' ? 'center' : 'left'
+);
 
 const stripSlashes = (value) => normalizeText(value).replace(/^\/+|\/+$/g, '');
 
@@ -196,6 +201,7 @@ const normalizeStoredHistory = (history, currentAnnouncement) => {
         id: normalizeText(entry.id),
         title: normalizeText(entry.title, '站点公告'),
         content: normalizeText(entry.content || entry.message),
+        contentAlign: normalizeContentAlign(entry.contentAlign || entry.textAlign),
         type: allowedType(normalizeText(entry.type, 'info')),
         deliveryMode: normalizeDeliveryMode(entry.deliveryMode || entry.notifyMode || entry.notificationMode),
         confirmText: normalizeText(entry.confirmText, '我知道了'),
@@ -269,6 +275,7 @@ const normalizeAnnouncement = (payload, previousAnnouncement) => {
       : previousAnnouncement.enabled !== false,
     title: normalizeText(source.title, '站点公告'),
     content,
+    contentAlign: normalizeContentAlign(source.contentAlign || source.textAlign),
     type: allowedType(normalizeText(source.type, 'info')),
     deliveryMode: normalizeDeliveryMode(source.deliveryMode || source.notifyMode || source.notificationMode),
     force: source.force === true,

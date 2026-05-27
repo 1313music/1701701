@@ -21,6 +21,7 @@ const AnnouncementHarness = ({ pollIntervalMs }) => {
     <div>
       <div data-testid="loading">{isLoadingAnnouncement ? 'loading' : 'ready'}</div>
       <div data-testid="announcement-id">{announcement?.id || 'none'}</div>
+      <div data-testid="announcement-content-align">{announcement?.contentAlign || 'left'}</div>
       <div data-testid="announcement-history-count">{announcementHistory.length}</div>
       <div data-testid="announcement-open">{isAnnouncementOpen ? 'open' : 'closed'}</div>
       <div data-testid="announcement-unread">{isAnnouncementUnread ? 'unread' : 'read'}</div>
@@ -51,7 +52,8 @@ describe('useAnnouncement', () => {
         id: 'announcement-1',
         enabled: true,
         title: '更新',
-        content: '新增公告能力'
+        content: '新增公告能力',
+        contentAlign: 'center'
       })
     });
 
@@ -63,6 +65,7 @@ describe('useAnnouncement', () => {
     await waitFor(() => {
       expect(screen.getByTestId('loading')).toHaveTextContent('ready');
       expect(screen.getByTestId('announcement-id')).toHaveTextContent('announcement-1');
+      expect(screen.getByTestId('announcement-content-align')).toHaveTextContent('center');
       expect(screen.getByTestId('announcement-open')).toHaveTextContent('open');
     });
 

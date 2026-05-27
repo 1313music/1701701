@@ -15,6 +15,7 @@ import {
     MessageSquareMore
 } from 'lucide-react';
 import AnnouncementTrigger from './AnnouncementTrigger.jsx';
+import { SHOW_DOWNLOAD_PAGE } from '../utils/featureFlags.js';
 
 const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
     String(import.meta.env.VITE_SHOW_COMMENT_NAV || '').trim().toLowerCase()
@@ -129,12 +130,14 @@ const Sidebar = ({
                         active={isGalleryActive}
                         onClick={() => handleNavClick('gallery')}
                     />
-                    <NavItem
-                        icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="下载"
-                        active={view === 'download'}
-                        onClick={() => handleNavClick('download')}
-                    />
+                    {SHOW_DOWNLOAD_PAGE && (
+                        <NavItem
+                            icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="下载"
+                            active={view === 'download'}
+                            onClick={() => handleNavClick('download')}
+                        />
+                    )}
                     <NavItem
                         icon={<Smartphone size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="APP"
@@ -222,12 +225,14 @@ const Sidebar = ({
                         active={isGalleryActive}
                         onClick={() => handleNavClick('gallery')}
                     />
-                    <NavItem
-                        icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="下载"
-                        active={view === 'download'}
-                        onClick={() => handleNavClick('download')}
-                    />
+                    {SHOW_DOWNLOAD_PAGE && (
+                        <NavItem
+                            icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="下载"
+                            active={view === 'download'}
+                            onClick={() => handleNavClick('download')}
+                        />
+                    )}
                     <NavItem
                         icon={<Smartphone size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="APP"

@@ -30,6 +30,7 @@ import {
   WECHAT_VIDEO_PASSWORD_KEYWORD,
   WECHAT_OFFICIAL_ACCOUNT_QR_URL
 } from './utils/appShellConfig.js';
+import { SHOW_DOWNLOAD_PAGE } from './utils/featureFlags.js';
 
 const LyricsOverlay = lazy(() => import('./components/LyricsOverlay.jsx'));
 const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'));
@@ -54,7 +55,6 @@ const EMPTY_ANNOUNCEMENT = {
 const App = () => {
   const hasSignaledBootReadyRef = useRef(false);
   const sharedTargetRef = useRef(null);
-  const [shareMiniProgramVisibleUrl, setShareMiniProgramVisibleUrl] = useState('');
   const [isEmptyAnnouncementOpen, setIsEmptyAnnouncementOpen] = useState(false);
 
   const {
@@ -355,8 +355,6 @@ const App = () => {
     getCurrentTrackSharePayload: buildCurrentSharePayload,
     showToast
   });
-  const activeShareUrl = sharePanelData?.url || '';
-  const isShareMiniProgramVisible = Boolean(activeShareUrl) && shareMiniProgramVisibleUrl === activeShareUrl;
 
   const handleCopyCurrentPageUrl = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -436,7 +434,7 @@ const App = () => {
       }
       return;
     }
-    if (view === 'download' || view === 'video') {
+    if ((SHOW_DOWNLOAD_PAGE && view === 'download') || view === 'video') {
       return;
     }
     signalBootReady();
@@ -513,7 +511,7 @@ const App = () => {
                   </Suspense>
                 </div>
               )}
-              {view === 'download' && (
+              {SHOW_DOWNLOAD_PAGE && view === 'download' && (
                 <div className="view-panel view-panel-download">
                   <Suspense fallback={pageLoadingFallback}>
                     <DownloadPage
@@ -723,19 +721,6 @@ const App = () => {
                 {sharePanelData.url}
               </div>
               <div className="share-panel-actions">
-                {sharePanelData.miniProgram && (
-                  <button
-                    type="button"
-                    className="share-panel-btn ghost"
-                    onClick={() => {
-                      setShareMiniProgramVisibleUrl((previous) => (
-                        previous === activeShareUrl ? '' : activeShareUrl
-                      ));
-                    }}
-                  >
-                    {isShareMiniProgramVisible ? '隐藏上传云盘' : '上传云盘'}
-                  </button>
-                )}
                 <button
                   type="button"
                   className="share-panel-btn ghost"
@@ -757,19 +742,6 @@ const App = () => {
                   分享卡片
                 </button>
               </div>
-              {sharePanelData.miniProgram && isShareMiniProgramVisible && (
-                <div className="share-panel-mini-program">
-                  <img
-                    loading="lazy"
-                    src={sharePanelData.miniProgram.codeUrl}
-                    alt={`${sharePanelData.albumName || sharePanelData.title || '专辑'} 小程序码`}
-                  />
-                  <div className="share-panel-mini-program-text">
-                    <p>{sharePanelData.miniProgram.title}</p>
-                    <p>{sharePanelData.miniProgram.hint}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
