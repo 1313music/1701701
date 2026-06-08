@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageCircle } from 'lucide-react';
+import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageSquareMore } from 'lucide-react';
 
 import '../styles/video.css';
 import { useVideoCatalog } from '../hooks/useVideoCatalog.js';
@@ -369,7 +369,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
                       aria-label="打开评论页"
                       disabled={!canOpenCommentDrawer}
                     >
-                      <MessageCircle size={18} />
+                      <MessageSquareMore size={18} />
                     </button>
                     <button
                       type="button"

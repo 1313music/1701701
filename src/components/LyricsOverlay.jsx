@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Pause, ListMusic, Heart, Share2, ChevronDown, MessageCircle, X } from 'lucide-react';
+import { Play, Pause, ListMusic, Heart, Share2, ChevronDown, MessageSquareMore, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../styles/lyrics-overlay.css';
 import { formatTime } from '../utils/formatUtils';
@@ -348,7 +348,7 @@ const LyricsOverlay = ({
                                         aria-label="歌曲评论"
                                         disabled={!canOpenCommentDrawer}
                                     >
-                                        <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
+                                        <MessageSquareMore size={24} strokeWidth={2.2} absoluteStrokeWidth />
                                     </button>
                                     <SleepTimerControl
                                         className="mobile-sleep-timer-control"
@@ -447,7 +447,7 @@ const LyricsOverlay = ({
                                             aria-label="歌曲评论"
                                             disabled={!canOpenCommentDrawer}
                                         >
-                                            <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
+                                            <MessageSquareMore size={24} strokeWidth={2.2} absoluteStrokeWidth />
                                         </button>
                                         <SleepTimerControl
                                             className="overlay-sleep-timer-control"

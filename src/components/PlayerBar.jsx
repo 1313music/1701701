@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Pause, ListMusic, Share2, Heart, MessageCircle } from 'lucide-react';
+import { Play, Pause, ListMusic, Share2, Heart, MessageSquareMore } from 'lucide-react';
 import { Maximize2Icon } from './icons/AppIcons';
 import { formatTime } from '../utils/formatUtils';
 import SleepTimerControl from './SleepTimerControl.jsx';
@@ -204,7 +204,7 @@ const PlayerBar = ({
                         }}
                         aria-label="查看当前歌曲评论"
                     >
-                        <MessageCircle size={20} strokeWidth={2.2} absoluteStrokeWidth />
+                        <MessageSquareMore size={20} strokeWidth={2.2} absoluteStrokeWidth />
                     </button>
                     <button
                         type="button"
