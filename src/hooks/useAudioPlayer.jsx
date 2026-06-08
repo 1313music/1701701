@@ -17,6 +17,7 @@ const PLAYBACK_RECOVERY_MIN_STALL_MS = 900;
 const PLAYBACK_RECOVERY_RELOAD_MIN_STALL_MS = 4000;
 const PLAYBACK_RECOVERY_RELOAD_COOLDOWN_MS = 15000;
 const PLAYBACK_RECOVERY_MAX_RELOAD_ATTEMPTS = 2;
+const SLEEP_TIMER_MIN_MS = 1000;
 
 const toAbsoluteUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
@@ -81,6 +82,8 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [playMode, setPlayMode] = useState('loop');
   const [isTrackNameOverflowing, setIsTrackNameOverflowing] = useState(false);
   const [trackChangeId, setTrackChangeId] = useState(0);
+  const [sleepTimerEndsAt, setSleepTimerEndsAt] = useState(null);
+  const [sleepTimerRemainingMs, setSleepTimerRemainingMs] = useState(0);
 
   const trackNameRef = useRef(null);
   const audioRef = useRef(new Audio());
@@ -88,6 +91,8 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const lastPersistedRef = useRef({ currentTime: -1, isPlaying: false, trackSrc: '' });
   const pendingRestoreRef = useRef(null);
   const recoveryTimerRef = useRef(null);
+  const sleepTimerTimeoutRef = useRef(null);
+  const sleepTimerIntervalRef = useRef(null);
   const recoveryAttemptRef = useRef(0);
   const lastForegroundRecoveryRef = useRef({ at: 0, source: '' });
   const playbackIntentRef = useRef(false);
@@ -133,6 +138,32 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     });
   }, []);
   const isPlaying = isPlayingState;
+
+  const clearSleepTimerHandles = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (sleepTimerTimeoutRef.current != null) {
+      window.clearTimeout(sleepTimerTimeoutRef.current);
+      sleepTimerTimeoutRef.current = null;
+    }
+    if (sleepTimerIntervalRef.current != null) {
+      window.clearInterval(sleepTimerIntervalRef.current);
+      sleepTimerIntervalRef.current = null;
+    }
+  }, []);
+
+  const startSleepTimer = useCallback((minutes) => {
+    const numericMinutes = Number(minutes);
+    if (!Number.isFinite(numericMinutes) || numericMinutes <= 0) return;
+    const durationMs = Math.max(Math.round(numericMinutes * 60 * 1000), SLEEP_TIMER_MIN_MS);
+    setSleepTimerRemainingMs(durationMs);
+    setSleepTimerEndsAt(Date.now() + durationMs);
+  }, []);
+
+  const cancelSleepTimer = useCallback(() => {
+    clearSleepTimerHandles();
+    setSleepTimerEndsAt(null);
+    setSleepTimerRemainingMs(0);
+  }, [clearSleepTimerHandles]);
 
   const clearRecoveryTimer = useCallback(() => {
     if (typeof window === 'undefined' || recoveryTimerRef.current == null) return;
@@ -343,6 +374,34 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   }, [currentLyricIndex, currentTime, lyrics]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    clearSleepTimerHandles();
+    if (!sleepTimerEndsAt) {
+      return undefined;
+    }
+
+    const updateSleepTimer = () => {
+      const remainingMs = Math.max(sleepTimerEndsAt - Date.now(), 0);
+      setSleepTimerRemainingMs(remainingMs);
+      if (remainingMs > 0) return;
+
+      clearSleepTimerHandles();
+      setSleepTimerEndsAt(null);
+      setIsPlaying(false);
+      audioRef.current.pause();
+    };
+
+    sleepTimerIntervalRef.current = window.setInterval(updateSleepTimer, 1000);
+    sleepTimerTimeoutRef.current = window.setTimeout(
+      updateSleepTimer,
+      Math.max(sleepTimerEndsAt - Date.now(), 0)
+    );
+
+    return clearSleepTimerHandles;
+  }, [clearSleepTimerHandles, setIsPlaying, sleepTimerEndsAt]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     audio.preload = 'metadata';
     audio.playsInline = true;
@@ -547,8 +606,9 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   useEffect(() => () => {
     clearRecoveryTimer();
+    clearSleepTimerHandles();
     persistPlaybackState(true);
-  }, [clearRecoveryTimer, persistPlaybackState]);
+  }, [clearRecoveryTimer, clearSleepTimerHandles, persistPlaybackState]);
 
   useEffect(() => {
     if (!trackNameRef.current) return;
@@ -694,17 +754,22 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     duration,
     lyrics,
     currentLyricIndex,
+    currentLyricText,
     playMode,
     isTrackNameOverflowing,
     trackNameRef,
     audioRef,
     currentSongInfo,
+    sleepTimerEndsAt,
+    sleepTimerRemainingMs,
     handlePlayPause,
     handleSeek,
     handlePrev,
     handleNext,
     playSongFromAlbum,
     pausePlayback,
+    startSleepTimer,
+    cancelSleepTimer,
     togglePlayMode,
     getPlayModeIcon
   };

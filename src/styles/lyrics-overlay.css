@@ -893,6 +893,94 @@
     flex: 1;
   }
 
+  .mobile-player-actions {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .mobile-player-actions .mobile-action-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    margin: 0;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-main);
+    opacity: 0.78;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+
+  .mobile-player-actions .mobile-action-btn:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-player-actions .mobile-action-btn.active {
+    opacity: 1;
+  }
+
+  .mobile-player-actions .overlay-favorite-trigger.active {
+    color: #ff4f66;
+  }
+
+  .mobile-player-actions .mobile-action-btn:disabled {
+    opacity: 0.36;
+    cursor: not-allowed;
+  }
+
+  .mobile-sleep-timer-control {
+    justify-self: center;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    min-width: 44px;
+  }
+
+  .mobile-sleep-timer-control .sleep-timer-btn {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .mobile-sleep-timer-control .sleep-timer-btn.active {
+    background: color-mix(in srgb, var(--text-main) 10%, transparent);
+    color: var(--text-main) !important;
+    opacity: 1;
+  }
+
+  .mobile-sleep-timer-control .sleep-timer-idle-label,
+  .mobile-sleep-timer-control .sleep-timer-countdown {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mobile-sleep-timer-control .sleep-timer-menu {
+    left: 50%;
+    right: auto;
+    bottom: calc(100% + 10px);
+    width: min(244px, calc(100vw - 40px));
+    transform: translateX(-50%);
+    background: color-mix(in srgb, var(--bg-color) 86%, rgba(0, 0, 0, 0.22));
+    color: var(--text-main);
+    border-color: color-mix(in srgb, var(--text-main) 16%, transparent);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.3);
+  }
+
   .overlay-favorite-trigger.mobile-fab,
   .overlay-comment-trigger.mobile-fab {
     position: absolute;

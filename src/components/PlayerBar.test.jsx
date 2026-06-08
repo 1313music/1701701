@@ -24,6 +24,10 @@ const createProps = (overrides = {}) => ({
   onShare: vi.fn(),
   isTrackNameOverflowing: false,
   trackNameRef: { current: null },
+  currentLyricText: '',
+  sleepTimerRemainingMs: 0,
+  onStartSleepTimer: vi.fn(),
+  onCancelSleepTimer: vi.fn(),
   ...overrides
 });
 
@@ -120,5 +124,66 @@ describe('PlayerBar', () => {
     const { container } = render(<PlayerBar {...props} />);
 
     expect(container.querySelector('.scrolling-text')).toHaveTextContent('Test Song | Test Song');
+  });
+
+  it('marks the player and mini cover as playing while audio is active', () => {
+    const props = createProps({ isPlaying: true });
+    const { container } = render(<PlayerBar {...props} />);
+
+    expect(container.querySelector('.player-bar')).toHaveClass('is-playing');
+    expect(container.querySelector('.mini-cover')).toHaveClass('is-playing');
+  });
+
+  it('renders the mobile lyric subtitle when current lyric text is available', () => {
+    const props = createProps({ currentLyricText: 'Current lyric line' });
+    const { container } = render(<PlayerBar {...props} />);
+
+    expect(container.querySelector('.artist-name')).toHaveTextContent('Test Artist');
+    expect(container.querySelector('.mobile-current-lyric')).toHaveTextContent('Current lyric line');
+  });
+
+  it('falls back to artist text for the mobile subtitle when lyrics are unavailable', () => {
+    const props = createProps();
+    const { container } = render(<PlayerBar {...props} />);
+
+    expect(container.querySelector('.mobile-current-lyric')).toHaveTextContent('Test Artist');
+  });
+
+  it('opens sleep timer presets without opening the full-screen player', () => {
+    const props = createProps();
+    render(<PlayerBar {...props} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '设置定时关闭' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: '30 分钟' }));
+
+    expect(props.onStartSleepTimer).toHaveBeenCalledWith(30);
+    expect(props.setIsLyricsOpen).not.toHaveBeenCalled();
+  });
+
+  it('shows and cancels an active sleep timer', () => {
+    const props = createProps({ sleepTimerRemainingMs: 65_000 });
+    render(<PlayerBar {...props} />);
+
+    expect(screen.getByRole('button', { name: '定时关闭剩余 1:05' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '定时关闭剩余 1:05' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: '取消定时' }));
+
+    expect(props.onCancelSleepTimer).toHaveBeenCalledTimes(1);
+    expect(props.setIsLyricsOpen).not.toHaveBeenCalled();
+  });
+
+  it('starts a custom sleep timer from the timer menu', () => {
+    const props = createProps();
+    render(<PlayerBar {...props} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '设置定时关闭' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: '自定义定时分钟' }), {
+      target: { value: '23' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '开始' }));
+
+    expect(props.onStartSleepTimer).toHaveBeenCalledWith(23);
+    expect(props.setIsLyricsOpen).not.toHaveBeenCalled();
   });
 });

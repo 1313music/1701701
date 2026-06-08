@@ -1242,4 +1242,84 @@ describe('useAudioPlayer lyric race', () => {
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('pauses playback when the sleep timer ends', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-08T00:00:00.000Z'));
+
+    const album = {
+      id: 'album-sleep-timer',
+      name: 'Album Sleep Timer',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { id: 'song-1', name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+      result.current.startSleepTimer(15);
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.sleepTimerRemainingMs).toBe(15 * 60 * 1000);
+
+    await act(async () => {
+      vi.advanceTimersByTime(15 * 60 * 1000);
+      await Promise.resolve();
+    });
+
+    expect(result.current.isPlaying).toBe(false);
+    expect(result.current.audioRef.current.paused).toBe(true);
+    expect(result.current.sleepTimerRemainingMs).toBe(0);
+    expect(result.current.sleepTimerEndsAt).toBeNull();
+  });
+
+  it('does not pause playback after the sleep timer is canceled', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-08T00:00:00.000Z'));
+
+    const album = {
+      id: 'album-sleep-timer-cancel',
+      name: 'Album Sleep Timer Cancel',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { id: 'song-1', name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handlePlayPause();
+      result.current.startSleepTimer(15);
+      result.current.cancelSleepTimer();
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(15 * 60 * 1000);
+      await Promise.resolve();
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.audioRef.current.paused).toBe(false);
+    expect(result.current.sleepTimerRemainingMs).toBe(0);
+    expect(result.current.sleepTimerEndsAt).toBeNull();
+  });
 });

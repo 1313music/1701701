@@ -9,6 +9,7 @@ import CommentSection from './CommentSection.jsx';
 import { useLyricsOverlayComments } from '../hooks/useLyricsOverlayComments.js';
 import { useLyricsOverlayProgress } from '../hooks/useLyricsOverlayProgress.js';
 import { useLyricsOverlayViewport } from '../hooks/useLyricsOverlayViewport.js';
+import SleepTimerControl from './SleepTimerControl.jsx';
 
 const LyricsOverlay = ({
     isLyricsOpen,
@@ -35,6 +36,9 @@ const LyricsOverlay = ({
     onShare,
     isCurrentTrackFavorited,
     onToggleFavorite,
+    sleepTimerRemainingMs = 0,
+    onStartSleepTimer,
+    onCancelSleepTimer,
     lyricsOverlaySessionId,
     playerOverlayContextId,
     trackChangeId,
@@ -336,6 +340,36 @@ const LyricsOverlay = ({
                             </div>
 
                             <div className="mobile-player-controls">
+                                <div className="mobile-player-actions">
+                                    <button
+                                        type="button"
+                                        className={`overlay-favorite-trigger mobile-action-btn ${isCurrentTrackFavorited ? 'active' : ''}`}
+                                        onClick={handleToggleFavorite}
+                                        aria-label={favoriteAriaLabel}
+                                        title={favoriteAriaLabel}
+                                        disabled={!canToggleFavorite}
+                                    >
+                                        <Heart size={24} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
+                                    </button>
+                                    <SleepTimerControl
+                                        className="mobile-sleep-timer-control"
+                                        buttonClassName="mobile-action-btn"
+                                        remainingMs={sleepTimerRemainingMs}
+                                        onStartSleepTimer={onStartSleepTimer}
+                                        onCancelSleepTimer={onCancelSleepTimer}
+                                        showCountdown={false}
+                                        iconSize={24}
+                                    />
+                                    <button
+                                        type="button"
+                                        className={`overlay-comment-trigger mobile-action-btn ${isCommentDrawerOpen ? 'active' : ''}`}
+                                        onClick={toggleCommentDrawer}
+                                        aria-label="歌曲评论"
+                                        disabled={!canOpenCommentDrawer}
+                                    >
+                                        <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
+                                    </button>
+                                </div>
                                 <div className="mobile-progress-row">
                                     <div className="mobile-progress-section">
                                         <div
@@ -376,30 +410,6 @@ const LyricsOverlay = ({
                                 </div>
                             </div>
                         </div>
-
-                        {isMobileOverlay && (
-                            <>
-                                <button
-                                    type="button"
-                                    className={`overlay-favorite-trigger mobile-fab ${isCurrentTrackFavorited ? 'active' : ''}`}
-                                    onClick={handleToggleFavorite}
-                                    aria-label={favoriteAriaLabel}
-                                    title={favoriteAriaLabel}
-                                    disabled={!canToggleFavorite}
-                                >
-                                    <Heart size={22} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`overlay-comment-trigger mobile-fab ${isCommentDrawerOpen ? 'active' : ''}`}
-                                    onClick={toggleCommentDrawer}
-                                    aria-label="歌曲评论"
-                                    disabled={!canOpenCommentDrawer}
-                                >
-                                    <MessageCircle size={22} strokeWidth={2.2} absoluteStrokeWidth />
-                                </button>
-                            </>
-                        )}
 
                         {/* 桌面端内容 */}
                         <div className="desktop-player-content">

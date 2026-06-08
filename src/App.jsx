@@ -124,17 +124,21 @@ const App = () => {
     duration,
     lyrics,
     currentLyricIndex,
+    currentLyricText,
     isTrackNameOverflowing,
     trackNameRef,
     audioRef,
     currentSongInfo,
     trackChangeId,
+    sleepTimerRemainingMs,
     handlePlayPause,
     handleSeek,
     handlePrev,
     handleNext,
     playSongFromAlbum,
     pausePlayback,
+    startSleepTimer,
+    cancelSleepTimer,
     togglePlayMode,
     getPlayModeIcon
   } = useAudioPlayer({
@@ -612,6 +616,10 @@ const App = () => {
               onShare={handleShareCurrentTrack}
               isTrackNameOverflowing={isTrackNameOverflowing}
               trackNameRef={trackNameRef}
+              currentLyricText={currentLyricText}
+              sleepTimerRemainingMs={sleepTimerRemainingMs}
+              onStartSleepTimer={startSleepTimer}
+              onCancelSleepTimer={cancelSleepTimer}
             />
 
             {hasLyricsOverlayLoaded && (
@@ -640,6 +648,9 @@ const App = () => {
                   onAddToFavorites={addTempSong}
                   onToggleFavorite={toggleTempSong}
                   isCurrentTrackFavorited={tempPlaylistSet.has(currentTrack?.src)}
+                  sleepTimerRemainingMs={sleepTimerRemainingMs}
+                  onStartSleepTimer={startSleepTimer}
+                  onCancelSleepTimer={cancelSleepTimer}
                   lyricsOverlaySessionId={lyricsOverlaySessionId}
                   playerOverlayContextId={playerOverlayContextId}
                   trackChangeId={trackChangeId}

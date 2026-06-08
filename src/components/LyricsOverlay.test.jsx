@@ -73,6 +73,9 @@ const createBaseProps = (overrides = {}) => ({
   onShare: vi.fn(),
   isCurrentTrackFavorited: false,
   onToggleFavorite: vi.fn(),
+  sleepTimerRemainingMs: 0,
+  onStartSleepTimer: vi.fn(),
+  onCancelSleepTimer: vi.fn(),
   lyricsOverlaySessionId: 3,
   playerOverlayContextId: 9,
   trackChangeId: 12,
@@ -178,7 +181,7 @@ describe('LyricsOverlay comment drawer requests', () => {
 
     render(<LyricsOverlay {...props} />);
 
-    fireEvent.click(document.body.querySelector('.overlay-comment-trigger.mobile-fab'));
+    fireEvent.click(document.body.querySelector('.overlay-comment-trigger.mobile-action-btn'));
 
     expect(screen.getByText('单曲评论')).toBeInTheDocument();
     expect(screen.getByTestId('comment-path')).toHaveTextContent(
@@ -204,7 +207,7 @@ describe('LyricsOverlay comment drawer requests', () => {
 
     render(<LyricsOverlay {...props} />);
 
-    fireEvent.click(document.body.querySelector('.overlay-comment-trigger.mobile-fab'));
+    fireEvent.click(document.body.querySelector('.overlay-comment-trigger.mobile-action-btn'));
     expect(screen.getByText('单曲评论')).toBeInTheDocument();
 
     const edgeZone = document.body.querySelector('.song-comment-edge-swipe-zone');
@@ -240,6 +243,31 @@ describe('LyricsOverlay comment drawer requests', () => {
 
     fireEvent.pointerDown(progressBar, { clientX: 25 });
     expect(props.audioRef.current.currentTime).toBe(45);
+  });
+
+  it('puts the sleep timer in the mobile action row and supports custom minutes', () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 390
+    });
+
+    render(<LyricsOverlay {...props} />);
+
+    expect(document.body.querySelector('.mobile-player-actions .mobile-sleep-timer-control')).toBeInTheDocument();
+    expect(document.body.querySelector('.overlay-comment-trigger.mobile-fab')).not.toBeInTheDocument();
+    expect(document.body.querySelector('.mobile-player-actions .sleep-timer-idle-label')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '设置定时关闭' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: '自定义定时分钟' }), {
+      target: { value: '35' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '开始' }));
+
+    expect(props.onStartSleepTimer).toHaveBeenCalledWith(35);
   });
 
   it('renders desktop playback controls as accessible buttons', () => {

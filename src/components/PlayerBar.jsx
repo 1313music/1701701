@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Play, Pause, ListMusic, Share2, Heart, MessageCircle } from 'lucide-react';
 import { Maximize2Icon } from './icons/AppIcons';
 import { formatTime } from '../utils/formatUtils';
+import SleepTimerControl from './SleepTimerControl.jsx';
 
 const PlayerBar = ({
     currentTrack,
@@ -23,10 +24,13 @@ const PlayerBar = ({
     onOpenComments,
     onShare,
     isTrackNameOverflowing,
-    trackNameRef
+    trackNameRef,
+    currentLyricText = '',
+    sleepTimerRemainingMs = 0,
+    onStartSleepTimer,
+    onCancelSleepTimer
 }) => {
     const ringProgress = Number.isFinite(progress) ? Math.min(Math.max(progress, 0), 100) : 0;
-    const coverRingPath = 'M 10.736 10.736 A 23 23 0 0 1 27 4 H 73 A 23 23 0 0 1 96 27 V 73 A 23 23 0 0 1 73 96 H 27 A 23 23 0 0 1 4 73 V 27 A 23 23 0 0 1 10.736 10.736';
     const [isProgressHovered, setIsProgressHovered] = useState(false);
     const [hoverProgress, setHoverProgress] = useState(null);
     const canShowTimeBadge = Number.isFinite(duration) && duration > 0;
@@ -83,17 +87,19 @@ const PlayerBar = ({
                 </div>
             </div>
 
-            <footer className="player-bar" onClick={() => setIsLyricsOpen(true)}>
+            <footer className={`player-bar ${isPlaying ? 'is-playing' : ''}`} onClick={() => setIsLyricsOpen(true)}>
                 <div className="player-info">
                     <div
-                        className="mini-cover"
+                        className={`mini-cover ${isPlaying ? 'is-playing' : ''}`}
                         onClick={() => setIsLyricsOpen(true)}
                     >
                         <svg className="mini-cover-ring" viewBox="0 0 100 100" aria-hidden="true">
-                            <path className="mini-cover-ring-track" d={coverRingPath} pathLength="100" />
-                            <path
+                            <circle className="mini-cover-ring-track" cx="50" cy="50" r="46" pathLength="100" />
+                            <circle
                                 className="mini-cover-ring-progress"
-                                d={coverRingPath}
+                                cx="50"
+                                cy="50"
+                                r="46"
                                 pathLength="100"
                                 style={{ strokeDasharray: `${ringProgress} 100` }}
                             />
@@ -124,6 +130,7 @@ const PlayerBar = ({
                             )}
                         </span>
                         <span className="artist-name">{currentAlbum.artist}</span>
+                        <span className="mobile-current-lyric">{currentLyricText || currentAlbum.artist}</span>
                     </div>
                 </div>
 
@@ -210,6 +217,11 @@ const PlayerBar = ({
                     >
                         <Share2 size={20} strokeWidth={2.2} absoluteStrokeWidth />
                     </button>
+                    <SleepTimerControl
+                        remainingMs={sleepTimerRemainingMs}
+                        onStartSleepTimer={onStartSleepTimer}
+                        onCancelSleepTimer={onCancelSleepTimer}
+                    />
                 </div>
             </footer>
         </>

@@ -124,4 +124,20 @@ describe('AlbumListOverlay mobile gestures', () => {
 
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('closes on a downward swipe from the sheet handle area', () => {
+    const props = createBaseProps();
+    render(<AlbumListOverlay {...props} />);
+
+    const handle = document.body.querySelector('.album-list-drag-handle');
+
+    fireEvent.touchStart(handle, {
+      touches: [{ clientX: 190, clientY: 24 }]
+    });
+    fireEvent.touchEnd(handle, {
+      changedTouches: [{ clientX: 194, clientY: 148 }]
+    });
+
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
 });

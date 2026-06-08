@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Heart, X } from 'lucide-react';
+import { Heart, Play, Trash2, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../styles/album-list-overlay.css';
 
@@ -10,6 +10,7 @@ const FAVORITE_MARQUEE_MIN_DURATION = 10;
 const FAVORITE_MARQUEE_SPEED = 34;
 const FAVORITE_META_MIN_VISIBLE = 44;
 const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
+const MOBILE_CLOSE_DRAG_ZONE_HEIGHT = 132;
 
 const getMeasuredWidth = (element) => {
     if (!element) return 0;
@@ -177,17 +178,20 @@ const AlbumListOverlay = ({
         x: null,
         y: null,
         startAt: 0,
-        fromLeftEdge: false
+        fromLeftEdge: false,
+        fromTopDragZone: false
     });
     const safeTempCount = typeof tempPlaylistCount === 'number' ? tempPlaylistCount : 0;
     const safeTempItems = Array.isArray(tempPlaylistItems) ? tempPlaylistItems : [];
     const currentTrackSrc = currentTrack?.src || '';
     const albumId = album?.id || '';
-    const albumSongIds = Array.isArray(album?.songs)
-        ? album.songs.map((song) => song?.src).filter(Boolean)
-        : [];
+    const albumName = album?.name || '未知专辑';
+    const safeAlbumSongs = Array.isArray(album?.songs) ? album.songs : [];
+    const albumSongIds = safeAlbumSongs.map((song) => song?.src).filter(Boolean);
     const isAlbumFullyFavorited = albumSongIds.length > 0
         && albumSongIds.every((id) => tempPlaylistSet?.has(id));
+    const albumSongCount = safeAlbumSongs.length;
+    const headerAlbumMeta = `${albumName} · ${albumSongCount} 首`;
 
     useEffect(() => {
         if (!isOpen || !albumId || typeof window === 'undefined') return undefined;
@@ -242,7 +246,8 @@ const AlbumListOverlay = ({
             x: null,
             y: null,
             startAt: 0,
-            fromLeftEdge: false
+            fromLeftEdge: false,
+            fromTopDragZone: false
         };
     };
 
@@ -251,12 +256,19 @@ const AlbumListOverlay = ({
         const touch = event.touches[0];
         if (!touch) return;
 
+        const target = event.target;
+        const panel = event.currentTarget;
+        const panelTop = panel?.getBoundingClientRect?.().top ?? 0;
+        const isInsideScrollableList = Boolean(target?.closest?.('.album-list-body'));
+
         touchGestureRef.current = {
             active: true,
             x: touch.clientX,
             y: touch.clientY,
             startAt: Date.now(),
-            fromLeftEdge: touch.clientX <= MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X
+            fromLeftEdge: touch.clientX <= MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X,
+            fromTopDragZone: !isInsideScrollableList
+                && touch.clientY <= panelTop + MOBILE_CLOSE_DRAG_ZONE_HEIGHT
         };
     };
 
@@ -266,7 +278,8 @@ const AlbumListOverlay = ({
             x: startX,
             y: startY,
             startAt,
-            fromLeftEdge
+            fromLeftEdge,
+            fromTopDragZone
         } = touchGestureRef.current;
 
         resetTouchGesture();
@@ -278,10 +291,18 @@ const AlbumListOverlay = ({
         const deltaY = endY - startY;
         const elapsed = Math.max(Date.now() - startAt, 1);
         const velocityX = deltaX / elapsed;
+        const velocityY = deltaY / elapsed;
         const isMostlyHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
+        const isMostlyVertical = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
         const shouldCloseByRight = fromLeftEdge && (deltaX > 88 || (deltaX > 42 && velocityX > 0.58));
+        const shouldCloseByDown = fromTopDragZone && (deltaY > 96 || (deltaY > 48 && velocityY > 0.58));
 
         if (isMostlyHorizontal && shouldCloseByRight) {
+            onClose?.();
+            return;
+        }
+
+        if (isMostlyVertical && shouldCloseByDown) {
             onClose?.();
         }
     };
@@ -308,6 +329,75 @@ const AlbumListOverlay = ({
         ) : null
     );
 
+    const renderAlbumActions = (className = 'album-list-actions') => (
+        <div className={className}>
+            <button
+                type="button"
+                className="album-play-btn"
+                onClick={(event) => {
+                    event.stopPropagation();
+                    if (!safeAlbumSongs.length) return;
+                    playSongFromAlbum(album, safeAlbumSongs[0]);
+                }}
+                disabled={!safeAlbumSongs.length}
+            >
+                <Play size={16} strokeWidth={2.4} aria-hidden="true" />
+                播放全部
+            </button>
+            <button
+                type="button"
+                className={`album-fav-all-btn ${isAlbumFullyFavorited ? 'active' : ''}`}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleAlbumFavorites?.(safeAlbumSongs, event);
+                }}
+                disabled={!safeAlbumSongs.length}
+            >
+                <Heart
+                    size={16}
+                    strokeWidth={2.3}
+                    fill={isAlbumFullyFavorited ? 'currentColor' : 'none'}
+                    aria-hidden="true"
+                />
+                {isAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
+            </button>
+        </div>
+    );
+
+    const renderFavoritesActions = (className = 'album-list-actions') => (
+        <div className={className}>
+            <button
+                type="button"
+                className="fav-play-btn"
+                onClick={(event) => {
+                    event.stopPropagation();
+                    onPlayFavorites?.();
+                }}
+                disabled={safeTempCount === 0}
+            >
+                <Play size={16} strokeWidth={2.4} aria-hidden="true" />
+                播放收藏
+            </button>
+            {safeTempCount > 0 && (
+                <button
+                    type="button"
+                    className="temp-clear-btn"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        if (typeof window !== 'undefined') {
+                            const shouldClear = window.confirm('确定要清空收藏吗？');
+                            if (!shouldClear) return;
+                        }
+                        onClearTempPlaylist?.(event);
+                    }}
+                >
+                    <Trash2 size={15} strokeWidth={2.3} aria-hidden="true" />
+                    清空列表
+                </button>
+            )}
+        </div>
+    );
+
     const renderAlbumList = ({ mobile = false } = {}) => (
         <>
             <div className={`album-list-subheader ${mobile ? 'is-mobile' : ''}`}>
@@ -315,40 +405,16 @@ const AlbumListOverlay = ({
                     {!mobile ? (
                         <>
                             <h4>当前专辑</h4>
-                            <p>{`${album.name} · ${album.songs.length} 首`}</p>
+                            <p>{headerAlbumMeta}</p>
                         </>
                     ) : (
-                        <p className="album-list-mobile-main">{`${album.name} · ${album.songs.length} 首`}</p>
+                        <p className="album-list-mobile-main">{headerAlbumMeta}</p>
                     )}
                 </div>
-                <div className="album-list-actions">
-                    <button
-                        type="button"
-                        className="album-play-btn"
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            if (!album.songs?.length) return;
-                            playSongFromAlbum(album, album.songs[0]);
-                        }}
-                        disabled={!album.songs?.length}
-                    >
-                        播放全部
-                    </button>
-                    <button
-                        type="button"
-                        className={`album-fav-all-btn ${isAlbumFullyFavorited ? 'active' : ''}`}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onToggleAlbumFavorites?.(album.songs, event);
-                        }}
-                        disabled={!album.songs?.length}
-                    >
-                        {isAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
-                    </button>
-                </div>
+                {renderAlbumActions()}
             </div>
             <div className="album-list-body">
-                {album.songs.map((song, index) => (
+                {safeAlbumSongs.map((song, index) => (
                     <div
                         key={song.src}
                         className={getRowClassName(song)}
@@ -410,39 +476,16 @@ const AlbumListOverlay = ({
                         <p className="album-list-mobile-tip">{`双击歌曲封面可加入收藏 · ${safeTempCount} 首`}</p>
                     )}
                 </div>
-                <div className="album-list-actions">
-                    <button
-                        type="button"
-                        className="fav-play-btn"
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onPlayFavorites?.();
-                        }}
-                        disabled={safeTempCount === 0}
-                    >
-                        播放收藏
-                    </button>
-                    {safeTempCount > 0 && (
-                        <button
-                            type="button"
-                            className="temp-clear-btn"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                if (typeof window !== 'undefined') {
-                                    const shouldClear = window.confirm('确定要清空收藏吗？');
-                                    if (!shouldClear) return;
-                                }
-                                onClearTempPlaylist?.(event);
-                            }}
-                        >
-                            清空列表
-                        </button>
-                    )}
-                </div>
+                {renderFavoritesActions()}
             </div>
             <div className="album-list-body">
                 {safeTempItems.length === 0 && (
-                    <div className="song-empty">还没有添加歌曲</div>
+                    <div className="song-empty">
+                        <span className="song-empty-icon" aria-hidden="true">
+                            <Heart size={22} strokeWidth={2} />
+                        </span>
+                        <span className="song-empty-copy">还没有添加歌曲</span>
+                    </div>
                 )}
                 {safeTempItems.map((item, index) => (
                     <div
@@ -489,6 +532,16 @@ const AlbumListOverlay = ({
         </>
     );
 
+    const panelInitial = isMobileViewport()
+        ? { opacity: 0, y: 36, scale: 0.98 }
+        : { opacity: 0 };
+    const panelAnimate = isMobileViewport()
+        ? { opacity: 1, y: 0, scale: 1 }
+        : { opacity: 1 };
+    const panelExit = isMobileViewport()
+        ? { opacity: 0, y: 28, scale: 0.99 }
+        : { opacity: 0 };
+
     return createPortal(
         <AnimatePresence>
             {isOpen && (
@@ -501,15 +554,16 @@ const AlbumListOverlay = ({
                 >
                     <Motion.div
                         className="album-list-panel"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        initial={panelInitial}
+                        animate={panelAnimate}
+                        exit={panelExit}
                         transition={{ duration: 0.2, ease: "easeOut" }}
                         onClick={(e) => e.stopPropagation()}
                         onTouchStart={handleTouchStart}
                         onTouchEnd={handleTouchEnd}
                         onTouchCancel={handleTouchCancel}
                     >
+                        <div className="album-list-drag-handle" aria-hidden="true" />
                         <div className="album-list-header">
                             <div className="album-list-header-label">播放列表</div>
                             <button className="album-list-close" onClick={onClose} aria-label="关闭">

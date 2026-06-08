@@ -897,7 +897,7 @@ body {
 @media (max-width: 1024px) {
   .back-to-top-btn {
     right: calc(env(safe-area-inset-right, 0px) + 12px);
-    bottom: calc(var(--mobile-player-safe-bottom) + var(--mobile-player-float-offset) + 76px);
+    bottom: calc(var(--mobile-player-safe-bottom) + var(--mobile-player-float-offset) + 72px);
     width: 40px;
     height: 40px;
   }
@@ -1362,6 +1362,10 @@ body {
   position: relative;
 }
 
+.album-list-drag-handle {
+  display: none;
+}
+
 .album-list-header-label {
   font-size: 18px;
   font-weight: 700;
@@ -1432,7 +1436,8 @@ body {
   min-height: 0;
 }
 
-.album-list-main-column {
+.album-list-main-column,
+.album-list-favorites-column {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1440,11 +1445,7 @@ body {
 }
 
 .album-list-favorites-column {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
   border-left: 1px solid var(--glass-border);
-  overflow: hidden;
 }
 
 .album-list-subheader {
@@ -1487,6 +1488,10 @@ body {
 .album-fav-all-btn,
 .fav-play-btn,
 .temp-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   border: 1px solid transparent;
   min-height: 38px;
   padding: 7px 14px;
@@ -1515,6 +1520,7 @@ body {
 .album-fav-all-btn.active {
   color: #e05252;
   border-color: rgba(224, 82, 82, 0.35);
+  background: rgba(224, 82, 82, 0.08);
 }
 
 .album-play-btn:disabled,
@@ -1788,10 +1794,40 @@ body {
 }
 
 .song-empty {
-  padding: 18px 10px;
+  min-height: min(320px, 52vh);
+  margin: 8px;
+  padding: 24px 18px;
+  border: 1px dashed color-mix(in srgb, var(--glass-border) 78%, transparent);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glass-bg) 36%, transparent),
+      color-mix(in srgb, var(--bg-color) 22%, transparent)
+    );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   text-align: center;
   color: var(--text-secondary);
   font-size: 13px;
+}
+
+.song-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--text-secondary) 72%, transparent);
+  background: color-mix(in srgb, var(--glass-bg) 56%, transparent);
+}
+
+.song-empty-copy {
+  font-weight: 650;
 }
 
 @media (max-width: 1600px) {
