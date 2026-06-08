@@ -32,8 +32,23 @@ const SleepTimerControl = ({
     const [customMinutes, setCustomMinutes] = useState('');
     const isActive = Number.isFinite(remainingMs) && remainingMs > 0;
     const timerLabel = isActive ? formatSleepTimerRemaining(remainingMs) : '';
+    const shouldShowIdleLabel = showIdleLabel && !isActive;
+    const shouldShowCountdown = showCountdown && isActive;
     const customMinutesValue = Number(customMinutes);
     const canSubmitCustom = Number.isFinite(customMinutesValue) && customMinutesValue > 0;
+    const buttonStateClass = [
+        buttonClassName,
+        'sleep-timer-btn',
+        isActive ? 'active' : '',
+        shouldShowIdleLabel ? 'has-inline-label' : '',
+        shouldShowCountdown ? 'has-countdown-badge' : ''
+    ].filter(Boolean).join(' ');
+    const rootClassName = [
+        'sleep-timer-control',
+        className,
+        isActive ? 'active' : '',
+        isOpen ? 'is-open' : ''
+    ].filter(Boolean).join(' ');
 
     useEffect(() => {
         if (!isOpen || typeof document === 'undefined') return undefined;
@@ -68,10 +83,10 @@ const SleepTimerControl = ({
     };
 
     return (
-        <div className={`sleep-timer-control ${className}`.trim()} ref={rootRef}>
+        <div className={rootClassName} ref={rootRef}>
             <button
                 type="button"
-                className={`${buttonClassName} sleep-timer-btn ${isActive ? 'active' : ''}`.trim()}
+                className={buttonStateClass}
                 onClick={(event) => {
                     event.stopPropagation();
                     setIsOpen((prev) => !prev);
@@ -81,10 +96,10 @@ const SleepTimerControl = ({
                 aria-haspopup="menu"
             >
                 <Clock3 size={iconSize} strokeWidth={2.2} absoluteStrokeWidth />
-                {showIdleLabel && !isActive && (
+                {shouldShowIdleLabel && (
                     <span className="sleep-timer-idle-label">{idleText}</span>
                 )}
-                {showCountdown && isActive && (
+                {shouldShowCountdown && (
                     <span className="sleep-timer-countdown">{timerLabel}</span>
                 )}
             </button>
