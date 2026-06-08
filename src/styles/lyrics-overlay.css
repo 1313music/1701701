@@ -317,6 +317,55 @@
   padding: 0;
 }
 
+.overlay-sleep-timer-control {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-width: 32px;
+}
+
+.overlay-sleep-timer-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  margin: -4px 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.overlay-sleep-timer-btn:hover {
+  opacity: 0.82;
+  transform: scale(1.06);
+}
+
+.overlay-sleep-timer-btn.active {
+  color: currentColor !important;
+  opacity: 1;
+}
+
+.overlay-sleep-timer-control .overlay-sleep-timer-btn {
+  width: 32px;
+  min-width: 32px;
+}
+
+.overlay-sleep-timer-control .sleep-timer-menu {
+  left: 50%;
+  right: auto;
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--bg-color) 82%, rgba(8, 10, 14, 0.78));
+  color: var(--text-main);
+}
+
 .overlay-buttons {
   display: flex;
   align-items: center;

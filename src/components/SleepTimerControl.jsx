@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { Timer } from 'lucide-react';
+import { Clock3 } from 'lucide-react';
 
 const SLEEP_TIMER_PRESETS = [15, 30, 45, 60];
 
@@ -80,7 +80,7 @@ const SleepTimerControl = ({
                 aria-expanded={isOpen}
                 aria-haspopup="menu"
             >
-                <Timer size={iconSize} strokeWidth={2.2} absoluteStrokeWidth />
+                <Clock3 size={iconSize} strokeWidth={2.2} absoluteStrokeWidth />
                 {showIdleLabel && !isActive && (
                     <span className="sleep-timer-idle-label">{idleText}</span>
                 )}

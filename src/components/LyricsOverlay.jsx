@@ -343,13 +343,12 @@ const LyricsOverlay = ({
                                 <div className="mobile-player-actions">
                                     <button
                                         type="button"
-                                        className={`overlay-favorite-trigger mobile-action-btn ${isCurrentTrackFavorited ? 'active' : ''}`}
-                                        onClick={handleToggleFavorite}
-                                        aria-label={favoriteAriaLabel}
-                                        title={favoriteAriaLabel}
-                                        disabled={!canToggleFavorite}
+                                        className={`overlay-comment-trigger mobile-action-btn ${isCommentDrawerOpen ? 'active' : ''}`}
+                                        onClick={toggleCommentDrawer}
+                                        aria-label="歌曲评论"
+                                        disabled={!canOpenCommentDrawer}
                                     >
-                                        <Heart size={24} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
+                                        <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
                                     </button>
                                     <SleepTimerControl
                                         className="mobile-sleep-timer-control"
@@ -362,12 +361,13 @@ const LyricsOverlay = ({
                                     />
                                     <button
                                         type="button"
-                                        className={`overlay-comment-trigger mobile-action-btn ${isCommentDrawerOpen ? 'active' : ''}`}
-                                        onClick={toggleCommentDrawer}
-                                        aria-label="歌曲评论"
-                                        disabled={!canOpenCommentDrawer}
+                                        className={`overlay-favorite-trigger mobile-action-btn ${isCurrentTrackFavorited ? 'active' : ''}`}
+                                        onClick={handleToggleFavorite}
+                                        aria-label={favoriteAriaLabel}
+                                        title={favoriteAriaLabel}
+                                        disabled={!canToggleFavorite}
                                     >
-                                        <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
+                                        <Heart size={24} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
                                     </button>
                                 </div>
                                 <div className="mobile-progress-row">
@@ -442,6 +442,24 @@ const LyricsOverlay = ({
                                     <div className="overlay-comment-row">
                                         <button
                                             type="button"
+                                            className={`overlay-comment-trigger desktop-floating ${isCommentDrawerOpen ? 'active' : ''}`}
+                                            onClick={toggleCommentDrawer}
+                                            aria-label="歌曲评论"
+                                            disabled={!canOpenCommentDrawer}
+                                        >
+                                            <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
+                                        </button>
+                                        <SleepTimerControl
+                                            className="overlay-sleep-timer-control"
+                                            buttonClassName="overlay-sleep-timer-btn"
+                                            remainingMs={sleepTimerRemainingMs}
+                                            onStartSleepTimer={onStartSleepTimer}
+                                            onCancelSleepTimer={onCancelSleepTimer}
+                                            showCountdown={false}
+                                            iconSize={24}
+                                        />
+                                        <button
+                                            type="button"
                                             className={`overlay-favorite-trigger desktop-floating ${isCurrentTrackFavorited ? 'active' : ''}`}
                                             onClick={handleToggleFavorite}
                                             aria-label={favoriteAriaLabel}
@@ -449,15 +467,6 @@ const LyricsOverlay = ({
                                             disabled={!canToggleFavorite}
                                         >
                                             <Heart size={24} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={`overlay-comment-trigger desktop-floating ${isCommentDrawerOpen ? 'active' : ''}`}
-                                            onClick={toggleCommentDrawer}
-                                            aria-label="歌曲评论"
-                                            disabled={!canOpenCommentDrawer}
-                                        >
-                                            <MessageCircle size={24} strokeWidth={2.2} absoluteStrokeWidth />
                                         </button>
                                     </div>
                                     <div className="overlay-progress-row">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import LyricsOverlay from './LyricsOverlay.jsx';
@@ -261,13 +261,36 @@ describe('LyricsOverlay comment drawer requests', () => {
     expect(document.body.querySelector('.overlay-comment-trigger.mobile-fab')).not.toBeInTheDocument();
     expect(document.body.querySelector('.mobile-player-actions .sleep-timer-idle-label')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: '设置定时关闭' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: '自定义定时分钟' }), {
+    const mobileActions = document.body.querySelector('.mobile-player-actions');
+    expect(mobileActions.firstElementChild).toHaveClass('overlay-comment-trigger');
+    expect(mobileActions.lastElementChild).toHaveClass('overlay-favorite-trigger');
+
+    fireEvent.click(within(mobileActions).getByRole('button', { name: '设置定时关闭' }));
+    fireEvent.change(within(mobileActions).getByRole('spinbutton', { name: '自定义定时分钟' }), {
       target: { value: '35' }
     });
-    fireEvent.click(screen.getByRole('button', { name: '开始' }));
+    fireEvent.click(within(mobileActions).getByRole('button', { name: '开始' }));
 
     expect(props.onStartSleepTimer).toHaveBeenCalledWith(35);
+  });
+
+  it('puts the sleep timer in the desktop full-screen action row', () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0
+    });
+
+    render(<LyricsOverlay {...props} />);
+
+    const desktopActions = document.body.querySelector('.overlay-comment-row');
+    expect(desktopActions.querySelector('.overlay-sleep-timer-control')).toBeInTheDocument();
+    expect(desktopActions.firstElementChild).toHaveClass('overlay-comment-trigger');
+    expect(desktopActions.lastElementChild).toHaveClass('overlay-favorite-trigger');
+
+    fireEvent.click(within(desktopActions).getByRole('button', { name: '设置定时关闭' }));
+    fireEvent.click(within(desktopActions).getByRole('menuitem', { name: '45 分钟' }));
+
+    expect(props.onStartSleepTimer).toHaveBeenCalledWith(45);
   });
 
   it('renders desktop playback controls as accessible buttons', () => {
