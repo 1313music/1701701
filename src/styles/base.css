@@ -707,8 +707,26 @@ body {
   border-radius: 12px;
   width: 320px;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  transition:
+    width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    border-radius 0.18s ease;
   border: 1px solid transparent;
+}
+
+.search-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .search-box:focus-within {
@@ -731,6 +749,11 @@ body {
 .search-icon {
   color: var(--text-secondary);
   flex-shrink: 0;
+}
+
+.search-toggle:focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 3px;
 }
 
 .search-clear {
@@ -810,6 +833,52 @@ body {
   font-size: 16px;
   margin-bottom: 32px;
   font-weight: 400;
+}
+
+@media (min-width: 769px) {
+  .search-box {
+    width: 44px;
+    height: 44px;
+    gap: 0;
+    justify-content: center;
+    padding: 0;
+    border-radius: 999px;
+    overflow: visible;
+  }
+
+  .search-box.is-expanded,
+  .search-box.has-value {
+    width: 320px;
+    height: 44px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding: 0 14px;
+    border-radius: 12px;
+  }
+
+  .search-box:not(.is-expanded):not(.has-value) input,
+  .search-box:not(.is-expanded):not(.has-value) .search-clear {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .search-box:not(.is-expanded):not(.has-value) .search-toggle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .search-box.is-expanded .search-toggle,
+  .search-box.has-value .search-toggle {
+    width: 18px;
+    height: 18px;
+  }
+
+  .search-box .search-icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 @media (max-width: 768px) {
