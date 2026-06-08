@@ -642,6 +642,7 @@ const App = () => {
                   getPlayModeIcon={getPlayModeIcon}
                   handlePrev={handlePrev}
                   handleNext={handleNext}
+                  playSongFromAlbum={playSongFromAlbum}
                   audioRef={audioRef}
                   currentSongInfo={currentSongInfo}
                   commentServerURL={WALINE_SERVER_URL}

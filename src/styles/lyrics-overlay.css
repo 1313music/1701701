@@ -3,6 +3,14 @@
 }
 /* 全屏播放页 */
 .lyrics-overlay {
+  --spectrum-rgb: 255, 255, 255;
+  --spectrum-glow-rgb: 255, 255, 255;
+  --desktop-spectrum-opacity: 0.14;
+  --desktop-spectrum-bar-opacity: 0.72;
+  --desktop-spectrum-glow-opacity: 0.16;
+  --mobile-spectrum-opacity: 0.28;
+  --mobile-spectrum-bar-opacity: 0.76;
+  --mobile-spectrum-glow-opacity: 0.24;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
@@ -15,6 +23,22 @@
   flex-direction: column;
   overflow: hidden;
   isolation: isolate;
+}
+
+[data-theme='light'] .lyrics-overlay {
+  --spectrum-rgb: 29, 29, 31;
+  --spectrum-glow-rgb: 29, 29, 31;
+  --desktop-spectrum-opacity: 0.26;
+  --desktop-spectrum-bar-opacity: 0.88;
+  --desktop-spectrum-glow-opacity: 0.22;
+  --mobile-spectrum-opacity: 0.4;
+  --mobile-spectrum-bar-opacity: 0.9;
+  --mobile-spectrum-glow-opacity: 0.3;
+}
+
+[data-theme='dark'] .lyrics-overlay {
+  --spectrum-rgb: 255, 255, 255;
+  --spectrum-glow-rgb: 255, 255, 255;
 }
 
 .lyrics-overlay::before,
@@ -188,19 +212,42 @@
 }
 
 .track-meta {
+  flex: 0 0 112px;
   width: 100%;
   max-width: 440px;
+  height: 112px;
+  margin-top: 20px;
+  overflow: hidden;
+  text-align: center;
 }
 
 .track-meta h2 {
-  font-size: 40px;
-  font-weight: 800;
-  margin-bottom: 12px;
+  display: -webkit-box;
+  max-width: 100%;
+  margin: 0 0 8px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 34px;
+  font-weight: 750;
+  line-height: 1.12;
+  max-height: 2.24em;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .track-meta p {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: #fff;
   font-size: 24px;
+  line-height: 1.2;
   opacity: 0.6;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .overlay-controls {
@@ -561,6 +608,190 @@
   text-align: center;
 }
 
+.no-lyrics-panel {
+  position: relative;
+  width: min(620px, 100%);
+  min-height: min(560px, 64vh);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+}
+
+.desktop-spectrum {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: 0;
+  width: min(560px, 92%);
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  opacity: var(--desktop-spectrum-opacity);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.desktop-spectrum::before {
+  content: '';
+  position: absolute;
+  inset: 18% 4%;
+  background: radial-gradient(circle, rgba(var(--spectrum-glow-rgb), var(--desktop-spectrum-glow-opacity)), transparent 66%);
+  filter: blur(24px);
+}
+
+.desktop-spectrum-bar {
+  position: relative;
+  z-index: 1;
+  width: 4px;
+  height: var(--bar-height);
+  min-height: 22px;
+  border-radius: 999px;
+  background: rgba(var(--spectrum-rgb), var(--desktop-spectrum-bar-opacity));
+  transform-origin: center;
+  animation: desktop-spectrum-pulse 1.8s ease-in-out infinite;
+  animation-delay: var(--bar-delay);
+}
+
+.desktop-spectrum:not(.is-playing) .desktop-spectrum-bar {
+  animation-play-state: paused;
+  transform: scaleY(0.42);
+  opacity: 0.46;
+}
+
+@keyframes desktop-spectrum-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.42);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.no-lyrics-header,
+.no-lyrics-track-list {
+  position: relative;
+  z-index: 1;
+}
+
+.no-lyrics-header {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.no-lyrics-header span {
+  display: block;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.no-lyrics-header h3 {
+  max-width: 100%;
+  margin: 0 0 8px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.16;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-lyrics-header p {
+  margin: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-lyrics-track-list {
+  width: 100%;
+  max-height: min(420px, 44vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+  mask-image: linear-gradient(to bottom, black 0%, black 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 86%, transparent 100%);
+}
+
+.no-lyrics-track {
+  width: 100%;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.44);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.no-lyrics-track:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.no-lyrics-track:active:not(:disabled) {
+  transform: scale(0.992);
+}
+
+.no-lyrics-track:disabled {
+  cursor: default;
+}
+
+.no-lyrics-track.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.no-lyrics-track-index {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.66;
+}
+
+.no-lyrics-track-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-lyrics-track-status {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .lyric-line {
   font-size: 32px;
   font-weight: 700;
@@ -764,15 +995,17 @@
   }
 
   .track-meta {
+    flex-basis: 96px;
     max-width: 360px;
+    height: 96px;
   }
 
   .track-meta h2 {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .track-meta p {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .overlay-controls {
@@ -827,7 +1060,7 @@
   }
 
   .track-meta h2 {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .lyric-line {
@@ -857,8 +1090,8 @@
   }
 
   .track-meta h2 {
-    font-size: 24px;
-    margin-bottom: 5px;
+    font-size: 22px;
+    margin-bottom: 6px;
   }
 }
 
@@ -1295,9 +1528,66 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 18px;
     text-align: center;
+  }
+
+  .mobile-spectrum {
+    position: relative;
+    width: min(270px, 78vw);
+    height: 86px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    opacity: var(--mobile-spectrum-opacity);
+    pointer-events: none;
+  }
+
+  .mobile-spectrum::before {
+    content: '';
+    position: absolute;
+    inset: 14% 2%;
+    background: radial-gradient(circle, rgba(var(--spectrum-glow-rgb), var(--mobile-spectrum-glow-opacity)), transparent 68%);
+    filter: blur(18px);
+  }
+
+  .mobile-spectrum-bar {
+    position: relative;
+    z-index: 1;
+    width: 3px;
+    height: var(--bar-height);
+    min-height: 14px;
+    border-radius: 999px;
+    background: rgba(var(--spectrum-rgb), var(--mobile-spectrum-bar-opacity));
+    transform-origin: center;
+    animation: mobile-spectrum-pulse 1.8s ease-in-out infinite;
+    animation-delay: var(--bar-delay);
+  }
+
+  .mobile-no-lyrics:not(.is-playing) .mobile-spectrum-bar {
+    animation-play-state: paused;
+    transform: scaleY(0.42);
+    opacity: 0.5;
+  }
+
+  .mobile-no-lyrics-label {
+    display: block;
+    line-height: 1.2;
+  }
+
+  @keyframes mobile-spectrum-pulse {
+    0%,
+    100% {
+      transform: scaleY(0.42);
+    }
+
+    50% {
+      transform: scaleY(1);
+    }
   }
 
   :root.standalone-mode .mobile-fullscreen-player,
@@ -1307,6 +1597,11 @@
     --text-main: rgba(255, 255, 255, 0.94);
     --text-secondary: rgba(255, 255, 255, 0.45);
     --main-color: rgba(255, 255, 255, 0.9);
+    --spectrum-rgb: 255, 255, 255;
+    --spectrum-glow-rgb: 255, 255, 255;
+    --mobile-spectrum-opacity: 0.28;
+    --mobile-spectrum-bar-opacity: 0.76;
+    --mobile-spectrum-glow-opacity: 0.24;
     background: #10110d;
   }
 

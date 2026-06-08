@@ -11,6 +11,11 @@ import { useLyricsOverlayProgress } from '../hooks/useLyricsOverlayProgress.js';
 import { useLyricsOverlayViewport } from '../hooks/useLyricsOverlayViewport.js';
 import SleepTimerControl from './SleepTimerControl.jsx';
 
+const SPECTRUM_BARS = [
+    34, 62, 42, 78, 52, 90, 48, 70, 38, 84, 58, 96,
+    46, 72, 40, 88, 54, 76, 44, 92, 50, 68, 36, 82
+];
+
 const LyricsOverlay = ({
     isLyricsOpen,
     setIsLyricsOpen,
@@ -29,6 +34,7 @@ const LyricsOverlay = ({
     getPlayModeIcon,
     handlePrev,
     handleNext,
+    playSongFromAlbum,
     audioRef,
     setIsAlbumListOpen,
     commentServerURL,
@@ -144,6 +150,14 @@ const LyricsOverlay = ({
     const currentTrackSrc = currentTrack?.src || '';
     const favoriteAriaLabel = isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲';
     const canToggleFavorite = Boolean(currentTrackSrc);
+    const albumQueueSongs = useMemo(() => {
+        if (Array.isArray(currentAlbum?.songs) && currentAlbum.songs.length > 0) {
+            return currentAlbum.songs;
+        }
+        return currentTrack ? [currentTrack] : [];
+    }, [currentAlbum?.songs, currentTrack]);
+    const activeQueueIndex = albumQueueSongs.findIndex((song) => song?.src && song.src === currentTrackSrc);
+    const canPickQueueTrack = typeof playSongFromAlbum === 'function';
     const canShowDesktopProgressPreview = Number.isFinite(duration) && duration > 0;
     const getDesktopProgressFromPointer = (event) => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -199,6 +213,10 @@ const LyricsOverlay = ({
         event?.stopPropagation?.();
         if (!canToggleFavorite) return;
         onToggleFavorite?.(currentTrack, event);
+    };
+    const handleQueueTrackSelect = (song) => {
+        if (!canPickQueueTrack || !song) return;
+        playSongFromAlbum(currentAlbum, song);
     };
 
     const overlayInitial = isMobileOverlay
@@ -335,7 +353,21 @@ const LyricsOverlay = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="mobile-no-lyrics">暂无歌词</div>
+                                    <div className={`mobile-no-lyrics ${isPlaying ? 'is-playing' : ''}`}>
+                                        <div className="mobile-spectrum" aria-hidden="true">
+                                            {SPECTRUM_BARS.map((height, index) => (
+                                                <span
+                                                    key={`${height}-${index}`}
+                                                    className="mobile-spectrum-bar"
+                                                    style={{
+                                                        '--bar-height': `${Math.round(height * 0.72)}px`,
+                                                        '--bar-delay': `${index * -0.11}s`
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="mobile-no-lyrics-label">暂无歌词</span>
+                                    </div>
                                 )}
                             </div>
 
@@ -433,9 +465,11 @@ const LyricsOverlay = ({
                                     </div>
                                 </div>
 
-                                <div className="track-meta" style={{ textAlign: 'center', marginTop: 20 }}>
-                                    <h2>{currentTrack.name}</h2>
-                                    <p>{currentAlbum.artist} - {currentAlbum.name}</p>
+                                <div className="track-meta">
+                                    <h2 title={currentTrack.name}>{currentTrack.name}</h2>
+                                    <p title={`${currentAlbum.artist} - ${currentAlbum.name}`}>
+                                        {currentAlbum.artist} - {currentAlbum.name}
+                                    </p>
                                 </div>
 
                                 <div className="overlay-controls">
@@ -566,7 +600,56 @@ const LyricsOverlay = ({
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="no-lyrics">暂无歌词</div>
+                                        <div className="no-lyrics-panel">
+                                            <div
+                                                className={`desktop-spectrum ${isPlaying ? 'is-playing' : ''}`}
+                                                aria-hidden="true"
+                                            >
+                                                {SPECTRUM_BARS.map((height, index) => (
+                                                    <span
+                                                        key={`${height}-${index}`}
+                                                        className="desktop-spectrum-bar"
+                                                        style={{
+                                                            '--bar-height': `${height}px`,
+                                                            '--bar-delay': `${index * -0.11}s`
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div className="no-lyrics-header">
+                                                <span>暂无歌词</span>
+                                                <h3 title={currentAlbum.name}>{currentAlbum.name}</h3>
+                                                <p>{currentAlbum.artist} · {albumQueueSongs.length} 首</p>
+                                            </div>
+                                            <div
+                                                className="no-lyrics-track-list"
+                                                role="list"
+                                                aria-label={`${currentAlbum.name} 曲目列表`}
+                                            >
+                                                {albumQueueSongs.map((song, index) => {
+                                                    const isActiveTrack = index === activeQueueIndex;
+                                                    const trackNumber = String(index + 1).padStart(2, '0');
+                                                    return (
+                                                        <button
+                                                            key={song.src || `${song.name}-${index}`}
+                                                            type="button"
+                                                            className={`no-lyrics-track ${isActiveTrack ? 'active' : ''}`}
+                                                            onClick={() => handleQueueTrackSelect(song)}
+                                                            disabled={!canPickQueueTrack}
+                                                            aria-current={isActiveTrack ? 'true' : undefined}
+                                                            aria-label={`播放歌曲：${song.name}`}
+                                                            title={song.name}
+                                                        >
+                                                            <span className="no-lyrics-track-index">{trackNumber}</span>
+                                                            <span className="no-lyrics-track-name">{song.name}</span>
+                                                            <span className="no-lyrics-track-status">
+                                                                {isActiveTrack ? '当前' : ''}
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>

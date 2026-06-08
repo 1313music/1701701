@@ -66,6 +66,7 @@ const createBaseProps = (overrides = {}) => ({
   getPlayModeIcon: () => <span>mode</span>,
   handlePrev: vi.fn(),
   handleNext: vi.fn(),
+  playSongFromAlbum: vi.fn(),
   audioRef: createAudioRef(),
   setIsAlbumListOpen: vi.fn(),
   commentServerURL: 'https://comments.example.com',
@@ -245,6 +246,25 @@ describe('LyricsOverlay comment drawer requests', () => {
     expect(props.audioRef.current.currentTime).toBe(45);
   });
 
+  it('shows a lightweight spectrum when mobile lyrics are unavailable', () => {
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      isPlaying: true,
+      openCommentRequestId: 0
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 390
+    });
+
+    render(<LyricsOverlay {...props} />);
+
+    const mobileNoLyrics = document.body.querySelector('.mobile-no-lyrics');
+    expect(within(mobileNoLyrics).getByText('暂无歌词')).toBeInTheDocument();
+    expect(mobileNoLyrics).toHaveClass('is-playing');
+    expect(mobileNoLyrics.querySelectorAll('.mobile-spectrum-bar')).toHaveLength(24);
+  });
+
   it('puts the sleep timer in the mobile action row and supports custom minutes', () => {
     const props = createBaseProps({
       isLyricsOpen: true,
@@ -306,6 +326,51 @@ describe('LyricsOverlay comment drawer requests', () => {
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一首' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '打开歌曲列表' })).toBeInTheDocument();
+  });
+
+  it('shows an album queue for desktop tracks without lyrics', () => {
+    const songs = [
+      {
+        name: '测试歌曲',
+        src: 'https://example.com/song.mp3',
+        cover: 'https://example.com/song.jpg'
+      },
+      {
+        name: '下一首',
+        src: 'https://example.com/next.mp3',
+        cover: 'https://example.com/next.jpg'
+      }
+    ];
+    const currentAlbum = {
+      id: 'album-1',
+      name: '专辑',
+      artist: '歌手',
+      cover: 'https://example.com/album.jpg',
+      songs
+    };
+    const props = createBaseProps({
+      isLyricsOpen: true,
+      openCommentRequestId: 0,
+      currentTrack: songs[0],
+      currentAlbum
+    });
+
+    render(<LyricsOverlay {...props} />);
+
+    const noLyricsPanel = document.body.querySelector('.no-lyrics-panel');
+    expect(within(noLyricsPanel).getByText('暂无歌词')).toBeInTheDocument();
+    expect(within(noLyricsPanel).getByText('专辑')).toBeInTheDocument();
+
+    const currentTrackButton = within(noLyricsPanel).getByRole('button', {
+      name: '播放歌曲：测试歌曲'
+    });
+    expect(currentTrackButton).toHaveAttribute('aria-current', 'true');
+
+    fireEvent.click(within(noLyricsPanel).getByRole('button', {
+      name: '播放歌曲：下一首'
+    }));
+
+    expect(props.playSongFromAlbum).toHaveBeenCalledWith(currentAlbum, songs[1]);
   });
 
   it('previews the pointed seek time while hovering the desktop progress bar', () => {
