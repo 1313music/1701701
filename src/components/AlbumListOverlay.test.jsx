@@ -2,6 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getAlbumListPanelMotionProps } from '../utils/albumListMotion.js';
 import AlbumListOverlay from './AlbumListOverlay.jsx';
 
 vi.mock('framer-motion', () => {
@@ -14,7 +15,8 @@ vi.mock('framer-motion', () => {
 
   return {
     motion,
-    AnimatePresence: ({ children }) => <>{children}</>
+    AnimatePresence: ({ children }) => <>{children}</>,
+    useReducedMotion: () => false
   };
 });
 
@@ -47,6 +49,64 @@ const createBaseProps = (overrides = {}) => ({
   onClearTempPlaylist: vi.fn(),
   onPlayFavorites: vi.fn(),
   ...overrides
+});
+
+describe('AlbumListOverlay motion', () => {
+  it('uses a visible desktop pop-in animation instead of an opacity-only fade', () => {
+    const motionProps = getAlbumListPanelMotionProps({
+      isMobile: false,
+      shouldReduceMotion: false
+    });
+
+    expect(motionProps.initial).toMatchObject({
+      opacity: 0,
+      y: 24,
+      scale: 0.965
+    });
+    expect(motionProps.animate).toMatchObject({
+      opacity: 1,
+      y: 0,
+      scale: 1
+    });
+    expect(motionProps.exit).toMatchObject({
+      opacity: 0,
+      y: 16,
+      scale: 0.982
+    });
+    expect(motionProps.transition).toMatchObject({ type: 'spring' });
+    expect(motionProps.style).toEqual({ transformOrigin: 'center center' });
+  });
+
+  it('slides up from the bottom on mobile', () => {
+    const motionProps = getAlbumListPanelMotionProps({
+      isMobile: true,
+      shouldReduceMotion: false
+    });
+
+    expect(motionProps.initial).toMatchObject({
+      opacity: 0,
+      y: 48,
+      scale: 0.985
+    });
+    expect(motionProps.exit).toMatchObject({
+      opacity: 0,
+      y: 34,
+      scale: 0.992
+    });
+    expect(motionProps.style).toEqual({ transformOrigin: 'center bottom' });
+  });
+
+  it('removes transform movement when reduced motion is requested', () => {
+    const motionProps = getAlbumListPanelMotionProps({
+      isMobile: false,
+      shouldReduceMotion: true
+    });
+
+    expect(motionProps.initial).toEqual({ opacity: 0 });
+    expect(motionProps.animate).toEqual({ opacity: 1 });
+    expect(motionProps.exit).toEqual({ opacity: 0 });
+    expect(motionProps.transition).toMatchObject({ duration: 0.12 });
+  });
 });
 
 describe('AlbumListOverlay mobile gestures', () => {

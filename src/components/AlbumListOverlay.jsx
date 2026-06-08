@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Heart, Play, Trash2, X } from 'lucide-react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import {
+    getAlbumListOverlayMotionProps,
+    getAlbumListPanelMotionProps
+} from '../utils/albumListMotion.js';
 import '../styles/album-list-overlay.css';
 
 const FAVORITE_MARQUEE_GAP = 28;
@@ -11,6 +15,7 @@ const FAVORITE_MARQUEE_SPEED = 34;
 const FAVORITE_META_MIN_VISIBLE = 44;
 const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
 const MOBILE_CLOSE_DRAG_ZONE_HEIGHT = 132;
+const MOBILE_VIEWPORT_MAX_WIDTH = 768;
 
 const getMeasuredWidth = (element) => {
     if (!element) return 0;
@@ -170,6 +175,7 @@ const AlbumListOverlay = ({
     onClearTempPlaylist,
     onPlayFavorites
 }) => {
+    const shouldReduceMotion = useReducedMotion();
     const [activeTab, setActiveTab] = useState('album');
     const [hoveredAlbumSrc, setHoveredAlbumSrc] = useState('');
     const [hoveredFavoriteSrc, setHoveredFavoriteSrc] = useState('');
@@ -237,7 +243,7 @@ const AlbumListOverlay = ({
     if (!album) return null;
 
     const isMobileViewport = () => (
-        typeof window !== 'undefined' && window.innerWidth <= 768
+        typeof window !== 'undefined' && window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH
     );
 
     const resetTouchGesture = () => {
@@ -532,32 +538,25 @@ const AlbumListOverlay = ({
         </>
     );
 
-    const panelInitial = isMobileViewport()
-        ? { opacity: 0, y: 36, scale: 0.98 }
-        : { opacity: 0 };
-    const panelAnimate = isMobileViewport()
-        ? { opacity: 1, y: 0, scale: 1 }
-        : { opacity: 1 };
-    const panelExit = isMobileViewport()
-        ? { opacity: 0, y: 28, scale: 0.99 }
-        : { opacity: 0 };
+    const isMobile = isMobileViewport();
+    const overlayMotionProps = getAlbumListOverlayMotionProps({ shouldReduceMotion });
+    const panelMotionProps = getAlbumListPanelMotionProps({
+        isMobile,
+        shouldReduceMotion
+    });
 
     return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <Motion.div
+                    key="album-list-overlay"
                     className="album-list-overlay"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    {...overlayMotionProps}
                     onClick={onClose}
                 >
                     <Motion.div
                         className="album-list-panel"
-                        initial={panelInitial}
-                        animate={panelAnimate}
-                        exit={panelExit}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        {...panelMotionProps}
                         onClick={(e) => e.stopPropagation()}
                         onTouchStart={handleTouchStart}
                         onTouchEnd={handleTouchEnd}

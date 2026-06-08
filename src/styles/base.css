@@ -1335,6 +1335,7 @@ body {
   background: rgba(10, 10, 12, 0.5);
   backdrop-filter: blur(9px);
   -webkit-backdrop-filter: blur(9px);
+  will-change: opacity;
 }
 
 .album-list-panel {
@@ -1347,6 +1348,8 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transform-origin: center center;
+  will-change: opacity, transform;
 }
 
 .album-list-header {
