@@ -61,6 +61,7 @@ const LyricsOverlay = ({
     const [desktopLikeBursts, setDesktopLikeBursts] = useState([]);
     const [desktopProgressHover, setDesktopProgressHover] = useState(null);
     const [coverAtmosphereAssets, setCoverAtmosphereAssets] = useState(null);
+    const [mountedSongCommentPath, setMountedSongCommentPath] = useState('');
 
     const {
         mobileTitleRef,
@@ -208,6 +209,32 @@ const LyricsOverlay = ({
         playerOverlayContextId,
         trackChangeId
     });
+    const rememberedSongCommentPath = canOpenCommentDrawer ? mountedSongCommentPath : '';
+    const shouldMountCommentDrawer = Boolean(
+        (shouldRenderCommentDrawer || rememberedSongCommentPath) &&
+        canOpenCommentDrawer &&
+        (isLyricsOpen || !isMobileOverlay)
+    );
+    const renderedSongCommentPath = shouldRenderCommentDrawer
+        ? currentSongCommentPath
+        : rememberedSongCommentPath;
+    const rememberSongCommentPath = () => {
+        if (currentSongCommentPath) {
+            setMountedSongCommentPath(currentSongCommentPath);
+        }
+    };
+    const handleToggleCommentDrawer = () => {
+        rememberSongCommentPath();
+        toggleCommentDrawer();
+    };
+    const handleCloseCommentDrawer = () => {
+        rememberSongCommentPath();
+        closeCommentDrawer();
+    };
+    const handleSongCommentDrawerTouchEnd = (event) => {
+        rememberSongCommentPath();
+        handleCommentDrawerTouchEnd(event);
+    };
 
     const handleToggleFavorite = (event) => {
         event?.stopPropagation?.();
@@ -376,7 +403,7 @@ const LyricsOverlay = ({
                                     <button
                                         type="button"
                                         className={`overlay-comment-trigger mobile-action-btn ${isCommentDrawerOpen ? 'active' : ''}`}
-                                        onClick={toggleCommentDrawer}
+                                        onClick={handleToggleCommentDrawer}
                                         aria-label="歌曲评论"
                                         disabled={!canOpenCommentDrawer}
                                     >
@@ -477,7 +504,7 @@ const LyricsOverlay = ({
                                         <button
                                             type="button"
                                             className={`overlay-comment-trigger desktop-floating ${isCommentDrawerOpen ? 'active' : ''}`}
-                                            onClick={toggleCommentDrawer}
+                                            onClick={handleToggleCommentDrawer}
                                             aria-label="歌曲评论"
                                             disabled={!canOpenCommentDrawer}
                                         >
@@ -658,9 +685,9 @@ const LyricsOverlay = ({
                 )}
             </AnimatePresence>
             <AnimatePresence>
-                {shouldRenderCommentDrawer ? (
+                {shouldMountCommentDrawer ? (
                     <>
-                        {!isMobileOverlay && (
+                        {!isMobileOverlay && shouldRenderCommentDrawer && (
                             <Motion.button
                                 key="song-comment-backdrop"
                                 type="button"
@@ -669,27 +696,29 @@ const LyricsOverlay = ({
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                onClick={closeCommentDrawer}
+                                onClick={handleCloseCommentDrawer}
                                 aria-label="关闭评论抽屉"
                             />
                         )}
                         <Motion.aside
-                            key={`song-comment-drawer-${currentSongCommentPath || 'empty'}`}
-                            className="song-comment-drawer"
+                            key="song-comment-drawer"
+                            className={`song-comment-drawer ${shouldRenderCommentDrawer ? 'is-open' : 'is-hidden'}`}
                             initial={commentDrawerInitial}
-                            animate={commentDrawerAnimate}
+                            animate={shouldRenderCommentDrawer ? commentDrawerAnimate : commentDrawerExit}
                             exit={commentDrawerExit}
                             transition={commentDrawerTransition}
+                            aria-hidden={shouldRenderCommentDrawer ? undefined : 'true'}
+                            inert={shouldRenderCommentDrawer ? undefined : true}
                             onClick={(event) => event.stopPropagation()}
                             onTouchStart={handleCommentDrawerTouchStart}
-                            onTouchEnd={handleCommentDrawerTouchEnd}
+                            onTouchEnd={handleSongCommentDrawerTouchEnd}
                             onTouchCancel={resetCommentDrawerSwipeState}
                         >
                             {isMobileOverlay && (
                                 <div
                                     className="song-comment-edge-swipe-zone"
                                     onTouchStart={handleCommentDrawerTouchStart}
-                                    onTouchEnd={handleCommentDrawerTouchEnd}
+                                    onTouchEnd={handleSongCommentDrawerTouchEnd}
                                     onTouchCancel={resetCommentDrawerSwipeState}
                                     aria-hidden="true"
                                 />
@@ -702,7 +731,7 @@ const LyricsOverlay = ({
                                 <button
                                     type="button"
                                     className="song-comment-close"
-                                    onClick={closeCommentDrawer}
+                                    onClick={handleCloseCommentDrawer}
                                     aria-label="关闭评论抽屉"
                                 >
                                     <X size={18} strokeWidth={2.2} absoluteStrokeWidth />
@@ -711,7 +740,7 @@ const LyricsOverlay = ({
                             <div className="song-comment-drawer-body">
                                 <CommentSection
                                     serverURL={commentServerURL}
-                                    path={currentSongCommentPath}
+                                    path={renderedSongCommentPath}
                                     title=""
                                     subtitle=""
                                 />

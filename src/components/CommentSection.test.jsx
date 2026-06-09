@@ -119,7 +119,7 @@ describe('CommentSection', () => {
       expect(init).toHaveBeenCalledTimes(1);
     });
 
-    expect(instances[0].update).toHaveBeenCalledWith({ path: 'page:alpha' });
+    expect(instances[0].update).not.toHaveBeenCalled();
 
     rerender(
       <CommentSection

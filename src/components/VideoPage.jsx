@@ -85,6 +85,7 @@ const BackCard = ({ onClick }) => (
 );
 
 const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationSearch, onInitialReady }) => {
+  const [mountedVideoCommentPath, setMountedVideoCommentPath] = useState('');
   const {
     searchQuery,
     setSearchQuery,
@@ -161,6 +162,28 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
     commentServerURL,
     watchCategory
   });
+  const rememberedVideoCommentPath = canOpenCommentDrawer ? mountedVideoCommentPath : '';
+  const shouldMountVideoCommentDrawer = Boolean(
+    (shouldRenderVideoCommentDrawer || rememberedVideoCommentPath) &&
+    canOpenCommentDrawer &&
+    activeVideo
+  );
+  const renderedVideoCommentPath = shouldRenderVideoCommentDrawer
+    ? currentVideoCommentPath
+    : rememberedVideoCommentPath;
+  const rememberVideoCommentPath = () => {
+    if (currentVideoCommentPath) {
+      setMountedVideoCommentPath(currentVideoCommentPath);
+    }
+  };
+  const handleToggleVideoCommentDrawer = () => {
+    rememberVideoCommentPath();
+    handleOpenVideoComment();
+  };
+  const handleCloseVideoCommentDrawer = () => {
+    rememberVideoCommentPath();
+    closeCommentDrawer();
+  };
 
   const handleShareCurrentVideo = (event) => {
     if (typeof onShareVideo !== 'function' || !activeVideo || typeof window === 'undefined') return;
@@ -365,7 +388,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
                     <button
                       type="button"
                       className="video-stage-comment-btn"
-                      onClick={handleOpenVideoComment}
+                      onClick={handleToggleVideoCommentDrawer}
                       aria-label="打开评论页"
                       disabled={!canOpenCommentDrawer}
                     >
@@ -491,24 +514,28 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
       {!isSearching && !isWatching && !isCatalogLoading && !catalogLoadError && renderVideoGrid()}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
-          {shouldRenderVideoCommentDrawer ? (
+          {shouldMountVideoCommentDrawer ? (
             <>
-              <Motion.button
-                type="button"
-                className="video-comment-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                onClick={closeCommentDrawer}
-                aria-label="关闭视频评论抽屉"
-              />
+              {shouldRenderVideoCommentDrawer ? (
+                <Motion.button
+                  type="button"
+                  className="video-comment-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={handleCloseVideoCommentDrawer}
+                  aria-label="关闭视频评论抽屉"
+                />
+              ) : null}
               <Motion.aside
-                className="video-comment-drawer"
+                className={`video-comment-drawer ${shouldRenderVideoCommentDrawer ? 'is-open' : 'is-hidden'}`}
                 initial={{ x: '100%' }}
-                animate={{ x: 0 }}
+                animate={shouldRenderVideoCommentDrawer ? { x: 0 } : { x: '100%' }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                aria-hidden={shouldRenderVideoCommentDrawer ? undefined : 'true'}
+                inert={shouldRenderVideoCommentDrawer ? undefined : true}
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="video-comment-drawer-header">
@@ -519,7 +546,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
                   <button
                     type="button"
                     className="video-comment-close"
-                    onClick={closeCommentDrawer}
+                    onClick={handleCloseVideoCommentDrawer}
                     aria-label="关闭视频评论抽屉"
                   >
                     <X size={18} />
@@ -528,7 +555,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
                 <div className="video-comment-drawer-body">
                   <CommentSection
                     serverURL={commentServerURL}
-                    path={currentVideoCommentPath}
+                    path={renderedVideoCommentPath}
                     title=""
                     subtitle=""
                   />

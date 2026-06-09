@@ -483,6 +483,10 @@
   overflow: hidden;
 }
 
+.song-comment-drawer.is-hidden {
+  pointer-events: none;
+}
+
 .song-comment-edge-swipe-zone {
   position: absolute;
   top: 0;

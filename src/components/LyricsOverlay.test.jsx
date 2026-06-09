@@ -192,7 +192,7 @@ describe('LyricsOverlay comment drawer requests', () => {
     fireEvent.click(screen.getByRole('button', { name: '关闭评论抽屉' }));
 
     await waitFor(() => {
-      expect(screen.queryByText('单曲评论')).not.toBeInTheDocument();
+      expect(document.body.querySelector('.song-comment-drawer')).toHaveAttribute('aria-hidden', 'true');
     });
   });
 
@@ -221,7 +221,7 @@ describe('LyricsOverlay comment drawer requests', () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText('单曲评论')).not.toBeInTheDocument();
+      expect(document.body.querySelector('.song-comment-drawer')).toHaveAttribute('aria-hidden', 'true');
     });
   });
 

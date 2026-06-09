@@ -31,6 +31,7 @@ const CommentSection = ({
   const syncTimerRef = useRef(null);
   const observerRef = useRef(null);
   const latestPathRef = useRef(path);
+  const activeWalinePathRef = useRef('');
   const [authRefreshKey, setAuthRefreshKey] = useState(0);
   const [primaryDebug, setPrimaryDebug] = useState(createPrimaryDebugState);
 
@@ -131,10 +132,12 @@ const CommentSection = ({
 
   useEffect(() => {
     if (!containerRef.current || !serverURL) return undefined;
+    const initialPath = latestPathRef.current;
+    activeWalinePathRef.current = initialPath;
     walineRef.current = init({
       el: containerRef.current,
       serverURL,
-      path: latestPathRef.current,
+      path: initialPath,
       meta: ['nick', 'mail'],
       lang: 'zh-CN',
       locale: {
@@ -174,11 +177,17 @@ const CommentSection = ({
         walineRef.current.destroy();
       }
       walineRef.current = null;
+      activeWalinePathRef.current = '';
     };
   }, [authRefreshKey, scheduleHeaderSync, serverURL]);
 
   useEffect(() => {
     if (!walineRef.current?.update || !path) return;
+    if (activeWalinePathRef.current === path) {
+      scheduleHeaderSync();
+      return;
+    }
+    activeWalinePathRef.current = path;
     walineRef.current.update({ path });
     scheduleHeaderSync();
   }, [path, scheduleHeaderSync]);

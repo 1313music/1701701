@@ -537,6 +537,10 @@
   overflow: hidden;
 }
 
+.video-comment-drawer.is-hidden {
+  pointer-events: none;
+}
+
 .video-comment-drawer-header {
   position: relative;
   display: flex;
