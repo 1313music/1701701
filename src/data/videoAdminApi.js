@@ -51,7 +51,15 @@ export const loadVideoAccessSettings = async ({ token, signal } = {}) => {
   return payload?.config || payload;
 };
 
-export const publishVideoAccessSettings = async ({ enabled = true, password, token, signal } = {}) => {
+export const publishVideoAccessSettings = async ({
+  enabled = true,
+  password,
+  qrUrl,
+  promptLines,
+  passwordNote,
+  token,
+  signal
+} = {}) => {
   const endpoint = buildAdminApiUrl('/api/admin/video-access');
   if (!endpoint) {
     throw new Error('视频口令后台接口未配置');
@@ -63,6 +71,12 @@ export const publishVideoAccessSettings = async ({ enabled = true, password, tok
   }
 
   const normalizedPassword = String(password || '').trim();
+  const normalizedQrUrl = String(qrUrl || '').trim();
+  const normalizedPromptLines = (Array.isArray(promptLines) ? promptLines : String(promptLines || '').split(/\r?\n/))
+    .map((line) => String(line || '').trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  const normalizedPasswordNote = String(passwordNote || '').trim();
   const normalizedEnabled = enabled !== false;
   if (normalizedEnabled && !normalizedPassword) {
     throw new Error('请填写视频访问口令');
@@ -80,7 +94,10 @@ export const publishVideoAccessSettings = async ({ enabled = true, password, tok
       },
       body: JSON.stringify({
         enabled: normalizedEnabled,
-        password: normalizedPassword
+        password: normalizedPassword,
+        qrUrl: normalizedQrUrl,
+        promptLines: normalizedPromptLines,
+        passwordNote: normalizedPasswordNote
       })
     });
   } catch (error) {

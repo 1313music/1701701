@@ -60,7 +60,8 @@ MUSIC_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
 # Video publishing through R2 JSON only.
 VIDEO_INDEX_KEY = "json/video-index.json"
 VIDEO_ACCESS_KEY = "json/video-access.json"
-VIDEO_ACCESS_DEFAULT_PASSWORD = "1701701xyz"
+VIDEO_ACCESS_DEFAULT_PASSWORD = "SongSharing"
+VIDEO_ACCESS_DEFAULT_QR_URL = "https://r2.1701701.xyz/QR/v.jpg"
 VIDEO_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
 
 # Download publishing through R2 JSON only.

@@ -11,7 +11,8 @@ const DEFAULT_MUSIC_LRC_ROOT = 'lrc';
 const DEFAULT_MUSIC_COVER_ROOT = 'img/music';
 const DEFAULT_VIDEO_INDEX_KEY = 'json/video-index.json';
 const DEFAULT_VIDEO_ACCESS_KEY = 'json/video-access.json';
-const DEFAULT_VIDEO_ACCESS_PASSWORD = '1701701xyz';
+const DEFAULT_VIDEO_ACCESS_PASSWORD = 'SongSharing';
+const DEFAULT_VIDEO_ACCESS_QR_URL = 'https://r2.1701701.xyz/QR/v.jpg';
 const DEFAULT_DOWNLOAD_INDEX_KEY = 'json/download-index.json';
 const MAX_GALLERY_IMAGES_PER_REQUEST = 12;
 const MAX_GALLERY_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -439,6 +440,10 @@ const getVideoConfig = (env) => ({
   defaultAccessPassword: normalizeText(
     env.VIDEO_ACCESS_DEFAULT_PASSWORD || env.VITE_VIDEO_PASSWORD,
     DEFAULT_VIDEO_ACCESS_PASSWORD
+  ),
+  defaultAccessQrUrl: normalizeText(
+    env.VIDEO_ACCESS_DEFAULT_QR_URL || env.VITE_VIDEO_ACCESS_QR_URL,
+    DEFAULT_VIDEO_ACCESS_QR_URL
   ),
   publicBaseUrl: normalizeText(
     env.VIDEO_PUBLIC_BASE_URL
@@ -1377,11 +1382,26 @@ const buildPublicVideoUrl = (config, key = config.indexKey) => {
 
 const buildPublicVideoIndexUrl = (config) => buildPublicVideoUrl(config, config.indexKey);
 
+const normalizeVideoAccessPromptLines = (value, fallback) => {
+  if (!Array.isArray(value)) return fallback;
+  const lines = value
+    .map((line) => normalizeText(line))
+    .filter(Boolean)
+    .slice(0, 3);
+  return lines.length > 0 ? lines : fallback;
+};
+
 const createDefaultVideoAccessConfig = (config) => ({
   schemaVersion: 1,
   enabled: true,
   password: normalizeText(config.defaultAccessPassword, DEFAULT_VIDEO_ACCESS_PASSWORD),
   passwordVersion: 'default',
+  qrUrl: normalizeText(config.defaultAccessQrUrl, DEFAULT_VIDEO_ACCESS_QR_URL),
+  qrAlt: '视频验证小程序二维码',
+  promptLines: [
+    '扫码观看广告后获取视频密码'
+  ],
+  passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码',
   updatedAt: ''
 });
 
@@ -1394,6 +1414,10 @@ const normalizeVideoAccessConfig = (payload, config) => {
     enabled: payload.enabled !== false,
     password: normalizeText(payload.password, fallback.password),
     passwordVersion: normalizeText(payload.passwordVersion, fallback.passwordVersion),
+    qrUrl: normalizeText(payload.qrUrl || payload.qr || payload.imageUrl, fallback.qrUrl),
+    qrAlt: normalizeText(payload.qrAlt, fallback.qrAlt),
+    promptLines: normalizeVideoAccessPromptLines(payload.promptLines, fallback.promptLines),
+    passwordNote: normalizeText(payload.passwordNote, fallback.passwordNote),
     updatedAt: normalizeText(payload.updatedAt, fallback.updatedAt)
   };
 };
@@ -1982,6 +2006,7 @@ const handleVideoAccessUpdate = async (request, env) => {
   const currentVideoAccess = await readVideoAccessConfig(config);
   const enabled = payload?.enabled !== false;
   const password = normalizeText(payload?.password, currentVideoAccess.password);
+  const qrUrl = normalizeText(payload?.qrUrl, currentVideoAccess.qrUrl);
   if (enabled && !password) {
     return errorResponse(request, env, 400, '视频访问口令不能为空');
   }
@@ -1991,6 +2016,10 @@ const handleVideoAccessUpdate = async (request, env) => {
     enabled,
     password,
     passwordVersion: createVideoAccessPasswordVersion(),
+    qrUrl,
+    qrAlt: normalizeText(payload?.qrAlt, currentVideoAccess.qrAlt),
+    promptLines: normalizeVideoAccessPromptLines(payload?.promptLines, currentVideoAccess.promptLines),
+    passwordNote: normalizeText(payload?.passwordNote, currentVideoAccess.passwordNote),
     updatedAt: new Date().toISOString()
   };
   const publicTarget = await publishVideoAccessConfigToR2({ config, videoAccess });

@@ -8,9 +8,10 @@ const renderModal = () => render(
   <VideoAccessModal
     isOpen
     onClose={vi.fn()}
-    officialAccountName="民谣俱乐部"
-    keyword="密码"
-    qrUrl="/img/qrcode.jpg"
+    promptLines={['扫码观看广告后获取视频密码']}
+    qrUrl="https://r2.1701701.xyz/QR/v.jpg"
+    qrAlt="视频验证小程序二维码"
+    passwordNote="如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码"
     videoPassword=""
     onPasswordChange={vi.fn()}
     videoPasswordError=""
@@ -20,12 +21,12 @@ const renderModal = () => render(
 );
 
 describe('VideoAccessModal', () => {
-  it('shows the WeChat password instructions and refresh note', () => {
+  it('shows the mini program password instructions and refresh note', () => {
     renderModal();
 
-    expect(screen.getByText('关注【民谣俱乐部】公众号')).toBeInTheDocument();
-    expect(screen.getByText('回复【密码】获取视频密码')).toBeInTheDocument();
-    expect(screen.getByText('如密码失效，请重新回复获取最新密码')).toBeInTheDocument();
+    expect(screen.getByText('扫码观看广告后获取视频密码')).toBeInTheDocument();
+    expect(screen.getByText('如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码')).toBeInTheDocument();
+    expect(screen.getByAltText('视频验证小程序二维码')).toHaveAttribute('src', 'https://r2.1701701.xyz/QR/v.jpg');
     expect(screen.getByPlaceholderText('请输入视频密码')).toBeInTheDocument();
   });
 });

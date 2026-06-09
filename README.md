@@ -76,7 +76,7 @@ VITE_UMAMI_HOST_URL=
 本地开发可在 `.env.local` 中设置：
 
 ```bash
-VITE_VIDEO_PASSWORD=your-video-password
+VITE_VIDEO_PASSWORD=SongSharing
 VITE_VIDEO_ACCESS_CONFIG_URL=https://r2.1701701.xyz/json/video-access.json
 VITE_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS=43200000
 ```
@@ -181,7 +181,7 @@ preview_bucket_name = "minyaoclub"
 
 VIDEO_INDEX_KEY = "json/video-index.json"
 VIDEO_ACCESS_KEY = "json/video-access.json"
-VIDEO_ACCESS_DEFAULT_PASSWORD = "1701701xyz"
+VIDEO_ACCESS_DEFAULT_PASSWORD = "SongSharing"
 VIDEO_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
 ```
 
@@ -220,6 +220,7 @@ DOWNLOAD_PUBLIC_BASE_URL = "https://r2.1701701.xyz"
 VITE_ANNOUNCEMENT_URL=
 VITE_ANNOUNCEMENT_API_BASE_URL=
 VITE_ADMIN_API_BASE_URL=
+VITE_VIDEO_ACCESS_QR_URL=https://r2.1701701.xyz/QR/v.jpg
 ```
 
 说明：
@@ -227,6 +228,7 @@ VITE_ADMIN_API_BASE_URL=
 - `VITE_ANNOUNCEMENT_URL` 是普通用户读取的公告 JSON 地址，建议指向 R2 自定义域名下的静态文件，例如 `https://notice.1701701.xyz/announcement.json`。
 - `VITE_ANNOUNCEMENT_API_BASE_URL` 只给 `/myadmin` 后台发布时使用，普通用户打开网站不会请求这个 Worker。
 - `VITE_ADMIN_API_BASE_URL` 是新的通用后台 API 地址；如果设置了它，会优先于 `VITE_ANNOUNCEMENT_API_BASE_URL` 使用。
+- `VITE_VIDEO_ACCESS_QR_URL` 是视频验证弹窗在远程配置未提供二维码时使用的默认小程序码地址。
 - `VITE_ANNOUNCEMENT_URL` 为空时，会回退到站点内置的 `/announcement.json`。
 - 用户关闭某条公告后，会按 `id` 写入本地已读记录；如果你希望重新弹出，需要更新公告 `id`。
 - 前端默认只在页面打开时读取一次 `VITE_ANNOUNCEMENT_URL`；发布新公告后，用户刷新或重新打开页面即可看到。

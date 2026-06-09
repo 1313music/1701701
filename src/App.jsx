@@ -25,10 +25,7 @@ import {
   APP_READY_EVENT,
   getPathForView,
   SITE_URL,
-  WALINE_SERVER_URL,
-  WECHAT_OFFICIAL_ACCOUNT_NAME,
-  WECHAT_VIDEO_PASSWORD_KEYWORD,
-  WECHAT_OFFICIAL_ACCOUNT_QR_URL
+  WALINE_SERVER_URL
 } from './utils/appShellConfig.js';
 import { SHOW_DOWNLOAD_PAGE } from './utils/featureFlags.js';
 
@@ -87,6 +84,7 @@ const App = () => {
     setVideoPassword,
     videoPasswordError,
     setVideoPasswordError,
+    videoAccessConfig,
     closeVideoAccessModal,
     requestVideoView,
     submitVideoAccess
@@ -289,28 +287,6 @@ const App = () => {
     setVideoPassword(value);
     setVideoPasswordError('');
   }, [setVideoPassword, setVideoPasswordError]);
-
-  const handleCopyOfficialAccountName = useCallback(async (eventOrOptions) => {
-    const anchorOrOptions = eventOrOptions?.currentTarget
-      ? {
-        placement: 'bottom',
-        anchorEvent: { currentTarget: eventOrOptions.currentTarget },
-        duration: 6000
-      }
-      : {
-        placement: 'bottom',
-        duration: 6000,
-        ...(eventOrOptions || {})
-      };
-    const copied = await copyTextToClipboard(WECHAT_OFFICIAL_ACCOUNT_NAME);
-    showToast(
-      copied
-        ? `公众号名已复制，去微信搜索“${WECHAT_OFFICIAL_ACCOUNT_NAME}”`
-        : `复制失败，请手动搜索“${WECHAT_OFFICIAL_ACCOUNT_NAME}”`,
-      copied ? 'tone-add' : 'tone-remove',
-      anchorOrOptions
-    );
-  }, [showToast]);
 
   const buildCurrentSharePayload = useCallback(() => {
     if (!currentTrack?.src || typeof window === 'undefined') return null;
@@ -691,14 +667,14 @@ const App = () => {
         <VideoAccessModal
           isOpen={isVideoAccessOpen}
           onClose={closeVideoAccessModal}
-          officialAccountName={WECHAT_OFFICIAL_ACCOUNT_NAME}
-          keyword={WECHAT_VIDEO_PASSWORD_KEYWORD}
-          qrUrl={WECHAT_OFFICIAL_ACCOUNT_QR_URL}
+          promptLines={videoAccessConfig.promptLines}
+          qrUrl={videoAccessConfig.qrUrl}
+          qrAlt={videoAccessConfig.qrAlt}
+          passwordNote={videoAccessConfig.passwordNote}
           videoPassword={videoPassword}
           onPasswordChange={handleVideoPasswordChange}
           videoPasswordError={videoPasswordError}
           onSubmit={handleVideoAccessSubmit}
-          onCopyOfficialAccountName={handleCopyOfficialAccountName}
         />
 
         {sharePanelData && (

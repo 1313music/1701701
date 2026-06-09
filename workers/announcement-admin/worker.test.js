@@ -632,8 +632,11 @@ describe('announcement admin worker', () => {
     await expect(initialResponse.json()).resolves.toMatchObject({
       config: {
         enabled: true,
-        password: '1701701xyz',
-        passwordVersion: 'default'
+        password: 'SongSharing',
+        passwordVersion: 'default',
+        qrUrl: 'https://r2.1701701.xyz/QR/v.jpg',
+        promptLines: ['扫码观看广告后获取视频密码'],
+        passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码'
       },
       indexKey: 'json/video-access.json'
     });
@@ -645,7 +648,8 @@ describe('announcement admin worker', () => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        password: 'SongSharing2026'
+        password: 'SongSharing2026',
+        qrUrl: 'https://cdn.example.com/video-qr.jpg'
       })
     }), env);
 
@@ -655,7 +659,8 @@ describe('announcement admin worker', () => {
       ok: true,
       config: {
         enabled: true,
-        password: 'SongSharing2026'
+        password: 'SongSharing2026',
+        qrUrl: 'https://cdn.example.com/video-qr.jpg'
       },
       publicTarget: {
         key: 'json/video-access.json',
@@ -678,6 +683,7 @@ describe('announcement admin worker', () => {
     expect(storedConfig).toMatchObject({
       enabled: true,
       password: 'SongSharing2026',
+      qrUrl: 'https://cdn.example.com/video-qr.jpg',
       passwordVersion: payload.config.passwordVersion
     });
   });
@@ -688,6 +694,7 @@ describe('announcement admin worker', () => {
       schemaVersion: 1,
       enabled: true,
       password: 'SongSharing2026',
+      qrUrl: '/img/old-video-qr.jpg',
       passwordVersion: 'v1',
       updatedAt: '2026-05-18T00:00:00.000Z'
     }));
@@ -707,7 +714,8 @@ describe('announcement admin worker', () => {
     const payload = await response.json();
     expect(payload.config).toMatchObject({
       enabled: false,
-      password: 'SongSharing2026'
+      password: 'SongSharing2026',
+      qrUrl: '/img/old-video-qr.jpg'
     });
     expect(payload.config.passwordVersion).not.toBe('v1');
 
@@ -715,6 +723,7 @@ describe('announcement admin worker', () => {
     expect(storedConfig).toMatchObject({
       enabled: false,
       password: 'SongSharing2026',
+      qrUrl: '/img/old-video-qr.jpg',
       passwordVersion: payload.config.passwordVersion
     });
   });

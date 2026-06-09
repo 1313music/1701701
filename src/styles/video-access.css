@@ -52,15 +52,19 @@
   width: fit-content;
   margin: 0 auto;
   padding: 2px 0 0;
-  cursor: pointer;
+  cursor: default;
   transition: transform 0.18s ease, opacity 0.18s ease;
 }
 
-.video-access-qr:hover {
+.video-access-qr.is-clickable {
+  cursor: pointer;
+}
+
+.video-access-qr.is-clickable:hover {
   opacity: 0.96;
 }
 
-.video-access-qr:active {
+.video-access-qr.is-clickable:active {
   transform: scale(0.985);
 }
 

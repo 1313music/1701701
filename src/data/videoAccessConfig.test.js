@@ -44,14 +44,18 @@ describe('videoAccessConfig cache', () => {
       json: async () => ({
         enabled: false,
         password: 'SongSharing',
-        passwordVersion: 'v1'
+        passwordVersion: 'v1',
+        qrUrl: 'https://cdn.example.com/video-qr.jpg'
       })
     });
 
     await expect(loadVideoAccessConfig()).resolves.toMatchObject({
       enabled: false,
       password: 'SongSharing',
-      passwordVersion: 'v1'
+      passwordVersion: 'v1',
+      qrUrl: 'https://cdn.example.com/video-qr.jpg',
+      promptLines: ['扫码观看广告后获取视频密码'],
+      passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码'
     });
   });
 

@@ -23,6 +23,10 @@ import { loadDownloadSections } from '../data/downloadManifest.js';
 import { loadMusicManifestAlbums } from '../data/musicManifest.js';
 import { loadVideoCatalog } from '../data/videoManifest.js';
 import {
+  DEFAULT_VIDEO_ACCESS_CONFIG,
+  DEFAULT_VIDEO_ACCESS_QR_URL
+} from '../data/videoAccessConfig.js';
+import {
   deleteAnnouncementHistoryItem,
   isAnnouncementAdminApiConfigured,
   loadAdminAnnouncement,
@@ -121,9 +125,23 @@ const createDefaultVideoDraft = () => ({
   thumbUrls: ''
 });
 
+const getVideoAccessPromptText = (config = DEFAULT_VIDEO_ACCESS_CONFIG) => {
+  const source = Array.isArray(config?.promptLines)
+    ? config.promptLines
+    : String(config?.promptText || config?.instructions || '').split(/\r?\n/);
+  const lines = source
+    .map((line) => String(line || '').trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  return (lines.length > 0 ? lines : DEFAULT_VIDEO_ACCESS_CONFIG.promptLines).join('\n');
+};
+
 const createDefaultVideoAccessDraft = () => ({
   enabled: true,
-  password: '',
+  password: DEFAULT_VIDEO_ACCESS_CONFIG.password,
+  qrUrl: DEFAULT_VIDEO_ACCESS_QR_URL,
+  promptText: getVideoAccessPromptText(),
+  passwordNote: DEFAULT_VIDEO_ACCESS_CONFIG.passwordNote,
   passwordVersion: '',
   updatedAt: ''
 });
@@ -666,7 +684,10 @@ const AdminPage = () => {
   const applyVideoAccessSettings = (config) => {
     setVideoAccessDraft({
       enabled: config?.enabled !== false,
-      password: String(config?.password || ''),
+      password: String(config?.password || DEFAULT_VIDEO_ACCESS_CONFIG.password),
+      qrUrl: String(config?.qrUrl || DEFAULT_VIDEO_ACCESS_QR_URL),
+      promptText: getVideoAccessPromptText(config),
+      passwordNote: String(config?.passwordNote || DEFAULT_VIDEO_ACCESS_CONFIG.passwordNote),
       passwordVersion: String(config?.passwordVersion || ''),
       updatedAt: String(config?.updatedAt || '')
     });
@@ -699,6 +720,9 @@ const AdminPage = () => {
       const result = await publishVideoAccessSettings({
         enabled,
         password,
+        qrUrl: videoAccessDraft.qrUrl,
+        promptLines: videoAccessDraft.promptText,
+        passwordNote: videoAccessDraft.passwordNote,
         token
       });
       applyVideoAccessSettings(result?.config);
@@ -1552,6 +1576,31 @@ const AdminPage = () => {
                   <input
                     value={videoAccessDraft.passwordVersion || '未读取'}
                     readOnly
+                  />
+                </label>
+                <label className="admin-field admin-field-full">
+                  <span>二维码图片地址</span>
+                  <input
+                    value={videoAccessDraft.qrUrl}
+                    onChange={(event) => updateVideoAccessDraftField('qrUrl', event.target.value)}
+                    placeholder={DEFAULT_VIDEO_ACCESS_QR_URL}
+                  />
+                </label>
+                <label className="admin-field admin-field-full">
+                  <span>提示文案</span>
+                  <textarea
+                    className="admin-textarea-compact"
+                    value={videoAccessDraft.promptText}
+                    onChange={(event) => updateVideoAccessDraftField('promptText', event.target.value)}
+                    placeholder={getVideoAccessPromptText()}
+                  />
+                </label>
+                <label className="admin-field admin-field-full">
+                  <span>密码失效提示</span>
+                  <input
+                    value={videoAccessDraft.passwordNote}
+                    onChange={(event) => updateVideoAccessDraftField('passwordNote', event.target.value)}
+                    placeholder={DEFAULT_VIDEO_ACCESS_CONFIG.passwordNote}
                   />
                 </label>
               </div>

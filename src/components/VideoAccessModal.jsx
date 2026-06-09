@@ -1,37 +1,66 @@
 import React from 'react';
 import '../styles/video-access.css';
 
+const DEFAULT_PROMPT_LINES = [
+  '扫码观看广告后获取视频密码'
+];
+
+const getPromptLines = (promptLines) => {
+  const lines = Array.isArray(promptLines)
+    ? promptLines
+    : String(promptLines || '').split(/\r?\n/);
+  const normalizedLines = lines
+    .map((line) => String(line || '').trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  return normalizedLines.length > 0 ? normalizedLines : DEFAULT_PROMPT_LINES;
+};
+
 const VideoAccessModal = ({
   isOpen,
   onClose,
-  officialAccountName,
-  keyword,
+  promptLines,
   qrUrl,
+  qrAlt = '视频验证二维码',
+  passwordNote = '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码',
   videoPassword,
   onPasswordChange,
   videoPasswordError,
   onSubmit,
+  onQrClick,
   onCopyOfficialAccountName
 }) => {
   if (!isOpen) return null;
+
+  const lines = getPromptLines(promptLines);
+  const handleQrClick = onQrClick || onCopyOfficialAccountName;
+  const qrClassName = `video-access-qr ${handleQrClick ? 'is-clickable' : ''}`.trim();
+  const qrImage = <img loading="lazy" src={qrUrl} alt={qrAlt} />;
 
   return (
     <div className="video-access-modal" onClick={onClose}>
       <div className="video-access-card" onClick={(event) => event.stopPropagation()}>
         <div className="video-access-copy-hint">
-          <p className="video-access-copy-line">关注【{officialAccountName}】公众号</p>
-          <p className="video-access-copy-line">回复【{keyword}】获取视频密码</p>
+          {lines.map((line) => (
+            <p className="video-access-copy-line" key={line}>{line}</p>
+          ))}
         </div>
-        <button
-          type="button"
-          className="video-access-qr"
-          onClick={onCopyOfficialAccountName}
-          aria-label={`复制公众号名 ${officialAccountName}`}
-          title={`复制公众号名 ${officialAccountName}`}
-        >
-          <img loading="lazy" src={qrUrl} alt="公众号二维码" />
-        </button>
-        <p className="video-access-password-note">如密码失效，请重新回复获取最新密码</p>
+        {handleQrClick ? (
+          <button
+            type="button"
+            className={qrClassName}
+            onClick={handleQrClick}
+            aria-label="复制视频验证信息"
+            title="复制视频验证信息"
+          >
+            {qrImage}
+          </button>
+        ) : (
+          <div className={qrClassName}>
+            {qrImage}
+          </div>
+        )}
+        <p className="video-access-password-note">{passwordNote}</p>
         <input
           className="video-access-input"
           type="password"
