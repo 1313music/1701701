@@ -1401,7 +1401,7 @@ const createDefaultVideoAccessConfig = (config) => ({
   promptLines: [
     '扫码观看广告后获取视频密码'
   ],
-  passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码',
+  passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取',
   updatedAt: ''
 });
 

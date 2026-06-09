@@ -77,7 +77,7 @@ vi.mock('../data/videoAdminApi.js', () => ({
     password: 'SongSharing',
     qrUrl: 'https://r2.1701701.xyz/QR/v.jpg',
     promptLines: ['扫码观看广告后获取视频密码'],
-    passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码',
+    passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取',
     passwordVersion: 'v1',
     updatedAt: '2026-05-18T00:00:00.000Z'
   })),
@@ -522,7 +522,7 @@ describe('AdminPage', () => {
     expect(await screen.findByDisplayValue('SongSharing')).toBeInTheDocument();
     expect(screen.getByDisplayValue('https://r2.1701701.xyz/QR/v.jpg')).toBeInTheDocument();
     expect(screen.getByDisplayValue('扫码观看广告后获取视频密码')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('如密码失效，请刷新网页或清除缓存并重新扫码获取')).toBeInTheDocument();
     expect(screen.getByDisplayValue('v1')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('访问口令'), {
@@ -535,7 +535,7 @@ describe('AdminPage', () => {
       target: { value: '扫码观看广告后获取视频密码' }
     });
     fireEvent.change(screen.getByLabelText('密码失效提示'), {
-      target: { value: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码' }
+      target: { value: '如密码失效，请刷新网页或清除缓存并重新扫码获取' }
     });
     fireEvent.click(screen.getByRole('button', { name: '保存设置' }));
 
@@ -546,7 +546,7 @@ describe('AdminPage', () => {
         password: 'SongSharing2026',
         qrUrl: 'https://cdn.example.com/video-qr.jpg',
         promptLines: '扫码观看广告后获取视频密码',
-        passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码'
+        passwordNote: '如密码失效，请刷新网页或清除缓存并重新扫码获取'
       }));
     });
 

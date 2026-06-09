@@ -14,7 +14,7 @@ const DEFAULT_VIDEO_ACCESS_QR_ALT = '视频验证小程序二维码';
 const DEFAULT_VIDEO_ACCESS_PROMPT_LINES = Object.freeze([
   '扫码观看广告后获取视频密码'
 ]);
-const DEFAULT_VIDEO_ACCESS_PASSWORD_NOTE = '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码';
+const DEFAULT_VIDEO_ACCESS_PASSWORD_NOTE = '如密码失效，请刷新网页或清除缓存并重新扫码获取';
 const PERSISTENT_VIDEO_ACCESS_CONFIG_CACHE_KEY = 'video-access-config-cache:v1';
 const DEFAULT_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const VIDEO_ACCESS_CONFIG_CACHE_TTL_MS = (() => {

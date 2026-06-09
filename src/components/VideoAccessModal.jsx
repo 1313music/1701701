@@ -22,7 +22,7 @@ const VideoAccessModal = ({
   promptLines,
   qrUrl,
   qrAlt = '视频验证二维码',
-  passwordNote = '如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码',
+  passwordNote = '如密码失效，请刷新网页或清除缓存并重新扫码获取',
   videoPassword,
   onPasswordChange,
   videoPasswordError,

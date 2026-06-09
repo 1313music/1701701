@@ -11,7 +11,7 @@ const renderModal = () => render(
     promptLines={['扫码观看广告后获取视频密码']}
     qrUrl="https://r2.1701701.xyz/QR/v.jpg"
     qrAlt="视频验证小程序二维码"
-    passwordNote="如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码"
+    passwordNote="如密码失效，请刷新网页或清除缓存并重新扫码获取"
     videoPassword=""
     onPasswordChange={vi.fn()}
     videoPasswordError=""
@@ -25,7 +25,7 @@ describe('VideoAccessModal', () => {
     renderModal();
 
     expect(screen.getByText('扫码观看广告后获取视频密码')).toBeInTheDocument();
-    expect(screen.getByText('如密码失效，请刷新网页或清除缓存并重新扫码获取最新密码')).toBeInTheDocument();
+    expect(screen.getByText('如密码失效，请刷新网页或清除缓存并重新扫码获取')).toBeInTheDocument();
     expect(screen.getByAltText('视频验证小程序二维码')).toHaveAttribute('src', 'https://r2.1701701.xyz/QR/v.jpg');
     expect(screen.getByPlaceholderText('请输入视频密码')).toBeInTheDocument();
   });
