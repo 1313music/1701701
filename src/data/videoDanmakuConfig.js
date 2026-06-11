@@ -4,8 +4,13 @@ const DEFAULT_DANMAKU_AUTHOR = '1701701';
 const DEFAULT_DANMAKU_MAXIMUM = 1000;
 const DEFAULT_DANMAKU_BOTTOM = '12%';
 const DEFAULT_DANMAKU_SPEED_RATE = 0.9;
+const DEFAULT_PRODUCTION_DANMAKU_API_URL = '/api/danmaku';
 
 const normalizeEnvText = (value) => String(value || '').trim();
+
+const isExplicitlyDisabled = (value) => ['false', 'off', 'disabled', '0'].includes(
+  normalizeEnvText(value).toLowerCase()
+);
 
 const toPositiveInteger = (value, fallback, min, max) => {
   const parsed = Number.parseInt(value, 10);
@@ -77,7 +82,11 @@ export const buildVideoDanmakuOptions = ({
   watchCategory = '',
   env = import.meta.env
 } = {}) => {
-  const api = normalizeApiUrl(env?.VITE_VIDEO_DANMAKU_API_URL);
+  if (isExplicitlyDisabled(env?.VITE_VIDEO_DANMAKU_API_URL)) return null;
+
+  const api = normalizeApiUrl(
+    env?.VITE_VIDEO_DANMAKU_API_URL || (env?.PROD ? DEFAULT_PRODUCTION_DANMAKU_API_URL : '')
+  );
   if (!api) return null;
 
   const id = buildVideoDanmakuId(activeVideo, watchCategory);

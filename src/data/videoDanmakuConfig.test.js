@@ -17,6 +17,25 @@ describe('videoDanmakuConfig', () => {
     expect(buildVideoDanmakuOptions({ activeVideo, env: {} })).toBeNull();
   });
 
+  it('uses the same-origin danmaku endpoint in production by default', () => {
+    expect(buildVideoDanmakuOptions({
+      activeVideo,
+      env: { PROD: true }
+    })).toMatchObject({
+      api: 'http://localhost:3000/api/danmaku/'
+    });
+  });
+
+  it('can explicitly disable danmaku in production', () => {
+    expect(buildVideoDanmakuOptions({
+      activeVideo,
+      env: {
+        PROD: true,
+        VITE_VIDEO_DANMAKU_API_URL: 'false'
+      }
+    })).toBeNull();
+  });
+
   it('builds DPlayer danmaku options from environment config', () => {
     expect(buildVideoDanmakuOptions({
       activeVideo,

@@ -85,7 +85,7 @@ VITE_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS=43200000
 
 ## 视频弹幕（可选）
 
-视频页可接入 DPlayer 内置弹幕。默认不启用；部署弹幕 Worker 后，在构建环境设置：
+视频页可接入 DPlayer 内置弹幕。生产构建默认使用同源 `/api/danmaku`；本地开发默认不启用。需要覆盖或关闭时，在构建环境设置：
 
 ```bash
 VITE_VIDEO_DANMAKU_API_URL=https://1701701.xyz/api/danmaku
@@ -95,7 +95,7 @@ VITE_VIDEO_DANMAKU_BOTTOM=12%
 VITE_VIDEO_DANMAKU_SPEED_RATE=0.9
 ```
 
-后端实现位于 `workers/video-danmaku`，使用 Cloudflare Worker + D1，接口兼容 DPlayer 默认的 `/v3/` 弹幕协议。部署步骤见 `workers/video-danmaku/README.md`。
+后端实现位于 `workers/video-danmaku`，使用 Cloudflare Worker + D1，接口兼容 DPlayer 默认的 `/v3/` 弹幕协议。部署步骤见 `workers/video-danmaku/README.md`。如需关闭生产弹幕，可设置 `VITE_VIDEO_DANMAKU_API_URL=false`。
 
 ## 图库展示
 

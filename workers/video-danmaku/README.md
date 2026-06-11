@@ -50,4 +50,5 @@ npx wrangler deploy --config workers/video-danmaku/wrangler.toml
 VITE_VIDEO_DANMAKU_API_URL=https://1701701.xyz/api/danmaku
 ```
 
-Leave `VITE_VIDEO_DANMAKU_API_URL` empty to keep danmaku disabled.
+Production builds default to `/api/danmaku` after the same-origin route is deployed.
+Set `VITE_VIDEO_DANMAKU_API_URL=false` to keep danmaku disabled.
