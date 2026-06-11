@@ -128,6 +128,36 @@ vi.mock('../data/downloadAdminApi.js', () => ({
   }))
 }));
 
+vi.mock('../data/danmakuAdminApi.js', () => ({
+  isDanmakuAdminApiConfigured: () => true,
+  loadDanmakuItems: vi.fn(async () => ({
+    items: [
+      {
+        id: 'danmaku-1',
+        videoKey: 'video-live-demo-01',
+        time: 12,
+        type: 0,
+        color: 16777215,
+        colorHex: '#ffffff',
+        author: '1701701',
+        text: '现场真好',
+        status: 'visible',
+        createdAt: 1781100000000
+      }
+    ],
+    total: 1,
+    counts: {
+      pending: 0,
+      visible: 1,
+      hidden: 0
+    }
+  })),
+  deleteDanmakuItem: vi.fn(async () => ({
+    ok: true,
+    id: 'danmaku-1'
+  }))
+}));
+
 vi.mock('../data/galleryManifest.js', () => ({
   loadGalleryItems: vi.fn(async () => [
     { id: 'images/BB/a.jpg', category: 'BB', name: 'a.jpg' },
@@ -577,6 +607,42 @@ describe('AdminPage', () => {
         enabled: false
       }));
     });
+  });
+
+  it('lists and deletes danmaku from the admin panel', async () => {
+    const {
+      deleteDanmakuItem,
+      loadDanmakuItems
+    } = await import('../data/danmakuAdminApi.js');
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<AdminPage />);
+
+    await screen.findByDisplayValue('当前公告');
+    fireEvent.change(screen.getByLabelText('管理员口令'), {
+      target: { value: 'secret-token' }
+    });
+    fireEvent.click(screen.getByRole('tab', { name: '弹幕' }));
+
+    await waitFor(() => {
+      expect(loadDanmakuItems).toHaveBeenCalledWith(expect.objectContaining({
+        token: 'secret-token',
+        status: 'all'
+      }));
+    });
+    expect(await screen.findByText('现场真好')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '删除弹幕：现场真好' }));
+
+    await waitFor(() => {
+      expect(deleteDanmakuItem).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'danmaku-1',
+        token: 'secret-token'
+      }));
+    });
+    expect(await screen.findByText('弹幕已删除')).toBeInTheDocument();
+
+    confirmSpy.mockRestore();
   });
 
   it('keeps the new video folder option selected so the title can be filled', async () => {

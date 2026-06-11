@@ -5,6 +5,8 @@ const DEFAULT_RATE_LIMIT_SECONDS = 10;
 const DEFAULT_AUTHOR = 'guest';
 const DEFAULT_COLOR = 0xffffff;
 const DEFAULT_TYPE = 0;
+const DEFAULT_ADMIN_LIST_LIMIT = 50;
+const DANMAKU_STATUSES = ['pending', 'visible', 'hidden'];
 
 class ClientError extends Error {}
 
@@ -25,6 +27,18 @@ const toInteger = (value, fallback, min, max) => {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(Math.max(parsed, min), max);
+};
+
+const timingSafeEqual = (left, right) => {
+  const leftText = String(left || '');
+  const rightText = String(right || '');
+  if (leftText.length !== rightText.length) return false;
+
+  let diff = 0;
+  for (let index = 0; index < leftText.length; index += 1) {
+    diff |= leftText.charCodeAt(index) ^ rightText.charCodeAt(index);
+  }
+  return diff === 0;
 };
 
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -53,8 +67,8 @@ const corsHeaders = (request, env) => {
 
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: configured === '*' ? 'Accept-Encoding' : 'Origin'
   };
@@ -90,6 +104,23 @@ const serverErrorResponse = (request, env, message = '弹幕服务暂时不可�
   { status: 500 }
 );
 
+const adminResponse = (request, env, body, init = {}) => new Response(JSON.stringify(body), {
+  ...init,
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store',
+    ...corsHeaders(request, env),
+    ...(init.headers || {})
+  }
+});
+
+const adminErrorResponse = (request, env, message, status = 400) => adminResponse(
+  request,
+  env,
+  { error: message },
+  { status }
+);
+
 const normalizeVideoKey = (value) => {
   const videoKey = normalizeText(value);
   if (!videoKey) throw new ClientError('缺少弹幕池 id');
@@ -122,6 +153,16 @@ const normalizeType = (value) => {
   if (value === 'right') return 0;
 
   return toInteger(value, DEFAULT_TYPE, 0, 2);
+};
+
+const normalizeStatus = (value, fallback = 'pending') => {
+  const status = normalizeText(value, fallback).toLowerCase();
+  return DANMAKU_STATUSES.includes(status) ? status : fallback;
+};
+
+const normalizeAdminStatusFilter = (value) => {
+  const status = normalizeText(value, 'all').toLowerCase();
+  return status === 'all' || DANMAKU_STATUSES.includes(status) ? status : 'all';
 };
 
 const normalizeColor = (value) => {
@@ -270,14 +311,15 @@ const writeDanmaku = async (request, env) => {
   await assertRateLimit(env, ipHash, now);
 
   const id = crypto.randomUUID ? crypto.randomUUID() : `${now}-${Math.random().toString(36).slice(2)}`;
+  const status = 'visible';
   await getDatabase(env)
     .prepare(`
       INSERT INTO danmaku (
         id, video_key, time, type, color, author, text, ip_hash, status, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'visible', ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
-    .bind(id, videoKey, time, type, color, author, text, ipHash, now)
+    .bind(id, videoKey, time, type, color, author, text, ipHash, status, now)
     .run();
 
   return successResponse(request, env, {
@@ -286,14 +328,167 @@ const writeDanmaku = async (request, env) => {
     type,
     color,
     author,
-    text
+    text,
+    status
   });
+};
+
+const isAuthorized = (request, env) => {
+  const expectedToken = normalizeText(env.ADMIN_TOKEN);
+  if (!expectedToken) return false;
+
+  const header = request.headers.get('Authorization') || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  return timingSafeEqual(token, expectedToken);
+};
+
+const colorToHex = (value) => `#${normalizeColor(value).toString(16).padStart(6, '0')}`;
+
+const toAdminDanmakuItem = (row) => ({
+  id: normalizeText(row?.id),
+  videoKey: normalizeText(row?.video_key),
+  time: Number(row?.time || 0),
+  type: normalizeType(row?.type),
+  color: normalizeColor(row?.color),
+  colorHex: colorToHex(row?.color),
+  author: normalizeAuthor(row?.author),
+  text: normalizeText(row?.text),
+  status: normalizeStatus(row?.status),
+  createdAt: Number(row?.created_at || 0)
+});
+
+const getDanmakuById = async (env, id) => {
+  const row = await getDatabase(env)
+    .prepare(`
+      SELECT id, video_key, time, type, color, author, text, status, created_at
+      FROM danmaku
+      WHERE id = ?
+      LIMIT 1
+    `)
+    .bind(id)
+    .first();
+
+  return row ? toAdminDanmakuItem(row) : null;
+};
+
+const listAdminDanmaku = async (request, env) => {
+  const url = new URL(request.url);
+  const status = normalizeAdminStatusFilter(url.searchParams.get('status'));
+  const rawVideoKey = normalizeText(url.searchParams.get('videoKey'));
+  const videoKey = rawVideoKey ? normalizeVideoKey(rawVideoKey) : '';
+  const search = normalizeText(url.searchParams.get('q')).slice(0, 80);
+  const limit = toInteger(url.searchParams.get('limit'), DEFAULT_ADMIN_LIST_LIMIT, 1, 100);
+  const offset = toInteger(url.searchParams.get('offset'), 0, 0, 100000);
+  const clauses = [];
+  const params = [];
+
+  if (status !== 'all') {
+    clauses.push('status = ?');
+    params.push(status);
+  }
+  if (videoKey) {
+    clauses.push('video_key = ?');
+    params.push(videoKey);
+  }
+  if (search) {
+    clauses.push('(text LIKE ? OR author LIKE ? OR video_key LIKE ?)');
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+
+  const whereSql = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const { results } = await getDatabase(env)
+    .prepare(`
+      SELECT id, video_key, time, type, color, author, text, status, created_at
+      FROM danmaku
+      ${whereSql}
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `)
+    .bind(...params, limit, offset)
+    .all();
+
+  const totalRow = await getDatabase(env)
+    .prepare(`
+      SELECT COUNT(*) AS total
+      FROM danmaku
+      ${whereSql}
+    `)
+    .bind(...params)
+    .first();
+
+  const countRows = await getDatabase(env)
+    .prepare(`
+      SELECT status, COUNT(*) AS count
+      FROM danmaku
+      GROUP BY status
+    `)
+    .bind()
+    .all();
+
+  const counts = Object.fromEntries(DANMAKU_STATUSES.map((item) => [item, 0]));
+  for (const row of countRows.results || []) {
+    const rowStatus = normalizeStatus(row.status, '');
+    if (rowStatus) counts[rowStatus] = Number(row.count || 0);
+  }
+
+  return adminResponse(request, env, {
+    items: (results || []).map(toAdminDanmakuItem),
+    total: Number(totalRow?.total || 0),
+    offset,
+    limit,
+    counts
+  });
+};
+
+const deleteAdminDanmaku = async (request, env, id) => {
+  const item = await getDanmakuById(env, id);
+  if (!item) {
+    return adminErrorResponse(request, env, '弹幕不存在', 404);
+  }
+
+  await getDatabase(env)
+    .prepare('DELETE FROM danmaku WHERE id = ?')
+    .bind(id)
+    .run();
+
+  return adminResponse(request, env, {
+    ok: true,
+    id
+  });
+};
+
+const getAdminDanmakuId = (pathname) => {
+  const prefix = '/api/danmaku/admin/items/';
+  if (!pathname.startsWith(prefix)) return '';
+  return normalizeText(decodeURIComponent(pathname.slice(prefix.length)));
+};
+
+const handleAdminDanmaku = async (request, env) => {
+  if (!isAuthorized(request, env)) {
+    return adminErrorResponse(request, env, 'Unauthorized', 401);
+  }
+
+  const url = new URL(request.url);
+  const pathname = url.pathname.replace(/\/+$/, '');
+  if (pathname === '/api/danmaku/admin/items' && request.method === 'GET') {
+    return await listAdminDanmaku(request, env);
+  }
+
+  const id = getAdminDanmakuId(pathname);
+  if (id && request.method === 'DELETE') {
+    return await deleteAdminDanmaku(request, env, id);
+  }
+
+  return adminErrorResponse(request, env, 'Not found', 404);
 };
 
 const isDanmakuEndpoint = (pathname) => {
   const normalized = pathname.replace(/\/+$/, '');
   return normalized === '/api/danmaku/v3' || normalized === '/v3';
 };
+
+const isAdminDanmakuEndpoint = (pathname) => pathname.replace(/\/+$/, '')
+  .startsWith('/api/danmaku/admin');
 
 export default {
   async fetch(request, env = {}) {
@@ -305,6 +500,17 @@ export default {
     }
 
     const url = new URL(request.url);
+    if (isAdminDanmakuEndpoint(url.pathname)) {
+      try {
+        return await handleAdminDanmaku(request, env);
+      } catch (error) {
+        if (error instanceof ClientError) {
+          return adminErrorResponse(request, env, error.message);
+        }
+        return adminErrorResponse(request, env, '弹幕后台暂时不可用', 500);
+      }
+    }
+
     if (!isDanmakuEndpoint(url.pathname)) {
       return dplayerResponse(request, env, {
         code: 1,

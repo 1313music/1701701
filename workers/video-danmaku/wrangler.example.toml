@@ -20,5 +20,7 @@ DANMAKU_MAX_TEXT_LENGTH = "40"
 DANMAKU_MAX_PER_VIDEO = "1000"
 DANMAKU_RATE_LIMIT_SECONDS = "10"
 
-# Optional: set a private salt in the real wrangler.toml or as a secret.
+# Optional: set secrets in the real Worker environment.
+# ADMIN_TOKEN should match the /myadmin administrator token.
+# wrangler secret put ADMIN_TOKEN --config workers/video-danmaku/wrangler.toml
 # DANMAKU_IP_HASH_SALT = "replace-with-random-secret"

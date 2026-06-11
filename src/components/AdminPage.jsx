@@ -8,6 +8,7 @@ import {
   ImagePlus,
   KeyRound,
   Megaphone,
+  MessageSquareText,
   Music,
   RefreshCw,
   Save,
@@ -17,6 +18,7 @@ import {
 import '../styles/admin.css';
 
 import AnnouncementModal from './AnnouncementModal.jsx';
+import DanmakuAdminPanel from './DanmakuAdminPanel.jsx';
 import { loadAnnouncement } from '../data/announcementSource.js';
 import { loadGalleryItems } from '../data/galleryManifest.js';
 import { loadDownloadSections } from '../data/downloadManifest.js';
@@ -51,12 +53,14 @@ import {
   isDownloadAdminApiConfigured,
   publishDownloadLinks
 } from '../data/downloadAdminApi.js';
+import { isDanmakuAdminApiConfigured } from '../data/danmakuAdminApi.js';
 
 const ADMIN_TOKEN_STORAGE_KEY = 'announcement-admin-token:v1';
 const ADMIN_PANEL_ANNOUNCEMENT = 'announcement';
 const ADMIN_PANEL_GALLERY = 'gallery';
 const ADMIN_PANEL_MUSIC = 'music';
 const ADMIN_PANEL_VIDEO = 'video';
+const ADMIN_PANEL_DANMAKU = 'danmaku';
 const ADMIN_PANEL_DOWNLOAD = 'download';
 const NEW_VIDEO_FOLDER_VALUE = '__new_video_folder__';
 
@@ -240,6 +244,7 @@ const AdminPage = () => {
   const musicApiConfigured = useMemo(() => isMusicAdminApiConfigured(), []);
   const videoApiConfigured = useMemo(() => isVideoAdminApiConfigured(), []);
   const videoAccessApiConfigured = useMemo(() => isVideoAccessAdminApiConfigured(), []);
+  const danmakuAdminApiConfigured = useMemo(() => isDanmakuAdminApiConfigured(), []);
   const downloadApiConfigured = useMemo(() => isDownloadAdminApiConfigured(), []);
   const [activePanel, setActivePanel] = useState(ADMIN_PANEL_ANNOUNCEMENT);
   const [draft, setDraft] = useState(createDefaultDraft);
@@ -287,6 +292,10 @@ const AdminPage = () => {
   const [videoStatus, setVideoStatus] = useState({
     tone: videoApiConfigured ? 'info' : 'error',
     message: videoApiConfigured ? '填写视频链接后可更新视频清单' : '视频后台接口未配置'
+  });
+  const [danmakuStatus, setDanmakuStatus] = useState({
+    tone: danmakuAdminApiConfigured ? 'info' : 'error',
+    message: danmakuAdminApiConfigured ? '输入管理员口令后可查看和删除弹幕' : '弹幕后台接口未配置'
   });
   const [downloadStatus, setDownloadStatus] = useState({
     tone: downloadApiConfigured ? 'info' : 'error',
@@ -815,9 +824,11 @@ const AdminPage = () => {
       ? musicStatus
       : activePanel === ADMIN_PANEL_VIDEO
         ? videoStatus
-        : activePanel === ADMIN_PANEL_DOWNLOAD
-          ? downloadStatus
-          : announcementStatus;
+        : activePanel === ADMIN_PANEL_DANMAKU
+          ? danmakuStatus
+          : activePanel === ADMIN_PANEL_DOWNLOAD
+            ? downloadStatus
+            : announcementStatus;
   const StatusIcon = activeStatus.tone === 'error'
     ? AlertTriangle
     : activeStatus.tone === 'success'
@@ -924,6 +935,16 @@ const AdminPage = () => {
           >
             <Film size={16} />
             视频
+          </button>
+          <button
+            type="button"
+            className={`admin-tab ${activePanel === ADMIN_PANEL_DANMAKU ? 'is-active' : ''}`}
+            onClick={() => setActivePanel(ADMIN_PANEL_DANMAKU)}
+            role="tab"
+            aria-selected={activePanel === ADMIN_PANEL_DANMAKU}
+          >
+            <MessageSquareText size={16} />
+            弹幕
           </button>
           <button
             type="button"
@@ -1860,6 +1881,14 @@ const AdminPage = () => {
               </button>
             </div>
           </form>
+        )}
+
+        {activePanel === ADMIN_PANEL_DANMAKU && (
+          <DanmakuAdminPanel
+            token={token}
+            apiConfigured={danmakuAdminApiConfigured}
+            onStatusChange={setDanmakuStatus}
+          />
         )}
 
         {activePanel === ADMIN_PANEL_DOWNLOAD && (

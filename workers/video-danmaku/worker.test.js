@@ -4,6 +4,35 @@ import worker from './worker.js';
 
 const createD1 = () => {
   const rows = [];
+  const filterRows = (sql, params) => {
+    let paramIndex = 0;
+    let filteredRows = rows.slice();
+
+    if (sql.includes('status = ?')) {
+      const status = params[paramIndex];
+      paramIndex += 1;
+      filteredRows = filteredRows.filter((row) => row.status === status);
+    }
+    if (sql.includes('video_key = ?')) {
+      const videoKey = params[paramIndex];
+      paramIndex += 1;
+      filteredRows = filteredRows.filter((row) => row.video_key === videoKey);
+    }
+    if (sql.includes('text LIKE')) {
+      const needle = String(params[paramIndex] || '').replace(/%/g, '').toLowerCase();
+      paramIndex += 3;
+      filteredRows = filteredRows.filter((row) => (
+        row.text.toLowerCase().includes(needle)
+        || row.author.toLowerCase().includes(needle)
+        || row.video_key.toLowerCase().includes(needle)
+      ));
+    }
+
+    return {
+      filteredRows,
+      paramIndex
+    };
+  };
 
   return {
     rows,
@@ -12,7 +41,19 @@ const createD1 = () => {
         bind(...params) {
           return {
             async all() {
-              if (sql.includes('FROM danmaku') && sql.includes('WHERE video_key')) {
+              if (sql.includes('SELECT id, video_key, time, type, color, author, text, status, created_at')) {
+                const { filteredRows, paramIndex } = filterRows(sql, params);
+                const limit = Number(params[paramIndex] || 50);
+                const offset = Number(params[paramIndex + 1] || 0);
+                const results = filteredRows
+                  .sort((left, right) => right.created_at - left.created_at)
+                  .slice(offset, offset + limit)
+                  .map((row) => ({ ...row }));
+
+                return { results };
+              }
+
+              if (sql.includes('SELECT time, type, color, author, text')) {
                 const [videoKey, limit] = params;
                 const results = rows
                   .filter((row) => row.video_key === videoKey && row.status === 'visible')
@@ -29,6 +70,19 @@ const createD1 = () => {
                 return { results };
               }
 
+              if (sql.includes('GROUP BY status')) {
+                const counts = rows.reduce((bucket, row) => {
+                  bucket[row.status] = (bucket[row.status] || 0) + 1;
+                  return bucket;
+                }, {});
+                return {
+                  results: Object.entries(counts).map(([status, count]) => ({
+                    status,
+                    count
+                  }))
+                };
+              }
+
               return { results: [] };
             },
             async first() {
@@ -37,6 +91,16 @@ const createD1 = () => {
                 return rows
                   .filter((row) => row.ip_hash === ipHash)
                   .sort((left, right) => right.created_at - left.created_at)[0] || null;
+              }
+
+              if (sql.includes('COUNT(*) AS total')) {
+                const { filteredRows } = filterRows(sql, params);
+                return { total: filteredRows.length };
+              }
+
+              if (sql.includes('WHERE id = ?')) {
+                const [id] = params;
+                return rows.find((row) => row.id === id) || null;
               }
 
               return null;
@@ -52,6 +116,7 @@ const createD1 = () => {
                   author,
                   text,
                   ipHash,
+                  status,
                   createdAt
                 ] = params;
 
@@ -64,9 +129,21 @@ const createD1 = () => {
                   author,
                   text,
                   ip_hash: ipHash,
-                  status: 'visible',
+                  status,
                   created_at: createdAt
                 });
+              }
+
+              if (sql.includes('UPDATE danmaku SET status')) {
+                const [status, id] = params;
+                const row = rows.find((item) => item.id === id);
+                if (row) row.status = status;
+              }
+
+              if (sql.includes('DELETE FROM danmaku')) {
+                const [id] = params;
+                const index = rows.findIndex((item) => item.id === id);
+                if (index >= 0) rows.splice(index, 1);
               }
 
               return { success: true };
@@ -80,6 +157,7 @@ const createD1 = () => {
 
 const createEnv = (overrides = {}) => ({
   ALLOWED_ORIGIN: 'https://1701701.xyz,http://localhost:8080',
+  ADMIN_TOKEN: 'secret-token',
   DANMAKU_RATE_LIMIT_SECONDS: '10',
   DANMAKU_DB: createD1(),
   ...overrides
@@ -217,5 +295,100 @@ describe('video danmaku worker', () => {
       msg: '发送太频繁，请 10 秒后再试'
     });
     expect(env.DANMAKU_DB.rows).toHaveLength(1);
+  });
+
+  it('lists and deletes visible danmaku from the admin endpoint', async () => {
+    const env = createEnv({
+      DANMAKU_RATE_LIMIT_SECONDS: '0'
+    });
+    vi.spyOn(Date, 'now').mockReturnValue(1000);
+
+    const createResponse = await worker.fetch(new Request('https://worker.test/api/danmaku/v3/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '203.0.113.10'
+      },
+      body: JSON.stringify({
+        id: 'video-cat-1-video-1-demo',
+        time: 8,
+        text: '直接显示'
+      })
+    }), env);
+    const created = await createResponse.json();
+
+    expect(created).toMatchObject({
+      code: 0,
+      data: expect.objectContaining({
+        status: 'visible'
+      })
+    });
+
+    const publicBeforeDelete = await worker.fetch(
+      new Request('https://worker.test/api/danmaku/v3/?id=video-cat-1-video-1-demo'),
+      env
+    );
+    expect(await publicBeforeDelete.json()).toEqual({
+      code: 0,
+      data: [
+        [8, 0, 16777215, 'guest', '直接显示']
+      ]
+    });
+
+    const listResponse = await worker.fetch(new Request(
+      'https://worker.test/api/danmaku/admin/items?status=all',
+      {
+        headers: {
+          Authorization: 'Bearer secret-token'
+        }
+      }
+    ), env);
+    const listed = await listResponse.json();
+    expect(listed).toMatchObject({
+      total: 1,
+      counts: {
+        pending: 0,
+        visible: 1,
+        hidden: 0
+      },
+      items: [
+        expect.objectContaining({
+          id: created.data.id,
+          status: 'visible',
+          text: '直接显示'
+        })
+      ]
+    });
+
+    const deleteResponse = await worker.fetch(new Request(
+      `https://worker.test/api/danmaku/admin/items/${created.data.id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: 'Bearer secret-token'
+        }
+      }
+    ), env);
+    expect(await deleteResponse.json()).toMatchObject({
+      ok: true,
+      id: created.data.id
+    });
+
+    const publicAfterDelete = await worker.fetch(
+      new Request('https://worker.test/api/danmaku/v3/?id=video-cat-1-video-1-demo'),
+      env
+    );
+    expect(await publicAfterDelete.json()).toEqual({ code: 0, data: [] });
+  });
+
+  it('requires the admin token for danmaku moderation endpoints', async () => {
+    const response = await worker.fetch(
+      new Request('https://worker.test/api/danmaku/admin/items?status=all'),
+      createEnv()
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(payload).toEqual({ error: 'Unauthorized' });
   });
 });

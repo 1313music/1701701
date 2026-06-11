@@ -95,7 +95,7 @@ VITE_VIDEO_DANMAKU_BOTTOM=12%
 VITE_VIDEO_DANMAKU_SPEED_RATE=0.9
 ```
 
-后端实现位于 `workers/video-danmaku`，使用 Cloudflare Worker + D1，接口兼容 DPlayer 默认的 `/v3/` 弹幕协议。部署步骤见 `workers/video-danmaku/README.md`。如需关闭生产弹幕，可设置 `VITE_VIDEO_DANMAKU_API_URL=false`。
+后端实现位于 `workers/video-danmaku`，使用 Cloudflare Worker + D1，接口兼容 DPlayer 默认的 `/v3/` 弹幕协议。新弹幕默认直接显示；`/myadmin` 的“弹幕”标签可查看和删除弹幕，后台接口使用同一个管理员口令 `ADMIN_TOKEN`。部署步骤见 `workers/video-danmaku/README.md`。如需关闭生产弹幕，可设置 `VITE_VIDEO_DANMAKU_API_URL=false`。
 
 ## 图库展示
 
