@@ -13,10 +13,8 @@ describe('videoDanmakuConfig', () => {
     _categoryId: 'cat-1'
   };
 
-  it('uses the public danmaku endpoint in development by default', () => {
-    expect(buildVideoDanmakuOptions({ activeVideo, env: {} })).toMatchObject({
-      api: 'http://localhost:3000/api/danmaku/'
-    });
+  it('does not enable danmaku without an API URL', () => {
+    expect(buildVideoDanmakuOptions({ activeVideo, env: {} })).toBeNull();
   });
 
   it('uses the same-origin danmaku endpoint in production by default', () => {

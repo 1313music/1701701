@@ -22,12 +22,5 @@ export default defineConfig({
     port: 8080,
     strictPort: true,
     allowedHosts: true,
-    proxy: {
-      '/api/danmaku': {
-        target: 'https://1701701.xyz',
-        changeOrigin: true,
-        secure: true
-      }
-    }
   },
 })
