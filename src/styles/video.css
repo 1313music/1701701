@@ -591,7 +591,7 @@
 }
 
 .video-stage-player .dplayer-danmaku {
-  top: clamp(32px, 12%, 112px);
+  top: clamp(10px, 3%, 28px);
 }
 
 .video-stage-player.dplayer-loading .dplayer-bezel-icon {
