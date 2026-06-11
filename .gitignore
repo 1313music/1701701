@@ -17,6 +17,7 @@ dist-ssr
 coverage
 .tmp
 artifacts
+.wrangler/
 apps/android-shell/node_modules/
 .npm-cache/
 

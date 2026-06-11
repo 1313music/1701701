@@ -83,6 +83,20 @@ VITE_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS=43200000
 
 说明：这属于前端体验门禁，不作为安全认证使用。
 
+## 视频弹幕（可选）
+
+视频页可接入 DPlayer 内置弹幕。默认不启用；部署弹幕 Worker 后，在构建环境设置：
+
+```bash
+VITE_VIDEO_DANMAKU_API_URL=https://1701701.xyz/api/danmaku
+VITE_VIDEO_DANMAKU_AUTHOR=1701701
+VITE_VIDEO_DANMAKU_MAXIMUM=1000
+VITE_VIDEO_DANMAKU_BOTTOM=12%
+VITE_VIDEO_DANMAKU_SPEED_RATE=0.9
+```
+
+后端实现位于 `workers/video-danmaku`，使用 Cloudflare Worker + D1，接口兼容 DPlayer 默认的 `/v3/` 弹幕协议。部署步骤见 `workers/video-danmaku/README.md`。
+
 ## 图库展示
 
 图库页默认读取静态索引 `images.json`：

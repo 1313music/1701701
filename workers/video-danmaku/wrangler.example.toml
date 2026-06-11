@@ -1,0 +1,24 @@
+name = "1701701-video-danmaku"
+main = "./worker.js"
+compatibility_date = "2026-06-11"
+workers_dev = true
+
+# Optional same-origin routes. Enable after the D1 database is created.
+# routes = [
+#   { pattern = "1701701.xyz/api/danmaku/*", zone_name = "1701701.xyz" },
+#   { pattern = "www.1701701.xyz/api/danmaku/*", zone_name = "1701701.xyz" }
+# ]
+
+[[d1_databases]]
+binding = "DANMAKU_DB"
+database_name = "1701701-video-danmaku"
+database_id = "replace-with-d1-database-id"
+
+[vars]
+ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080"
+DANMAKU_MAX_TEXT_LENGTH = "40"
+DANMAKU_MAX_PER_VIDEO = "1000"
+DANMAKU_RATE_LIMIT_SECONDS = "10"
+
+# Optional: set a private salt in the real wrangler.toml or as a secret.
+# DANMAKU_IP_HASH_SALT = "replace-with-random-secret"

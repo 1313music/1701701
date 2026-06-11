@@ -8,6 +8,7 @@ import { useVideoSourceResolver } from './useVideoSourceResolver.js';
 export const useVideoPlayback = ({
   activeVideo,
   activeVideoKey,
+  danmakuOptions,
   nextWatchEpisode,
   prevWatchEpisode,
   setActiveVideo
@@ -83,6 +84,7 @@ export const useVideoPlayback = ({
     onPlayerLoadError: handlePlayerLoadError,
     playerRef,
     dpRef,
+    danmakuOptions,
     resolvedType,
     resolvedUrl,
     resolvedVideoKey

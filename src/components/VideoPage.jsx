@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { Folder, Play, CornerUpLeft, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import '../styles/video.css';
+import { buildVideoDanmakuOptions } from '../data/videoDanmakuConfig.js';
 import { useVideoCatalog } from '../hooks/useVideoCatalog.js';
 import { useVideoPlayback } from '../hooks/useVideoPlayback.js';
 import { buildVideoKey } from '../utils/videoPageUtils.js';
@@ -120,6 +121,11 @@ const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialRe
     requestVideoView
   });
 
+  const danmakuOptions = useMemo(() => buildVideoDanmakuOptions({
+    activeVideo,
+    watchCategory
+  }), [activeVideo, watchCategory]);
+
   const {
     playerRef,
     isResolving,
@@ -135,6 +141,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialRe
   } = useVideoPlayback({
     activeVideo,
     activeVideoKey,
+    danmakuOptions,
     nextWatchEpisode,
     prevWatchEpisode,
     setActiveVideo

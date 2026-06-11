@@ -31,6 +31,7 @@ export const useDPlayerInstance = ({
   onPlayerLoadError,
   playerRef,
   dpRef,
+  danmakuOptions,
   resolvedType,
   resolvedUrl,
   resolvedVideoKey
@@ -82,7 +83,7 @@ export const useDPlayerInstance = ({
         container.innerHTML = '';
         container.classList.remove('dplayer-auto-hide');
         container.classList.remove('dplayer-controls-visible');
-        player = new DPlayer({
+        const playerOptions = {
           container,
           autoplay: true,
           preload: 'metadata',
@@ -98,7 +99,12 @@ export const useDPlayerInstance = ({
               lowLatencyMode: true
             }
           }
-        });
+        };
+        if (danmakuOptions) {
+          playerOptions.danmaku = danmakuOptions;
+        }
+
+        player = new DPlayer(playerOptions);
 
         if (isStalePlayerEvent()) {
           player.destroy();
@@ -343,6 +349,7 @@ export const useDPlayerInstance = ({
     onPlayerLoadError,
     playerRef,
     dpRef,
+    danmakuOptions,
     resolvedType,
     resolvedUrl,
     resolvedVideoKey
