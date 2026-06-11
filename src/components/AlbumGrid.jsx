@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Heart, Play } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Heart, Play, QrCode, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 
 const PANEL_EXIT_MS = 280;
+const PANEL_MAX_WIDTH = 1180;
 const PANEL_OPEN_TICK_MS = 24;
 const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
@@ -126,6 +128,7 @@ const AlbumGrid = ({
         if (typeof window === 'undefined') return 4;
         return window.matchMedia('(max-width: 768px)').matches ? 4 : 6;
     });
+    const [gridMetrics, setGridMetrics] = useState({ width: 0, gap: 24 });
     const [isMobileLayout, setIsMobileLayout] = useState(() => {
         if (typeof window === 'undefined') return false;
         return window.matchMedia('(max-width: 768px)').matches;
@@ -135,6 +138,7 @@ const AlbumGrid = ({
     const [panelHeight, setPanelHeight] = useState(0);
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
+    const [mobileQrPanel, setMobileQrPanel] = useState(null);
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
     const panelOpenTimerRef = useRef(null);
@@ -175,6 +179,11 @@ const AlbumGrid = ({
             const gapValue = style.columnGap || style.gap || '0';
             const gap = parseFloat(gapValue) || 0;
             const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            setGridMetrics((prev) => (
+                Math.abs(prev.width - gridWidth) <= 1 && Math.abs(prev.gap - gap) <= 0.5
+                    ? prev
+                    : { width: gridWidth, gap }
+            ));
             setIsMobileLayout((prev) => (prev === isMobile ? prev : isMobile));
             if (isMobile) {
                 setColumns((prev) => (prev === 4 ? prev : 4));
@@ -266,6 +275,40 @@ const AlbumGrid = ({
         ? Math.min(musicAlbums.length - 1, Math.floor(renderedPanelIndex / columns) * columns + (columns - 1))
         : -1;
     const panelHostIndex = insertAfterIndex;
+    const panelLayout = useMemo(() => {
+        if (
+            renderedPanelIndex < 0
+            || columns <= 0
+            || isMobileLayout
+            || gridMetrics.width <= 0
+        ) {
+            return {
+                width: '100%',
+                offsetLeft: '0px',
+                anchorX: '50%'
+            };
+        }
+
+        const safeGap = Math.max(0, gridMetrics.gap || 0);
+        const panelWidth = Math.min(gridMetrics.width, PANEL_MAX_WIDTH);
+        const columnIndex = renderedPanelIndex % columns;
+        const cardWidth = Math.max(0, (gridMetrics.width - safeGap * (columns - 1)) / columns);
+        const selectedCenter = columnIndex * (cardWidth + safeGap) + cardWidth / 2;
+        const maxOffset = Math.max(0, gridMetrics.width - panelWidth);
+        const offsetLeft = Math.min(Math.max(selectedCenter - panelWidth / 2, 0), maxOffset);
+        const anchorPadding = Math.min(56, panelWidth / 2);
+        const anchorPx = Math.min(
+            Math.max(selectedCenter - offsetLeft, anchorPadding),
+            Math.max(anchorPadding, panelWidth - anchorPadding)
+        );
+        const anchorX = panelWidth > 0 ? (anchorPx / panelWidth) * 100 : 50;
+
+        return {
+            width: `${Math.round(panelWidth)}px`,
+            offsetLeft: `${Math.round(offsetLeft)}px`,
+            anchorX: `${Number(anchorX.toFixed(2))}%`
+        };
+    }, [columns, gridMetrics, isMobileLayout, renderedPanelIndex]);
     const isPanelOpen = Boolean(panelAlbum) && panelPhase === 'open';
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
@@ -295,11 +338,12 @@ const AlbumGrid = ({
         const isCurrentAlbum = album.songs.some((song) => song.src === currentTrack.src);
         const isAlbumPlaying = isCurrentAlbum && isPlaying;
         const items = [];
+        const isExpandedAlbum = renderedPanelAlbumId === album.id;
 
         items.push(
             <div
                 key={`card-${album.id}`}
-                className={`track-card ${isAlbumPlaying ? 'is-playing' : ''} ${isIntroActive ? 'intro-active' : ''}`}
+                className={`track-card ${isAlbumPlaying ? 'is-playing' : ''} ${isExpandedAlbum ? 'is-expanded' : ''} ${isIntroActive ? 'intro-active' : ''}`}
                 style={{
                     '--card-enter-delay': `${120 + Math.min(index, 11) * 42}ms`
                 }}
@@ -335,26 +379,36 @@ const AlbumGrid = ({
                     '--panel-height': `${panelHeight}px`,
                     '--panel-margin-top': `${expandedMarginTop}px`,
                     '--panel-margin-bottom': `${expandedMarginBottom}px`,
+                    '--panel-width': panelLayout.width,
+                    '--panel-offset-left': panelLayout.offsetLeft,
+                    '--panel-anchor-x': panelLayout.anchorX,
                     willChange: 'height, opacity, margin-top, margin-bottom'
                 }}
             >
                 <div className={`album-inline-panel ${panelAlbumMiniProgram ? 'has-mini-program' : ''}`} ref={panelContentRef}>
-                    {panelAlbumMiniProgram && (
-                        <div className="album-inline-side-qr" aria-label="上传云盘二维码" title={panelAlbumMiniProgram.hint}>
-                            <img
-                                loading="lazy"
-                                src={panelAlbumMiniProgram.codeUrl}
-                                alt={`${panelAlbum.name} 小程序码`}
-                            />
-                            <p>{panelAlbumMiniProgram.hint}</p>
-                        </div>
-                    )}
+                    <button className="album-inline-close" onClick={() => navigateToAlbum(panelAlbum)} aria-label="收起">
+                        <ChevronUpIcon size={18} />
+                    </button>
                     <div className="album-inline-header">
+                        <div className="album-inline-cover-wrap">
+                            <img
+                                className="album-inline-cover"
+                                loading="lazy"
+                                src={panelAlbum.cover}
+                                alt={panelAlbum.name}
+                            />
+                        </div>
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
                             <p className="album-metadata">{panelAlbum.artist} • {panelAlbum.songs.length} 首歌</p>
-                            <div className="album-inline-hero-actions">
-                                <button onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])} className="play-all-btn">
+                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'}`}>
+                                <button
+                                    type="button"
+                                    onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])}
+                                    className="play-all-btn"
+                                    disabled={!panelAlbum.songs.length}
+                                >
+                                    <Play size={17} fill="currentColor" strokeWidth={2.2} aria-hidden="true" />
                                     播放全部
                                 </button>
                                 <button
@@ -365,85 +419,112 @@ const AlbumGrid = ({
                                         onToggleAlbumFavorites?.(panelAlbum.songs, e);
                                     }}
                                 >
+                                    <Heart
+                                        size={17}
+                                        strokeWidth={2.2}
+                                        fill={isPanelAlbumFullyFavorited ? 'currentColor' : 'none'}
+                                        aria-hidden="true"
+                                    />
                                     {isPanelAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
                                 </button>
+                                {panelAlbumMiniProgram && (
+                                    <div className="album-inline-qr-action">
+                                        <button
+                                            type="button"
+                                            className="album-inline-qr-btn"
+                                            aria-label={panelAlbumMiniProgram.hint}
+                                            title={panelAlbumMiniProgram.hint}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!isMobileLayout) return;
+                                                setMobileQrPanel({
+                                                    albumName: panelAlbum.name,
+                                                    title: panelAlbumMiniProgram.title,
+                                                    hint: panelAlbumMiniProgram.hint,
+                                                    codeUrl: panelAlbumMiniProgram.codeUrl
+                                                });
+                                            }}
+                                        >
+                                            <QrCode size={16} strokeWidth={2.2} aria-hidden="true" />
+                                            扫码保存
+                                        </button>
+                                        <div className="album-inline-qr-popover" role="tooltip" aria-label={panelAlbumMiniProgram.title}>
+                                            <img
+                                                loading="lazy"
+                                                src={panelAlbumMiniProgram.codeUrl}
+                                                alt={`${panelAlbum.name} 小程序码`}
+                                            />
+                                            <p>{panelAlbumMiniProgram.hint}</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <button className="album-inline-close" onClick={() => navigateToAlbum(panelAlbum)} aria-label="收起">
-                            <ChevronUpIcon size={18} />
-                        </button>
                     </div>
 
                     <div className="song-list">
-                        {panelAlbum.songs.map((song, i) => (
-                            <div
-                                key={song.src}
-                                className={`song-item ${currentTrack.src === song.src ? 'active' : ''}`}
-                                onClick={() => playSongFromAlbum(panelAlbum, song)}
-                                onPointerEnter={() => setHoveredPanelSongSrc(song.src)}
-                                onPointerLeave={() => {
-                                    setHoveredPanelSongSrc((previous) => (
-                                        previous === song.src ? '' : previous
-                                    ));
-                                }}
-                            >
-                                <span className="song-num">{i + 1}</span>
-                                <SongNameMarquee
-                                    text={song.name}
-                                    allowMarquee={
-                                        currentTrack.src === song.src
-                                        || hoveredPanelSongSrc === song.src
-                                    }
-                                />
-                                <span className="song-actions">
-                                    <span className="song-status">
-                                        {currentTrack.src === song.src && isPlaying ? (
-                                            <span className="playing-bars" aria-label="正在播放">
-                                                <i></i><i></i><i></i><i></i>
+                        {panelAlbum.songs.map((song, i) => {
+                            const isCurrentSong = currentTrack.src === song.src;
+                            const isPlayingSong = isCurrentSong && isPlaying;
+                            return (
+                                <div
+                                    key={song.src}
+                                    className={`song-item ${isCurrentSong ? 'active' : ''} ${isPlayingSong ? 'is-playing-song' : ''}`}
+                                    onClick={() => playSongFromAlbum(panelAlbum, song)}
+                                    onPointerEnter={() => setHoveredPanelSongSrc(song.src)}
+                                    onPointerLeave={() => {
+                                        setHoveredPanelSongSrc((previous) => (
+                                            previous === song.src ? '' : previous
+                                        ));
+                                    }}
+                                >
+                                    <span className="song-num">{i + 1}</span>
+                                    <span className="song-play-indicator" aria-hidden="true">
+                                        {isPlayingSong ? (
+                                            <span className="song-pause-glyph">
+                                                <i></i>
+                                                <i></i>
                                             </span>
-                                        ) : ''}
+                                        ) : (
+                                            <Play size={14} fill="currentColor" strokeWidth={2.2} />
+                                        )}
                                     </span>
-                                    <button
-                                        type="button"
-                                        className={`song-temp-btn ${tempPlaylistSet?.has(song.src) ? 'active' : ''}`}
-                                        aria-pressed={tempPlaylistSet?.has(song.src)}
-                                        aria-label={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
-                                        title={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onToggleTempSong(song, e);
-                                        }}
-                                    >
-                                        <Heart
-                                            size={16}
-                                            strokeWidth={2}
-                                            fill={tempPlaylistSet?.has(song.src) ? 'currentColor' : 'none'}
-                                        />
-                                    </button>
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                    {panelAlbumMiniProgram && (
-                        <div className="album-inline-mobile-qr" aria-label="上传云盘二维码" title={panelAlbumMiniProgram.hint}>
-                            <img
-                                loading="lazy"
-                                src={panelAlbumMiniProgram.codeUrl}
-                                alt={`${panelAlbum.name} 小程序码`}
-                            />
-                            <p>{panelAlbumMiniProgram.hint}</p>
-                        </div>
-                    )}
-                    <div className="album-inline-bottom-actions">
-                        <button
-                            type="button"
-                            className="album-inline-bottom-close"
-                            onClick={() => navigateToAlbum(panelAlbum)}
-                            aria-label="收起"
-                            title="收起"
-                        >
-                            <ChevronUpIcon size={18} />
-                        </button>
+                                    <SongNameMarquee
+                                        text={song.name}
+                                        allowMarquee={
+                                            isCurrentSong
+                                            || hoveredPanelSongSrc === song.src
+                                        }
+                                    />
+                                    <span className="song-actions">
+                                        <span className="song-status">
+                                            {isPlayingSong ? (
+                                                <span className="playing-bars" aria-label="正在播放">
+                                                    <i></i><i></i><i></i><i></i>
+                                                </span>
+                                            ) : ''}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className={`song-temp-btn ${tempPlaylistSet?.has(song.src) ? 'active' : ''}`}
+                                            aria-pressed={tempPlaylistSet?.has(song.src)}
+                                            aria-label={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
+                                            title={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onToggleTempSong(song, e);
+                                            }}
+                                        >
+                                            <Heart
+                                                size={16}
+                                                strokeWidth={2}
+                                                fill={tempPlaylistSet?.has(song.src) ? 'currentColor' : 'none'}
+                                            />
+                                        </button>
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -451,10 +532,43 @@ const AlbumGrid = ({
         return items;
     });
 
+    const mobileQrDialog = isMobileLayout && mobileQrPanel && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="album-mobile-qr-overlay" role="presentation" onClick={() => setMobileQrPanel(null)}>
+                <div
+                    className="album-mobile-qr-card"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={mobileQrPanel.title}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button
+                        type="button"
+                        className="album-mobile-qr-close"
+                        aria-label="关闭二维码"
+                        onClick={() => setMobileQrPanel(null)}
+                    >
+                        <X size={18} />
+                    </button>
+                    <img
+                        loading="lazy"
+                        src={mobileQrPanel.codeUrl}
+                        alt={`${mobileQrPanel.albumName} 小程序码`}
+                    />
+                    <p>{mobileQrPanel.hint}</p>
+                </div>
+            </div>,
+            document.body
+        )
+        : null;
+
     return (
-        <div className="music-grid" ref={gridRef} style={{ '--grid-columns': columns }}>
-            {gridItems}
-        </div>
+        <>
+            <div className="music-grid" ref={gridRef} style={{ '--grid-columns': columns }}>
+                {gridItems}
+            </div>
+            {mobileQrDialog}
+        </>
     );
 };
 
