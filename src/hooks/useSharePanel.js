@@ -59,11 +59,19 @@ export const useSharePanel = ({ getCurrentTrackSharePayload, showToast }) => {
     }
   }, [getCurrentTrackSharePayload, openSharePanel, showToast]);
 
-  const handleShareVideo = useCallback((payload, anchorOrOptions) => {
-    if (!openSharePanel(payload)) {
+  const handleShareVideo = useCallback(async (payload, anchorOrOptions) => {
+    if (!payload?.url) {
       showToast('当前视频暂不可分享', 'tone-remove', anchorOrOptions || { placement: 'bottom' });
+      return;
     }
-  }, [openSharePanel, showToast]);
+
+    const copied = await copyTextToClipboard(payload.url);
+    showToast(
+      copied ? '视频链接已复制' : '复制失败，请手动复制',
+      copied ? 'tone-add' : 'tone-remove',
+      anchorOrOptions || { placement: 'bottom' }
+    );
+  }, [showToast]);
 
   const handleCopySpecificPageUrl = useCallback(async (url, successMessage, anchorOrOptions) => {
     if (!url) return;

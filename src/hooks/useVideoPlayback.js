@@ -4,7 +4,6 @@ import { useDPlayerInstance } from './useDPlayerInstance.js';
 import { useVideoFullscreenGuards } from './useVideoFullscreenGuards.js';
 import { useVideoPlaybackShortcuts } from './useVideoPlaybackShortcuts.js';
 import { useVideoSourceResolver } from './useVideoSourceResolver.js';
-import { useVideoStageLayout } from './useVideoStageLayout.js';
 
 export const useVideoPlayback = ({
   activeVideo,
@@ -59,16 +58,6 @@ export const useVideoPlayback = ({
     setActiveVideo
   });
 
-  const {
-    stageMainRef,
-    stageMainHeight
-  } = useVideoStageLayout({
-    activeVideo,
-    isResolving,
-    resolveError,
-    resolvedUrl
-  });
-
   const handlePlaybackError = useCallback(() => {
     if (trySwitchToFallback()) {
       return;
@@ -101,8 +90,6 @@ export const useVideoPlayback = ({
 
   return {
     playerRef,
-    stageMainRef,
-    stageMainHeight,
     isResolving,
     resolveError,
     resolvedUrl,

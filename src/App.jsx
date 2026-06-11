@@ -484,7 +484,6 @@ const App = () => {
                     <VideoPage
                       requestVideoView={requestVideoView}
                       onShareVideo={handleShareVideo}
-                      commentServerURL={WALINE_SERVER_URL}
                       locationSearch={locationSearch}
                       onInitialReady={signalBootReady}
                     />

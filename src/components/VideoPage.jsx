@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Folder, Play, X, CornerUpLeft, ChevronDown, ChevronLeft, ChevronRight, Share2, MessageSquareMore } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion as Motion } from 'framer-motion';
+import { Folder, Play, CornerUpLeft, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import '../styles/video.css';
 import { useVideoCatalog } from '../hooks/useVideoCatalog.js';
-import { useVideoComments } from '../hooks/useVideoComments.js';
 import { useVideoPlayback } from '../hooks/useVideoPlayback.js';
 import { buildVideoKey } from '../utils/videoPageUtils.js';
 import SearchHeader from './SearchHeader';
-import CommentSection from './CommentSection.jsx';
 
-const VideoCard = ({ item, onClick, meta }) => {
+const VideoCard = ({ item, onClick, meta, active = false }) => {
   const [thumbError, setThumbError] = useState(false);
   const [loadedThumbSrc, setLoadedThumbSrc] = useState('');
   const hasThumb = Boolean(item.thumb) && !thumbError;
@@ -21,8 +18,9 @@ const VideoCard = ({ item, onClick, meta }) => {
   return (
     <Motion.button
       type="button"
-      className={`video-card ${item.isFolder || item.folderId ? 'is-folder' : ''}`}
+      className={`video-card ${item.isFolder || item.folderId ? 'is-folder' : ''} ${active ? 'active' : ''}`}
       onClick={onClick}
+      aria-current={active ? 'true' : undefined}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -84,8 +82,13 @@ const BackCard = ({ onClick }) => (
   </Motion.button>
 );
 
-const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationSearch, onInitialReady }) => {
-  const [mountedVideoCommentPath, setMountedVideoCommentPath] = useState('');
+const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialReady }) => {
+  const videoTabsRef = useRef(null);
+  const [videoTabsScrollState, setVideoTabsScrollState] = useState({
+    canLeft: false,
+    canRight: false,
+    hasOverflow: false
+  });
   const {
     searchQuery,
     setSearchQuery,
@@ -98,8 +101,6 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
     handleSelectCategory,
     watchCategory,
     watchCategoryMeta,
-    handleSelectWatchCategory,
-    categoryVideoCounts,
     isSearching,
     showBackCard,
     displayedItems,
@@ -110,18 +111,9 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
     activeVideoKey,
     isWatching,
     watchEpisodes,
-    watchEpisodeGroups,
     activeWatchIndex,
     prevWatchEpisode,
-    nextWatchEpisode,
-    expandedWatchGroups,
-    handleToggleWatchGroup,
-    handleSelectWatchEpisode,
-    activeEpisodeRef,
-    stageCategoriesRef,
-    stageCategoriesScrollState,
-    handleStageCategoriesWheel,
-    handleScrollStageCategories
+    nextWatchEpisode
   } = useVideoCatalog({
     locationSearch,
     onInitialReady,
@@ -130,8 +122,6 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
 
   const {
     playerRef,
-    stageMainRef,
-    stageMainHeight,
     isResolving,
     resolveError,
     resolvedUrl,
@@ -149,41 +139,6 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
     prevWatchEpisode,
     setActiveVideo
   });
-
-  const {
-    closeCommentDrawer,
-    currentVideoCommentPath,
-    canOpenCommentDrawer,
-    shouldRenderVideoCommentDrawer,
-    handleOpenVideoComment
-  } = useVideoComments({
-    activeVideo,
-    activeVideoKey,
-    commentServerURL,
-    watchCategory
-  });
-  const rememberedVideoCommentPath = canOpenCommentDrawer ? mountedVideoCommentPath : '';
-  const shouldMountVideoCommentDrawer = Boolean(
-    (shouldRenderVideoCommentDrawer || rememberedVideoCommentPath) &&
-    canOpenCommentDrawer &&
-    activeVideo
-  );
-  const renderedVideoCommentPath = shouldRenderVideoCommentDrawer
-    ? currentVideoCommentPath
-    : rememberedVideoCommentPath;
-  const rememberVideoCommentPath = () => {
-    if (currentVideoCommentPath) {
-      setMountedVideoCommentPath(currentVideoCommentPath);
-    }
-  };
-  const handleToggleVideoCommentDrawer = () => {
-    rememberVideoCommentPath();
-    handleOpenVideoComment();
-  };
-  const handleCloseVideoCommentDrawer = () => {
-    rememberVideoCommentPath();
-    closeCommentDrawer();
-  };
 
   const handleShareCurrentVideo = (event) => {
     if (typeof onShareVideo !== 'function' || !activeVideo || typeof window === 'undefined') return;
@@ -216,23 +171,196 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
     ? `第 ${activeWatchIndex + 1} / ${watchEpisodes.length} 集`
     : '';
   const showWangGuoCredit = isWatching && (activeVideo?._categoryId || watchCategory) === 'jlpsq1';
+  const hasCatalogContent = !isCatalogLoading && !catalogLoadError;
+  const hasScrollableVideoTabs = videoTabsScrollState.hasOverflow;
+
+  const updateVideoTabsScrollState = useCallback(() => {
+    const node = videoTabsRef.current;
+    if (!node) {
+      setVideoTabsScrollState((prev) => (
+        prev.canLeft || prev.canRight || prev.hasOverflow
+          ? { canLeft: false, canRight: false, hasOverflow: false }
+          : prev
+      ));
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, node.scrollWidth - node.clientWidth);
+    const next = {
+      canLeft: node.scrollLeft > 2,
+      canRight: maxScrollLeft - node.scrollLeft > 2,
+      hasOverflow: maxScrollLeft > 2
+    };
+
+    setVideoTabsScrollState((prev) => (
+      prev.canLeft === next.canLeft &&
+      prev.canRight === next.canRight &&
+      prev.hasOverflow === next.hasOverflow
+        ? prev
+        : next
+    ));
+  }, []);
+
+  const handleVideoTabsWheel = useCallback((event) => {
+    const node = videoTabsRef.current;
+    if (!node || node.scrollWidth <= node.clientWidth) return;
+
+    const absX = Math.abs(event.deltaX);
+    const absY = Math.abs(event.deltaY);
+    const delta = absX > absY ? event.deltaX : event.deltaY;
+    if (!delta) return;
+
+    const prevScrollLeft = node.scrollLeft;
+    node.scrollLeft += delta;
+    if (node.scrollLeft !== prevScrollLeft) {
+      event.preventDefault();
+      updateVideoTabsScrollState();
+    }
+  }, [updateVideoTabsScrollState]);
+
+  const handleScrollVideoTabs = useCallback((direction) => {
+    const node = videoTabsRef.current;
+    if (!node) return;
+
+    const step = Math.max(220, Math.round(node.clientWidth * 0.72));
+    node.scrollBy({ left: direction * step, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    let frameId = 0;
+
+    const scheduleVideoTabsUpdate = () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updateVideoTabsScrollState();
+      });
+    };
+
+    if (isSearching || !hasCatalogContent) {
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        setVideoTabsScrollState((prev) => (
+          prev.canLeft || prev.canRight || prev.hasOverflow
+            ? { canLeft: false, canRight: false, hasOverflow: false }
+            : prev
+        ));
+      });
+      return () => {
+        if (frameId) {
+          window.cancelAnimationFrame(frameId);
+        }
+      };
+    }
+
+    const node = videoTabsRef.current;
+    if (!node) return undefined;
+
+    scheduleVideoTabsUpdate();
+    node.addEventListener('scroll', updateVideoTabsScrollState, { passive: true });
+    window.addEventListener('resize', updateVideoTabsScrollState);
+
+    let observer;
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => scheduleVideoTabsUpdate());
+      observer.observe(node);
+    }
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      node.removeEventListener('scroll', updateVideoTabsScrollState);
+      window.removeEventListener('resize', updateVideoTabsScrollState);
+      observer?.disconnect();
+    };
+  }, [activeCategory, hasCatalogContent, isSearching, updateVideoTabsScrollState, videoCategories.length]);
+
+  useEffect(() => {
+    if (isSearching || !hasCatalogContent) return;
+    const frameId = window.requestAnimationFrame(() => {
+      const activeTab = videoTabsRef.current?.querySelector('.video-tab.active');
+      if (typeof activeTab?.scrollIntoView === 'function') {
+        activeTab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+      updateVideoTabsScrollState();
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [activeCategory, hasCatalogContent, isSearching, updateVideoTabsScrollState]);
 
   const renderVideoGrid = () => (
     showBackCard || displayedItems.length > 0 ? (
       <div className="video-grid">
         {showBackCard && <BackCard onClick={handleBackFolder} />}
-        {displayedItems.map((item) => (
-          <VideoCard
-            key={item.id}
-            item={item}
-            onClick={() => handleCardClick(item)}
-            meta={isSearching ? item._pathLabel : ''}
-          />
-        ))}
+        {displayedItems.map((item) => {
+          const isActiveCard = Boolean(
+            activeVideoKey &&
+            !(item.isFolder || item.folderId) &&
+            buildVideoKey(item) === activeVideoKey
+          );
+
+          return (
+            <VideoCard
+              key={item.id}
+              item={item}
+              onClick={() => handleCardClick(item)}
+              meta={isSearching ? item._pathLabel : ''}
+              active={isActiveCard}
+            />
+          );
+        })}
       </div>
     ) : (
       <div className="video-empty">暂无视频内容</div>
     )
+  );
+
+  const renderVideoToolbar = () => (
+    <div className={`video-toolbar ${hasScrollableVideoTabs ? 'has-scroll' : ''}`}>
+      {hasScrollableVideoTabs ? (
+        <button
+          type="button"
+          className="video-tabs-nav"
+          onClick={() => handleScrollVideoTabs(-1)}
+          disabled={!videoTabsScrollState.canLeft}
+          aria-label="向左查看分类"
+        >
+          <ChevronLeft size={16} />
+        </button>
+      ) : null}
+      <div
+        className="video-tabs"
+        role="tablist"
+        aria-label="视频分类"
+        ref={videoTabsRef}
+        onWheel={handleVideoTabsWheel}
+      >
+        {videoCategories.map((cat) => (
+          <button
+            key={cat.id}
+            type="button"
+            className={`video-tab ${activeCategory === cat.id ? 'active' : ''}`}
+            onClick={() => handleSelectCategory(cat.id)}
+            aria-pressed={activeCategory === cat.id}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+      {hasScrollableVideoTabs ? (
+        <button
+          type="button"
+          className="video-tabs-nav"
+          onClick={() => handleScrollVideoTabs(1)}
+          disabled={!videoTabsScrollState.canRight}
+          aria-label="向右查看分类"
+        >
+          <ChevronRight size={16} />
+        </button>
+      ) : null}
+    </div>
   );
 
   return (
@@ -245,15 +373,14 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
         placeholder="搜索视频、分类..."
       />
 
-      {isSearching && renderVideoGrid()}
-      {!isSearching && !isWatching && isCatalogLoading && (
+      {!isSearching && isCatalogLoading && (
         <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
           <span className="page-loading-ring" aria-hidden="true" />
           <span>加载中...</span>
         </div>
       )}
 
-      {!isSearching && !isWatching && !isCatalogLoading && catalogLoadError && (
+      {!isSearching && !isCatalogLoading && catalogLoadError && (
         <div className="video-empty">
           <div>{catalogLoadError}</div>
           <button
@@ -266,25 +393,9 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
         </div>
       )}
 
-      {!isSearching && !isWatching && !isCatalogLoading && !catalogLoadError && (
-        <div className="video-toolbar">
-          <div className="video-tabs" role="tablist" aria-label="视频分类">
-            {videoCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={`video-tab ${activeCategory === cat.id ? 'active' : ''}`}
-                onClick={() => handleSelectCategory(cat.id)}
-                aria-pressed={activeCategory === cat.id}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {!isSearching && hasCatalogContent && !isWatching && renderVideoToolbar()}
 
-      {isWatching && (
+      {isWatching && hasCatalogContent && (
         <div className="video-inline-stage is-active">
           <Motion.section
             className="video-stage-card video-stage-theme-minimal"
@@ -298,11 +409,12 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
                 <div className="video-stage-actions">
                   <button
                     type="button"
-                    className="video-stage-close"
-                    onClick={() => setActiveVideo(null)}
-                    aria-label="收起播放器"
+                    className="video-stage-share-btn"
+                    onClick={handleShareCurrentVideo}
+                    aria-label="分享当前视频"
+                    title="分享当前视频"
                   >
-                    <X size={20} />
+                    <Share2 size={18} />
                   </button>
                 </div>
               </div>
@@ -315,7 +427,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
             </div>
 
             <div className="video-stage-layout">
-              <div className="video-stage-main" ref={stageMainRef}>
+              <div className="video-stage-main">
                 <div className="video-stage-media-shell">
                   {isResolving && (
                     <div className="video-unsupported video-unsupported-inline">解析播放地址中…</div>
@@ -359,149 +471,6 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
                     <div className="video-unsupported video-unsupported-inline">当前视频链接暂不支持播放。</div>
                   )}
                 </div>
-                <div className="video-stage-main-controls">
-                  <div className="video-stage-main-controls-nav">
-                    <button
-                      type="button"
-                      className="video-stage-nav-btn"
-                      onClick={() => handleSelectWatchEpisode(prevWatchEpisode)}
-                      disabled={!prevWatchEpisode}
-                      aria-label="上一集"
-                      title="上一集"
-                    >
-                      <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-6px' }} />
-                      <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
-                    </button>
-                    <button
-                      type="button"
-                      className="video-stage-nav-btn"
-                      onClick={() => handleSelectWatchEpisode(nextWatchEpisode)}
-                      disabled={!nextWatchEpisode}
-                      aria-label="下一集"
-                      title="下一集"
-                    >
-                      <Play size={20} fill="currentColor" style={{ marginRight: '-6px' }} />
-                      <Play size={20} fill="currentColor" />
-                    </button>
-                  </div>
-                  <div className="video-stage-main-controls-actions">
-                    <button
-                      type="button"
-                      className="video-stage-comment-btn"
-                      onClick={handleToggleVideoCommentDrawer}
-                      aria-label="打开评论页"
-                      disabled={!canOpenCommentDrawer}
-                    >
-                      <MessageSquareMore size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      className="video-stage-share-btn"
-                      onClick={handleShareCurrentVideo}
-                      aria-label="分享当前视频"
-                    >
-                      <Share2 size={18} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <aside
-                className={`video-watch-sidebar ${stageMainHeight > 0 ? 'is-measured' : ''}`}
-                style={stageMainHeight > 0 ? { height: `${stageMainHeight}px` } : undefined}
-              >
-                <div className="video-watch-episodes">
-                  {watchEpisodes.length === 0 ? (
-                    <div className="video-watch-empty">当前分类暂无可播放视频</div>
-                  ) : (
-                    watchEpisodeGroups.map((group) => {
-                      const isExpanded = group.isDirect || expandedWatchGroups.has(group.key);
-
-                      return (
-                        <section key={`watch-group-${group.key}`} className="video-watch-group">
-                          {!group.isDirect && (
-                            <button
-                              type="button"
-                              className={`video-watch-group-toggle ${isExpanded ? 'is-expanded' : ''}`}
-                              onClick={() => handleToggleWatchGroup(group.key)}
-                              aria-expanded={isExpanded}
-                            >
-                              <span className="video-watch-group-label">{group.label}</span>
-                              <span className="video-watch-group-count">{group.items.length} 集</span>
-                              <ChevronDown size={14} className="video-watch-group-icon" />
-                            </button>
-                          )}
-
-                          {isExpanded && (
-                            <div className={`video-watch-group-items ${group.isDirect ? 'is-direct' : ''}`}>
-                              {group.items.map((item, index) => {
-                                const itemKey = buildVideoKey(item);
-                                const isActiveEpisode = itemKey === activeVideoKey;
-
-                                return (
-                                  <button
-                                    key={`watch-episode-${item.id}-${index}`}
-                                    type="button"
-                                    className={`video-watch-episode ${isActiveEpisode ? 'active' : ''}`}
-                                    onClick={() => handleSelectWatchEpisode(item)}
-                                    ref={isActiveEpisode ? activeEpisodeRef : null}
-                                  >
-                                    <span className="video-watch-episode-index">
-                                      {String(index + 1).padStart(2, '0')}
-                                    </span>
-                                    <span className="video-watch-episode-texts">
-                                      <span className="video-watch-episode-title">{item.title}</span>
-                                    </span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </section>
-                      );
-                    })
-                  )}
-                </div>
-              </aside>
-              <div className="video-stage-categories-wrap">
-                <button
-                  type="button"
-                  className="video-stage-categories-nav"
-                  onClick={() => handleScrollStageCategories(-1)}
-                  disabled={!stageCategoriesScrollState.canLeft}
-                  aria-label="向左查看分类"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <div
-                  className="video-stage-categories"
-                  role="tablist"
-                  aria-label="看片分类"
-                  ref={stageCategoriesRef}
-                  onWheel={handleStageCategoriesWheel}
-                >
-                  {videoCategories.map((cat) => (
-                    <button
-                      key={`watch-${cat.id}`}
-                      type="button"
-                      className={`video-stage-category ${watchCategory === cat.id ? 'active' : ''}`}
-                      onClick={() => handleSelectWatchCategory(cat.id)}
-                      aria-pressed={watchCategory === cat.id}
-                    >
-                      <span>{cat.name}</span>
-                      <span className="video-stage-category-count">{categoryVideoCounts[cat.id] || 0}</span>
-                    </button>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  className="video-stage-categories-nav"
-                  onClick={() => handleScrollStageCategories(1)}
-                  disabled={!stageCategoriesScrollState.canRight}
-                  aria-label="向右查看分类"
-                >
-                  <ChevronRight size={16} />
-                </button>
               </div>
             </div>
             {showWangGuoCredit && (
@@ -511,61 +480,10 @@ const VideoPage = ({ requestVideoView, onShareVideo, commentServerURL, locationS
         </div>
       )}
 
-      {!isSearching && !isWatching && !isCatalogLoading && !catalogLoadError && renderVideoGrid()}
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {shouldMountVideoCommentDrawer ? (
-            <>
-              {shouldRenderVideoCommentDrawer ? (
-                <Motion.button
-                  type="button"
-                  className="video-comment-backdrop"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  onClick={handleCloseVideoCommentDrawer}
-                  aria-label="关闭视频评论抽屉"
-                />
-              ) : null}
-              <Motion.aside
-                className={`video-comment-drawer ${shouldRenderVideoCommentDrawer ? 'is-open' : 'is-hidden'}`}
-                initial={{ x: '100%' }}
-                animate={shouldRenderVideoCommentDrawer ? { x: 0 } : { x: '100%' }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                aria-hidden={shouldRenderVideoCommentDrawer ? undefined : 'true'}
-                inert={shouldRenderVideoCommentDrawer ? undefined : true}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className="video-comment-drawer-header">
-                  <div className="video-comment-drawer-texts">
-                    <h3>视频评论</h3>
-                    <p>{activeVideo?.title || ''}</p>
-                  </div>
-                  <button
-                    type="button"
-                    className="video-comment-close"
-                    onClick={handleCloseVideoCommentDrawer}
-                    aria-label="关闭视频评论抽屉"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="video-comment-drawer-body">
-                  <CommentSection
-                    serverURL={commentServerURL}
-                    path={renderedVideoCommentPath}
-                    title=""
-                    subtitle=""
-                  />
-                </div>
-              </Motion.aside>
-            </>
-          ) : null}
-        </AnimatePresence>,
-        document.body
-      )}
+      {!isSearching && hasCatalogContent && isWatching && renderVideoToolbar()}
+
+      {isSearching && renderVideoGrid()}
+      {!isSearching && hasCatalogContent && renderVideoGrid()}
     </div>
   );
 };
