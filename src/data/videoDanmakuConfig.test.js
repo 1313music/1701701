@@ -13,8 +13,10 @@ describe('videoDanmakuConfig', () => {
     _categoryId: 'cat-1'
   };
 
-  it('does not enable danmaku without an API URL', () => {
-    expect(buildVideoDanmakuOptions({ activeVideo, env: {} })).toBeNull();
+  it('uses the public danmaku endpoint in development by default', () => {
+    expect(buildVideoDanmakuOptions({ activeVideo, env: {} })).toMatchObject({
+      api: 'https://1701701.xyz/api/danmaku/'
+    });
   });
 
   it('uses the same-origin danmaku endpoint in production by default', () => {
@@ -26,11 +28,10 @@ describe('videoDanmakuConfig', () => {
     });
   });
 
-  it('can explicitly disable danmaku in production', () => {
+  it('can explicitly disable danmaku', () => {
     expect(buildVideoDanmakuOptions({
       activeVideo,
       env: {
-        PROD: true,
         VITE_VIDEO_DANMAKU_API_URL: 'false'
       }
     })).toBeNull();
