@@ -590,6 +590,10 @@
   border-radius: inherit;
 }
 
+.video-stage-player .dplayer-danmaku {
+  top: clamp(32px, 12%, 112px);
+}
+
 .video-stage-player.dplayer-loading .dplayer-bezel-icon {
   opacity: 0;
   visibility: hidden;
