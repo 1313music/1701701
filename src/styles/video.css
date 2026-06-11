@@ -594,6 +594,13 @@
   top: 5px;
 }
 
+.video-stage-player.dplayer-comment-input-active .dplayer-controller,
+.video-stage-player.dplayer-comment-input-active .dplayer-controller-mask {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  visibility: visible !important;
+}
+
 .video-stage-player.dplayer-loading .dplayer-bezel-icon {
   opacity: 0;
   visibility: hidden;
@@ -773,6 +780,10 @@
 
   .video-stage-title {
     font-size: 15px;
+  }
+
+  .video-stage-player .dplayer-comment-input {
+    font-size: 16px;
   }
 
   .video-stage-player .dplayer-full-in-icon {

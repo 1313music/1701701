@@ -182,8 +182,22 @@ export const useDPlayerInstance = ({
           const controllerMask = container.querySelector('.dplayer-controller-mask');
           const controllerRoot = container.querySelector('.dplayer-controller');
           const webFullButton = container.querySelector('.dplayer-full-in-icon');
+          const commentInput = container.querySelector('.dplayer-comment-input');
           let lastToggleAt = 0;
           let hideTimer = null;
+
+          const isCommentControlTarget = (target) => Boolean(
+            target?.closest?.(
+              '.dplayer-comment-box, .dplayer-comment-input, .dplayer-comment-setting-box, .dplayer-comment-setting-icon, .dplayer-send-icon',
+            ),
+          );
+
+          const isCommentInputActive = () => Boolean(
+            player?.controller?.disableAutoHide ||
+              container.classList.contains('dplayer-show-controller') ||
+              controllerRoot?.classList.contains('dplayer-controller-comment') ||
+              document.activeElement?.closest?.('.dplayer-comment-box'),
+          );
 
           const clearAutoHide = () => {
             if (hideTimer) {
@@ -194,9 +208,9 @@ export const useDPlayerInstance = ({
 
           const scheduleAutoHide = () => {
             clearAutoHide();
-            if (!player?.controller || !player?.video || player.video.paused) return;
+            if (!player?.controller || !player?.video || player.video.paused || isCommentInputActive()) return;
             hideTimer = setTimeout(() => {
-              if (canceled || !player?.controller || !player?.video || player.video.paused) return;
+              if (canceled || !player?.controller || !player?.video || player.video.paused || isCommentInputActive()) return;
               if (typeof player.controller.hide === 'function') {
                 player.controller.hide();
               }
@@ -218,7 +232,24 @@ export const useDPlayerInstance = ({
             }
           };
           const onControllerTouchStart = () => clearAutoHide();
-          const onControllerTouchEnd = () => scheduleAutoHide();
+          const onControllerTouchEnd = (event) => {
+            if (isCommentControlTarget(event.target) || isCommentInputActive()) {
+              clearAutoHide();
+              return;
+            }
+            scheduleAutoHide();
+          };
+          const onCommentInputFocus = () => {
+            clearAutoHide();
+            container.classList.add('dplayer-comment-input-active');
+            if (typeof player.controller.show === 'function') {
+              player.controller.show();
+            }
+          };
+          const onCommentInputBlur = () => {
+            container.classList.remove('dplayer-comment-input-active');
+            scheduleAutoHide();
+          };
           const blockWebFullscreen = (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -232,6 +263,10 @@ export const useDPlayerInstance = ({
 
           const toggleGuard = (event) => {
             if (!player?.controller) return;
+            if (isCommentControlTarget(event.target) || isCommentInputActive()) {
+              clearAutoHide();
+              return;
+            }
             const now = Date.now();
             const delta = now - lastToggleAt;
             event.preventDefault();
@@ -255,6 +290,8 @@ export const useDPlayerInstance = ({
           controllerMask?.addEventListener('click', toggleGuard, true);
           controllerRoot?.addEventListener('touchstart', onControllerTouchStart, { passive: true });
           controllerRoot?.addEventListener('touchend', onControllerTouchEnd, { passive: true });
+          commentInput?.addEventListener('focus', onCommentInputFocus);
+          commentInput?.addEventListener('blur', onCommentInputBlur);
           webFullButton?.addEventListener('click', blockWebFullscreen, true);
           if (webFullButton) {
             webFullButton.style.display = 'none';
@@ -268,10 +305,13 @@ export const useDPlayerInstance = ({
 
           removeTouchToggleGuard = () => {
             clearAutoHide();
+            container.classList.remove('dplayer-comment-input-active');
             videoWrap?.removeEventListener('click', toggleGuard, true);
             controllerMask?.removeEventListener('click', toggleGuard, true);
             controllerRoot?.removeEventListener('touchstart', onControllerTouchStart);
             controllerRoot?.removeEventListener('touchend', onControllerTouchEnd);
+            commentInput?.removeEventListener('focus', onCommentInputFocus);
+            commentInput?.removeEventListener('blur', onCommentInputBlur);
             webFullButton?.removeEventListener('click', blockWebFullscreen, true);
             if (typeof player?.off === 'function') {
               player.off('play', onPlay);
