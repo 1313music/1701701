@@ -184,10 +184,8 @@ export const useDPlayerInstance = ({
           const controllerRoot = container.querySelector('.dplayer-controller');
           const webFullButton = container.querySelector('.dplayer-full-in-icon');
           const commentInput = container.querySelector('.dplayer-comment-input');
-          const commentSendButton = container.querySelector('.dplayer-send-icon');
           let lastToggleAt = 0;
           let hideTimer = null;
-          let lastCommentSendAt = 0;
 
           const isCommentControlTarget = (target) => Boolean(
             target?.closest?.(
@@ -214,97 +212,6 @@ export const useDPlayerInstance = ({
             event.stopPropagation();
             if (typeof event.stopImmediatePropagation === 'function') {
               event.stopImmediatePropagation();
-            }
-          };
-
-          const focusCommentInput = () => {
-            if (!commentInput) return;
-            try {
-              commentInput.focus({ preventScroll: true });
-            } catch {
-              commentInput.focus();
-            }
-          };
-
-          const parseDanmakuColor = (value) => {
-            const raw = String(value || '#fff').trim().replace(/^#/, '');
-            const hex = raw.length === 3
-              ? raw.split('').map((character) => `${character}${character}`).join('')
-              : raw;
-            return /^[0-9a-f]{6}$/i.test(hex) ? Number.parseInt(hex, 16) : 0xffffff;
-          };
-
-          const getSelectedDanmakuType = () => {
-            const raw = container.querySelector('.dplayer-comment-setting-type input:checked')?.value;
-            const parsed = Number.parseInt(raw, 10);
-            return Number.isFinite(parsed) ? parsed : 0;
-          };
-
-          const getSelectedDanmakuColor = () => {
-            const raw = container.querySelector('.dplayer-comment-setting-color input:checked')?.value;
-            return parseDanmakuColor(raw);
-          };
-
-          const sendComment = (event) => {
-            stopHandledEvent(event);
-            const now = Date.now();
-            if (now - lastCommentSendAt < 350) {
-              return;
-            }
-            lastCommentSendAt = now;
-            clearAutoHide();
-            container.classList.add('dplayer-comment-input-active');
-            if (typeof player.controller.show === 'function') {
-              player.controller.show();
-            }
-
-            const text = String(commentInput?.value || '').trim();
-            if (!text) {
-              if (typeof player.notice === 'function') {
-                player.notice('要输入弹幕内容啊喂！');
-              }
-              requestAnimationFrame(focusCommentInput);
-              return;
-            }
-
-            if (!player?.danmaku || typeof player.danmaku.send !== 'function') {
-              if (typeof player.notice === 'function') {
-                player.notice('弹幕暂时不可用');
-              }
-              requestAnimationFrame(focusCommentInput);
-              return;
-            }
-
-            player.danmaku.send({
-              text,
-              color: getSelectedDanmakuColor(),
-              type: getSelectedDanmakuType()
-            }, () => {
-              if (commentInput) {
-                commentInput.value = '';
-              }
-              requestAnimationFrame(() => {
-                if (canceled) return;
-                if (typeof player.comment?.show === 'function') {
-                  player.comment.show();
-                  return;
-                }
-                focusCommentInput();
-              });
-            });
-          };
-
-          const onCommentSendClick = (event) => {
-            if (Date.now() - lastCommentSendAt < 500) {
-              stopHandledEvent(event);
-              return;
-            }
-            sendComment(event);
-          };
-
-          const onCommentInputKeyDown = (event) => {
-            if (event.key === 'Enter' || event.keyCode === 13) {
-              sendComment(event);
             }
           };
 
@@ -390,10 +297,6 @@ export const useDPlayerInstance = ({
           controllerRoot?.addEventListener('touchend', onControllerTouchEnd, { passive: true });
           commentInput?.addEventListener('focus', onCommentInputFocus);
           commentInput?.addEventListener('blur', onCommentInputBlur);
-          commentInput?.addEventListener('keydown', onCommentInputKeyDown, true);
-          commentSendButton?.addEventListener('pointerdown', sendComment, true);
-          commentSendButton?.addEventListener('touchstart', sendComment, { capture: true, passive: false });
-          commentSendButton?.addEventListener('click', onCommentSendClick, true);
           webFullButton?.addEventListener('click', blockWebFullscreen, true);
           if (webFullButton) {
             webFullButton.style.display = 'none';
@@ -414,10 +317,6 @@ export const useDPlayerInstance = ({
             controllerRoot?.removeEventListener('touchend', onControllerTouchEnd);
             commentInput?.removeEventListener('focus', onCommentInputFocus);
             commentInput?.removeEventListener('blur', onCommentInputBlur);
-            commentInput?.removeEventListener('keydown', onCommentInputKeyDown, true);
-            commentSendButton?.removeEventListener('pointerdown', sendComment, true);
-            commentSendButton?.removeEventListener('touchstart', sendComment, true);
-            commentSendButton?.removeEventListener('click', onCommentSendClick, true);
             webFullButton?.removeEventListener('click', blockWebFullscreen, true);
             if (typeof player?.off === 'function') {
               player.off('play', onPlay);
