@@ -5,7 +5,7 @@ const DEFAULT_DANMAKU_MAXIMUM = 1000;
 const DEFAULT_DANMAKU_BOTTOM = '12%';
 const DEFAULT_DANMAKU_SPEED_RATE = 0.9;
 const DEFAULT_PRODUCTION_DANMAKU_API_URL = '/api/danmaku';
-const DEFAULT_DEVELOPMENT_DANMAKU_API_URL = 'https://1701701.xyz/api/danmaku';
+const DEFAULT_DEVELOPMENT_DANMAKU_API_URL = '/api/danmaku';
 
 const normalizeEnvText = (value) => String(value || '').trim();
 

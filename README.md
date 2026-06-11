@@ -85,7 +85,7 @@ VITE_VIDEO_ACCESS_CONFIG_CACHE_TTL_MS=43200000
 
 ## 视频弹幕（可选）
 
-视频页接入 DPlayer 内置弹幕。生产构建默认使用同源 `/api/danmaku`；本地开发默认使用 `https://1701701.xyz/api/danmaku`，方便手机预览时看到和线上一致的弹幕入口。需要覆盖或关闭时，在构建环境设置：
+视频页接入 DPlayer 内置弹幕。生产构建默认使用同源 `/api/danmaku`；本地开发也默认请求 `/api/danmaku`，并由 Vite dev server 代理到 `https://1701701.xyz/api/danmaku`，方便手机预览时看到和线上一致的弹幕入口。需要覆盖或关闭时，在构建环境设置：
 
 ```bash
 VITE_VIDEO_DANMAKU_API_URL=https://1701701.xyz/api/danmaku

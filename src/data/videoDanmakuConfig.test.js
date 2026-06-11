@@ -15,7 +15,7 @@ describe('videoDanmakuConfig', () => {
 
   it('uses the public danmaku endpoint in development by default', () => {
     expect(buildVideoDanmakuOptions({ activeVideo, env: {} })).toMatchObject({
-      api: 'https://1701701.xyz/api/danmaku/'
+      api: 'http://localhost:3000/api/danmaku/'
     });
   });
 
