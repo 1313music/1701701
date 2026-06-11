@@ -721,7 +721,7 @@
   }
 
   .video-page.is-watching {
-    gap: 20px;
+    gap: 8px;
   }
 
   .video-page:not(.is-watching) .page-header {
@@ -761,7 +761,7 @@
   }
 
   .video-stage-card {
-    padding: 14px;
+    padding: 6px 14px 14px;
     gap: 12px;
   }
 
