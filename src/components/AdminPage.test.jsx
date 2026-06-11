@@ -260,18 +260,31 @@ describe('AdminPage', () => {
     vi.clearAllMocks();
   });
 
-  it('loads the current announcement and publishes edits', async () => {
-    const { publishAnnouncement } = await import('../data/announcementAdminApi.js');
-
+  const loginToAdmin = async () => {
     render(<AdminPage />);
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('当前公告')).toBeInTheDocument();
-    });
-
+    expect(screen.queryByRole('tab', { name: '公告' })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('管理员口令'), {
       target: { value: 'secret-token' }
     });
+    fireEvent.click(screen.getByRole('button', { name: '验证进入' }));
+
+    await screen.findByDisplayValue('后台当前公告');
+  };
+
+  it('hides admin tools until the administrator token is verified', async () => {
+    render(<AdminPage />);
+
+    expect(screen.getByLabelText('管理员口令')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '验证进入' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: '公告' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '发布公告' })).not.toBeInTheDocument();
+  });
+
+  it('loads the current announcement and publishes edits', async () => {
+    const { publishAnnouncement } = await import('../data/announcementAdminApi.js');
+
+    await loginToAdmin();
     fireEvent.change(screen.getByLabelText('标题'), {
       target: { value: '新的公告' }
     });
@@ -302,7 +315,7 @@ describe('AdminPage', () => {
       expect(publishAnnouncement).toHaveBeenCalledWith(expect.objectContaining({
         token: 'secret-token',
         announcement: expect.objectContaining({
-          id: 'current-notice',
+          id: 'admin-current-notice',
           title: '新的公告',
           content: '新的正文',
           contentAlign: 'center',
@@ -321,16 +334,13 @@ describe('AdminPage', () => {
   it('refreshes announcement data from the admin API when a token is available', async () => {
     const { loadAdminAnnouncement } = await import('../data/announcementAdminApi.js');
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
+    const callCountAfterLogin = loadAdminAnnouncement.mock.calls.length;
     fireEvent.click(screen.getByRole('button', { name: '刷新当前公告' }));
 
     await waitFor(() => {
-      expect(loadAdminAnnouncement).toHaveBeenCalledWith({ token: 'secret-token' });
+      expect(loadAdminAnnouncement.mock.calls.length).toBeGreaterThan(callCountAfterLogin);
+      expect(loadAdminAnnouncement).toHaveBeenLastCalledWith({ token: 'secret-token' });
     });
     expect(await screen.findByDisplayValue('后台当前公告')).toBeInTheDocument();
     expect(screen.getByText('后台历史公告')).toBeInTheDocument();
@@ -340,17 +350,12 @@ describe('AdminPage', () => {
     const { deleteAnnouncementHistoryItem } = await import('../data/announcementAdminApi.js');
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
-    render(<AdminPage />);
-
-    await screen.findByText('历史旧公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
-    fireEvent.click(screen.getByRole('button', { name: '删除历史公告：历史旧公告' }));
+    await loginToAdmin();
+    fireEvent.click(screen.getByRole('button', { name: '删除历史公告：后台历史公告' }));
 
     await waitFor(() => {
       expect(deleteAnnouncementHistoryItem).toHaveBeenCalledWith({
-        id: 'history-notice',
+        id: 'admin-history-notice',
         token: 'secret-token'
       });
     });
@@ -364,12 +369,7 @@ describe('AdminPage', () => {
     const { publishGalleryImages } = await import('../data/galleryAdminApi.js');
     const file = new File(['image-bytes'], 'example.jpg', { type: 'image/jpeg' });
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '图库' }));
     fireEvent.click(await screen.findByRole('button', { name: 'XKK' }));
     fireEvent.change(screen.getByLabelText('图片文件'), {
@@ -389,9 +389,7 @@ describe('AdminPage', () => {
   });
 
   it('keeps gallery categories editable while offering existing category shortcuts', async () => {
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '图库' }));
 
     expect(await screen.findByRole('button', { name: 'BB' })).toBeInTheDocument();
@@ -407,12 +405,7 @@ describe('AdminPage', () => {
     const { publishMusicAlbum } = await import('../data/musicAdminApi.js');
     const file = new File(['audio-bytes'], '01.第一首.mp3', { type: 'audio/mpeg' });
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '音乐' }));
     await screen.findByRole('option', { name: 'Demo Live' });
     fireEvent.change(screen.getByLabelText('选择专辑'), {
@@ -444,12 +437,7 @@ describe('AdminPage', () => {
   it('publishes music albums with external audio and lyric links', async () => {
     const { publishMusicAlbum } = await import('../data/musicAdminApi.js');
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '音乐' }));
     await screen.findByRole('option', { name: 'Remote Live' });
     fireEvent.change(screen.getByLabelText('选择专辑'), {
@@ -485,12 +473,7 @@ describe('AdminPage', () => {
   it('publishes video links with the shared admin token', async () => {
     const { publishVideoLinks } = await import('../data/videoAdminApi.js');
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '视频' }));
     await screen.findByRole('option', { name: '现场视频' });
     fireEvent.change(screen.getByLabelText('选择分类'), {
@@ -535,12 +518,7 @@ describe('AdminPage', () => {
       publishVideoAccessSettings
     } = await import('../data/videoAdminApi.js');
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '视频' }));
     fireEvent.click(screen.getByRole('button', { name: '读取设置' }));
 
@@ -591,12 +569,7 @@ describe('AdminPage', () => {
   it('can disable video access password checks from the video admin panel', async () => {
     const { publishVideoAccessSettings } = await import('../data/videoAdminApi.js');
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '视频' }));
     fireEvent.click(screen.getByLabelText('启用视频访问验证'));
     fireEvent.click(screen.getByRole('button', { name: '保存设置' }));
@@ -616,12 +589,7 @@ describe('AdminPage', () => {
     } = await import('../data/danmakuAdminApi.js');
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '弹幕' }));
 
     await waitFor(() => {
@@ -646,9 +614,7 @@ describe('AdminPage', () => {
   });
 
   it('keeps the new video folder option selected so the title can be filled', async () => {
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '视频' }));
     await screen.findByRole('option', { name: '现场视频' });
     fireEvent.change(screen.getByLabelText('选择分类'), {
@@ -665,12 +631,7 @@ describe('AdminPage', () => {
   it('publishes download links with the shared admin token', async () => {
     const { publishDownloadLinks } = await import('../data/downloadAdminApi.js');
 
-    render(<AdminPage />);
-
-    await screen.findByDisplayValue('当前公告');
-    fireEvent.change(screen.getByLabelText('管理员口令'), {
-      target: { value: 'secret-token' }
-    });
+    await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '下载' }));
     await screen.findByRole('option', { name: '叁缺壹吉隆坡站' });
     fireEvent.change(screen.getByLabelText('选择栏目'), {

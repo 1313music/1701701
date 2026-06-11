@@ -7,6 +7,7 @@ import {
   Film,
   ImagePlus,
   KeyRound,
+  LogOut,
   Megaphone,
   MessageSquareText,
   Music,
@@ -19,7 +20,6 @@ import '../styles/admin.css';
 
 import AnnouncementModal from './AnnouncementModal.jsx';
 import DanmakuAdminPanel from './DanmakuAdminPanel.jsx';
-import { loadAnnouncement } from '../data/announcementSource.js';
 import { loadGalleryItems } from '../data/galleryManifest.js';
 import { loadDownloadSections } from '../data/downloadManifest.js';
 import { loadMusicManifestAlbums } from '../data/musicManifest.js';
@@ -277,9 +277,20 @@ const AdminPage = () => {
     }
   });
   const initialTokenRef = useRef(token);
+  const didTryStoredTokenRef = useRef(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(Boolean(token && announcementApiConfigured));
+  const [authStatus, setAuthStatus] = useState({
+    tone: announcementApiConfigured ? 'info' : 'error',
+    message: announcementApiConfigured
+      ? token
+        ? '正在验证管理员口令...'
+        : '请输入管理员口令'
+      : '后台验证接口未配置'
+  });
   const [announcementStatus, setAnnouncementStatus] = useState({
-    tone: announcementApiConfigured ? 'idle' : 'error',
-    message: announcementApiConfigured ? '正在读取当前公告...' : '公告后台接口未配置'
+    tone: announcementApiConfigured ? 'info' : 'error',
+    message: announcementApiConfigured ? '已进入后台，可管理公告' : '公告后台接口未配置'
   });
   const [galleryStatus, setGalleryStatus] = useState({
     tone: galleryApiConfigured ? 'info' : 'error',
@@ -312,32 +323,96 @@ const AdminPage = () => {
   const [deletingHistoryId, setDeletingHistoryId] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const loadCurrentAnnouncement = useCallback(async (adminToken = '') => {
+  const applyAdminAnnouncementResult = (result) => {
+    setAnnouncementHistory(Array.isArray(result?.history) ? result.history : []);
+    if (result?.announcement) {
+      setDraft(createDraftFromAnnouncement(result.announcement));
+      return true;
+    }
+
+    setAnnouncementHistory([]);
+    return false;
+  };
+
+  const persistVerifiedToken = (verifiedToken) => {
+    try {
+      window.sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, verifiedToken);
+    } catch {
+      // ignore storage failures
+    }
+  };
+
+  const clearStoredToken = () => {
+    try {
+      window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+    } catch {
+      // ignore storage failures
+    }
+  };
+
+  const authenticateAdmin = useCallback(async (adminToken = '') => {
+    const normalizedToken = String(adminToken || '').trim();
+    if (!announcementApiConfigured) {
+      setIsAuthenticated(false);
+      setIsAuthenticating(false);
+      setAuthStatus({ tone: 'error', message: '后台验证接口未配置' });
+      return false;
+    }
+    if (!normalizedToken) {
+      setIsAuthenticated(false);
+      setIsAuthenticating(false);
+      setAuthStatus({ tone: 'error', message: '请输入管理员口令' });
+      return false;
+    }
+
+    setIsAuthenticating(true);
+    setAuthStatus({ tone: 'info', message: '正在验证管理员口令...' });
+    try {
+      const result = await loadAdminAnnouncement({ token: normalizedToken });
+      setToken(normalizedToken);
+      setIsAuthenticated(true);
+      persistVerifiedToken(normalizedToken);
+      const hasAnnouncement = applyAdminAnnouncementResult(result);
+      setAnnouncementStatus({
+        tone: hasAnnouncement ? 'success' : 'info',
+        message: hasAnnouncement ? '已读取后台公告' : '当前没有可用公告，可直接新建'
+      });
+      setAuthStatus({ tone: 'success', message: '管理员口令已验证' });
+      return true;
+    } catch (error) {
+      setIsAuthenticated(false);
+      clearStoredToken();
+      setAuthStatus({ tone: 'error', message: error?.message || '管理员口令验证失败' });
+      return false;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }, [announcementApiConfigured]);
+
+  const loadCurrentAnnouncement = useCallback(async (adminToken = token) => {
+    const normalizedToken = String(adminToken || '').trim();
+    if (!isAuthenticated || !normalizedToken) {
+      setAnnouncementStatus({ tone: 'error', message: '请先验证管理员口令' });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const normalizedToken = String(adminToken || '').trim();
-      const shouldUseAdminApi = announcementApiConfigured && normalizedToken;
-      const result = shouldUseAdminApi
-        ? await loadAdminAnnouncement({ token: normalizedToken })
-        : await loadAnnouncement();
-      setAnnouncementHistory(Array.isArray(result.history) ? result.history : []);
-      if (result.announcement) {
-        setDraft(createDraftFromAnnouncement(result.announcement));
+      const result = await loadAdminAnnouncement({ token: normalizedToken });
+      if (applyAdminAnnouncementResult(result)) {
         setAnnouncementStatus({
           tone: 'success',
-          message: shouldUseAdminApi ? '已读取后台公告' : '已读取当前公告'
+          message: '已读取后台公告'
         });
       } else {
-        setAnnouncementHistory([]);
         setAnnouncementStatus({ tone: 'info', message: '当前没有可用公告，可直接新建' });
       }
     } catch (error) {
-      setAnnouncementHistory([]);
       setAnnouncementStatus({ tone: 'error', message: error?.message || '公告读取失败' });
     } finally {
       setIsLoading(false);
     }
-  }, [announcementApiConfigured]);
+  }, [isAuthenticated, token]);
 
   const loadGalleryCategories = async () => {
     try {
@@ -379,44 +454,38 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
-    void loadCurrentAnnouncement(initialTokenRef.current);
-  }, [loadCurrentAnnouncement]);
+    if (didTryStoredTokenRef.current) return;
+    didTryStoredTokenRef.current = true;
+    if (initialTokenRef.current) {
+      void authenticateAdmin(initialTokenRef.current);
+    } else {
+      setIsAuthenticating(false);
+    }
+  }, [authenticateAdmin]);
 
   useEffect(() => {
-    if (activePanel === ADMIN_PANEL_GALLERY && galleryCategories.length === 0) {
+    if (isAuthenticated && activePanel === ADMIN_PANEL_GALLERY && galleryCategories.length === 0) {
       void loadGalleryCategories();
     }
-  }, [activePanel, galleryCategories.length]);
+  }, [activePanel, galleryCategories.length, isAuthenticated]);
 
   useEffect(() => {
-    if (activePanel === ADMIN_PANEL_MUSIC && musicAlbums.length === 0) {
+    if (isAuthenticated && activePanel === ADMIN_PANEL_MUSIC && musicAlbums.length === 0) {
       void loadMusicAlbumsForAdmin();
     }
-  }, [activePanel, musicAlbums.length]);
+  }, [activePanel, isAuthenticated, musicAlbums.length]);
 
   useEffect(() => {
-    if (activePanel === ADMIN_PANEL_VIDEO && videoCatalog.videoCategories.length === 0) {
+    if (isAuthenticated && activePanel === ADMIN_PANEL_VIDEO && videoCatalog.videoCategories.length === 0) {
       void loadVideoCatalogForAdmin();
     }
-  }, [activePanel, videoCatalog.videoCategories.length]);
+  }, [activePanel, isAuthenticated, videoCatalog.videoCategories.length]);
 
   useEffect(() => {
-    if (activePanel === ADMIN_PANEL_DOWNLOAD && downloadSections.length === 0) {
+    if (isAuthenticated && activePanel === ADMIN_PANEL_DOWNLOAD && downloadSections.length === 0) {
       void loadDownloadSectionsForAdmin();
     }
-  }, [activePanel, downloadSections.length]);
-
-  useEffect(() => {
-    try {
-      if (token) {
-        window.sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
-      } else {
-        window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
-      }
-    } catch {
-      // ignore storage failures
-    }
-  }, [token]);
+  }, [activePanel, downloadSections.length, isAuthenticated]);
 
   const updateDraftField = (field, value) => {
     setDraft((previous) => ({
@@ -567,6 +636,22 @@ const AdminPage = () => {
 
   const handleDownloadGroupSelect = (value) => {
     updateDownloadDraftField('groupTitle', value);
+  };
+
+  const handleAuthenticate = async (event) => {
+    event.preventDefault();
+    await authenticateAdmin(token);
+  };
+
+  const handleLogout = () => {
+    clearStoredToken();
+    setToken('');
+    setIsAuthenticated(false);
+    setIsAuthenticating(false);
+    setActivePanel(ADMIN_PANEL_ANNOUNCEMENT);
+    setAnnouncementHistory([]);
+    setDraft(createDefaultDraft());
+    setAuthStatus({ tone: 'info', message: '已退出后台，请重新输入管理员口令' });
   };
 
   const handlePublish = async (event) => {
@@ -829,9 +914,10 @@ const AdminPage = () => {
           : activePanel === ADMIN_PANEL_DOWNLOAD
             ? downloadStatus
             : announcementStatus;
-  const StatusIcon = activeStatus.tone === 'error'
+  const panelStatus = isAuthenticated ? activeStatus : authStatus;
+  const StatusIcon = panelStatus.tone === 'error'
     ? AlertTriangle
-    : activeStatus.tone === 'success'
+    : panelStatus.tone === 'success'
       ? CheckCircle2
       : null;
   const selectedFileSummary = galleryDraft.files.map((file) => file.name).join('、');
@@ -860,42 +946,85 @@ const AdminPage = () => {
           <p className="admin-kicker">Admin Console</p>
           <h1>后台管理</h1>
         </div>
-        <button
-          type="button"
-          className="admin-icon-btn"
-          onClick={() => loadCurrentAnnouncement(token)}
-          disabled={isLoading}
-          aria-label="刷新当前公告"
-          title="刷新当前公告"
-        >
-          <RefreshCw size={18} className={isLoading ? 'is-spinning' : ''} />
-        </button>
+        {isAuthenticated && (
+          <div className="admin-header-actions">
+            <button
+              type="button"
+              className="admin-icon-btn"
+              onClick={() => loadCurrentAnnouncement(token)}
+              disabled={isLoading}
+              aria-label="刷新当前公告"
+              title="刷新当前公告"
+            >
+              <RefreshCw size={18} className={isLoading ? 'is-spinning' : ''} />
+            </button>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              onClick={handleLogout}
+              aria-label="退出后台"
+              title="退出后台"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="admin-panel">
-        <div className={`admin-status ${activeStatus.tone}`}>
+        <div className={`admin-status ${panelStatus.tone}`}>
           {StatusIcon && <StatusIcon size={16} />}
-          <span>{activeStatus.message}</span>
+          <span>{panelStatus.message}</span>
         </div>
 
-        <section className="admin-section">
-          <div className="admin-section-title">访问凭据</div>
-          <label className="admin-field admin-field-token">
-            <span>管理员口令</span>
-            <div className="admin-input-with-icon">
-              <KeyRound size={17} />
-              <input
-                type="password"
-                value={token}
-                onChange={(event) => setToken(event.target.value)}
-                placeholder="Worker ADMIN_TOKEN"
-                autoComplete="current-password"
-              />
+        {!isAuthenticated ? (
+          <form className="admin-form admin-login-form" onSubmit={handleAuthenticate}>
+            <section className="admin-section">
+              <div className="admin-section-title">访问验证</div>
+              <label className="admin-field admin-field-token">
+                <span>管理员口令</span>
+                <div className="admin-input-with-icon">
+                  <KeyRound size={17} />
+                  <input
+                    type="password"
+                    value={token}
+                    onChange={(event) => setToken(event.target.value)}
+                    placeholder="Worker ADMIN_TOKEN"
+                    autoComplete="current-password"
+                    disabled={isAuthenticating}
+                  />
+                </div>
+              </label>
+            </section>
+            <div className="admin-actions">
+              <button
+                type="submit"
+                className="admin-btn primary"
+                disabled={isAuthenticating || !announcementApiConfigured}
+              >
+                <KeyRound size={17} />
+                {isAuthenticating ? '验证中...' : '验证进入'}
+              </button>
             </div>
-          </label>
-        </section>
+          </form>
+        ) : (
+          <>
+            <section className="admin-section">
+              <div className="admin-section-title">访问凭据</div>
+              <div className="admin-result">
+                <span>管理员口令已验证</span>
+                <button
+                  type="button"
+                  className="admin-btn secondary"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={17} />
+                  退出后台
+                </button>
+              </div>
+            </section>
 
-        <div className="admin-tabs" role="tablist" aria-label="后台工具">
+            <div className="admin-tabs" role="tablist" aria-label="后台工具">
           <button
             type="button"
             className={`admin-tab ${activePanel === ADMIN_PANEL_ANNOUNCEMENT ? 'is-active' : ''}`}
@@ -2059,9 +2188,11 @@ const AdminPage = () => {
             </div>
           </form>
         )}
+          </>
+        )}
       </div>
 
-      {activePanel === ADMIN_PANEL_ANNOUNCEMENT && (
+      {isAuthenticated && activePanel === ADMIN_PANEL_ANNOUNCEMENT && (
         <AnnouncementModal
           announcement={previewAnnouncement}
           open={isPreviewOpen}
