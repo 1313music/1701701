@@ -725,6 +725,10 @@
     margin-bottom: 20px;
   }
 
+  .video-tabs-nav {
+    display: none;
+  }
+
   .video-tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
