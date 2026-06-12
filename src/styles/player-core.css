@@ -1790,25 +1790,36 @@
   }
 
   .album-inline-header {
-    flex-direction: column;
+    --album-mobile-cover-size: clamp(56px, 18vw, 68px);
+    --album-mobile-header-pad: clamp(22px, 6vw, 42px);
+    display: grid;
+    grid-template-columns: var(--album-mobile-cover-size) minmax(0, 1fr);
+    grid-template-areas:
+      "cover title"
+      "cover meta"
+      "actions actions";
+    column-gap: 12px;
+    row-gap: 3px;
     align-items: center;
-    gap: 9px;
-    text-align: center;
-    padding: 6px 0 10px;
+    text-align: left;
+    width: 100%;
+    max-width: 560px;
+    box-sizing: border-box;
+    margin-inline: auto;
+    padding: 4px var(--album-mobile-header-pad) 10px;
     border-right: none;
   }
 
   .album-inline-cover-wrap {
-    width: min(34vw, 112px);
+    grid-area: cover;
+    width: var(--album-mobile-cover-size);
     border-radius: 12px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
   }
 
   .album-inline-header .album-info-text {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 0 44px;
+    display: contents;
+    text-align: left;
   }
 
   .album-inline-close {
@@ -1818,40 +1829,46 @@
   }
 
   .album-inline-panel .album-title {
+    grid-area: title;
     font-size: 18px;
     line-height: 1.24;
-    margin: 0 0 4px;
+    margin: 0;
     overflow-wrap: anywhere;
     word-break: break-word;
-    text-wrap: balance;
+    text-wrap: auto;
+  }
+
+  .album-inline-panel .album-metadata {
+    grid-area: meta;
+    align-self: start;
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .album-inline-hero-actions {
+    grid-area: actions;
     margin-top: 12px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
     align-items: center;
     justify-content: center;
     gap: 6px;
-    width: min(calc(100% + 88px), 264px);
+    width: 100%;
     height: auto;
-    max-width: 264px;
-    margin-right: 0;
-    margin-left: 0;
+    max-width: 100%;
+    margin-right: auto;
+    margin-left: auto;
     padding: 0;
   }
 
   .album-inline-hero-actions.no-qr {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 184px;
+    max-width: 224px;
   }
 
   .album-inline-hero-actions.has-qr {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: 264px;
+    max-width: 100%;
   }
 
   .album-inline-hero-actions .play-all-btn,
