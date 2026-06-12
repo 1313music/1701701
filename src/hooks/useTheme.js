@@ -7,18 +7,14 @@ import {
 } from './useThemeEnvironment.js';
 
 const THEME_PREFERENCE_KEY = 'themePreference';
-
-const getSystemTheme = () => {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
+const DEFAULT_THEME = 'dark';
 
 export const useTheme = ({ showToast } = {}) => {
   const [themePreference, setThemePreference] = useState(() => {
-    if (typeof window === 'undefined') return 'light';
+    if (typeof window === 'undefined') return DEFAULT_THEME;
     const stored = window.localStorage.getItem(THEME_PREFERENCE_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
-    return getSystemTheme();
+    return DEFAULT_THEME;
   });
   const [showViewportDebug] = useState(() => {
     if (typeof window === 'undefined') return false;

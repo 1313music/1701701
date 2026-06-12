@@ -38,4 +38,16 @@ describe('SearchHeader', () => {
 
     expect(screen.getByRole('button', { name: '展开搜索' })).toHaveAttribute('aria-expanded', 'false');
   });
+
+  it('renders header actions beside the search control', () => {
+    render(
+      <SearchHeader
+        searchQuery=""
+        setSearchQuery={() => undefined}
+        actions={<button type="button">查看公告</button>}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: '查看公告' })).toBeInTheDocument();
+  });
 });

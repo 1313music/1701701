@@ -81,13 +81,16 @@ describe('Sidebar', () => {
       />
     );
 
-    const themeSwitch = screen.getByRole('switch', { name: '主题：浅色，点击切换为深色' });
+    const themeSwitches = screen.getAllByRole('switch', { name: '主题：浅色，点击切换为深色' });
+    const mobileThemeSwitch = themeSwitches[0];
+    const desktopThemeSwitch = themeSwitches[1];
 
-    expect(themeSwitch).toHaveAttribute('aria-checked', 'false');
-    expect(screen.queryByText('外观')).not.toBeInTheDocument();
-    expect(screen.queryByText('浅色模式')).not.toBeInTheDocument();
+    expect(themeSwitches).toHaveLength(2);
+    expect(mobileThemeSwitch).toHaveAttribute('aria-checked', 'false');
+    expect(desktopThemeSwitch).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getAllByText('外观')).toHaveLength(2);
 
-    fireEvent.click(themeSwitch);
+    fireEvent.click(mobileThemeSwitch);
     expect(handleThemeToggle).toHaveBeenCalledTimes(1);
     expect(setIsSidebarOpen).not.toHaveBeenCalled();
   });

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 
 <head>
   <meta charset="UTF-8" />
@@ -282,9 +282,7 @@
       try {
         var root = document.documentElement;
         var storedTheme = window.localStorage.getItem('themePreference');
-        if (storedTheme === 'light' || storedTheme === 'dark') {
-          root.setAttribute('data-theme', storedTheme);
-        }
+        root.setAttribute('data-theme', storedTheme === 'light' ? 'light' : 'dark');
         var mq = window.matchMedia ? window.matchMedia('(display-mode: standalone)') : null;
         var mqStandalone = !!(mq && mq.matches);
         var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

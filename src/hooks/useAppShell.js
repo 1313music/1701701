@@ -34,7 +34,7 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
   const [playerOverlayContextId, setPlayerOverlayContextId] = useState(0);
   const [isAlbumListOpen, setIsAlbumListOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [hasLyricsOverlayLoaded, setHasLyricsOverlayLoaded] = useState(false);
   const [hasAlbumListOverlayLoaded, setHasAlbumListOverlayLoaded] = useState(false);
   const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(() => (

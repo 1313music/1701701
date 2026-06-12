@@ -400,6 +400,20 @@ const App = () => {
     setIsEmptyAnnouncementOpen(false);
     dismissAnnouncement();
   }, [dismissAnnouncement, hasActiveAnnouncement, isEmptyAnnouncementOpen]);
+  const announcementToolbarActions = shouldShowAnnouncementTrigger ? (
+    <AnnouncementTrigger
+      announcement={announcement}
+      visible={shouldShowAnnouncementTrigger}
+      unread={isAnnouncementUnread}
+      onOpen={handleOpenAnnouncementTrigger}
+      className="desktop-announcement-trigger"
+    />
+  ) : null;
+  const shouldShowFloatingAnnouncementTrigger = (
+    shouldShowAnnouncementTrigger
+    && view !== 'library'
+    && view !== 'video'
+  );
 
   const signalBootReady = useCallback(() => {
     if (hasSignaledBootReadyRef.current || typeof window === 'undefined') return;
@@ -422,7 +436,7 @@ const App = () => {
 
   return (
     <>
-      <div className={`app-root ${hasPlayerChrome ? '' : 'no-player'}`}>
+      <div className={`app-root ${hasPlayerChrome ? '' : 'no-player'} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
           <div className="app-layout">
             <Sidebar
@@ -459,6 +473,7 @@ const App = () => {
                           playSongFromAlbum(item.album, item.song);
                           setSearchQuery(item.song.name);
                         }}
+                        actions={announcementToolbarActions}
                       />
                       <AlbumGrid
                         musicAlbums={filteredAlbums}
@@ -486,6 +501,7 @@ const App = () => {
                       onShareVideo={handleShareVideo}
                       locationSearch={locationSearch}
                       onInitialReady={signalBootReady}
+                      toolbarActions={announcementToolbarActions}
                     />
                   </Suspense>
                 </div>
@@ -563,7 +579,7 @@ const App = () => {
 
         <AnnouncementTrigger
           announcement={announcement}
-          visible={shouldShowAnnouncementTrigger}
+          visible={shouldShowFloatingAnnouncementTrigger}
           unread={isAnnouncementUnread}
           onOpen={handleOpenAnnouncementTrigger}
         />

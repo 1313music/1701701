@@ -40,7 +40,7 @@ const Sidebar = ({
     setIsSidebarOpen,
     isSidebarCollapsed = false,
     setIsSidebarCollapsed,
-    themePreference = 'light',
+    themePreference = 'dark',
     onThemeToggle,
     announcement,
     showAnnouncementTrigger = false,
@@ -168,10 +168,12 @@ const Sidebar = ({
                             title={themeToggleLabel}
                             onClick={handleMobileThemeToggle}
                         >
+                            <span className="mobile-theme-switch-main">
+                                <ThemeIcon size={20} strokeWidth={2.4} absoluteStrokeWidth />
+                                <span>外观</span>
+                            </span>
                             <span className="mobile-theme-switch-track" aria-hidden="true">
-                                <span className="mobile-theme-switch-thumb">
-                                    <ThemeIcon size={14} strokeWidth={2.6} absoluteStrokeWidth />
-                                </span>
+                                <span className="mobile-theme-switch-thumb" />
                             </span>
                         </button>
                     )}
@@ -188,22 +190,6 @@ const Sidebar = ({
                 >
                     <div className="logo-box" />
                     <span className="logo-text">1701701.xyz</span>
-                    <div className="sidebar-logo-actions">
-                        {onThemeToggle && (
-                            <button
-                                type="button"
-                                className="sidebar-theme-toggle"
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    onThemeToggle(event);
-                                }}
-                                aria-label={themeToggleLabel}
-                                title={themeToggleLabel}
-                            >
-                                <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
-                            </button>
-                        )}
-                    </div>
                 </div>
 
                 <div className="nav-group">
@@ -253,6 +239,27 @@ const Sidebar = ({
                         active={view === 'about'}
                         onClick={() => handleNavClick('about')}
                     />
+                    {onThemeToggle && (
+                        <button
+                            type="button"
+                            className={`sidebar-theme-control ${themePreference === 'dark' ? 'is-dark' : ''}`}
+                            role="switch"
+                            aria-checked={themePreference === 'dark'}
+                            aria-label={themeToggleLabel}
+                            title={themeToggleLabel}
+                            onClick={onThemeToggle}
+                        >
+                            <span className="sidebar-theme-main">
+                                <ThemeIcon size={20} strokeWidth={2.4} absoluteStrokeWidth />
+                                <span className="sidebar-theme-label">
+                                    外观
+                                </span>
+                            </span>
+                            <span className="sidebar-theme-track" aria-hidden="true">
+                                <span className="sidebar-theme-thumb" />
+                            </span>
+                        </button>
+                    )}
                 </div>
                 <button
                     type="button"

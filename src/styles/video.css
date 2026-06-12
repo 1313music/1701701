@@ -786,7 +786,7 @@
   }
 
   .video-page.is-watching .video-stage-card {
-    padding-bottom: 0;
+    padding: 6px 0 0;
   }
 
   .video-page.is-watching .video-toolbar {

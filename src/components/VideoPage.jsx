@@ -83,7 +83,7 @@ const BackCard = ({ onClick }) => (
   </Motion.button>
 );
 
-const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialReady }) => {
+const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialReady, toolbarActions }) => {
   const videoTabsRef = useRef(null);
   const [videoTabsScrollState, setVideoTabsScrollState] = useState({
     canLeft: false,
@@ -378,6 +378,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialRe
         title=""
         subtitle=""
         placeholder="搜索视频、分类..."
+        actions={toolbarActions}
       />
 
       {!isSearching && isCatalogLoading && (

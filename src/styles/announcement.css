@@ -266,6 +266,15 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 34%, transparent);
 }
 
+.announcement-trigger.desktop-announcement-trigger {
+  position: relative;
+  inset: auto;
+  top: auto;
+  right: auto;
+  z-index: auto;
+  flex: 0 0 auto;
+}
+
 .announcement-trigger.is-unread::after {
   content: '';
   position: absolute;

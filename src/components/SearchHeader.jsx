@@ -8,6 +8,7 @@ const SearchHeader = ({
     subtitle,
     suggestions = [],
     onSelectSuggestion,
+    actions,
     placeholder = "搜索音乐、专辑..."
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -120,6 +121,11 @@ const SearchHeader = ({
                         </div>
                     )}
                 </div>
+                {actions && (
+                    <div className="page-header-actions">
+                        {actions}
+                    </div>
+                )}
             </div>
             {subtitle && <p>{subtitle}</p>}
         </header>
