@@ -479,16 +479,6 @@ const AlbumGrid = ({
                                     }}
                                 >
                                     <span className="song-num">{i + 1}</span>
-                                    <span className="song-play-indicator" aria-hidden="true">
-                                        {isPlayingSong ? (
-                                            <span className="song-pause-glyph">
-                                                <i></i>
-                                                <i></i>
-                                            </span>
-                                        ) : (
-                                            <Play size={14} fill="currentColor" strokeWidth={2.2} />
-                                        )}
-                                    </span>
                                     <SongNameMarquee
                                         text={song.name}
                                         allowMarquee={

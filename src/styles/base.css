@@ -1259,50 +1259,10 @@ body {
   opacity: 0.72;
 }
 
-.album-inline-panel .song-play-indicator {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-  color: color-mix(in srgb, var(--text-main) 72%, transparent);
-  opacity: 0.72;
-  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
-.album-inline-panel .song-item:hover .song-play-indicator,
-.album-inline-panel .song-item.active .song-play-indicator {
-  opacity: 1;
-  color: var(--text-main);
-}
-
-.album-inline-panel .song-item:active .song-play-indicator {
-  transform: scale(0.94);
-}
-
-.album-inline-panel .song-pause-glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 16px;
-  height: 18px;
-}
-
-.album-inline-panel .song-pause-glyph i {
-  display: block;
-  width: 4px;
-  height: 18px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
 .album-inline-panel .song-name {
   flex: 1;
   min-width: 0;
-  margin: 0 0 0 10px;
+  margin: 0 0 0 14px;
   color: var(--text-main);
   overflow: hidden;
   text-overflow: ellipsis;
