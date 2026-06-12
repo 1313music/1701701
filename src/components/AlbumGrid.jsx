@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Heart, Play, QrCode, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
+import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
 
 const PANEL_EXIT_MS = 280;
 const PANEL_MAX_WIDTH = 1180;
@@ -139,6 +140,7 @@ const AlbumGrid = ({
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
+    const [panelCoverPalette, setPanelCoverPalette] = useState(null);
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
     const panelOpenTimerRef = useRef(null);
@@ -316,8 +318,29 @@ const AlbumGrid = ({
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
     const panelAlbumMiniProgram = getAlbumMiniProgram(panelAlbum?.id);
+    const panelCoverSrc = panelAlbum?.cover || '';
     const expandedMarginTop = isMobileLayout ? 8 : 12;
     const expandedMarginBottom = isMobileLayout ? 20 : 30;
+
+    useEffect(() => {
+        let cancelled = false;
+        setPanelCoverPalette(null);
+
+        if (!panelCoverSrc) {
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        buildCoverAtmosphereAssets(panelCoverSrc).then((assets) => {
+            if (cancelled) return;
+            setPanelCoverPalette(assets?.palette || null);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [panelCoverSrc]);
 
     useLayoutEffect(() => {
         if (!panelAlbum) return;
@@ -333,6 +356,16 @@ const AlbumGrid = ({
         ro.observe(node);
         return () => ro.disconnect();
     }, [panelAlbum, measurePanelHeight]);
+
+    const panelAtmosphereStyle = useMemo(() => {
+        if (!panelCoverPalette) return null;
+
+        return {
+            '--album-cover-accent-rgb': panelCoverPalette.accent,
+            '--album-cover-glow-rgb': panelCoverPalette.glow,
+            '--album-cover-shadow-rgb': panelCoverPalette.shadow
+        };
+    }, [panelCoverPalette]);
 
     const gridItems = musicAlbums.flatMap((album, index) => {
         const isCurrentAlbum = album.songs.some((song) => song.src === currentTrack.src);
@@ -385,7 +418,11 @@ const AlbumGrid = ({
                     willChange: 'height, opacity, margin-top, margin-bottom'
                 }}
             >
-                <div className={`album-inline-panel ${panelAlbumMiniProgram ? 'has-mini-program' : ''}`} ref={panelContentRef}>
+                <div
+                    className={`album-inline-panel ${panelAlbumMiniProgram ? 'has-mini-program' : ''} ${panelCoverPalette ? 'has-cover-atmosphere' : ''}`}
+                    ref={panelContentRef}
+                    style={panelAtmosphereStyle || undefined}
+                >
                     <button className="album-inline-close" onClick={() => navigateToAlbum(panelAlbum)} aria-label="收起">
                         <ChevronUpIcon size={18} />
                     </button>
