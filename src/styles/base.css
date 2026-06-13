@@ -1300,24 +1300,6 @@ body {
   margin: 4px 48px 0 0;
 }
 
-.album-inline-panel .song-list-shell.has-more-below::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 4px;
-  bottom: 0;
-  height: 82px;
-  border-radius: 0 0 12px 12px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    color-mix(in srgb, var(--bg-color) 42%, transparent) 44%,
-    color-mix(in srgb, var(--bg-color) 88%, transparent) 100%
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-
 .album-inline-panel .song-list {
   min-width: 0;
   margin: 0;
@@ -1328,71 +1310,34 @@ body {
 .album-inline-panel .song-list-shell.is-long-list .song-list {
   max-height: min(58vh, 640px);
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 8px;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
+  scrollbar-color:
+    color-mix(in srgb, var(--text-secondary) 52%, transparent)
+    color-mix(in srgb, var(--text-secondary) 13%, transparent);
 }
 
-.song-list-scroll-cue {
-  position: absolute;
-  left: 50%;
-  bottom: 13px;
-  z-index: 3;
-  width: 22px;
-  height: 24px;
-  transform: translateX(-50%);
-  animation: song-list-scroll-cue-flow 1.55s cubic-bezier(0.42, 0, 0.2, 1) infinite;
-  pointer-events: none;
-}
-
-.song-list-scroll-cue span {
-  position: absolute;
-  left: 50%;
+.album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar {
   width: 10px;
-  height: 10px;
-  border-right: 2px solid color-mix(in srgb, var(--text-secondary) 70%, transparent);
-  border-bottom: 2px solid color-mix(in srgb, var(--text-secondary) 70%, transparent);
-  transform: translateX(-50%) rotate(45deg);
 }
 
-.song-list-scroll-cue span:first-child {
-  top: 1px;
-  opacity: 0.58;
+.album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+  border-radius: 999px;
 }
 
-.song-list-scroll-cue span:last-child {
-  top: 8px;
-  opacity: 0.82;
+.album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+  background-clip: content-box;
 }
 
-@keyframes song-list-scroll-cue-flow {
-  0% {
-    opacity: 0.18;
-    transform: translate(-50%, -5px);
-  }
-
-  40% {
-    opacity: 0.72;
-    transform: translate(-50%, 1px);
-  }
-
-  72% {
-    opacity: 0.72;
-    transform: translate(-50%, 5px);
-  }
-
-  100% {
-    opacity: 0.12;
-    transform: translate(-50%, 9px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .song-list-scroll-cue {
-    animation: none;
-    opacity: 0.68;
-    transform: translateX(-50%);
-  }
+.album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text-secondary) 68%, transparent);
+  background-clip: content-box;
 }
 
 .album-inline-panel .song-item {

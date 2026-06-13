@@ -2223,11 +2223,6 @@
     margin: 8px 0 0;
   }
 
-  .album-inline-panel .song-list-shell.has-more-below::after {
-    right: 0;
-    height: 64px;
-  }
-
   .album-inline-panel .song-list {
     margin: 0;
   }
@@ -2236,16 +2231,8 @@
     max-height: min(48vh, 440px);
   }
 
-  .song-list-scroll-cue {
-    bottom: 10px;
-    width: 18px;
-    height: 20px;
-  }
-
-  .song-list-scroll-cue span {
+  .album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar {
     width: 8px;
-    height: 8px;
-    border-width: 1.8px;
   }
 
   .album-inline-panel .song-item {

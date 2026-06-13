@@ -186,8 +186,6 @@ const AlbumGrid = ({
     const panelOpenTimerRef = useRef(null);
     const renderedPanelAlbumIdRef = useRef(renderedPanelAlbumId);
     const panelContentRef = useRef(null);
-    const songListRef = useRef(null);
-    const [showSongListCue, setShowSongListCue] = useState(false);
 
     const measurePanelHeight = useCallback(() => {
         const node = panelContentRef.current;
@@ -195,15 +193,6 @@ const AlbumGrid = ({
         // Add a tiny buffer to avoid fractional-pixel clipping at the bottom.
         const nextHeight = Math.ceil(node.scrollHeight) + 2;
         setPanelHeight((prev) => (Math.abs(prev - nextHeight) <= 1 ? prev : nextHeight));
-    }, []);
-
-    const updateSongListCue = useCallback(() => {
-        const node = songListRef.current;
-        if (!node || !node.classList.contains('song-list')) return;
-
-        const hasOverflow = node.scrollHeight > node.clientHeight + 2;
-        const hasMoreBelow = node.scrollTop + node.clientHeight < node.scrollHeight - 8;
-        setShowSongListCue(hasOverflow && hasMoreBelow);
     }, []);
 
     const clearPanelTimers = useCallback(() => {
@@ -368,7 +357,6 @@ const AlbumGrid = ({
     const isPanelOpen = Boolean(panelAlbum) && panelPhase === 'open';
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
-    const panelAlbumId = panelAlbum?.id || '';
     const panelSongs = Array.isArray(panelAlbum?.songs) ? panelAlbum.songs : [];
     const shouldConstrainPanelSongList = panelSongs.length > INLINE_SONG_SCROLL_THRESHOLD;
     const isPanelVirtualAlbum = Boolean(panelAlbum?.isVirtual);
@@ -428,35 +416,6 @@ const AlbumGrid = ({
         ro.observe(node);
         return () => ro.disconnect();
     }, [panelAlbum, measurePanelHeight]);
-
-    useEffect(() => {
-        if (!shouldConstrainPanelSongList || typeof window === 'undefined') return undefined;
-        const node = songListRef.current;
-        if (!node) return undefined;
-
-        let frameId = 0;
-        const scheduleUpdate = () => {
-            if (frameId) window.cancelAnimationFrame(frameId);
-            frameId = window.requestAnimationFrame(updateSongListCue);
-        };
-
-        scheduleUpdate();
-        node.addEventListener('scroll', scheduleUpdate, { passive: true });
-        window.addEventListener('resize', scheduleUpdate);
-
-        let resizeObserver;
-        if (typeof ResizeObserver !== 'undefined') {
-            resizeObserver = new ResizeObserver(scheduleUpdate);
-            resizeObserver.observe(node);
-        }
-
-        return () => {
-            if (frameId) window.cancelAnimationFrame(frameId);
-            node.removeEventListener('scroll', scheduleUpdate);
-            window.removeEventListener('resize', scheduleUpdate);
-            resizeObserver?.disconnect();
-        };
-    }, [panelAlbumId, panelSongs.length, shouldConstrainPanelSongList, updateSongListCue]);
 
     const panelAtmosphereStyle = useMemo(() => {
         if (!panelCoverPalette) return null;
@@ -640,8 +599,8 @@ const AlbumGrid = ({
                         </div>
                     </div>
 
-                    <div className={`song-list-shell ${shouldConstrainPanelSongList ? 'is-long-list' : ''} ${showSongListCue && shouldConstrainPanelSongList ? 'has-more-below' : ''}`}>
-                        <div className="song-list" ref={songListRef}>
+                    <div className={`song-list-shell ${shouldConstrainPanelSongList ? 'is-long-list' : ''}`}>
+                        <div className="song-list">
                             {panelSongs.map((song, i) => {
                                 const isCurrentSong = currentTrack.src === song.src;
                                 const isPlayingSong = isCurrentSong && isPlaying;
@@ -710,12 +669,6 @@ const AlbumGrid = ({
                                 );
                             })}
                         </div>
-                        {showSongListCue && shouldConstrainPanelSongList && (
-                            <span className="song-list-scroll-cue" aria-hidden="true">
-                                <span />
-                                <span />
-                            </span>
-                        )}
                     </div>
                 </div>
             </div>
