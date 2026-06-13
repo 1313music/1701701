@@ -381,6 +381,26 @@
     gap: 14px;
   }
 
+  .gallery-category-bar {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .gallery-category-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gallery-category-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
   .gallery-list-card,
   .gallery-readonly-card {
     padding: 14px;
