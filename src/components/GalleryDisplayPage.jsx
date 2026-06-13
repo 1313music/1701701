@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import {
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   ImagePlus,
   LoaderCircle,
   RefreshCw,
@@ -240,7 +239,6 @@ const GalleryDisplayPage = () => {
   const [waterfallColumns, setWaterfallColumns] = useState(() => createWaterfallColumns(1));
 
   const categoryCount = categoryStats.length;
-  const selectedCategoryLabel = selectedCategory === ALL_CATEGORY ? '全部' : selectedCategory;
   const itemIdSet = useMemo(() => new Set(items.map((item) => item.id)), [items]);
   const hasMoreVisibleItems = visibleItems.length < filteredItems.length;
   const visibleProgress = filteredItems.length > 0
@@ -592,16 +590,6 @@ const GalleryDisplayPage = () => {
               <span>{previewIndex + 1} / {filteredItems.length}</span>
             </div>
             <div className="gallery-lightbox-header-actions">
-              <a
-                className="gallery-lightbox-icon-btn"
-                href={previewItem.url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="查看原图"
-                title="查看原图"
-              >
-                <ExternalLink size={18} />
-              </a>
               <button
                 type="button"
                 className="gallery-lightbox-icon-btn"
@@ -671,12 +659,6 @@ const GalleryDisplayPage = () => {
                   <span>{categoryCount} 个分类</span>
                 </div>
               </div>
-              {!isLoading && items.length > 0 && (
-                <div className="gallery-active-summary">
-                  <span>{selectedCategoryLabel}</span>
-                  <strong>{filteredItems.length}</strong>
-                </div>
-              )}
             </div>
 
             {!isLoading && categoryStats.length > 0 && (

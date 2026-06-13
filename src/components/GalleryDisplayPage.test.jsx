@@ -210,7 +210,7 @@ describe('GalleryDisplayPage', () => {
     const initialImage = within(dialog).getByRole('img');
     const initialSrc = initialImage.getAttribute('src');
     expect(within(dialog).getByText(/\d+ \/ 3/)).toBeInTheDocument();
-    expect(within(dialog).getByRole('link', { name: '查看原图' })).toHaveAttribute('href', initialSrc);
+    expect(within(dialog).queryByRole('link', { name: '查看原图' })).not.toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole('button', { name: '下一张' }));
 

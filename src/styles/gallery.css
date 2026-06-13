@@ -121,25 +121,6 @@
   flex-wrap: wrap;
 }
 
-.gallery-active-summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
-  padding: 0 12px;
-  color: var(--text-secondary);
-  background: color-mix(in srgb, var(--glass-bg) 86%, transparent);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.gallery-active-summary strong {
-  color: var(--text-main);
-  font-size: 14px;
-}
-
 .gallery-list-header h2 {
   font-size: 20px;
 }
