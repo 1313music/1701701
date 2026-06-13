@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Heart, Play, QrCode, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Heart, Play, QrCode, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
@@ -12,6 +12,7 @@ const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
+const INLINE_SONG_PREVIEW_LIMIT = 25;
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -138,6 +139,7 @@ const AlbumGrid = ({
     const [panelPhase, setPanelPhase] = useState(() => (expandedAlbumId ? 'open' : 'closed'));
     const [panelHeight, setPanelHeight] = useState(0);
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
+    const [expandedPanelSongListAlbumId, setExpandedPanelSongListAlbumId] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
     const [panelCoverPalette, setPanelCoverPalette] = useState(null);
@@ -314,6 +316,14 @@ const AlbumGrid = ({
     const isPanelOpen = Boolean(panelAlbum) && panelPhase === 'open';
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
+    const panelSongs = Array.isArray(panelAlbum?.songs) ? panelAlbum.songs : [];
+    const isPanelSongListExpanded = Boolean(panelAlbum?.id)
+        && expandedPanelSongListAlbumId === panelAlbum.id;
+    const inlineSongPreviewLimit = INLINE_SONG_PREVIEW_LIMIT;
+    const hasPanelSongOverflow = panelSongs.length > inlineSongPreviewLimit;
+    const visiblePanelSongs = hasPanelSongOverflow && !isPanelSongListExpanded
+        ? panelSongs.slice(0, inlineSongPreviewLimit)
+        : panelSongs;
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
@@ -324,11 +334,14 @@ const AlbumGrid = ({
 
     useEffect(() => {
         let cancelled = false;
-        setPanelCoverPalette(null);
+        const resetPaletteTimer = window.setTimeout(() => {
+            if (!cancelled) setPanelCoverPalette(null);
+        }, 0);
 
         if (!panelCoverSrc) {
             return () => {
                 cancelled = true;
+                window.clearTimeout(resetPaletteTimer);
             };
         }
 
@@ -339,13 +352,14 @@ const AlbumGrid = ({
 
         return () => {
             cancelled = true;
+            window.clearTimeout(resetPaletteTimer);
         };
     }, [panelCoverSrc]);
 
     useLayoutEffect(() => {
         if (!panelAlbum) return;
         measurePanelHeight();
-    }, [panelAlbum, measurePanelHeight, columns]);
+    }, [panelAlbum, measurePanelHeight, columns, isPanelSongListExpanded]);
 
     useEffect(() => {
         const node = panelContentRef.current;
@@ -499,59 +513,85 @@ const AlbumGrid = ({
                         </div>
                     </div>
 
-                    <div className="song-list">
-                        {panelAlbum.songs.map((song, i) => {
-                            const isCurrentSong = currentTrack.src === song.src;
-                            const isPlayingSong = isCurrentSong && isPlaying;
-                            return (
-                                <div
-                                    key={song.src}
-                                    className={`song-item ${isCurrentSong ? 'active' : ''} ${isPlayingSong ? 'is-playing-song' : ''}`}
-                                    onClick={() => playSongFromAlbum(panelAlbum, song)}
-                                    onPointerEnter={() => setHoveredPanelSongSrc(song.src)}
-                                    onPointerLeave={() => {
-                                        setHoveredPanelSongSrc((previous) => (
-                                            previous === song.src ? '' : previous
+                    <div className={`song-list-shell ${isPanelSongListExpanded ? 'is-expanded' : ''}`}>
+                        <div className="song-list">
+                            {visiblePanelSongs.map((song, i) => {
+                                const isCurrentSong = currentTrack.src === song.src;
+                                const isPlayingSong = isCurrentSong && isPlaying;
+                                return (
+                                    <div
+                                        key={song.src}
+                                        className={`song-item ${isCurrentSong ? 'active' : ''} ${isPlayingSong ? 'is-playing-song' : ''}`}
+                                        onClick={() => playSongFromAlbum(panelAlbum, song)}
+                                        onPointerEnter={() => setHoveredPanelSongSrc(song.src)}
+                                        onPointerLeave={() => {
+                                            setHoveredPanelSongSrc((previous) => (
+                                                previous === song.src ? '' : previous
+                                            ));
+                                        }}
+                                    >
+                                        <span className="song-num">{i + 1}</span>
+                                        <SongNameMarquee
+                                            text={song.name}
+                                            allowMarquee={
+                                                isCurrentSong
+                                                || hoveredPanelSongSrc === song.src
+                                            }
+                                        />
+                                        <span className="song-actions">
+                                            <span className="song-status">
+                                                {isPlayingSong ? (
+                                                    <span className="playing-bars" aria-label="正在播放">
+                                                        <i></i><i></i><i></i><i></i>
+                                                    </span>
+                                                ) : ''}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className={`song-temp-btn ${tempPlaylistSet?.has(song.src) ? 'active' : ''}`}
+                                                aria-pressed={tempPlaylistSet?.has(song.src)}
+                                                aria-label={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
+                                                title={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onToggleTempSong(song, e);
+                                                }}
+                                            >
+                                                <Heart
+                                                    size={16}
+                                                    strokeWidth={2}
+                                                    fill={tempPlaylistSet?.has(song.src) ? 'currentColor' : 'none'}
+                                                />
+                                            </button>
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {hasPanelSongOverflow && (
+                            <div className="song-list-more">
+                                <button
+                                    type="button"
+                                    className="song-list-more-btn"
+                                    aria-expanded={isPanelSongListExpanded}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setExpandedPanelSongListAlbumId((previous) => (
+                                            previous === panelAlbum.id ? '' : panelAlbum.id
                                         ));
                                     }}
                                 >
-                                    <span className="song-num">{i + 1}</span>
-                                    <SongNameMarquee
-                                        text={song.name}
-                                        allowMarquee={
-                                            isCurrentSong
-                                            || hoveredPanelSongSrc === song.src
-                                        }
-                                    />
-                                    <span className="song-actions">
-                                        <span className="song-status">
-                                            {isPlayingSong ? (
-                                                <span className="playing-bars" aria-label="正在播放">
-                                                    <i></i><i></i><i></i><i></i>
-                                                </span>
-                                            ) : ''}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            className={`song-temp-btn ${tempPlaylistSet?.has(song.src) ? 'active' : ''}`}
-                                            aria-pressed={tempPlaylistSet?.has(song.src)}
-                                            aria-label={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
-                                            title={tempPlaylistSet?.has(song.src) ? '取消收藏' : '收藏'}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onToggleTempSong(song, e);
-                                            }}
-                                        >
-                                            <Heart
-                                                size={16}
-                                                strokeWidth={2}
-                                                fill={tempPlaylistSet?.has(song.src) ? 'currentColor' : 'none'}
-                                            />
-                                        </button>
-                                    </span>
-                                </div>
-                            );
-                        })}
+                                    {isPanelSongListExpanded ? (
+                                        <ChevronUp size={16} strokeWidth={2.3} aria-hidden="true" />
+                                    ) : (
+                                        <ChevronDown size={16} strokeWidth={2.3} aria-hidden="true" />
+                                    )}
+                                    {isPanelSongListExpanded
+                                        ? `收起到前 ${inlineSongPreviewLimit} 首`
+                                        : `查看全部 ${panelSongs.length} 首`}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
