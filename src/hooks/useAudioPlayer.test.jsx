@@ -13,6 +13,8 @@ class AudioMock {
     this.paused = true;
     this.preload = '';
     this.playsInline = false;
+    this.volume = 1;
+    this.muted = false;
     this.listeners = new Map();
   }
 
@@ -298,6 +300,109 @@ describe('useAudioPlayer lyric race', () => {
     });
 
     expect(result.current.audioRef.current.currentTime).toBe(42);
+  });
+
+  it('applies volume changes and restores the last audible level after mute', async () => {
+    const album = {
+      id: 'album-volume',
+      name: 'Album Volume',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    act(() => {
+      result.current.handleVolumeChange(0.42);
+    });
+
+    await waitFor(() => {
+      expect(result.current.volume).toBeCloseTo(0.42);
+      expect(result.current.audioRef.current.volume).toBeCloseTo(0.42);
+      expect(result.current.isMuted).toBe(false);
+      expect(result.current.audioRef.current.muted).toBe(false);
+    });
+
+    act(() => {
+      result.current.toggleMuted();
+    });
+
+    await waitFor(() => {
+      expect(result.current.isMuted).toBe(true);
+      expect(result.current.audioRef.current.muted).toBe(true);
+    });
+
+    act(() => {
+      result.current.toggleMuted();
+    });
+
+    await waitFor(() => {
+      expect(result.current.volume).toBeCloseTo(0.42);
+      expect(result.current.audioRef.current.volume).toBeCloseTo(0.42);
+      expect(result.current.isMuted).toBe(false);
+      expect(result.current.audioRef.current.muted).toBe(false);
+    });
+
+    act(() => {
+      result.current.handleVolumeChange(0);
+    });
+
+    await waitFor(() => {
+      expect(result.current.volume).toBe(0);
+      expect(result.current.isMuted).toBe(true);
+      expect(result.current.audioRef.current.muted).toBe(true);
+    });
+
+    act(() => {
+      result.current.toggleMuted();
+    });
+
+    await waitFor(() => {
+      expect(result.current.volume).toBeCloseTo(0.42);
+      expect(result.current.audioRef.current.volume).toBeCloseTo(0.42);
+      expect(result.current.isMuted).toBe(false);
+      expect(result.current.audioRef.current.muted).toBe(false);
+    });
+  });
+
+  it('restores persisted volume state from storage', async () => {
+    window.localStorage.setItem('w1701701:audio-volume-state:v1', JSON.stringify({
+      isMuted: true,
+      volume: 0.37
+    }));
+    const album = {
+      id: 'album-volume-restore',
+      name: 'Album Volume Restore',
+      artist: 'Artist',
+      cover: '',
+      songs: [
+        { name: 'Song 1', src: 'song-1.mp3' }
+      ]
+    };
+    const songIndex = new Map([
+      [album.songs[0].src, { album, song: album.songs[0] }]
+    ]);
+
+    const { result } = renderHook(() => useAudioPlayer({
+      musicAlbums: [album],
+      songIndex
+    }));
+
+    await waitFor(() => {
+      expect(result.current.volume).toBeCloseTo(0.37);
+      expect(result.current.isMuted).toBe(true);
+      expect(result.current.audioRef.current.volume).toBeCloseTo(0.37);
+      expect(result.current.audioRef.current.muted).toBe(true);
+    });
   });
 
   it('restores the last track, time, and playback intent from storage', async () => {

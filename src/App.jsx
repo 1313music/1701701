@@ -117,6 +117,8 @@ const App = () => {
     setCurrentAlbum,
     isPlaying,
     setIsPlaying,
+    volume,
+    isMuted,
     progress,
     currentTime,
     duration,
@@ -129,6 +131,8 @@ const App = () => {
     currentSongInfo,
     trackChangeId,
     sleepTimerRemainingMs,
+    handleVolumeChange,
+    toggleMuted,
     handlePlayPause,
     handleSeek,
     handlePrev,
@@ -611,6 +615,10 @@ const App = () => {
               sleepTimerRemainingMs={sleepTimerRemainingMs}
               onStartSleepTimer={startSleepTimer}
               onCancelSleepTimer={cancelSleepTimer}
+              volume={volume}
+              isMuted={isMuted}
+              onVolumeChange={handleVolumeChange}
+              onToggleMuted={toggleMuted}
             />
 
             {hasLyricsOverlayLoaded && (

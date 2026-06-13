@@ -28,6 +28,10 @@ const createProps = (overrides = {}) => ({
   sleepTimerRemainingMs: 0,
   onStartSleepTimer: vi.fn(),
   onCancelSleepTimer: vi.fn(),
+  volume: 1,
+  isMuted: false,
+  onVolumeChange: vi.fn(),
+  onToggleMuted: vi.fn(),
   ...overrides
 });
 
@@ -114,6 +118,33 @@ describe('PlayerBar', () => {
     expect(props.onToggleFavorite.mock.calls[0][0]).toEqual(props.currentTrack);
     expect(props.onOpenComments).toHaveBeenCalledTimes(1);
     expect(props.onShare).toHaveBeenCalledTimes(1);
+  });
+
+  it('wires desktop volume controls without opening the full-screen player', () => {
+    const props = createProps({ volume: 0.5 });
+    render(<PlayerBar {...props} />);
+    const volumeSlider = screen.getByRole('slider', { name: '音量' });
+    volumeSlider.getBoundingClientRect = () => ({
+      bottom: 110,
+      height: 100,
+      left: 0,
+      right: 28,
+      top: 10,
+      width: 28,
+      x: 0,
+      y: 10,
+      toJSON: () => {}
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '静音，当前音量 50%' }));
+    fireEvent.pointerDown(volumeSlider, {
+      clientY: 75,
+      pointerId: 1
+    });
+
+    expect(props.onToggleMuted).toHaveBeenCalledTimes(1);
+    expect(props.onVolumeChange).toHaveBeenCalledWith(0.35);
+    expect(props.setIsLyricsOpen).not.toHaveBeenCalled();
   });
 
   it('renders marquee text when the track name overflows during playback', () => {

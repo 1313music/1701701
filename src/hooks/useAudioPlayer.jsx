@@ -5,6 +5,8 @@ import { useAudioLyricsState } from './useAudioLyricsState.js';
 import { useAudioMediaSession } from './useAudioMediaSession.js';
 
 const PLAYBACK_STATE_STORAGE_KEY = 'w1701701:audio-playback-state:v1';
+const AUDIO_VOLUME_STORAGE_KEY = 'w1701701:audio-volume-state:v1';
+const DEFAULT_AUDIO_VOLUME = 1;
 const PLAYBACK_RECOVERY_DELAYS_MS = [1000, 2000, 5000];
 const PLAYBACK_POSITION_PERSIST_THRESHOLD = 5;
 const PLAYBACK_STATE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
@@ -18,6 +20,12 @@ const PLAYBACK_RECOVERY_RELOAD_MIN_STALL_MS = 4000;
 const PLAYBACK_RECOVERY_RELOAD_COOLDOWN_MS = 15000;
 const PLAYBACK_RECOVERY_MAX_RELOAD_ATTEMPTS = 2;
 const SLEEP_TIMER_MIN_MS = 1000;
+
+const clampAudioVolume = (value) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return DEFAULT_AUDIO_VOLUME;
+  return Math.min(Math.max(numericValue, 0), 1);
+};
 
 const toAbsoluteUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
@@ -72,6 +80,54 @@ const writeStoredPlaybackState = (snapshot) => {
   }
 };
 
+const readStoredVolumeState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      isMuted: false,
+      volume: DEFAULT_AUDIO_VOLUME
+    };
+  }
+  try {
+    const raw = window.localStorage.getItem(AUDIO_VOLUME_STORAGE_KEY);
+    if (!raw) {
+      return {
+        isMuted: false,
+        volume: DEFAULT_AUDIO_VOLUME
+      };
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      return {
+        isMuted: false,
+        volume: DEFAULT_AUDIO_VOLUME
+      };
+    }
+    const volume = clampAudioVolume(parsed.volume);
+    return {
+      isMuted: Boolean(parsed.isMuted || volume <= 0),
+      volume
+    };
+  } catch {
+    return {
+      isMuted: false,
+      volume: DEFAULT_AUDIO_VOLUME
+    };
+  }
+};
+
+const writeStoredVolumeState = ({ volume, isMuted }) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const normalizedVolume = clampAudioVolume(volume);
+    window.localStorage.setItem(AUDIO_VOLUME_STORAGE_KEY, JSON.stringify({
+      isMuted: Boolean(isMuted || normalizedVolume <= 0),
+      volume: normalizedVolume
+    }));
+  } catch {
+    // ignore storage failures
+  }
+};
+
 export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [currentTrack, setCurrentTrackState] = useState(() => musicAlbums[0]?.songs?.[0]);
   const [currentAlbum, setCurrentAlbum] = useState(() => musicAlbums[0] || null);
@@ -84,9 +140,12 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const [trackChangeId, setTrackChangeId] = useState(0);
   const [sleepTimerEndsAt, setSleepTimerEndsAt] = useState(null);
   const [sleepTimerRemainingMs, setSleepTimerRemainingMs] = useState(0);
+  const [volumeState, setVolumeState] = useState(readStoredVolumeState);
+  const { volume, isMuted } = volumeState;
 
   const trackNameRef = useRef(null);
   const audioRef = useRef(new Audio());
+  const lastAudibleVolumeRef = useRef(volume > 0 ? volume : DEFAULT_AUDIO_VOLUME);
   const lastTimelineRef = useRef({ time: 0, progress: 0 });
   const lastPersistedRef = useRef({ currentTime: -1, isPlaying: false, trackSrc: '' });
   const pendingRestoreRef = useRef(null);
@@ -138,6 +197,32 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     });
   }, []);
   const isPlaying = isPlayingState;
+
+  const handleVolumeChange = useCallback((nextVolume) => {
+    const normalizedVolume = clampAudioVolume(nextVolume);
+    setVolumeState({
+      isMuted: normalizedVolume <= 0,
+      volume: normalizedVolume
+    });
+  }, []);
+
+  const toggleMuted = useCallback(() => {
+    setVolumeState((previousState) => {
+      const previousVolume = clampAudioVolume(previousState.volume);
+      if (previousState.isMuted || previousVolume <= 0) {
+        return {
+          isMuted: false,
+          volume: previousVolume > 0
+            ? previousVolume
+            : lastAudibleVolumeRef.current || DEFAULT_AUDIO_VOLUME
+        };
+      }
+      return {
+        isMuted: true,
+        volume: previousVolume
+      };
+    });
+  }, []);
 
   const clearSleepTimerHandles = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -499,6 +584,24 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   ]);
 
   useEffect(() => {
+    if (volume > 0) {
+      lastAudibleVolumeRef.current = volume;
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const normalizedVolume = clampAudioVolume(volume);
+    const nextMuted = Boolean(isMuted || normalizedVolume <= 0);
+    audio.volume = normalizedVolume;
+    audio.muted = nextMuted;
+    writeStoredVolumeState({
+      isMuted: nextMuted,
+      volume: normalizedVolume
+    });
+  }, [isMuted, volume]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!currentTrackSrc) {
       audio.pause();
@@ -749,6 +852,8 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     setCurrentAlbum,
     isPlaying,
     setIsPlaying,
+    volume,
+    isMuted,
     progress,
     currentTime,
     duration,
@@ -762,6 +867,8 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     currentSongInfo,
     sleepTimerEndsAt,
     sleepTimerRemainingMs,
+    handleVolumeChange,
+    toggleMuted,
     handlePlayPause,
     handleSeek,
     handlePrev,
