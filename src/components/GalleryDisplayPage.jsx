@@ -21,6 +21,7 @@ const shuffleItems = (input) => {
 };
 
 const ALL_CATEGORY = '__all__';
+const PINNED_CATEGORY = 'XKK';
 const COVER_CATEGORY = '封面';
 const MIN_VISIBLE_COUNT_STEP = 12;
 const DESKTOP_COLUMN_WIDTH = 220;
@@ -33,6 +34,9 @@ const LOADING_PLACEHOLDER_COUNT = 12;
 const containsCjk = (value) => /[\u3400-\u9fff]/.test(String(value || ''));
 
 const compareCategoryNames = (left, right) => {
+  if (left === PINNED_CATEGORY) return -1;
+  if (right === PINNED_CATEGORY) return 1;
+
   if (left === COVER_CATEGORY) return -1;
   if (right === COVER_CATEGORY) return 1;
 

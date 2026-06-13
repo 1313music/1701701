@@ -78,9 +78,10 @@ describe('GalleryDisplayPage', () => {
     vi.clearAllMocks();
   });
 
-  it('puts all at the end and defaults to the cover category', async () => {
+  it('puts XKK first, all at the end, and defaults to XKK when present', async () => {
     loadGalleryItems.mockResolvedValue([
       { id: 'bb-1', category: 'BB', name: 'bb-1', url: 'https://example.com/bb-1.jpg', previewUrl: 'https://example.com/bb-1.jpg' },
+      { id: 'xkk-1', category: 'XKK', name: 'xkk-1', url: 'https://example.com/xkk-1.jpg', previewUrl: 'https://example.com/xkk-1.jpg' },
       { id: 'cover-1', category: '封面', name: 'cover-1', url: 'https://example.com/cover-1.jpg', previewUrl: 'https://example.com/cover-1.jpg' },
       { id: 'cover-2', category: '封面', name: 'cover-2', url: 'https://example.com/cover-2.jpg', previewUrl: 'https://example.com/cover-2.jpg' },
       { id: 'kl-1', category: '吉隆坡', name: 'kl-1', url: 'https://example.com/kl-1.jpg', previewUrl: 'https://example.com/kl-1.jpg' }
@@ -95,15 +96,16 @@ describe('GalleryDisplayPage', () => {
     const categoryBar = screen.getByLabelText('分类筛选');
     const buttons = within(categoryBar).getAllByRole('button');
     expect(buttons.map((button) => button.textContent?.replace(/\s+/g, ''))).toEqual([
+      'XKK1',
       '封面2',
       '吉隆坡1',
       'BB1',
-      '全部4'
+      '全部5'
     ]);
-    expect(within(categoryBar).getByRole('button', { name: /封面/ })).toHaveClass('is-active');
+    expect(within(categoryBar).getByRole('button', { name: /XKK/ })).toHaveClass('is-active');
 
     await waitFor(() => {
-      expect(container.querySelectorAll('.gallery-waterfall-item')).toHaveLength(2);
+      expect(container.querySelectorAll('.gallery-waterfall-item')).toHaveLength(1);
     });
   });
 
