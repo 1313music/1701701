@@ -85,7 +85,7 @@ describe('PlayerBar', () => {
     fireEvent.click(screen.getByRole('button', { name: '上一首' }));
     fireEvent.click(screen.getByRole('button', { name: '播放' }));
     fireEvent.click(screen.getByRole('button', { name: '下一首' }));
-    fireEvent.click(screen.getByRole('button', { name: '打开收藏歌单' }));
+    fireEvent.click(screen.getByRole('button', { name: '打开播放列表' }));
 
     expect(props.togglePlayMode).toHaveBeenCalledTimes(1);
     expect(props.handlePrev).toHaveBeenCalledTimes(1);
@@ -103,12 +103,17 @@ describe('PlayerBar', () => {
     expect(screen.getByRole('button', { name: '上一首' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一首' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '打开收藏歌单' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '打开播放列表' })).toBeInTheDocument();
   });
 
   it('wires favorite, comment, and share actions to callbacks', () => {
     const props = createProps();
-    render(<PlayerBar {...props} />);
+    const { container } = render(<PlayerBar {...props} />);
+    const playerInfo = container.querySelector('.player-info');
+    const playerActions = container.querySelector('.player-actions');
+
+    expect(playerInfo.querySelector('.favorite-btn')).toBeInTheDocument();
+    expect(playerActions.querySelector('.favorite-btn')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '收藏当前歌曲' }));
     fireEvent.click(screen.getByRole('button', { name: '查看当前歌曲评论' }));

@@ -265,7 +265,14 @@
 }
 
 .favorite-btn.active {
-  color: #ff4f66 !important;
+  color: var(--favorite-active-color, #ff4f66) !important;
+}
+
+.track-favorite-btn {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  margin-left: 2px;
 }
 
 .player-bar:has(.volume-control.is-open),
@@ -664,6 +671,10 @@
   color: var(--text-main) !important;
 }
 
+[data-theme='dark'] .favorite-btn.active {
+  color: var(--favorite-active-color, #ff4f66) !important;
+}
+
 /* Mobile Bottom Player - QQ Music Style */
 @media (max-width: 1024px) {
   .main-play-btn {
@@ -971,6 +982,7 @@
   }
 
   .mode-btn,
+  .track-favorite-btn,
   .playlist-btn,
   .share-btn,
   .mobile-hide,
@@ -2467,7 +2479,7 @@
 }
 
 .song-temp-btn.active {
-  color: #e05252;
+  color: var(--favorite-active-color, #ff4f66);
   background: transparent;
 }
 
@@ -2582,8 +2594,8 @@
 }
 
 [data-theme='dark'] .album-fav-all-btn.active {
-  border-color: rgba(224, 82, 82, 0.46);
-  color: #ff8f8f;
+  border-color: var(--favorite-active-border, rgba(255, 79, 102, 0.38));
+  color: var(--favorite-active-color, #ff4f66);
 }
 
 [data-theme='dark'] .album-play-btn {

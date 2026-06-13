@@ -347,7 +347,7 @@
 }
 
 .overlay-favorite-trigger.active {
-  color: #ff4f66;
+  color: var(--favorite-active-color, #ff4f66);
 }
 
 .overlay-comment-trigger:disabled,
@@ -1216,7 +1216,7 @@
   }
 
   .mobile-player-actions .overlay-favorite-trigger.active {
-    color: #ff4f66;
+    color: var(--favorite-active-color, #ff4f66);
   }
 
   .mobile-player-actions .mobile-action-btn:disabled {
@@ -1297,7 +1297,7 @@
   }
 
   .overlay-favorite-trigger.mobile-fab.active {
-    color: #ff4f66;
+    color: var(--favorite-active-color, #ff4f66);
   }
 
   .overlay-favorite-trigger.mobile-fab:disabled,

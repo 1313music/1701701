@@ -254,8 +254,8 @@
   }
 
   .album-list-mobile-layout .album-fav-all-btn.active {
-    color: #e05252;
-    border: 1px solid rgba(224, 82, 82, 0.35);
+    color: var(--favorite-active-color, #ff4f66);
+    border: 1px solid var(--favorite-active-border, rgba(255, 79, 102, 0.38));
     background: transparent;
   }
 
@@ -387,8 +387,8 @@
 }
 
 [data-theme='dark'] .album-fav-all-btn.active {
-  border-color: rgba(224, 82, 82, 0.46);
-  color: #ff8f8f;
+  border-color: var(--favorite-active-border, rgba(255, 79, 102, 0.38));
+  color: var(--favorite-active-color, #ff4f66);
 }
 
 [data-theme='dark'] .album-play-btn {

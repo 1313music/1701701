@@ -310,6 +310,17 @@ const PlayerBar = ({
                         <span className="artist-name">{currentAlbum.artist}</span>
                         <span className="mobile-current-lyric">{currentLyricText || currentAlbum.artist}</span>
                     </div>
+                    <button
+                        type="button"
+                        className={`icon-btn favorite-btn track-favorite-btn ${isCurrentTrackFavorited ? 'active' : ''}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleFavorite?.(currentTrack, e);
+                        }}
+                        aria-label={isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲'}
+                    >
+                        <Heart size={20} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
+                    </button>
                 </div>
 
                 <div className="player-controls" onClick={(e) => e.stopPropagation()}>
@@ -354,7 +365,7 @@ const PlayerBar = ({
                             type="button"
                             className="icon-btn playlist-btn"
                             onClick={() => setIsAlbumListOpen(true)}
-                            aria-label="打开收藏歌单"
+                            aria-label="打开播放列表"
                         >
                             <ListMusic size={22} strokeWidth={2.4} absoluteStrokeWidth />
                         </button>
@@ -368,17 +379,6 @@ const PlayerBar = ({
                         onVolumeChange={onVolumeChange}
                         onToggleMuted={onToggleMuted}
                     />
-                    <button
-                        type="button"
-                        className={`icon-btn favorite-btn ${isCurrentTrackFavorited ? 'active' : ''}`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleFavorite?.(currentTrack, e);
-                        }}
-                        aria-label={isCurrentTrackFavorited ? '取消收藏当前歌曲' : '收藏当前歌曲'}
-                    >
-                        <Heart size={20} strokeWidth={2.2} absoluteStrokeWidth fill={isCurrentTrackFavorited ? 'currentColor' : 'none'} />
-                    </button>
                     <button
                         type="button"
                         className="icon-btn comment-btn"

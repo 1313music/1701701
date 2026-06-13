@@ -13,6 +13,9 @@
   --sidebar-bg: rgba(255, 255, 255, 0.95);
   --player-bg: rgba(255, 255, 255, 0.95);
   --hover-bg: rgba(0, 0, 0, 0.04);
+  --favorite-active-color: #ff4f66;
+  --favorite-active-border: rgba(255, 79, 102, 0.38);
+  --favorite-active-bg: rgba(255, 79, 102, 0.1);
   --mobile-topbar-height: 48px;
   --mobile-fullscreen-height: 100vh;
   --mobile-fullscreen-safe-top: env(safe-area-inset-top, 0px);
@@ -1197,13 +1200,13 @@ body {
 }
 
 .album-inline-fav-all-btn.active {
-  color: #e05252;
-  border-color: rgba(224, 82, 82, 0.35);
+  color: var(--favorite-active-color);
+  border-color: var(--favorite-active-border);
 }
 
 [data-theme='dark'] .album-inline-fav-all-btn.active {
-  color: #ff8f8f;
-  border-color: rgba(224, 82, 82, 0.46);
+  color: var(--favorite-active-color);
+  border-color: var(--favorite-active-border);
 }
 
 .album-inline-qr-action {
@@ -1653,9 +1656,9 @@ body {
 }
 
 .album-fav-all-btn.active {
-  color: #e05252;
-  border-color: rgba(224, 82, 82, 0.35);
-  background: rgba(224, 82, 82, 0.08);
+  color: var(--favorite-active-color);
+  border-color: var(--favorite-active-border);
+  background: var(--favorite-active-bg);
 }
 
 .album-play-btn:disabled,
@@ -1684,7 +1687,7 @@ body {
 }
 
 .album-fav-all-btn.active:not(:disabled):hover {
-  background: rgba(224, 82, 82, 0.08);
+  background: var(--favorite-active-bg);
 }
 
 .album-list-body {
@@ -1904,7 +1907,7 @@ body {
 }
 
 .album-list-fav-btn.active {
-  color: #e05252;
+  color: var(--favorite-active-color);
   background: transparent;
 }
 
