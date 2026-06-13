@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Heart, Play, QrCode, RefreshCw, X } from 'lucide-react';
+import { Heart, ListMusic, Play, QrCode, RefreshCw, Shuffle, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
@@ -12,6 +12,7 @@ const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
+const INLINE_SONG_SCROLL_THRESHOLD = 24;
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -113,8 +114,44 @@ const SongNameMarquee = ({ text, allowMarquee }) => {
     );
 };
 
+const AlbumCoverArt = ({ album, className = '', alt }) => {
+    const coverGrid = Array.isArray(album?.coverGrid)
+        ? album.coverGrid.filter(Boolean).slice(0, 4)
+        : [];
+
+    if (coverGrid.length >= 4) {
+        return (
+            <div
+                className={`album-cover-collage ${className}`}
+                role="img"
+                aria-label={alt || `${album?.name || '专辑'} 封面`}
+            >
+                {coverGrid.map((cover, index) => (
+                    <img
+                        key={`${cover}-${index}`}
+                        loading="lazy"
+                        src={cover}
+                        alt=""
+                        aria-hidden="true"
+                    />
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <img
+            className={className}
+            loading="lazy"
+            src={album?.cover}
+            alt={alt || album?.name || 'cover'}
+        />
+    );
+};
+
 const AlbumGrid = ({
     musicAlbums,
+    panelAlbumOverride,
     navigateToAlbum,
     expandedAlbumId,
     currentTrack,
@@ -123,7 +160,9 @@ const AlbumGrid = ({
     tempPlaylistSet,
     onToggleTempSong,
     onToggleAlbumFavorites,
-    onRefreshRandomMix
+    onRefreshRandomMix,
+    onPlayAllSiteShuffle,
+    onPlayAllSiteSequential
 }) => {
     const gridRef = useRef(null);
     const [columns, setColumns] = useState(() => {
@@ -147,6 +186,8 @@ const AlbumGrid = ({
     const panelOpenTimerRef = useRef(null);
     const renderedPanelAlbumIdRef = useRef(renderedPanelAlbumId);
     const panelContentRef = useRef(null);
+    const songListRef = useRef(null);
+    const [showSongListCue, setShowSongListCue] = useState(false);
 
     const measurePanelHeight = useCallback(() => {
         const node = panelContentRef.current;
@@ -154,6 +195,15 @@ const AlbumGrid = ({
         // Add a tiny buffer to avoid fractional-pixel clipping at the bottom.
         const nextHeight = Math.ceil(node.scrollHeight) + 2;
         setPanelHeight((prev) => (Math.abs(prev - nextHeight) <= 1 ? prev : nextHeight));
+    }, []);
+
+    const updateSongListCue = useCallback(() => {
+        const node = songListRef.current;
+        if (!node || !node.classList.contains('song-list')) return;
+
+        const hasOverflow = node.scrollHeight > node.clientHeight + 2;
+        const hasMoreBelow = node.scrollTop + node.clientHeight < node.scrollHeight - 8;
+        setShowSongListCue(hasOverflow && hasMoreBelow);
     }, []);
 
     const clearPanelTimers = useCallback(() => {
@@ -273,7 +323,10 @@ const AlbumGrid = ({
         [renderedPanelAlbumId, musicAlbums]
     );
     const expandedAlbum = renderedPanelIndex >= 0 ? musicAlbums[renderedPanelIndex] : null;
-    const panelAlbum = expandedAlbum;
+    const panelAnchorAlbum = expandedAlbum;
+    const panelAlbum = panelAnchorAlbum && panelAlbumOverride?.isVirtual
+        ? panelAlbumOverride
+        : panelAnchorAlbum;
     const insertAfterIndex = renderedPanelIndex >= 0
         ? Math.min(musicAlbums.length - 1, Math.floor(renderedPanelIndex / columns) * columns + (columns - 1))
         : -1;
@@ -315,8 +368,20 @@ const AlbumGrid = ({
     const isPanelOpen = Boolean(panelAlbum) && panelPhase === 'open';
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
+    const panelAlbumId = panelAlbum?.id || '';
     const panelSongs = Array.isArray(panelAlbum?.songs) ? panelAlbum.songs : [];
+    const shouldConstrainPanelSongList = panelSongs.length > INLINE_SONG_SCROLL_THRESHOLD;
     const isPanelVirtualAlbum = Boolean(panelAlbum?.isVirtual);
+    const isPanelRandomMix = panelAlbum?.virtualType === 'random-mix';
+    const isPanelRandomFeature = isPanelVirtualAlbum && (
+        panelAlbum?.virtualType === 'random-mix'
+        || panelAlbum?.virtualType === 'all-site-shuffle'
+        || panelAlbum?.virtualType === 'all-site-sequential'
+    );
+    const panelSourceAlbumCount = Number(panelAlbum?.sourceAlbumCount) || 0;
+    const panelMetadata = isPanelVirtualAlbum && panelSourceAlbumCount > 0
+        ? `来自 ${panelSourceAlbumCount} 张专辑 · ${panelSongs.length} 首`
+        : `${panelAlbum?.artist || ''} • ${panelSongs.length} 首歌`;
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
@@ -364,6 +429,35 @@ const AlbumGrid = ({
         return () => ro.disconnect();
     }, [panelAlbum, measurePanelHeight]);
 
+    useEffect(() => {
+        if (!shouldConstrainPanelSongList || typeof window === 'undefined') return undefined;
+        const node = songListRef.current;
+        if (!node) return undefined;
+
+        let frameId = 0;
+        const scheduleUpdate = () => {
+            if (frameId) window.cancelAnimationFrame(frameId);
+            frameId = window.requestAnimationFrame(updateSongListCue);
+        };
+
+        scheduleUpdate();
+        node.addEventListener('scroll', scheduleUpdate, { passive: true });
+        window.addEventListener('resize', scheduleUpdate);
+
+        let resizeObserver;
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(scheduleUpdate);
+            resizeObserver.observe(node);
+        }
+
+        return () => {
+            if (frameId) window.cancelAnimationFrame(frameId);
+            node.removeEventListener('scroll', scheduleUpdate);
+            window.removeEventListener('resize', scheduleUpdate);
+            resizeObserver?.disconnect();
+        };
+    }, [panelAlbumId, panelSongs.length, shouldConstrainPanelSongList, updateSongListCue]);
+
     const panelAtmosphereStyle = useMemo(() => {
         if (!panelCoverPalette) return null;
 
@@ -390,7 +484,7 @@ const AlbumGrid = ({
                 onClick={() => navigateToAlbum(album)}
             >
                 <div className="card-cover-container">
-                    <img loading="lazy" src={album.cover} alt={album.name} />
+                    <AlbumCoverArt album={album} alt={album.name} />
                     <div className="play-overlay">
                         <div className="play-btn-circle">
                             <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />
@@ -430,25 +524,21 @@ const AlbumGrid = ({
                     ref={panelContentRef}
                     style={panelAtmosphereStyle || undefined}
                 >
-                    <button className="album-inline-close" onClick={() => navigateToAlbum(panelAlbum)} aria-label="收起">
+                    <button className="album-inline-close" onClick={() => navigateToAlbum(panelAnchorAlbum)} aria-label="收起">
                         <ChevronUpIcon size={18} />
                     </button>
                     <div className="album-inline-header">
                         <div className="album-inline-cover-wrap">
-                            <img
+                            <AlbumCoverArt
+                                album={panelAlbum}
                                 className="album-inline-cover"
-                                loading="lazy"
-                                src={panelAlbum.cover}
                                 alt={panelAlbum.name}
                             />
                         </div>
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
-                            <p className="album-metadata">{panelAlbum.artist} • {panelAlbum.songs.length} 首歌</p>
-                            {isPanelVirtualAlbum && (
-                                <p className="album-inline-note">每次换一批都会从全站曲库重新抽取</p>
-                            )}
-                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'}`}>
+                            <p className="album-metadata">{panelMetadata}</p>
+                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${isPanelRandomFeature ? 'is-random-mix' : ''}`}>
                                 <button
                                     type="button"
                                     onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])}
@@ -456,12 +546,12 @@ const AlbumGrid = ({
                                     disabled={!panelAlbum.songs.length}
                                 >
                                     <Play size={17} fill="currentColor" strokeWidth={2.2} aria-hidden="true" />
-                                    播放全部
+                                    {isPanelRandomMix ? '播放这批' : '播放全部'}
                                 </button>
-                                {isPanelVirtualAlbum && (
+                                {isPanelRandomFeature && (
                                     <button
                                         type="button"
-                                        className="album-inline-refresh-btn"
+                                        className="album-inline-secondary-btn"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onRefreshRandomMix?.();
@@ -471,22 +561,50 @@ const AlbumGrid = ({
                                         换一批
                                     </button>
                                 )}
-                                <button
-                                    type="button"
-                                    className={`album-inline-fav-all-btn ${isPanelAlbumFullyFavorited ? 'active' : ''}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onToggleAlbumFavorites?.(panelAlbum.songs, e);
-                                    }}
-                                >
-                                    <Heart
-                                        size={17}
-                                        strokeWidth={2.2}
-                                        fill={isPanelAlbumFullyFavorited ? 'currentColor' : 'none'}
-                                        aria-hidden="true"
-                                    />
-                                    {isPanelAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
-                                </button>
+                                {isPanelRandomFeature && (
+                                    <button
+                                        type="button"
+                                        className="album-inline-secondary-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onPlayAllSiteShuffle?.();
+                                        }}
+                                    >
+                                        <Shuffle size={17} strokeWidth={2.2} absoluteStrokeWidth aria-hidden="true" />
+                                        随机全站
+                                    </button>
+                                )}
+                                {isPanelRandomFeature && (
+                                    <button
+                                        type="button"
+                                        className="album-inline-secondary-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onPlayAllSiteSequential?.();
+                                        }}
+                                    >
+                                        <ListMusic size={17} strokeWidth={2.2} absoluteStrokeWidth aria-hidden="true" />
+                                        顺序全站
+                                    </button>
+                                )}
+                                {!isPanelVirtualAlbum && (
+                                    <button
+                                        type="button"
+                                        className={`album-inline-fav-all-btn ${isPanelAlbumFullyFavorited ? 'active' : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onToggleAlbumFavorites?.(panelAlbum.songs, e);
+                                        }}
+                                    >
+                                        <Heart
+                                            size={17}
+                                            strokeWidth={2.2}
+                                            fill={isPanelAlbumFullyFavorited ? 'currentColor' : 'none'}
+                                            aria-hidden="true"
+                                        />
+                                        {isPanelAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
+                                    </button>
+                                )}
                                 {panelAlbumMiniProgram && (
                                     <div className="album-inline-qr-action">
                                         <button
@@ -522,15 +640,16 @@ const AlbumGrid = ({
                         </div>
                     </div>
 
-                    <div className="song-list-shell">
-                        <div className="song-list">
+                    <div className={`song-list-shell ${shouldConstrainPanelSongList ? 'is-long-list' : ''} ${showSongListCue && shouldConstrainPanelSongList ? 'has-more-below' : ''}`}>
+                        <div className="song-list" ref={songListRef}>
                             {panelSongs.map((song, i) => {
                                 const isCurrentSong = currentTrack.src === song.src;
                                 const isPlayingSong = isCurrentSong && isPlaying;
+                                const songSourceCover = isPanelVirtualAlbum ? song.cover : '';
                                 return (
                                     <div
                                         key={song.src}
-                                        className={`song-item ${isCurrentSong ? 'active' : ''} ${isPlayingSong ? 'is-playing-song' : ''}`}
+                                        className={`song-item ${isCurrentSong ? 'active' : ''} ${isPlayingSong ? 'is-playing-song' : ''} ${songSourceCover ? 'has-source-cover' : ''}`}
                                         onClick={() => playSongFromAlbum(panelAlbum, song)}
                                         onPointerEnter={() => setHoveredPanelSongSrc(song.src)}
                                         onPointerLeave={() => {
@@ -540,6 +659,15 @@ const AlbumGrid = ({
                                         }}
                                     >
                                         <span className="song-num">{i + 1}</span>
+                                        {songSourceCover && (
+                                            <img
+                                                className="song-source-cover"
+                                                loading="lazy"
+                                                src={songSourceCover}
+                                                alt=""
+                                                aria-hidden="true"
+                                            />
+                                        )}
                                         <span className="song-main">
                                             <SongNameMarquee
                                                 text={song.name}
@@ -582,6 +710,12 @@ const AlbumGrid = ({
                                 );
                             })}
                         </div>
+                        {showSongListCue && shouldConstrainPanelSongList && (
+                            <span className="song-list-scroll-cue" aria-hidden="true">
+                                <span />
+                                <span />
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>

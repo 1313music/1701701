@@ -1090,6 +1090,25 @@ body {
   object-fit: cover;
 }
 
+.album-cover-collage {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  background: color-mix(in srgb, var(--hover-bg) 76%, transparent);
+}
+
+.album-cover-collage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-width: 0;
+  min-height: 0;
+}
+
 .album-inline-header .album-info-text {
   width: 100%;
   min-width: 0;
@@ -1173,6 +1192,7 @@ body {
 }
 
 .album-inline-fav-all-btn,
+.album-inline-secondary-btn,
 .album-inline-qr-btn {
   border: 1px solid var(--glass-border);
   background: transparent;
@@ -1194,9 +1214,14 @@ body {
 }
 
 .album-inline-fav-all-btn:hover,
+.album-inline-secondary-btn:hover,
 .album-inline-qr-btn:hover {
   transform: translateY(-1px);
   background: var(--hover-bg);
+}
+
+.album-inline-secondary-btn {
+  color: var(--text-main);
 }
 
 .album-inline-fav-all-btn.active {
@@ -1270,8 +1295,27 @@ body {
 }
 
 .album-inline-panel .song-list-shell {
+  position: relative;
   min-width: 0;
   margin: 4px 48px 0 0;
+}
+
+.album-inline-panel .song-list-shell.has-more-below::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 4px;
+  bottom: 0;
+  height: 82px;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--bg-color) 42%, transparent) 44%,
+    color-mix(in srgb, var(--bg-color) 88%, transparent) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
 }
 
 .album-inline-panel .song-list {
@@ -1279,11 +1323,76 @@ body {
   margin: 0;
   padding: 0;
   border-top: none;
+}
+
+.album-inline-panel .song-list-shell.is-long-list .song-list {
   max-height: min(58vh, 640px);
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
+}
+
+.song-list-scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 13px;
+  z-index: 3;
+  width: 22px;
+  height: 24px;
+  transform: translateX(-50%);
+  animation: song-list-scroll-cue-flow 1.55s cubic-bezier(0.42, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.song-list-scroll-cue span {
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid color-mix(in srgb, var(--text-secondary) 70%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--text-secondary) 70%, transparent);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.song-list-scroll-cue span:first-child {
+  top: 1px;
+  opacity: 0.58;
+}
+
+.song-list-scroll-cue span:last-child {
+  top: 8px;
+  opacity: 0.82;
+}
+
+@keyframes song-list-scroll-cue-flow {
+  0% {
+    opacity: 0.18;
+    transform: translate(-50%, -5px);
+  }
+
+  40% {
+    opacity: 0.72;
+    transform: translate(-50%, 1px);
+  }
+
+  72% {
+    opacity: 0.72;
+    transform: translate(-50%, 5px);
+  }
+
+  100% {
+    opacity: 0.12;
+    transform: translate(-50%, 9px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .song-list-scroll-cue {
+    animation: none;
+    opacity: 0.68;
+    transform: translateX(-50%);
+  }
 }
 
 .album-inline-panel .song-item {
@@ -1316,11 +1425,56 @@ body {
   opacity: 0.72;
 }
 
+.album-inline-panel .song-source-cover {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  margin-left: 10px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--hover-bg) 74%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--glass-border) 82%, transparent);
+}
+
+.album-inline-panel .song-item.active .song-source-cover,
+.album-inline-panel .song-item.is-playing-song .song-source-cover {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--main-color) 68%, transparent),
+    0 8px 18px color-mix(in srgb, var(--main-color) 18%, transparent);
+}
+
 .album-inline-panel .song-name {
   flex: 1;
   min-width: 0;
   margin: 0 0 0 14px;
   color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-inline-panel .song-main {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.album-inline-panel .song-main .song-name {
+  flex: 0 1 auto;
+  width: 100%;
+  margin: 0;
+}
+
+.album-inline-panel .song-source-meta {
+  display: block;
+  max-width: 100%;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.1;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -2044,8 +2044,14 @@
     max-width: 100%;
   }
 
+  .album-inline-hero-actions.is-random-mix {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 224px;
+  }
+
   .album-inline-hero-actions .play-all-btn,
   .album-inline-fav-all-btn,
+  .album-inline-secondary-btn,
   .album-inline-qr-btn {
     width: 100%;
     min-width: 0;
@@ -2063,6 +2069,7 @@
   }
 
   .album-inline-fav-all-btn,
+  .album-inline-secondary-btn,
   .album-inline-qr-btn {
     overflow: visible;
   }
@@ -2095,12 +2102,33 @@
     grid-row: 1;
   }
 
+  .album-inline-hero-actions.is-random-mix .play-all-btn {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .album-inline-hero-actions.is-random-mix .album-inline-secondary-btn:nth-of-type(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .album-inline-hero-actions.is-random-mix .album-inline-secondary-btn:nth-of-type(3) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .album-inline-hero-actions.is-random-mix .album-inline-secondary-btn:nth-of-type(4) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
   .album-inline-qr-action .album-inline-qr-btn {
     width: 100%;
   }
 
   .album-inline-hero-actions .play-all-btn svg,
   .album-inline-fav-all-btn svg,
+  .album-inline-secondary-btn svg,
   .album-inline-qr-btn svg {
     width: 14px;
     height: 14px;
@@ -2195,13 +2223,45 @@
     margin: 8px 0 0;
   }
 
+  .album-inline-panel .song-list-shell.has-more-below::after {
+    right: 0;
+    height: 64px;
+  }
+
   .album-inline-panel .song-list {
     margin: 0;
+  }
+
+  .album-inline-panel .song-list-shell.is-long-list .song-list {
     max-height: min(48vh, 440px);
+  }
+
+  .song-list-scroll-cue {
+    bottom: 10px;
+    width: 18px;
+    height: 20px;
+  }
+
+  .song-list-scroll-cue span {
+    width: 8px;
+    height: 8px;
+    border-width: 1.8px;
   }
 
   .album-inline-panel .song-item {
     padding: 10px 12px;
+  }
+
+  .album-inline-panel .song-source-cover {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    margin-left: 8px;
+    border-radius: 6px;
+  }
+
+  .album-inline-panel .song-item.has-source-cover .song-main {
+    margin-left: 10px;
   }
 
   .album-sheet-overlay {

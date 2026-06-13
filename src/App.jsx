@@ -22,6 +22,11 @@ import { getAlbumMiniProgram } from './data/miniProgramAlbums.js';
 import { copyTextToClipboard } from './utils/appDomUtils.js';
 import { resolveMusicShareTarget } from './utils/musicShareUtils.js';
 import {
+  buildAllSiteSequentialAlbum,
+  buildAllSiteShuffleAlbum,
+  buildRandomMixAlbum
+} from './utils/randomMixUtils.js';
+import {
   APP_READY_EVENT,
   getPathForView,
   SITE_URL,
@@ -53,6 +58,8 @@ const App = () => {
   const hasSignaledBootReadyRef = useRef(false);
   const sharedTargetRef = useRef(null);
   const [isEmptyAnnouncementOpen, setIsEmptyAnnouncementOpen] = useState(false);
+  const [randomMixVersion, setRandomMixVersion] = useState(0);
+  const [panelVirtualAlbum, setPanelVirtualAlbum] = useState(null);
 
   const {
     toastMessage,
@@ -147,6 +154,52 @@ const App = () => {
     musicAlbums,
     songIndex
   });
+
+  const randomMixAlbum = useMemo(
+    () => {
+      void randomMixVersion;
+      return buildRandomMixAlbum(musicAlbums);
+    },
+    [musicAlbums, randomMixVersion]
+  );
+  const displayedAlbums = useMemo(() => {
+    if (!randomMixAlbum?.songs?.length) return filteredAlbums;
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const shouldShowRandomMix = !normalizedQuery
+      || '随便听'.includes(normalizedQuery)
+      || '随机歌单'.includes(normalizedQuery)
+      || normalizedQuery.includes('随便听')
+      || normalizedQuery.includes('随机')
+      || normalizedQuery.includes('random');
+    return shouldShowRandomMix ? [randomMixAlbum, ...filteredAlbums] : filteredAlbums;
+  }, [filteredAlbums, randomMixAlbum, searchQuery]);
+  const panelAlbumOverride = selectedAlbum?.id === randomMixAlbum?.id
+    ? panelVirtualAlbum
+    : null;
+
+  const refreshRandomMix = useCallback(() => {
+    setPanelVirtualAlbum(null);
+    setRandomMixVersion((version) => version + 1);
+  }, []);
+
+  const playVirtualAlbum = useCallback((album, options = {}) => {
+    const firstSong = album?.songs?.[0];
+    if (!album?.songs?.length || !firstSong?.src) return;
+    setCurrentAlbum(album);
+    setCurrentTrack(firstSong);
+    setIsPlaying(true);
+    if (options.showInPanel) {
+      setPanelVirtualAlbum(album);
+    }
+  }, [setCurrentAlbum, setCurrentTrack, setIsPlaying]);
+
+  const playAllSiteShuffle = useCallback(() => {
+    playVirtualAlbum(buildAllSiteShuffleAlbum(musicAlbums), { showInPanel: true });
+  }, [musicAlbums, playVirtualAlbum]);
+
+  const playAllSiteSequential = useCallback(() => {
+    playVirtualAlbum(buildAllSiteSequentialAlbum(musicAlbums), { showInPanel: true });
+  }, [musicAlbums, playVirtualAlbum]);
 
   const {
     view,
@@ -294,7 +347,7 @@ const App = () => {
 
   const buildCurrentSharePayload = useCallback(() => {
     if (!currentTrack?.src || typeof window === 'undefined') return null;
-    const resolvedAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
+    const resolvedAlbum = (currentAlbum?.id === 'favorites' || currentAlbum?.isVirtual) && currentSongInfo?.album
       ? currentSongInfo.album
       : currentAlbum;
     if (!resolvedAlbum?.id || !Array.isArray(resolvedAlbum.songs) || resolvedAlbum.songs.length === 0) {
@@ -354,6 +407,7 @@ const App = () => {
   }, [closeWeChatBrowserHint, showToast]);
 
   const handleSelectAlbum = useCallback((album) => {
+    setPanelVirtualAlbum(null);
     setSelectedAlbum((prev) => (prev && prev.id === album.id ? null : album));
     setIsSidebarOpen(false);
   }, [setSelectedAlbum, setIsSidebarOpen]);
@@ -480,7 +534,8 @@ const App = () => {
                         actions={announcementToolbarActions}
                       />
                       <AlbumGrid
-                        musicAlbums={filteredAlbums}
+                        musicAlbums={displayedAlbums}
+                        panelAlbumOverride={panelAlbumOverride}
                         navigateToAlbum={handleSelectAlbum}
                         expandedAlbumId={selectedAlbum ? selectedAlbum.id : null}
                         currentTrack={currentTrack}
@@ -489,6 +544,9 @@ const App = () => {
                         tempPlaylistSet={tempPlaylistSet}
                         onToggleTempSong={toggleTempSong}
                         onToggleAlbumFavorites={toggleAlbumFavorites}
+                        onRefreshRandomMix={refreshRandomMix}
+                        onPlayAllSiteShuffle={playAllSiteShuffle}
+                        onPlayAllSiteSequential={playAllSiteSequential}
                       />
                     </>
                   )}
