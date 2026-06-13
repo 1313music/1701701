@@ -2055,9 +2055,6 @@
 
   .album-inline-panel .song-list {
     margin: 0;
-  }
-
-  .album-inline-panel .song-list-shell.is-expanded .song-list {
     max-height: min(48vh, 440px);
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AlbumGrid from './AlbumGrid.jsx';
@@ -62,17 +62,14 @@ describe('AlbumGrid inline album panel', () => {
     vi.restoreAllMocks();
   });
 
-  it('previews long album song lists before expanding all songs', () => {
+  it('renders long album song lists without expand controls', async () => {
     render(<AlbumGrid {...createBaseProps()} />);
 
-    expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(25);
+    await waitFor(() => {
+      expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(30);
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: '查看全部 30 首' }));
-
-    expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(30);
-    expect(screen.getByRole('button', { name: '收起到前 25 首' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
+    expect(screen.queryByRole('button', { name: '查看全部 30 首' })).not.toBeInTheDocument();
+    expect(document.body.querySelector('.song-list-more-btn')).not.toBeInTheDocument();
   });
 });

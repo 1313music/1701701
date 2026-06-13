@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, ChevronUp, Heart, Play, QrCode, X } from 'lucide-react';
+import { Heart, Play, QrCode, RefreshCw, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
@@ -12,7 +12,6 @@ const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
-const INLINE_SONG_PREVIEW_LIMIT = 25;
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -123,7 +122,8 @@ const AlbumGrid = ({
     playSongFromAlbum,
     tempPlaylistSet,
     onToggleTempSong,
-    onToggleAlbumFavorites
+    onToggleAlbumFavorites,
+    onRefreshRandomMix
 }) => {
     const gridRef = useRef(null);
     const [columns, setColumns] = useState(() => {
@@ -139,7 +139,6 @@ const AlbumGrid = ({
     const [panelPhase, setPanelPhase] = useState(() => (expandedAlbumId ? 'open' : 'closed'));
     const [panelHeight, setPanelHeight] = useState(0);
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
-    const [expandedPanelSongListAlbumId, setExpandedPanelSongListAlbumId] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
     const [panelCoverPalette, setPanelCoverPalette] = useState(null);
@@ -317,13 +316,7 @@ const AlbumGrid = ({
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
     const panelSongs = Array.isArray(panelAlbum?.songs) ? panelAlbum.songs : [];
-    const isPanelSongListExpanded = Boolean(panelAlbum?.id)
-        && expandedPanelSongListAlbumId === panelAlbum.id;
-    const inlineSongPreviewLimit = INLINE_SONG_PREVIEW_LIMIT;
-    const hasPanelSongOverflow = panelSongs.length > inlineSongPreviewLimit;
-    const visiblePanelSongs = hasPanelSongOverflow && !isPanelSongListExpanded
-        ? panelSongs.slice(0, inlineSongPreviewLimit)
-        : panelSongs;
+    const isPanelVirtualAlbum = Boolean(panelAlbum?.isVirtual);
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
@@ -359,7 +352,7 @@ const AlbumGrid = ({
     useLayoutEffect(() => {
         if (!panelAlbum) return;
         measurePanelHeight();
-    }, [panelAlbum, measurePanelHeight, columns, isPanelSongListExpanded]);
+    }, [panelAlbum, measurePanelHeight, columns]);
 
     useEffect(() => {
         const node = panelContentRef.current;
@@ -452,6 +445,9 @@ const AlbumGrid = ({
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
                             <p className="album-metadata">{panelAlbum.artist} • {panelAlbum.songs.length} 首歌</p>
+                            {isPanelVirtualAlbum && (
+                                <p className="album-inline-note">每次换一批都会从全站曲库重新抽取</p>
+                            )}
                             <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'}`}>
                                 <button
                                     type="button"
@@ -462,6 +458,19 @@ const AlbumGrid = ({
                                     <Play size={17} fill="currentColor" strokeWidth={2.2} aria-hidden="true" />
                                     播放全部
                                 </button>
+                                {isPanelVirtualAlbum && (
+                                    <button
+                                        type="button"
+                                        className="album-inline-refresh-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onRefreshRandomMix?.();
+                                        }}
+                                    >
+                                        <RefreshCw size={17} strokeWidth={2.2} absoluteStrokeWidth aria-hidden="true" />
+                                        换一批
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     className={`album-inline-fav-all-btn ${isPanelAlbumFullyFavorited ? 'active' : ''}`}
@@ -513,9 +522,9 @@ const AlbumGrid = ({
                         </div>
                     </div>
 
-                    <div className={`song-list-shell ${isPanelSongListExpanded ? 'is-expanded' : ''}`}>
+                    <div className="song-list-shell">
                         <div className="song-list">
-                            {visiblePanelSongs.map((song, i) => {
+                            {panelSongs.map((song, i) => {
                                 const isCurrentSong = currentTrack.src === song.src;
                                 const isPlayingSong = isCurrentSong && isPlaying;
                                 return (
@@ -531,13 +540,18 @@ const AlbumGrid = ({
                                         }}
                                     >
                                         <span className="song-num">{i + 1}</span>
-                                        <SongNameMarquee
-                                            text={song.name}
-                                            allowMarquee={
-                                                isCurrentSong
-                                                || hoveredPanelSongSrc === song.src
-                                            }
-                                        />
+                                        <span className="song-main">
+                                            <SongNameMarquee
+                                                text={song.name}
+                                                allowMarquee={
+                                                    isCurrentSong
+                                                    || hoveredPanelSongSrc === song.src
+                                                }
+                                            />
+                                            {isPanelVirtualAlbum && song.sourceAlbumName && (
+                                                <span className="song-source-meta">{song.sourceAlbumName}</span>
+                                            )}
+                                        </span>
                                         <span className="song-actions">
                                             <span className="song-status">
                                                 {isPlayingSong ? (
@@ -568,30 +582,6 @@ const AlbumGrid = ({
                                 );
                             })}
                         </div>
-                        {hasPanelSongOverflow && (
-                            <div className="song-list-more">
-                                <button
-                                    type="button"
-                                    className="song-list-more-btn"
-                                    aria-expanded={isPanelSongListExpanded}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setExpandedPanelSongListAlbumId((previous) => (
-                                            previous === panelAlbum.id ? '' : panelAlbum.id
-                                        ));
-                                    }}
-                                >
-                                    {isPanelSongListExpanded ? (
-                                        <ChevronUp size={16} strokeWidth={2.3} aria-hidden="true" />
-                                    ) : (
-                                        <ChevronDown size={16} strokeWidth={2.3} aria-hidden="true" />
-                                    )}
-                                    {isPanelSongListExpanded
-                                        ? `收起到前 ${inlineSongPreviewLimit} 首`
-                                        : `查看全部 ${panelSongs.length} 首`}
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

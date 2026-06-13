@@ -1276,43 +1276,11 @@ body {
   margin: 0;
   padding: 0;
   border-top: none;
-}
-
-.album-inline-panel .song-list-shell.is-expanded .song-list {
   max-height: min(58vh, 640px);
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
-}
-
-.song-list-more {
-  display: flex;
-  justify-content: center;
-  padding: 14px 0 0;
-}
-
-.song-list-more-btn {
-  min-height: 38px;
-  padding: 0 16px;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--glass-bg) 70%, transparent);
-  color: var(--text-main);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.song-list-more-btn:hover {
-  transform: translateY(-1px);
-  background: var(--hover-bg);
 }
 
 .album-inline-panel .song-item {
