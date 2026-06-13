@@ -238,7 +238,6 @@ const GalleryDisplayPage = () => {
     : DESKTOP_COLUMN_GAP;
   const [waterfallColumns, setWaterfallColumns] = useState(() => createWaterfallColumns(1));
 
-  const categoryCount = categoryStats.length;
   const itemIdSet = useMemo(() => new Set(items.map((item) => item.id)), [items]);
   const hasMoreVisibleItems = visibleItems.length < filteredItems.length;
   const visibleProgress = filteredItems.length > 0
@@ -653,11 +652,7 @@ const GalleryDisplayPage = () => {
           <div className="gallery-toolbar">
             <div className="gallery-list-header">
               <div className="gallery-title-row">
-                <h2>图库展示</h2>
-                <div className="gallery-list-meta">
-                  <span>{filteredItems.length} / {items.length} 张</span>
-                  <span>{categoryCount} 个分类</span>
-                </div>
+                <h2>影像集</h2>
               </div>
             </div>
 

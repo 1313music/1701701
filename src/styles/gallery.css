@@ -125,14 +125,6 @@
   font-size: 20px;
 }
 
-.gallery-list-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
 .gallery-category-bar {
   display: flex;
   flex-wrap: wrap;
