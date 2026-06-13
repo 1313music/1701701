@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import GalleryDisplayPage from './GalleryDisplayPage.jsx';
@@ -188,5 +188,41 @@ describe('GalleryDisplayPage', () => {
     });
 
     expect(screen.getByText('已加载全部')).toBeInTheDocument();
+  });
+
+  it('opens the lightbox and navigates between images', async () => {
+    loadGalleryItems.mockResolvedValue([
+      { id: 'cover-a', category: '封面', name: 'cover-a', url: 'https://example.com/cover-a.jpg', previewUrl: 'https://example.com/cover-a-small.jpg' },
+      { id: 'cover-b', category: '封面', name: 'cover-b', url: 'https://example.com/cover-b.jpg', previewUrl: 'https://example.com/cover-b-small.jpg' },
+      { id: 'cover-c', category: '封面', name: 'cover-c', url: 'https://example.com/cover-c.jpg', previewUrl: 'https://example.com/cover-c-small.jpg' }
+    ]);
+
+    const { container } = render(<GalleryDisplayPage />);
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('.gallery-waterfall-item')).toHaveLength(3);
+    });
+
+    const previewButton = container.querySelector('.gallery-waterfall-preview');
+    fireEvent.click(previewButton);
+
+    const dialog = screen.getByRole('dialog', { name: '图片预览' });
+    const initialImage = within(dialog).getByRole('img');
+    const initialSrc = initialImage.getAttribute('src');
+    expect(within(dialog).getByText(/\d+ \/ 3/)).toBeInTheDocument();
+    expect(within(dialog).getByRole('link', { name: '查看原图' })).toHaveAttribute('href', initialSrc);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '下一张' }));
+
+    await waitFor(() => {
+      const nextImage = within(screen.getByRole('dialog', { name: '图片预览' })).getByRole('img');
+      expect(nextImage.getAttribute('src')).not.toBe(initialSrc);
+    });
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: '图片预览' })).not.toBeInTheDocument();
+    });
   });
 });

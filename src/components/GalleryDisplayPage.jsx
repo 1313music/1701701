@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ImagePlus, LoaderCircle, RefreshCw } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  ImagePlus,
+  LoaderCircle,
+  RefreshCw,
+  X
+} from 'lucide-react';
 import '../styles/gallery.css';
 import { loadGalleryItems, refreshGalleryItems } from '../data/galleryManifest';
 
@@ -21,6 +29,7 @@ const DESKTOP_COLUMN_GAP = 12;
 const MOBILE_COLUMN_COUNT = 2;
 const MOBILE_COLUMN_GAP = 10;
 const DEFAULT_WATERFALL_HEIGHT_WEIGHT = 1.15;
+const LOADING_PLACEHOLDER_COUNT = 12;
 
 const containsCjk = (value) => /[\u3400-\u9fff]/.test(String(value || ''));
 
@@ -183,7 +192,7 @@ const GalleryDisplayPage = () => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewItemId, setPreviewItemId] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
   const [visibleCount, setVisibleCount] = useState(MIN_VISIBLE_COUNT_STEP);
   const [loadedItemIds, setLoadedItemIds] = useState(() => new Set());
@@ -192,6 +201,7 @@ const GalleryDisplayPage = () => {
   const autoLoadTimerRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const touchStartYRef = useRef(0);
+  const lightboxTouchStartXRef = useRef(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const itemHeightWeightsRef = useRef(new Map());
   const assignedItemWeightsRef = useRef(new Map());
@@ -212,6 +222,11 @@ const GalleryDisplayPage = () => {
     () => filteredItems.slice(0, visibleCount),
     [filteredItems, visibleCount]
   );
+  const previewIndex = useMemo(
+    () => filteredItems.findIndex((item) => item.id === previewItemId),
+    [filteredItems, previewItemId]
+  );
+  const previewItem = previewIndex >= 0 ? filteredItems[previewIndex] : null;
   const columnCount = useMemo(() => {
     const fallbackWidth = (
       layoutWidth
@@ -225,8 +240,13 @@ const GalleryDisplayPage = () => {
   const [waterfallColumns, setWaterfallColumns] = useState(() => createWaterfallColumns(1));
 
   const categoryCount = categoryStats.length;
+  const selectedCategoryLabel = selectedCategory === ALL_CATEGORY ? '全部' : selectedCategory;
   const itemIdSet = useMemo(() => new Set(items.map((item) => item.id)), [items]);
   const hasMoreVisibleItems = visibleItems.length < filteredItems.length;
+  const visibleProgress = filteredItems.length > 0
+    ? Math.round((visibleItems.length / filteredItems.length) * 100)
+    : 0;
+  const hasMultiplePreviewItems = filteredItems.length > 1;
   const loadImages = useCallback(async ({ forceRefresh = false } = {}) => {
     setIsLoading(true);
     setError('');
@@ -257,6 +277,13 @@ const GalleryDisplayPage = () => {
       setSelectedCategory(categoryStats[0]?.name || ALL_CATEGORY);
     }
   }, [categoryStats, selectedCategory]);
+
+  useEffect(() => {
+    if (!previewItemId) return;
+    if (!filteredItems.some((item) => item.id === previewItemId)) {
+      setPreviewItemId('');
+    }
+  }, [filteredItems, previewItemId]);
 
   useEffect(() => {
     loadedItemIdsRef.current = loadedItemIds;
@@ -473,25 +500,140 @@ const GalleryDisplayPage = () => {
     loadRevealTimersRef.current.set(id, revealTimerId);
   }, []);
 
+  const closeLightbox = useCallback(() => {
+    setPreviewItemId('');
+  }, []);
+
+  const showLightboxItem = useCallback((direction) => {
+    setPreviewItemId((currentId) => {
+      if (filteredItems.length === 0) return '';
+      const currentIndex = filteredItems.findIndex((item) => item.id === currentId);
+      const baseIndex = currentIndex >= 0 ? currentIndex : 0;
+      const nextIndex = (baseIndex + direction + filteredItems.length) % filteredItems.length;
+      return filteredItems[nextIndex]?.id || '';
+    });
+  }, [filteredItems]);
+
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
-    if (!previewUrl) return undefined;
+    if (!previewItem) return undefined;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [previewUrl]);
+  }, [previewItem]);
 
-  const lightbox = previewUrl && typeof document !== 'undefined'
+  useEffect(() => {
+    if (!previewItem) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeLightbox();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showLightboxItem(-1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showLightboxItem(1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [closeLightbox, previewItem, showLightboxItem]);
+
+  useEffect(() => {
+    if (!previewItem || !hasMultiplePreviewItems || typeof window === 'undefined') return;
+
+    [-1, 1].forEach((offset) => {
+      const preloadItem = filteredItems[(previewIndex + offset + filteredItems.length) % filteredItems.length];
+      if (!preloadItem?.url) return;
+      const image = new window.Image();
+      image.src = preloadItem.url;
+    });
+  }, [filteredItems, hasMultiplePreviewItems, previewIndex, previewItem]);
+
+  const handleLightboxTouchStart = useCallback((event) => {
+    lightboxTouchStartXRef.current = event.touches[0]?.clientX || 0;
+  }, []);
+
+  const handleLightboxTouchEnd = useCallback((event) => {
+    const nextX = event.changedTouches[0]?.clientX || 0;
+    const deltaX = nextX - lightboxTouchStartXRef.current;
+    if (Math.abs(deltaX) < 44) return;
+    showLightboxItem(deltaX > 0 ? -1 : 1);
+  }, [showLightboxItem]);
+
+  const lightbox = previewItem && typeof document !== 'undefined'
     ? createPortal(
-      <div className="gallery-lightbox" onClick={() => setPreviewUrl('')}>
+      <div
+        className="gallery-lightbox"
+        role="dialog"
+        aria-modal="true"
+        aria-label="图片预览"
+        onClick={closeLightbox}
+      >
         <div className="gallery-lightbox-backdrop" />
-        <div className="gallery-lightbox-panel" onClick={(event) => event.stopPropagation()}>
-          <img src={previewUrl} alt="预览图片" />
-          <div className="gallery-lightbox-actions">
-            <button type="button" className="gallery-btn primary" onClick={() => setPreviewUrl('')}>关闭</button>
+        <div
+          className="gallery-lightbox-panel"
+          onClick={(event) => event.stopPropagation()}
+          onTouchStart={handleLightboxTouchStart}
+          onTouchEnd={handleLightboxTouchEnd}
+        >
+          <div className="gallery-lightbox-header">
+            <div className="gallery-lightbox-meta">
+              <span className="gallery-lightbox-category">{previewItem.category}</span>
+              <strong>{previewItem.name || '图库图片'}</strong>
+              <span>{previewIndex + 1} / {filteredItems.length}</span>
+            </div>
+            <div className="gallery-lightbox-header-actions">
+              <a
+                className="gallery-lightbox-icon-btn"
+                href={previewItem.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="查看原图"
+                title="查看原图"
+              >
+                <ExternalLink size={18} />
+              </a>
+              <button
+                type="button"
+                className="gallery-lightbox-icon-btn"
+                onClick={closeLightbox}
+                aria-label="关闭预览"
+                title="关闭"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div className="gallery-lightbox-stage">
+            <button
+              type="button"
+              className="gallery-lightbox-nav is-prev"
+              onClick={() => showLightboxItem(-1)}
+              disabled={!hasMultiplePreviewItems}
+              aria-label="上一张"
+            >
+              <ChevronLeft size={28} />
+            </button>
+            <img src={previewItem.url} alt={previewItem.name || '预览图片'} />
+            <button
+              type="button"
+              className="gallery-lightbox-nav is-next"
+              onClick={() => showLightboxItem(1)}
+              disabled={!hasMultiplePreviewItems}
+              aria-label="下一张"
+            >
+              <ChevronRight size={28} />
+            </button>
           </div>
         </div>
       </div>,
@@ -520,44 +662,59 @@ const GalleryDisplayPage = () => {
         )}
 
         <section ref={gallerySectionRef} className="gallery-list-card" aria-label="瀑布流图库">
-          <div className="gallery-list-header">
-            <div className="gallery-title-row">
-              <h2>图库展示</h2>
-              <div className="gallery-list-meta">
-                <span>{filteredItems.length} / {items.length} 张</span>
-                <span>{categoryCount} 个分类</span>
+          <div className="gallery-toolbar">
+            <div className="gallery-list-header">
+              <div className="gallery-title-row">
+                <h2>图库展示</h2>
+                <div className="gallery-list-meta">
+                  <span>{filteredItems.length} / {items.length} 张</span>
+                  <span>{categoryCount} 个分类</span>
+                </div>
               </div>
+              {!isLoading && items.length > 0 && (
+                <div className="gallery-active-summary">
+                  <span>{selectedCategoryLabel}</span>
+                  <strong>{filteredItems.length}</strong>
+                </div>
+              )}
             </div>
+
+            {!isLoading && categoryStats.length > 0 && (
+              <div className="gallery-category-bar" aria-label="分类筛选">
+                {categoryStats.map((category) => (
+                  <button
+                    key={category.name}
+                    type="button"
+                    className={`gallery-category-btn ${selectedCategory === category.name ? 'is-active' : ''}`}
+                    onClick={() => setSelectedCategory(category.name)}
+                  >
+                    {category.name}
+                    <span>{category.count}</span>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={`gallery-category-btn ${selectedCategory === ALL_CATEGORY ? 'is-active' : ''}`}
+                  onClick={() => setSelectedCategory(ALL_CATEGORY)}
+                >
+                  全部
+                  <span>{items.length}</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {!isLoading && categoryStats.length > 0 && (
-            <div className="gallery-category-bar" aria-label="分类筛选">
-              {categoryStats.map((category) => (
-                <button
-                  key={category.name}
-                  type="button"
-                  className={`gallery-category-btn ${selectedCategory === category.name ? 'is-active' : ''}`}
-                  onClick={() => setSelectedCategory(category.name)}
-                >
-                  {category.name}
-                  <span>{category.count}</span>
-                </button>
-              ))}
-              <button
-                type="button"
-                className={`gallery-category-btn ${selectedCategory === ALL_CATEGORY ? 'is-active' : ''}`}
-                onClick={() => setSelectedCategory(ALL_CATEGORY)}
-              >
-                全部
-                <span>{items.length}</span>
-              </button>
-            </div>
-          )}
-
           {isLoading ? (
-            <div className="gallery-browser-loading">
-              <LoaderCircle size={18} className="gallery-spin" />
-              加载图库中...
+            <div className="gallery-loading-state">
+              <div className="gallery-browser-loading">
+                <LoaderCircle size={18} className="gallery-spin" />
+                加载图库中...
+              </div>
+              <div className="gallery-loading-grid" aria-hidden="true">
+                {Array.from({ length: LOADING_PLACEHOLDER_COUNT }, (_, index) => (
+                  <span key={`gallery-loading-${index}`} className="gallery-loading-card" />
+                ))}
+              </div>
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="gallery-empty-state">
@@ -592,7 +749,8 @@ const GalleryDisplayPage = () => {
                         <button
                           type="button"
                           className="gallery-waterfall-preview"
-                          onClick={() => setPreviewUrl(item.url)}
+                          onClick={() => setPreviewItemId(item.id)}
+                          aria-label={`查看图片：${item.name || item.category}`}
                           title="查看图片"
                         >
                           <span className="gallery-waterfall-skeleton" aria-hidden="true" />
@@ -604,12 +762,26 @@ const GalleryDisplayPage = () => {
                             onLoad={(event) => markItemLoaded(item.id, event.currentTarget)}
                             onError={() => markItemLoaded(item.id)}
                           />
+                          <span className="gallery-waterfall-overlay" aria-hidden="true">
+                            <span className="gallery-waterfall-overlay-top">
+                              <span>{item.category}</span>
+                              <span>{index + 1} / {filteredItems.length}</span>
+                            </span>
+                            <span className="gallery-waterfall-overlay-name">{item.name || '图库图片'}</span>
+                          </span>
                         </button>
                       </figure>
                     );
                   })}
                 </div>
               ))}
+            </div>
+          )}
+
+          {!isLoading && filteredItems.length > 0 && hasMoreVisibleItems && (
+            <div className="gallery-load-progress" aria-live="polite">
+              <span style={{ '--gallery-load-progress': `${visibleProgress}%` }} />
+              <p>{visibleItems.length} / {filteredItems.length}</p>
             </div>
           )}
 
