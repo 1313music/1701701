@@ -305,26 +305,16 @@ export const createShareCardDataUrl = async ({
   trackName,
   albumName,
   url,
-  cover,
-  miniProgram
+  cover
 }) => {
-  if (typeof document === 'undefined' || !url) return '';
+  if (typeof document === 'undefined' || !url || type === 'video') return '';
   const isVideoCard = type === 'video';
   const isDark = resolveIsDarkTheme();
   const useManualBlur = shouldUseManualCanvasBlur();
   const width = isVideoCard ? 1600 : 1080;
-  const shouldLoadMiniProgramCode = !isVideoCard && Boolean(miniProgram?.codeUrl);
-  const [coverImage, miniProgramCodeImage] = await Promise.all([
-    loadCanvasImageWithFallback(cover),
-    shouldLoadMiniProgramCode ? loadCanvasImageWithFallback(miniProgram.codeUrl) : Promise.resolve(null)
-  ]);
-  const hasMiniProgramCode = Boolean(miniProgramCodeImage);
-  const brandFontSize = isVideoCard ? 30 : (hasMiniProgramCode ? 42 : 36);
-  const brandGapTop = isVideoCard ? 0 : (hasMiniProgramCode ? 76 : 32);
-  const brandGapBottom = isVideoCard ? 0 : (hasMiniProgramCode ? 90 : 44);
-  const brandAreaHeight = isVideoCard ? 0 : brandGapTop + brandFontSize + brandGapBottom;
+  const coverImage = await loadCanvasImageWithFallback(cover);
   const cardBodyHeight = isVideoCard ? 760 : 1460;
-  const cardHeight = cardBodyHeight + brandAreaHeight;
+  const cardHeight = cardBodyHeight;
   const height = cardHeight;
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -357,11 +347,8 @@ export const createShareCardDataUrl = async ({
     cardShadow: isDark ? 'rgba(4, 8, 12, 0.22)' : 'rgba(18, 34, 56, 0.16)',
     text: '#f7fbff',
     subText: 'rgba(244, 249, 255, 0.76)',
-    footer: 'rgba(244, 249, 255, 0.8)',
     controlTrack: 'rgba(244, 249, 255, 0.38)',
     controlFill: 'rgba(255, 255, 255, 0.95)',
-    qrDark: '#ffffff',
-    qrLight: '#0000',
     coverFallback0: toRgbColor(mixRgb(accent, { r: 255, g: 255, b: 255 }, 0.2)),
     coverFallback1: toRgbColor(mixRgb(accent, { r: 12, g: 18, b: 28 }, 0.56)),
     grain: useManualBlur
@@ -372,7 +359,6 @@ export const createShareCardDataUrl = async ({
   const cardY = 0;
   const cardWidth = width;
   const cardRadius = 0;
-  let miniProgramQrLayout = null;
 
   if (coverImage) {
     drawBlurredCover(
@@ -703,52 +689,6 @@ export const createShareCardDataUrl = async ({
     drawSkipIcon(prevX, controlsY, skipIconSize, 'prev');
     drawPauseIcon(pauseX, controlsY, pauseIconSize);
     drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
-
-    if (hasMiniProgramCode) {
-      const qrSize = 132;
-      const qrRightGap = width - contentRight;
-      const qrX = contentRight - qrSize;
-      const qrY = cardHeight - qrSize - qrRightGap;
-      miniProgramQrLayout = {
-        bottomY: qrY + qrSize
-      };
-
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetY = 4;
-      drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, 16);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
-      ctx.fill();
-      ctx.restore();
-
-      ctx.save();
-      drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, 16);
-      ctx.clip();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(qrX, qrY, qrSize, qrSize);
-      drawImageCover(ctx, miniProgramCodeImage, qrX, qrY, qrSize, qrSize);
-      ctx.restore();
-    }
-  }
-
-  const brandText = '1701701.xyz';
-  if (isVideoCard) {
-    const brandPadding = 34;
-    const brandX = width - brandPadding;
-    const brandY = brandPadding;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-    ctx.font = `600 ${brandFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
-    ctx.fillText(brandText, brandX, brandY);
-  } else {
-    ctx.textAlign = 'center';
-    ctx.textBaseline = miniProgramQrLayout ? 'bottom' : 'top';
-    ctx.fillStyle = palette.text;
-    ctx.font = `600 ${brandFontSize}px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif`;
-    const infoBrandY = miniProgramQrLayout?.bottomY || cardBodyHeight + brandGapTop;
-    ctx.fillText(brandText, width / 2, infoBrandY);
   }
 
   return canvas.toDataURL('image/png');
