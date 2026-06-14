@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   ALL_SITE_SEQUENTIAL_ALBUM_ID,
   ALL_SITE_SHUFFLE_ALBUM_ID,
+  FAVORITES_ALBUM_ID,
   RANDOM_MIX_ALBUM_ID,
   buildAllSiteSequentialAlbum,
   buildAllSiteShuffleAlbum,
+  buildFavoritesAlbum,
   buildRandomMixAlbum,
   flattenLibrarySongs,
   pickRandomMixEntries
@@ -131,6 +133,41 @@ describe('randomMixUtils', () => {
       'c-1.mp3',
       'd-1.mp3'
     ]);
+  });
+
+  it('builds a favorites virtual album from saved song entries', () => {
+    const albums = createAlbums();
+    const album = buildFavoritesAlbum([
+      { album: albums[1], song: albums[1].songs[0] },
+      { album: albums[2], song: albums[2].songs[0] }
+    ]);
+
+    expect(album).toMatchObject({
+      id: FAVORITES_ALBUM_ID,
+      name: '我的收藏',
+      artist: '我的收藏',
+      isVirtual: true,
+      sourceAlbumCount: 2,
+      virtualType: 'favorites'
+    });
+    expect(album.songs.map((song) => song.src)).toEqual(['b-1.mp3', 'c-1.mp3']);
+    expect(album.songs.map((song) => song.sourceAlbumName)).toEqual(['专辑 B', '专辑 C']);
+    expect(album.cover).toBe('/b.jpg');
+    expect(album.coverGrid).toEqual(['/b.jpg', '/c-1.jpg']);
+  });
+
+  it('keeps an empty favorites virtual album available', () => {
+    const album = buildFavoritesAlbum([]);
+
+    expect(album).toMatchObject({
+      id: FAVORITES_ALBUM_ID,
+      name: '我的收藏',
+      isVirtual: true,
+      sourceAlbumCount: 0,
+      virtualType: 'favorites',
+      songs: [],
+      coverGrid: []
+    });
   });
 
   it('keeps adjacent picks from the same album apart when possible', () => {

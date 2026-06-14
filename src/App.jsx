@@ -22,8 +22,10 @@ import { getAlbumMiniProgram } from './data/miniProgramAlbums.js';
 import { copyTextToClipboard } from './utils/appDomUtils.js';
 import { resolveMusicShareTarget } from './utils/musicShareUtils.js';
 import {
+  FAVORITES_ALBUM_ID,
   buildAllSiteSequentialAlbum,
   buildAllSiteShuffleAlbum,
+  buildFavoritesAlbum,
   buildRandomMixAlbum
 } from './utils/randomMixUtils.js';
 import {
@@ -162,8 +164,13 @@ const App = () => {
     },
     [musicAlbums, randomMixVersion]
   );
+
+  const favoriteAlbum = useMemo(
+    () => buildFavoritesAlbum(tempPlaylistItems),
+    [tempPlaylistItems]
+  );
+
   const displayedAlbums = useMemo(() => {
-    if (!randomMixAlbum?.songs?.length) return filteredAlbums;
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const shouldShowRandomMix = !normalizedQuery
       || '随便听'.includes(normalizedQuery)
@@ -171,8 +178,25 @@ const App = () => {
       || normalizedQuery.includes('随便听')
       || normalizedQuery.includes('随机')
       || normalizedQuery.includes('random');
-    return shouldShowRandomMix ? [randomMixAlbum, ...filteredAlbums] : filteredAlbums;
-  }, [filteredAlbums, randomMixAlbum, searchQuery]);
+    const shouldShowFavoriteAlbum = !normalizedQuery
+      || '我的收藏'.includes(normalizedQuery)
+      || '收藏歌单'.includes(normalizedQuery)
+      || normalizedQuery.includes('收藏')
+      || normalizedQuery.includes('喜欢')
+      || normalizedQuery.includes('favorite')
+      || favoriteAlbum.songs.some((song) => (
+        song.name?.toLowerCase().includes(normalizedQuery)
+        || song.sourceAlbumName?.toLowerCase().includes(normalizedQuery)
+      ));
+    const virtualAlbums = [];
+    if (randomMixAlbum?.songs?.length && shouldShowRandomMix) {
+      virtualAlbums.push(randomMixAlbum);
+    }
+    if (favoriteAlbum && shouldShowFavoriteAlbum) {
+      virtualAlbums.push(favoriteAlbum);
+    }
+    return [...virtualAlbums, ...filteredAlbums];
+  }, [favoriteAlbum, filteredAlbums, randomMixAlbum, searchQuery]);
   const panelAlbumOverride = selectedAlbum?.id === randomMixAlbum?.id
     ? panelVirtualAlbum
     : null;
@@ -295,25 +319,9 @@ const App = () => {
     sharedTargetRef.current = null;
   }, [currentAlbum, currentTrack, locationSearch, replaceLocationSearch, view]);
 
-  const listAlbum = currentAlbum?.id === 'favorites' && currentSongInfo?.album
+  const listAlbum = currentAlbum?.id === FAVORITES_ALBUM_ID && currentSongInfo?.album
     ? currentSongInfo.album
     : currentAlbum;
-
-  const favoriteAlbum = useMemo(() => {
-    if (tempPlaylistItems.length === 0) return null;
-    const cover = tempPlaylistItems[0]?.album?.cover || currentAlbum?.cover;
-    const songs = tempPlaylistItems.map((item) => ({
-      ...item.song,
-      cover: item.album?.cover
-    }));
-    return {
-      id: 'favorites',
-      name: '我的收藏',
-      artist: '我的收藏',
-      cover,
-      songs
-    };
-  }, [tempPlaylistItems, currentAlbum?.cover]);
 
   const playFavorites = (song) => {
     if (!favoriteAlbum || favoriteAlbum.songs.length === 0) return;
@@ -347,7 +355,7 @@ const App = () => {
 
   const buildCurrentSharePayload = useCallback(() => {
     if (!currentTrack?.src || typeof window === 'undefined') return null;
-    const resolvedAlbum = (currentAlbum?.id === 'favorites' || currentAlbum?.isVirtual) && currentSongInfo?.album
+    const resolvedAlbum = (currentAlbum?.id === FAVORITES_ALBUM_ID || currentAlbum?.isVirtual) && currentSongInfo?.album
       ? currentSongInfo.album
       : currentAlbum;
     if (!resolvedAlbum?.id || !Array.isArray(resolvedAlbum.songs) || resolvedAlbum.songs.length === 0) {
@@ -544,6 +552,7 @@ const App = () => {
                         tempPlaylistSet={tempPlaylistSet}
                         onToggleTempSong={toggleTempSong}
                         onToggleAlbumFavorites={toggleAlbumFavorites}
+                        onClearTempPlaylist={clearTempPlaylist}
                         onRefreshRandomMix={refreshRandomMix}
                         onPlayAllSiteShuffle={playAllSiteShuffle}
                         onPlayAllSiteSequential={playAllSiteSequential}

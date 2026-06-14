@@ -1,4 +1,5 @@
 export const RANDOM_MIX_ALBUM_ID = 'random-mix';
+export const FAVORITES_ALBUM_ID = 'favorites';
 export const ALL_SITE_SHUFFLE_ALBUM_ID = 'all-site-shuffle';
 export const ALL_SITE_SEQUENTIAL_ALBUM_ID = 'all-site-sequential';
 export const DEFAULT_RANDOM_MIX_SIZE = 25;
@@ -115,6 +116,24 @@ const buildVirtualAlbum = ({ id, name, artist, entries, virtualType }) => {
     isVirtual: true,
     sourceAlbumCount: countSourceAlbums(entries),
     virtualType,
+    songs
+  };
+};
+
+export const buildFavoritesAlbum = (entries, { fallbackCover = '' } = {}) => {
+  const safeEntries = Array.isArray(entries)
+    ? entries.filter((entry) => entry?.album && entry?.song?.src)
+    : [];
+  const songs = safeEntries.map(toVirtualSong);
+  return {
+    id: FAVORITES_ALBUM_ID,
+    name: '我的收藏',
+    artist: '我的收藏',
+    cover: songs[0]?.cover || fallbackCover || '',
+    coverGrid: buildCoverGrid(safeEntries),
+    isVirtual: true,
+    sourceAlbumCount: countSourceAlbums(safeEntries),
+    virtualType: 'favorites',
     songs
   };
 };

@@ -1109,6 +1109,42 @@ body {
   min-height: 0;
 }
 
+.album-cover-collage.is-count-2 {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.album-cover-collage.is-count-3 img:first-child {
+  grid-row: 1 / span 2;
+}
+
+.album-cover-favorites-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--favorite-active-color);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--favorite-active-color) 18%, transparent),
+      color-mix(in srgb, var(--main-color) 12%, transparent)
+    ),
+    color-mix(in srgb, var(--glass-bg) 82%, var(--bg-color));
+}
+
+.album-cover-favorites-placeholder svg {
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--favorite-active-color) 18%, transparent));
+}
+
+.album-cover-favorites-placeholder span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
 .album-inline-header .album-info-text {
   width: 100%;
   min-width: 0;
@@ -1191,8 +1227,15 @@ body {
   white-space: nowrap;
 }
 
+.album-inline-hero-actions .play-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.18);
+}
+
 .album-inline-fav-all-btn,
 .album-inline-secondary-btn,
+.album-inline-clear-favorites-btn,
 .album-inline-qr-btn {
   border: 1px solid var(--glass-border);
   background: transparent;
@@ -1215,13 +1258,24 @@ body {
 
 .album-inline-fav-all-btn:hover,
 .album-inline-secondary-btn:hover,
+.album-inline-clear-favorites-btn:hover,
 .album-inline-qr-btn:hover {
   transform: translateY(-1px);
   background: var(--hover-bg);
 }
 
-.album-inline-secondary-btn {
+.album-inline-secondary-btn,
+.album-inline-clear-favorites-btn {
   color: var(--text-main);
+}
+
+.album-inline-clear-favorites-btn {
+  color: var(--text-secondary);
+}
+
+.album-inline-clear-favorites-btn:hover {
+  color: var(--favorite-active-color);
+  border-color: var(--favorite-active-border);
 }
 
 .album-inline-fav-all-btn.active {
@@ -2065,6 +2119,11 @@ body {
 
 .song-empty-copy {
   font-weight: 650;
+}
+
+.album-inline-panel .album-inline-empty {
+  min-height: min(260px, 42vh);
+  margin: 0;
 }
 
 @media (max-width: 1600px) {

@@ -32,6 +32,7 @@ const createBaseProps = (overrides = {}) => {
     tempPlaylistSet: new Set(),
     onToggleTempSong: vi.fn(),
     onToggleAlbumFavorites: vi.fn(),
+    onClearTempPlaylist: vi.fn(),
     ...overrides
   };
 };
@@ -100,6 +101,18 @@ const createAllSiteAlbum = () => ({
       sourceAlbumName: '来源专辑三'
     }
   ]
+});
+
+const createFavoritesAlbum = ({ songs = [], cover = '', coverGrid = [] } = {}) => ({
+  id: 'favorites',
+  name: '我的收藏',
+  artist: '我的收藏',
+  cover,
+  coverGrid,
+  isVirtual: true,
+  sourceAlbumCount: 0,
+  virtualType: 'favorites',
+  songs
 });
 
 describe('AlbumGrid inline album panel', () => {
@@ -254,5 +267,81 @@ describe('AlbumGrid inline album panel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '收起' }));
     expect(navigateToAlbum).toHaveBeenCalledWith(randomAlbum);
+  });
+
+  it('renders an empty favorites album with a disabled play action', async () => {
+    const favoritesAlbum = createFavoritesAlbum();
+    render(
+      <AlbumGrid
+        {...createBaseProps({
+          musicAlbums: [favoritesAlbum],
+          expandedAlbumId: favoritesAlbum.id
+        })}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: '我的收藏' })).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByRole('img', { name: '我的收藏' })).toHaveLength(2);
+    expect(screen.getByText('我的收藏 • 0 首歌')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '播放收藏' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: '清空收藏' })).not.toBeInTheDocument();
+    expect(screen.getByText('还没有收藏歌曲')).toBeInTheDocument();
+  });
+
+  it('keeps favorites metadata simple and confirms before clearing', async () => {
+    const favoritesAlbum = createFavoritesAlbum({
+      cover: '/img/favorite-1.jpg',
+      coverGrid: ['/img/favorite-1.jpg', '/img/favorite-2.jpg', '/img/favorite-3.jpg'],
+      songs: [
+        {
+          src: 'favorite-1.mp3',
+          name: '收藏歌曲一',
+          cover: '/img/favorite-1.jpg',
+          sourceAlbumName: '来源专辑一'
+        },
+        {
+          src: 'favorite-2.mp3',
+          name: '收藏歌曲二',
+          cover: '/img/favorite-2.jpg',
+          sourceAlbumName: '来源专辑二'
+        },
+        {
+          src: 'favorite-3.mp3',
+          name: '收藏歌曲三',
+          cover: '/img/favorite-3.jpg',
+          sourceAlbumName: '来源专辑三'
+        }
+      ]
+    });
+    const onClearTempPlaylist = vi.fn();
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    render(
+      <AlbumGrid
+        {...createBaseProps({
+          musicAlbums: [favoritesAlbum],
+          expandedAlbumId: favoritesAlbum.id,
+          onClearTempPlaylist
+        })}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: '我的收藏' })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('我的收藏 • 3 首歌')).toBeInTheDocument();
+    expect(screen.queryByText('来自 3 张专辑 · 3 首')).not.toBeInTheDocument();
+    expect(document.body.querySelectorAll('.album-cover-collage.is-count-3')).toHaveLength(2);
+
+    confirmSpy.mockReturnValueOnce(false);
+    fireEvent.click(screen.getByRole('button', { name: '清空收藏' }));
+    expect(onClearTempPlaylist).not.toHaveBeenCalled();
+
+    confirmSpy.mockReturnValueOnce(true);
+    fireEvent.click(screen.getByRole('button', { name: '清空收藏' }));
+    expect(onClearTempPlaylist).toHaveBeenCalledTimes(1);
   });
 });

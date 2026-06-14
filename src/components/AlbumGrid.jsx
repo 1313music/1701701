@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Heart, ListMusic, Play, QrCode, RefreshCw, Shuffle, X } from 'lucide-react';
+import { Heart, ListMusic, Play, QrCode, RefreshCw, Shuffle, Trash2, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
@@ -118,11 +118,25 @@ const AlbumCoverArt = ({ album, className = '', alt }) => {
     const coverGrid = Array.isArray(album?.coverGrid)
         ? album.coverGrid.filter(Boolean).slice(0, 4)
         : [];
+    const isEmptyFavoritesCover = album?.virtualType === 'favorites' && !album?.cover && coverGrid.length === 0;
 
-    if (coverGrid.length >= 4) {
+    if (isEmptyFavoritesCover) {
         return (
             <div
-                className={`album-cover-collage ${className}`}
+                className={`album-cover-favorites-placeholder ${className}`}
+                role="img"
+                aria-label={alt || '我的收藏'}
+            >
+                <Heart size={42} strokeWidth={2.1} aria-hidden="true" />
+                <span>收藏</span>
+            </div>
+        );
+    }
+
+    if (coverGrid.length >= 2) {
+        return (
+            <div
+                className={`album-cover-collage is-count-${coverGrid.length} ${className}`}
                 role="img"
                 aria-label={alt || `${album?.name || '专辑'} 封面`}
             >
@@ -160,6 +174,7 @@ const AlbumGrid = ({
     tempPlaylistSet,
     onToggleTempSong,
     onToggleAlbumFavorites,
+    onClearTempPlaylist,
     onRefreshRandomMix,
     onPlayAllSiteShuffle,
     onPlayAllSiteSequential
@@ -358,18 +373,22 @@ const AlbumGrid = ({
     const isPanelClosing = Boolean(panelAlbum) && panelPhase === 'closing';
     const isPanelOpening = Boolean(panelAlbum) && panelPhase === 'opening';
     const panelSongs = Array.isArray(panelAlbum?.songs) ? panelAlbum.songs : [];
-    const shouldConstrainPanelSongList = panelSongs.length > INLINE_SONG_SCROLL_THRESHOLD;
     const isPanelVirtualAlbum = Boolean(panelAlbum?.isVirtual);
     const isPanelRandomMix = panelAlbum?.virtualType === 'random-mix';
+    const isPanelFavorites = panelAlbum?.virtualType === 'favorites';
+    const shouldConstrainPanelSongList = panelSongs.length > INLINE_SONG_SCROLL_THRESHOLD;
     const isPanelRandomFeature = isPanelVirtualAlbum && (
         panelAlbum?.virtualType === 'random-mix'
         || panelAlbum?.virtualType === 'all-site-shuffle'
         || panelAlbum?.virtualType === 'all-site-sequential'
     );
     const panelSourceAlbumCount = Number(panelAlbum?.sourceAlbumCount) || 0;
-    const panelMetadata = isPanelVirtualAlbum && panelSourceAlbumCount > 0
+    const panelMetadata = isPanelFavorites
+        ? `${panelAlbum?.artist || '我的收藏'} • ${panelSongs.length} 首歌`
+        : isPanelVirtualAlbum && panelSourceAlbumCount > 0
         ? `来自 ${panelSourceAlbumCount} 张专辑 · ${panelSongs.length} 首`
         : `${panelAlbum?.artist || ''} • ${panelSongs.length} 首歌`;
+    const shouldShowClearFavorites = isPanelFavorites && panelSongs.length > 0;
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
@@ -429,7 +448,8 @@ const AlbumGrid = ({
     }, [panelCoverPalette]);
 
     const gridItems = musicAlbums.flatMap((album, index) => {
-        const isCurrentAlbum = album.songs.some((song) => song.src === currentTrack.src);
+        const albumSongs = Array.isArray(album.songs) ? album.songs : [];
+        const isCurrentAlbum = albumSongs.some((song) => song.src === currentTrack.src);
         const isAlbumPlaying = isCurrentAlbum && isPlaying;
         const items = [];
         const isExpandedAlbum = renderedPanelAlbumId === album.id;
@@ -498,7 +518,7 @@ const AlbumGrid = ({
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
                             <p className="album-metadata">{panelMetadata}</p>
-                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${isPanelRandomFeature ? 'is-random-mix' : ''}`}>
+                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''}`}>
                                 <button
                                     type="button"
                                     onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])}
@@ -506,8 +526,25 @@ const AlbumGrid = ({
                                     disabled={!panelAlbum.songs.length}
                                 >
                                     <Play size={17} fill="currentColor" strokeWidth={2.2} aria-hidden="true" />
-                                    {isPanelRandomMix ? '播放这批' : '播放全部'}
+                                    {isPanelRandomMix ? '播放这批' : isPanelFavorites ? '播放收藏' : '播放全部'}
                                 </button>
+                                {shouldShowClearFavorites && (
+                                    <button
+                                        type="button"
+                                        className="album-inline-clear-favorites-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (typeof window !== 'undefined') {
+                                                const shouldClear = window.confirm('确定要清空收藏吗？');
+                                                if (!shouldClear) return;
+                                            }
+                                            onClearTempPlaylist?.(e);
+                                        }}
+                                    >
+                                        <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
+                                        清空收藏
+                                    </button>
+                                )}
                                 {isPanelRandomFeature && (
                                     <button
                                         type="button"
@@ -602,6 +639,14 @@ const AlbumGrid = ({
 
                     <div className={`song-list-shell ${shouldConstrainPanelSongList ? 'is-long-list' : ''}`}>
                         <div className="song-list">
+                            {panelSongs.length === 0 && (
+                                <div className="song-empty album-inline-empty">
+                                    <span className="song-empty-icon" aria-hidden="true">
+                                        <Heart size={22} strokeWidth={2} />
+                                    </span>
+                                    <span className="song-empty-copy">还没有收藏歌曲</span>
+                                </div>
+                            )}
                             {panelSongs.map((song, i) => {
                                 const isCurrentSong = currentTrack.src === song.src;
                                 const isPlayingSong = isCurrentSong && isPlaying;

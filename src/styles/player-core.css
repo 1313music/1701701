@@ -2049,9 +2049,20 @@
     max-width: 224px;
   }
 
+  .album-inline-hero-actions.is-favorites {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 112px;
+  }
+
+  .album-inline-hero-actions.is-favorites.has-clear-favorites {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 224px;
+  }
+
   .album-inline-hero-actions .play-all-btn,
   .album-inline-fav-all-btn,
   .album-inline-secondary-btn,
+  .album-inline-clear-favorites-btn,
   .album-inline-qr-btn {
     width: 100%;
     min-width: 0;
@@ -2070,6 +2081,7 @@
 
   .album-inline-fav-all-btn,
   .album-inline-secondary-btn,
+  .album-inline-clear-favorites-btn,
   .album-inline-qr-btn {
     overflow: visible;
   }
@@ -2122,6 +2134,16 @@
     grid-row: 2;
   }
 
+  .album-inline-hero-actions.is-favorites .play-all-btn {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .album-inline-hero-actions.is-favorites .album-inline-clear-favorites-btn {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .album-inline-qr-action .album-inline-qr-btn {
     width: 100%;
   }
@@ -2129,6 +2151,7 @@
   .album-inline-hero-actions .play-all-btn svg,
   .album-inline-fav-all-btn svg,
   .album-inline-secondary-btn svg,
+  .album-inline-clear-favorites-btn svg,
   .album-inline-qr-btn svg {
     width: 14px;
     height: 14px;
