@@ -9,7 +9,11 @@ import {
   X
 } from 'lucide-react';
 import '../styles/gallery.css';
-import { loadGalleryItems, refreshGalleryItems } from '../data/galleryManifest';
+import {
+  loadGalleryItems,
+  refreshGalleryItems,
+  subscribeToGalleryItems
+} from '../data/galleryManifest';
 
 const shuffleItems = (input) => {
   const list = Array.isArray(input) ? [...input] : [];
@@ -248,6 +252,17 @@ const GalleryDisplayPage = () => {
     ? Math.round((visibleItems.length / filteredItems.length) * 100)
     : 0;
   const hasMultiplePreviewItems = filteredItems.length > 1;
+  const applyGalleryItems = useCallback((parsedItems, { resetCategory = true } = {}) => {
+    const randomizedItems = shuffleItems(parsedItems);
+    setItems(randomizedItems);
+    setSelectedCategory((previousCategory) => {
+      if (resetCategory) return getDefaultCategory(randomizedItems);
+      if (previousCategory === ALL_CATEGORY) return previousCategory;
+      const categoryExists = randomizedItems.some((item) => item.category === previousCategory);
+      return categoryExists ? previousCategory : getDefaultCategory(randomizedItems);
+    });
+  }, []);
+
   const loadImages = useCallback(async ({ forceRefresh = false } = {}) => {
     setIsLoading(true);
     setError('');
@@ -256,20 +271,24 @@ const GalleryDisplayPage = () => {
       const parsedItems = forceRefresh
         ? await refreshGalleryItems()
         : await loadGalleryItems();
-      const randomizedItems = shuffleItems(parsedItems);
-      setItems(randomizedItems);
-      setSelectedCategory(getDefaultCategory(randomizedItems));
+      applyGalleryItems(parsedItems);
     } catch (requestError) {
       setItems([]);
       setError(requestError?.message || '图库加载失败');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [applyGalleryItems]);
 
   useEffect(() => {
     void loadImages();
   }, [loadImages]);
+
+  useEffect(() => subscribeToGalleryItems((parsedItems) => {
+    applyGalleryItems(parsedItems, { resetCategory: false });
+    setError('');
+    setIsLoading(false);
+  }), [applyGalleryItems]);
 
   useEffect(() => {
     if (selectedCategory === ALL_CATEGORY) return;

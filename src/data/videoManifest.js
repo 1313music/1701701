@@ -10,6 +10,7 @@ import {
   fetchJsonWithBundledFallback,
   toAbsoluteUrl
 } from './manifestSourceUtils.js';
+import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
 const PERSISTENT_CACHE_KEY = 'manifest-cache:video:v1';
 const BUNDLED_SNAPSHOT_PATH = '/video-index.json';
@@ -18,6 +19,7 @@ const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedCatalog = null;
 let cachedAt = 0;
 let inflightCatalogPromise = null;
+const videoManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -139,8 +141,11 @@ export const __resetVideoManifestCacheForTests = () => {
   cachedCatalog = null;
   cachedAt = 0;
   inflightCatalogPromise = null;
+  videoManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
+
+export const subscribeToVideoCatalog = videoManifestRefreshNotifier.subscribe;
 
 const loadAndPersistCatalog = async () => {
   if (inflightCatalogPromise) {
@@ -167,7 +172,7 @@ export const loadVideoCatalog = async () => {
     return cachedCatalog;
   }
   if (cachedCatalog) {
-    void loadAndPersistCatalog();
+    videoManifestRefreshNotifier.refreshInBackground(loadAndPersistCatalog());
     return cachedCatalog;
   }
 
@@ -178,7 +183,7 @@ export const loadVideoCatalog = async () => {
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
       if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        void loadAndPersistCatalog();
+        videoManifestRefreshNotifier.refreshInBackground(loadAndPersistCatalog());
       }
       return cachedCatalog;
     }

@@ -11,7 +11,8 @@ const { loadGalleryItems, refreshGalleryItems } = vi.hoisted(() => ({
 
 vi.mock('../data/galleryManifest', () => ({
   loadGalleryItems,
-  refreshGalleryItems
+  refreshGalleryItems,
+  subscribeToGalleryItems: () => () => {}
 }));
 
 const setWindowScrollMetrics = ({

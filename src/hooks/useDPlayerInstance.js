@@ -17,6 +17,59 @@ const fallbackThumb = `data:image/svg+xml;utf8,${encodeURIComponent(
   '</svg>'
 )}`;
 
+const readDanmakuPayload = async (response) => {
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(`弹幕服务响应无效（HTTP ${response.status}）`);
+  }
+  if (!response.ok) {
+    throw new Error(payload?.msg || payload?.error || `弹幕服务请求失败（HTTP ${response.status}）`);
+  }
+  if (payload?.code !== 0) {
+    throw new Error(payload?.msg || '弹幕服务请求失败');
+  }
+  return payload;
+};
+
+const dplayerFetchApiBackend = {
+  read({ url, success, error }) {
+    fetch(url, { cache: 'no-store' })
+      .then(readDanmakuPayload)
+      .then((payload) => {
+        const items = Array.isArray(payload.data) ? payload.data : [];
+        success?.(items.map((item) => ({
+          time: item[0],
+          type: item[1],
+          color: item[2],
+          author: item[3],
+          text: item[4]
+        })));
+      })
+      .catch((requestError) => {
+        error?.(requestError?.message || '弹幕读取失败');
+      });
+  },
+  send({ url, data, success, error }) {
+    fetch(url, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data || {})
+    })
+      .then(readDanmakuPayload)
+      .then((payload) => {
+        success?.(payload);
+      })
+      .catch((requestError) => {
+        error?.(requestError?.message || '弹幕发送失败');
+      });
+  }
+};
+
 export const useDPlayerInstance = ({
   activeVideo,
   activeVideoKey,
@@ -102,6 +155,7 @@ export const useDPlayerInstance = ({
           }
         };
         if (danmakuOptions) {
+          playerOptions.apiBackend = dplayerFetchApiBackend;
           playerOptions.danmaku = danmakuOptions;
         }
 

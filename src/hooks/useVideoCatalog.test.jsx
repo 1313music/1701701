@@ -8,7 +8,8 @@ const { loadVideoCatalog } = vi.hoisted(() => ({
 }));
 
 vi.mock('../data/videoManifest', () => ({
-  loadVideoCatalog
+  loadVideoCatalog,
+  subscribeToVideoCatalog: () => () => {}
 }));
 
 const createCatalog = () => ({

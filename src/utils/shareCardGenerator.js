@@ -308,12 +308,11 @@ export const createShareCardDataUrl = async ({
   cover
 }) => {
   if (typeof document === 'undefined' || !url || type === 'video') return '';
-  const isVideoCard = type === 'video';
   const isDark = resolveIsDarkTheme();
   const useManualBlur = shouldUseManualCanvasBlur();
-  const width = isVideoCard ? 1600 : 1080;
+  const width = 1080;
   const coverImage = await loadCanvasImageWithFallback(cover);
-  const cardBodyHeight = isVideoCard ? 760 : 1460;
+  const cardBodyHeight = 1460;
   const cardHeight = cardBodyHeight;
   const height = cardHeight;
   const canvas = document.createElement('canvas');
@@ -398,7 +397,7 @@ export const createShareCardDataUrl = async ({
   }
   ctx.restore();
 
-  if (!isVideoCard) {
+  {
     ctx.save();
     drawRoundedRectPath(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
     ctx.clip();
@@ -429,105 +428,7 @@ export const createShareCardDataUrl = async ({
     ctx.restore();
   }
 
-  if (isVideoCard) {
-    const posterInset = 0;
-    const posterX = cardX + posterInset;
-    const posterY = cardY + posterInset;
-    const posterWidth = cardWidth - posterInset * 2;
-    const posterHeight = cardBodyHeight - posterInset * 2;
-    const posterRadius = cardRadius;
-
-    if (coverImage) {
-      ctx.save();
-      drawRoundedRectPath(ctx, posterX, posterY, posterWidth, posterHeight, posterRadius);
-      ctx.clip();
-      drawImageCover(ctx, coverImage, posterX, posterY, posterWidth, posterHeight, 1.08);
-
-      const bottomVignette = ctx.createLinearGradient(posterX, posterY + posterHeight * 0.78, posterX, posterY + posterHeight);
-      bottomVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      bottomVignette.addColorStop(1, 'rgba(0, 0, 0, 0.38)');
-      ctx.fillStyle = bottomVignette;
-      ctx.fillRect(posterX, posterY, posterWidth, posterHeight);
-      ctx.restore();
-    } else {
-      const posterFallback = ctx.createLinearGradient(posterX, posterY, posterX + posterWidth, posterY + posterHeight);
-      posterFallback.addColorStop(0, palette.coverFallback0);
-      posterFallback.addColorStop(1, palette.coverFallback1);
-      drawRoundedRectPath(ctx, posterX, posterY, posterWidth, posterHeight, posterRadius);
-      ctx.fillStyle = posterFallback;
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.font = '700 150px "Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('▶', posterX + posterWidth / 2, posterY + posterHeight / 2 + 48);
-    }
-
-    const titleText = trackName || '未知视频';
-    const subtitle = albumName || '视频';
-    const titleFontFamily = '"Lexend", "PingFang SC", "Microsoft YaHei", sans-serif';
-    const textLeft = posterX + 30;
-    const textBottom = posterY + posterHeight - 34;
-    const textMaxWidth = posterWidth - 150;
-
-    let titleFontSize = 62;
-    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
-    while (titleFontSize > 38 && ctx.measureText(titleText).width > textMaxWidth) {
-      titleFontSize -= 2;
-      ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
-    }
-
-    const titleLines = buildWrappedLines(ctx, titleText, textMaxWidth, 2);
-    const titleLineHeight = Math.round(titleFontSize * 1.1);
-    const subtitleFontSize = 34;
-    const subtitleGap = 34;
-    const subtitleBlockHeight = subtitleFontSize + subtitleGap;
-    const titleTopY = textBottom - subtitleBlockHeight - (titleLines.length - 1) * titleLineHeight;
-
-    ctx.textAlign = 'left';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.52)';
-    ctx.shadowBlur = 14;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 2;
-    ctx.fillStyle = 'rgba(250, 252, 255, 0.98)';
-    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
-    titleLines.forEach((line, index) => {
-      ctx.fillText(line, textLeft, titleTopY + index * titleLineHeight);
-    });
-
-    ctx.fillStyle = 'rgba(240, 246, 255, 0.84)';
-    ctx.font = `600 ${subtitleFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
-    const subtitleLine = buildWrappedLines(ctx, subtitle, textMaxWidth, 1)[0] || subtitle;
-    ctx.fillText(subtitleLine, textLeft, textBottom);
-
-    const playCenterX = posterX + posterWidth - 62;
-    const playCenterY = posterY + posterHeight - 64;
-    const playRadius = 34;
-    ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.42)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetY = 2;
-    ctx.beginPath();
-    ctx.arc(playCenterX, playCenterY, playRadius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(20, 24, 34, 0.32)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.44)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.beginPath();
-    ctx.moveTo(playCenterX - 8, playCenterY - 11);
-    ctx.lineTo(playCenterX - 8, playCenterY + 11);
-    ctx.lineTo(playCenterX + 12, playCenterY);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
-    ctx.fill();
-
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-  } else {
+  {
     const coverPadding = 74;
     const coverX = cardX + coverPadding;
     const coverY = cardY + 74;

@@ -1,7 +1,10 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Share2, BookOpen, ArrowLeft, ExternalLink } from 'lucide-react';
 import '../styles/download.css';
-import { loadDownloadSections } from '../data/downloadManifest';
+import {
+    loadDownloadSections,
+    subscribeToDownloadSections
+} from '../data/downloadManifest';
 import {
     getDownloadPreviewPath,
     getDownloadPreviewSlugFromPathname,
@@ -282,6 +285,12 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
 
     useEffect(() => {
         let canceled = false;
+        const unsubscribe = subscribeToDownloadSections((sections) => {
+            if (canceled) return;
+            setDownloadSections(Array.isArray(sections) ? sections : []);
+            setSectionsLoadError('');
+            setIsSectionsLoading(false);
+        });
         const loadSections = async () => {
             setIsSectionsLoading(true);
             setSectionsLoadError('');
@@ -302,6 +311,7 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
         void loadSections();
         return () => {
             canceled = true;
+            unsubscribe();
         };
     }, [sectionsRetryKey]);
     useEffect(() => {

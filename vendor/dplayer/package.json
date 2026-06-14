@@ -1,0 +1,7 @@
+{
+  "name": "dplayer",
+  "version": "1.27.1",
+  "description": "Vendored DPlayer browser build without the unused axios package dependency.",
+  "main": "dist/DPlayer.min.js",
+  "license": "MIT"
+}

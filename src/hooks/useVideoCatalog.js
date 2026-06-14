@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { loadVideoCatalog } from '../data/videoManifest';
+import {
+  loadVideoCatalog,
+  subscribeToVideoCatalog
+} from '../data/videoManifest';
 import { buildVideoKey } from '../utils/videoPageUtils.js';
 
 const EMPTY_CATALOG = {
@@ -32,6 +35,12 @@ export const useVideoCatalog = ({ locationSearch, onInitialReady, requestVideoVi
 
   useEffect(() => {
     let canceled = false;
+    const unsubscribe = subscribeToVideoCatalog((nextCatalog) => {
+      if (canceled) return;
+      setVideoCatalog(nextCatalog || EMPTY_CATALOG);
+      setCatalogLoadError('');
+      setIsCatalogLoading(false);
+    });
     const applyCatalog = async () => {
       setIsCatalogLoading(true);
       setCatalogLoadError('');
@@ -52,6 +61,7 @@ export const useVideoCatalog = ({ locationSearch, onInitialReady, requestVideoVi
     void applyCatalog();
     return () => {
       canceled = true;
+      unsubscribe();
     };
   }, [catalogRetryKey]);
 

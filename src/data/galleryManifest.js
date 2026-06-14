@@ -6,6 +6,7 @@ import {
   readPersistentManifestCache,
   writePersistentManifestCache
 } from './persistentManifestCache.js';
+import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
 const PERSISTENT_CACHE_KEY = 'manifest-cache:gallery:v1';
 const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -13,6 +14,7 @@ const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedItems = null;
 let cachedAt = 0;
 let inflightItemsPromise = null;
+const galleryManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const toAbsoluteUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -168,8 +170,11 @@ export const __resetGalleryManifestCacheForTests = () => {
   cachedItems = null;
   cachedAt = 0;
   inflightItemsPromise = null;
+  galleryManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
+
+export const subscribeToGalleryItems = galleryManifestRefreshNotifier.subscribe;
 
 const fetchAndCacheItems = async () => {
   const items = await loadRemoteItems();
@@ -185,7 +190,7 @@ export const loadGalleryItems = async () => {
     return cachedItems;
   }
   if (cachedItems) {
-    void refreshGalleryItems();
+    galleryManifestRefreshNotifier.refreshInBackground(refreshGalleryItems());
     return cachedItems;
   }
 
@@ -196,7 +201,7 @@ export const loadGalleryItems = async () => {
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
       if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        void refreshGalleryItems();
+        galleryManifestRefreshNotifier.refreshInBackground(refreshGalleryItems());
       }
       return cachedItems;
     }

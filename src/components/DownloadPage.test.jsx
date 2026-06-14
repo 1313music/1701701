@@ -9,7 +9,8 @@ const { loadDownloadSections } = vi.hoisted(() => ({
 }));
 
 vi.mock('../data/downloadManifest', () => ({
-  loadDownloadSections
+  loadDownloadSections,
+  subscribeToDownloadSections: () => () => {}
 }));
 
 describe('DownloadPage', () => {

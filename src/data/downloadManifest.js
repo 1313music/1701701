@@ -10,6 +10,7 @@ import {
   fetchJsonWithBundledFallback,
   toAbsoluteUrl
 } from './manifestSourceUtils.js';
+import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
 const PERSISTENT_CACHE_KEY = 'manifest-cache:download:v1';
 const BUNDLED_SNAPSHOT_PATH = '/download-index.json';
@@ -18,6 +19,7 @@ const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let cachedSections = null;
 let cachedAt = 0;
 let inflightSectionsPromise = null;
+const downloadManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -122,8 +124,11 @@ export const __resetDownloadManifestCacheForTests = () => {
   cachedSections = null;
   cachedAt = 0;
   inflightSectionsPromise = null;
+  downloadManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
+
+export const subscribeToDownloadSections = downloadManifestRefreshNotifier.subscribe;
 
 const loadAndPersistSections = async () => {
   if (inflightSectionsPromise) {
@@ -150,7 +155,7 @@ export const loadDownloadSections = async () => {
     return cachedSections;
   }
   if (cachedSections) {
-    void loadAndPersistSections();
+    downloadManifestRefreshNotifier.refreshInBackground(loadAndPersistSections());
     return cachedSections;
   }
 
@@ -161,7 +166,7 @@ export const loadDownloadSections = async () => {
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
       if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        void loadAndPersistSections();
+        downloadManifestRefreshNotifier.refreshInBackground(loadAndPersistSections());
       }
       return cachedSections;
     }

@@ -20,10 +20,22 @@ import '../styles/admin.css';
 
 import AnnouncementModal from './AnnouncementModal.jsx';
 import DanmakuAdminPanel from './DanmakuAdminPanel.jsx';
-import { loadGalleryItems } from '../data/galleryManifest.js';
-import { loadDownloadSections } from '../data/downloadManifest.js';
-import { loadMusicManifestAlbums } from '../data/musicManifest.js';
-import { loadVideoCatalog } from '../data/videoManifest.js';
+import {
+  loadGalleryItems,
+  subscribeToGalleryItems
+} from '../data/galleryManifest.js';
+import {
+  loadDownloadSections,
+  subscribeToDownloadSections
+} from '../data/downloadManifest.js';
+import {
+  loadMusicManifestAlbums,
+  subscribeToMusicManifestAlbums
+} from '../data/musicManifest.js';
+import {
+  loadVideoCatalog,
+  subscribeToVideoCatalog
+} from '../data/videoManifest.js';
 import {
   DEFAULT_VIDEO_ACCESS_CONFIG,
   DEFAULT_VIDEO_ACCESS_QR_URL
@@ -53,7 +65,10 @@ import {
   isDownloadAdminApiConfigured,
   publishDownloadLinks
 } from '../data/downloadAdminApi.js';
-import { isDanmakuAdminApiConfigured } from '../data/danmakuAdminApi.js';
+import {
+  isDanmakuAdminApiConfigured,
+  loadDanmakuItems
+} from '../data/danmakuAdminApi.js';
 
 const ADMIN_TOKEN_STORAGE_KEY = 'announcement-admin-token:v1';
 const ADMIN_PANEL_ANNOUNCEMENT = 'announcement';
@@ -63,6 +78,23 @@ const ADMIN_PANEL_VIDEO = 'video';
 const ADMIN_PANEL_DANMAKU = 'danmaku';
 const ADMIN_PANEL_DOWNLOAD = 'download';
 const NEW_VIDEO_FOLDER_VALUE = '__new_video_folder__';
+
+const getDefaultAdminPanel = ({
+  announcementApiConfigured,
+  galleryApiConfigured,
+  musicApiConfigured,
+  videoApiConfigured,
+  danmakuAdminApiConfigured,
+  downloadApiConfigured
+}) => {
+  if (announcementApiConfigured) return ADMIN_PANEL_ANNOUNCEMENT;
+  if (galleryApiConfigured) return ADMIN_PANEL_GALLERY;
+  if (musicApiConfigured) return ADMIN_PANEL_MUSIC;
+  if (videoApiConfigured) return ADMIN_PANEL_VIDEO;
+  if (danmakuAdminApiConfigured) return ADMIN_PANEL_DANMAKU;
+  if (downloadApiConfigured) return ADMIN_PANEL_DOWNLOAD;
+  return ADMIN_PANEL_ANNOUNCEMENT;
+};
 
 const createDefaultDraft = () => ({
   id: new Date().toISOString().slice(0, 10),
@@ -246,7 +278,43 @@ const AdminPage = () => {
   const videoAccessApiConfigured = useMemo(() => isVideoAccessAdminApiConfigured(), []);
   const danmakuAdminApiConfigured = useMemo(() => isDanmakuAdminApiConfigured(), []);
   const downloadApiConfigured = useMemo(() => isDownloadAdminApiConfigured(), []);
-  const [activePanel, setActivePanel] = useState(ADMIN_PANEL_ANNOUNCEMENT);
+  const hasConfiguredAdminApi = useMemo(() => (
+    announcementApiConfigured ||
+    galleryApiConfigured ||
+    musicApiConfigured ||
+    videoApiConfigured ||
+    videoAccessApiConfigured ||
+    danmakuAdminApiConfigured ||
+    downloadApiConfigured
+  ), [
+    announcementApiConfigured,
+    galleryApiConfigured,
+    musicApiConfigured,
+    videoApiConfigured,
+    videoAccessApiConfigured,
+    danmakuAdminApiConfigured,
+    downloadApiConfigured
+  ]);
+  const hasVerifiableAdminApi = useMemo(() => (
+    announcementApiConfigured || videoAccessApiConfigured || danmakuAdminApiConfigured
+  ), [announcementApiConfigured, videoAccessApiConfigured, danmakuAdminApiConfigured]);
+  const defaultAdminPanel = useMemo(() => getDefaultAdminPanel({
+    announcementApiConfigured,
+    galleryApiConfigured,
+    musicApiConfigured,
+    videoApiConfigured: videoApiConfigured || videoAccessApiConfigured,
+    danmakuAdminApiConfigured,
+    downloadApiConfigured
+  }), [
+    announcementApiConfigured,
+    galleryApiConfigured,
+    musicApiConfigured,
+    videoApiConfigured,
+    videoAccessApiConfigured,
+    danmakuAdminApiConfigured,
+    downloadApiConfigured
+  ]);
+  const [activePanel, setActivePanel] = useState(defaultAdminPanel);
   const [draft, setDraft] = useState(createDefaultDraft);
   const [announcementHistory, setAnnouncementHistory] = useState([]);
   const [galleryDraft, setGalleryDraft] = useState(createDefaultGalleryDraft);
@@ -279,14 +347,14 @@ const AdminPage = () => {
   const initialTokenRef = useRef(token);
   const didTryStoredTokenRef = useRef(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(Boolean(token && announcementApiConfigured));
+  const [isAuthenticating, setIsAuthenticating] = useState(Boolean(token && hasConfiguredAdminApi));
   const [authStatus, setAuthStatus] = useState({
-    tone: announcementApiConfigured ? 'info' : 'error',
-    message: announcementApiConfigured
+    tone: hasConfiguredAdminApi ? 'info' : 'error',
+    message: hasConfiguredAdminApi
       ? token
         ? '正在验证管理员口令...'
         : '请输入管理员口令'
-      : '后台验证接口未配置'
+      : '后台接口未配置'
   });
   const [announcementStatus, setAnnouncementStatus] = useState({
     tone: announcementApiConfigured ? 'info' : 'error',
@@ -352,10 +420,10 @@ const AdminPage = () => {
 
   const authenticateAdmin = useCallback(async (adminToken = '') => {
     const normalizedToken = String(adminToken || '').trim();
-    if (!announcementApiConfigured) {
+    if (!hasConfiguredAdminApi) {
       setIsAuthenticated(false);
       setIsAuthenticating(false);
-      setAuthStatus({ tone: 'error', message: '后台验证接口未配置' });
+      setAuthStatus({ tone: 'error', message: '后台接口未配置' });
       return false;
     }
     if (!normalizedToken) {
@@ -366,18 +434,35 @@ const AdminPage = () => {
     }
 
     setIsAuthenticating(true);
-    setAuthStatus({ tone: 'info', message: '正在验证管理员口令...' });
+    setAuthStatus({
+      tone: 'info',
+      message: hasVerifiableAdminApi ? '正在验证管理员口令...' : '正在保存管理员口令...'
+    });
     try {
-      const result = await loadAdminAnnouncement({ token: normalizedToken });
+      if (announcementApiConfigured) {
+        const result = await loadAdminAnnouncement({ token: normalizedToken });
+        const hasAnnouncement = applyAdminAnnouncementResult(result);
+        setAnnouncementStatus({
+          tone: hasAnnouncement ? 'success' : 'info',
+          message: hasAnnouncement ? '已读取后台公告' : '当前没有可用公告，可直接新建'
+        });
+        setAuthStatus({ tone: 'success', message: '管理员口令已通过公告后台验证' });
+      } else if (videoAccessApiConfigured) {
+        await loadVideoAccessSettings({ token: normalizedToken });
+        setAuthStatus({ tone: 'success', message: '管理员口令已通过视频后台验证' });
+      } else if (danmakuAdminApiConfigured) {
+        await loadDanmakuItems({ token: normalizedToken, limit: 1 });
+        setAuthStatus({ tone: 'success', message: '管理员口令已通过弹幕后台验证' });
+      } else {
+        setAuthStatus({ tone: 'info', message: '管理员口令已保存，发布时由对应接口验证' });
+      }
+
       setToken(normalizedToken);
       setIsAuthenticated(true);
+      if (activePanel === ADMIN_PANEL_ANNOUNCEMENT && !announcementApiConfigured) {
+        setActivePanel(defaultAdminPanel);
+      }
       persistVerifiedToken(normalizedToken);
-      const hasAnnouncement = applyAdminAnnouncementResult(result);
-      setAnnouncementStatus({
-        tone: hasAnnouncement ? 'success' : 'info',
-        message: hasAnnouncement ? '已读取后台公告' : '当前没有可用公告，可直接新建'
-      });
-      setAuthStatus({ tone: 'success', message: '管理员口令已验证' });
       return true;
     } catch (error) {
       setIsAuthenticated(false);
@@ -387,10 +472,22 @@ const AdminPage = () => {
     } finally {
       setIsAuthenticating(false);
     }
-  }, [announcementApiConfigured]);
+  }, [
+    activePanel,
+    announcementApiConfigured,
+    danmakuAdminApiConfigured,
+    defaultAdminPanel,
+    hasConfiguredAdminApi,
+    hasVerifiableAdminApi,
+    videoAccessApiConfigured
+  ]);
 
   const loadCurrentAnnouncement = useCallback(async (adminToken = token) => {
     const normalizedToken = String(adminToken || '').trim();
+    if (!announcementApiConfigured) {
+      setAnnouncementStatus({ tone: 'error', message: '公告后台接口未配置' });
+      return;
+    }
     if (!isAuthenticated || !normalizedToken) {
       setAnnouncementStatus({ tone: 'error', message: '请先验证管理员口令' });
       return;
@@ -412,7 +509,7 @@ const AdminPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, token]);
+  }, [announcementApiConfigured, isAuthenticated, token]);
 
   const loadGalleryCategories = async () => {
     try {
@@ -432,17 +529,21 @@ const AdminPage = () => {
     }
   };
 
-  const loadVideoCatalogForAdmin = async () => {
+  const applyVideoCatalogForAdmin = useCallback((catalog) => {
+    setVideoCatalog({
+      videoCategories: Array.isArray(catalog?.videoCategories) ? catalog.videoCategories : [],
+      videoData: catalog?.videoData && typeof catalog.videoData === 'object' ? catalog.videoData : {}
+    });
+  }, []);
+
+  const loadVideoCatalogForAdmin = useCallback(async () => {
     try {
       const catalog = await loadVideoCatalog();
-      setVideoCatalog({
-        videoCategories: Array.isArray(catalog?.videoCategories) ? catalog.videoCategories : [],
-        videoData: catalog?.videoData && typeof catalog.videoData === 'object' ? catalog.videoData : {}
-      });
+      applyVideoCatalogForAdmin(catalog);
     } catch {
       setVideoCatalog({ videoCategories: [], videoData: {} });
     }
-  };
+  }, [applyVideoCatalogForAdmin]);
 
   const loadDownloadSectionsForAdmin = async () => {
     try {
@@ -479,13 +580,35 @@ const AdminPage = () => {
     if (isAuthenticated && activePanel === ADMIN_PANEL_VIDEO && videoCatalog.videoCategories.length === 0) {
       void loadVideoCatalogForAdmin();
     }
-  }, [activePanel, isAuthenticated, videoCatalog.videoCategories.length]);
+  }, [activePanel, isAuthenticated, loadVideoCatalogForAdmin, videoCatalog.videoCategories.length]);
 
   useEffect(() => {
     if (isAuthenticated && activePanel === ADMIN_PANEL_DOWNLOAD && downloadSections.length === 0) {
       void loadDownloadSectionsForAdmin();
     }
   }, [activePanel, downloadSections.length, isAuthenticated]);
+
+  useEffect(() => {
+    const unsubscribeGallery = subscribeToGalleryItems((items) => {
+      setGalleryCategories(getUniqueGalleryCategories(items));
+    });
+    const unsubscribeMusic = subscribeToMusicManifestAlbums((albums) => {
+      setMusicAlbums(Array.isArray(albums) ? albums : []);
+    });
+    const unsubscribeVideo = subscribeToVideoCatalog((catalog) => {
+      applyVideoCatalogForAdmin(catalog);
+    });
+    const unsubscribeDownload = subscribeToDownloadSections((sections) => {
+      setDownloadSections(Array.isArray(sections) ? sections : []);
+    });
+
+    return () => {
+      unsubscribeGallery();
+      unsubscribeMusic();
+      unsubscribeVideo();
+      unsubscribeDownload();
+    };
+  }, [applyVideoCatalogForAdmin]);
 
   const updateDraftField = (field, value) => {
     setDraft((previous) => ({
@@ -648,7 +771,7 @@ const AdminPage = () => {
     setToken('');
     setIsAuthenticated(false);
     setIsAuthenticating(false);
-    setActivePanel(ADMIN_PANEL_ANNOUNCEMENT);
+    setActivePanel(defaultAdminPanel);
     setAnnouncementHistory([]);
     setDraft(createDefaultDraft());
     setAuthStatus({ tone: 'info', message: '已退出后台，请重新输入管理员口令' });
@@ -948,16 +1071,18 @@ const AdminPage = () => {
         </div>
         {isAuthenticated && (
           <div className="admin-header-actions">
-            <button
-              type="button"
-              className="admin-icon-btn"
-              onClick={() => loadCurrentAnnouncement(token)}
-              disabled={isLoading}
-              aria-label="刷新当前公告"
-              title="刷新当前公告"
-            >
-              <RefreshCw size={18} className={isLoading ? 'is-spinning' : ''} />
-            </button>
+            {announcementApiConfigured && (
+              <button
+                type="button"
+                className="admin-icon-btn"
+                onClick={() => loadCurrentAnnouncement(token)}
+                disabled={isLoading}
+                aria-label="刷新当前公告"
+                title="刷新当前公告"
+              >
+                <RefreshCw size={18} className={isLoading ? 'is-spinning' : ''} />
+              </button>
+            )}
             <button
               type="button"
               className="admin-icon-btn"
@@ -1000,7 +1125,7 @@ const AdminPage = () => {
               <button
                 type="submit"
                 className="admin-btn primary"
-                disabled={isAuthenticating || !announcementApiConfigured}
+                disabled={isAuthenticating || !hasConfiguredAdminApi}
               >
                 <KeyRound size={17} />
                 {isAuthenticating ? '验证中...' : '验证进入'}

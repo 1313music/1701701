@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   __resetMusicManifestCacheForTests,
-  loadMusicManifestAlbums
+  loadMusicManifestAlbums,
+  subscribeToMusicManifestAlbums
 } from './musicManifest.js';
 
 describe('musicManifest asset normalization', () => {
@@ -121,6 +122,68 @@ describe('musicManifest asset normalization', () => {
 
     expect(globalThis.fetch).not.toHaveBeenCalled();
     expect(albums).toEqual(cachedAlbums);
+  });
+
+  it('returns stale persisted albums while notifying subscribers after a background refresh', async () => {
+    const cachedAlbums = [
+      {
+        id: 'album-cache',
+        name: 'Cached Album',
+        artist: 'Cached Artist',
+        cover: '',
+        songs: [
+          {
+            id: 'song-cache',
+            trackNumber: 1,
+            name: 'Cached Song',
+            src: 'https://example.com/cached-song.mp3',
+            lrc: '',
+            cover: ''
+          }
+        ]
+      }
+    ];
+    window.localStorage.setItem('manifest-cache:music:v1', JSON.stringify({
+      savedAt: Date.now() - 7 * 60 * 60 * 1000,
+      data: cachedAlbums
+    }));
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        albums: [
+          {
+            id: 'album-fresh',
+            name: 'Fresh Album',
+            songs: [
+              {
+                id: 'song-fresh',
+                name: 'Fresh Song',
+                src: 'https://example.com/fresh-song.mp3'
+              }
+            ]
+          }
+        ]
+      })
+    });
+    const listener = vi.fn();
+    const unsubscribe = subscribeToMusicManifestAlbums(listener);
+
+    const albums = await loadMusicManifestAlbums();
+
+    expect(albums).toEqual(cachedAlbums);
+    await vi.waitFor(() => {
+      expect(listener).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'album-fresh',
+          songs: [
+            expect.objectContaining({
+              src: 'https://example.com/fresh-song.mp3'
+            })
+          ]
+        })
+      ]);
+    });
+    unsubscribe();
   });
 
   it('falls back to bundled snapshot when the remote manifest request fails', async () => {

@@ -4,8 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import AdminPage from './AdminPage.jsx';
 
+const adminApiMockState = vi.hoisted(() => ({
+  announcementConfigured: true
+}));
+
 vi.mock('../data/announcementAdminApi.js', () => ({
-  isAnnouncementAdminApiConfigured: () => true,
+  isAnnouncementAdminApiConfigured: () => adminApiMockState.announcementConfigured,
   loadAdminAnnouncement: vi.fn(async () => ({
     announcement: {
       id: 'admin-current-notice',
@@ -159,6 +163,7 @@ vi.mock('../data/danmakuAdminApi.js', () => ({
 }));
 
 vi.mock('../data/galleryManifest.js', () => ({
+  subscribeToGalleryItems: () => () => {},
   loadGalleryItems: vi.fn(async () => [
     { id: 'images/BB/a.jpg', category: 'BB', name: 'a.jpg' },
     { id: 'images/XKK/b.jpg', category: 'XKK', name: 'b.jpg' },
@@ -167,6 +172,7 @@ vi.mock('../data/galleryManifest.js', () => ({
 }));
 
 vi.mock('../data/musicManifest.js', () => ({
+  subscribeToMusicManifestAlbums: () => () => {},
   loadMusicManifestAlbums: vi.fn(async () => [
     {
       id: 'demo-live',
@@ -191,6 +197,7 @@ vi.mock('../data/musicManifest.js', () => ({
 }));
 
 vi.mock('../data/videoManifest.js', () => ({
+  subscribeToVideoCatalog: () => () => {},
   loadVideoCatalog: vi.fn(async () => ({
     videoCategories: [
       { id: 'live', name: '现场视频', icon: '#icon-film' },
@@ -211,6 +218,7 @@ vi.mock('../data/videoManifest.js', () => ({
 }));
 
 vi.mock('../data/downloadManifest.js', () => ({
+  subscribeToDownloadSections: () => () => {},
   loadDownloadSections: vi.fn(async () => [
     {
       title: '叁缺壹吉隆坡站',
@@ -256,6 +264,7 @@ vi.mock('../data/announcementSource.js', () => ({
 
 describe('AdminPage', () => {
   afterEach(() => {
+    adminApiMockState.announcementConfigured = true;
     window.sessionStorage.clear();
     vi.clearAllMocks();
   });
@@ -279,6 +288,24 @@ describe('AdminPage', () => {
     expect(screen.getByRole('button', { name: '验证进入' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: '公告' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '发布公告' })).not.toBeInTheDocument();
+  });
+
+  it('allows admin entry through another readable admin endpoint when the announcement API is unavailable', async () => {
+    adminApiMockState.announcementConfigured = false;
+    const { loadAdminAnnouncement } = await import('../data/announcementAdminApi.js');
+    const { loadVideoAccessSettings } = await import('../data/videoAdminApi.js');
+
+    render(<AdminPage />);
+
+    fireEvent.change(screen.getByLabelText('管理员口令'), {
+      target: { value: 'secret-token' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '验证进入' }));
+
+    await screen.findByText('管理员口令已验证');
+    expect(loadAdminAnnouncement).not.toHaveBeenCalled();
+    expect(loadVideoAccessSettings).toHaveBeenCalledWith({ token: 'secret-token' });
+    expect(screen.getByRole('tab', { name: '图库' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('loads the current announcement and publishes edits', async () => {

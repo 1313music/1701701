@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { loadMusicManifestAlbums } from '../data/musicManifest.js';
+import {
+  loadMusicManifestAlbums,
+  subscribeToMusicManifestAlbums
+} from '../data/musicManifest.js';
 import {
   addFavoriteId,
   clearFavoriteIds,
@@ -61,6 +64,12 @@ export const useLibraryState = ({ showToast }) => {
 
   useEffect(() => {
     let canceled = false;
+    const unsubscribe = subscribeToMusicManifestAlbums((albums) => {
+      if (canceled) return;
+      setMusicAlbums(Array.isArray(albums) ? albums : []);
+      setMusicLoadError('');
+      setIsMusicLoading(false);
+    });
     const loadMusicAlbums = async () => {
       try {
         const albums = await loadMusicManifestAlbums();
@@ -79,6 +88,7 @@ export const useLibraryState = ({ showToast }) => {
     void loadMusicAlbums();
     return () => {
       canceled = true;
+      unsubscribe();
     };
   }, []);
 

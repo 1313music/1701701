@@ -10,6 +10,7 @@ import {
   fetchJsonWithBundledFallback,
   toAbsoluteUrl
 } from './manifestSourceUtils.js';
+import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
 const PERSISTENT_CACHE_KEY = 'manifest-cache:music:v1';
 const BUNDLED_SNAPSHOT_PATH = '/music-index.json';
@@ -23,6 +24,7 @@ const ALBUM_SORT_ORDER_OVERRIDES = Object.freeze({
 let cachedAlbums = null;
 let cachedAt = 0;
 let inflightAlbumsPromise = null;
+const musicManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
   const input = String(value || '').trim();
@@ -128,8 +130,11 @@ export const __resetMusicManifestCacheForTests = () => {
   cachedAlbums = null;
   cachedAt = 0;
   inflightAlbumsPromise = null;
+  musicManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
 };
+
+export const subscribeToMusicManifestAlbums = musicManifestRefreshNotifier.subscribe;
 
 const loadAndPersistAlbums = async () => {
   if (inflightAlbumsPromise) {
@@ -156,7 +161,7 @@ export const loadMusicManifestAlbums = async () => {
     return cachedAlbums;
   }
   if (cachedAlbums) {
-    void loadAndPersistAlbums();
+    musicManifestRefreshNotifier.refreshInBackground(loadAndPersistAlbums());
     return cachedAlbums;
   }
 
@@ -167,7 +172,7 @@ export const loadMusicManifestAlbums = async () => {
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
       if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        void loadAndPersistAlbums();
+        musicManifestRefreshNotifier.refreshInBackground(loadAndPersistAlbums());
       }
       return cachedAlbums;
     }
