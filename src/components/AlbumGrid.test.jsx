@@ -151,11 +151,38 @@ describe('AlbumGrid inline album panel', () => {
 
     expect(document.body.querySelector('.song-list-shell')).toHaveClass('is-long-list');
     expect(document.body.querySelector('.album-inline-shell')).toHaveStyle({
-      '--inline-song-scroll-visible-count': '12'
+      '--inline-song-scroll-visible-count': '12',
+      '--inline-song-row-height': '52px'
     });
     expect(screen.queryByRole('button', { name: '查看全部 30 首' })).not.toBeInTheDocument();
     expect(document.body.querySelector('.song-list-more-btn')).not.toBeInTheDocument();
     expect(document.body.querySelector('.song-source-cover')).not.toBeInTheDocument();
+  });
+
+  it('sizes constrained song lists from the measured row height', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function getBoundingClientRect() {
+      const height = this.classList?.contains('song-item') ? 57 : 0;
+      return {
+        x: 0,
+        y: 0,
+        top: 0,
+        right: 0,
+        bottom: height,
+        left: 0,
+        width: 0,
+        height,
+        toJSON: () => ({})
+      };
+    });
+
+    render(<AlbumGrid {...createBaseProps()} />);
+
+    await waitFor(() => {
+      expect(document.body.querySelector('.album-inline-shell')).toHaveStyle({
+        '--inline-song-scroll-visible-count': '12',
+        '--inline-song-row-height': '57px'
+      });
+    });
   });
 
   it('leaves regular-length album song lists unconstrained', async () => {

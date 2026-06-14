@@ -13,6 +13,7 @@ const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
 const INLINE_SONG_SCROLL_THRESHOLD = 12;
+const DEFAULT_INLINE_SONG_ROW_HEIGHT = 52;
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -203,6 +204,7 @@ const AlbumGrid = ({
     const [renderedPanelAlbumId, setRenderedPanelAlbumId] = useState(expandedAlbumId || null);
     const [panelPhase, setPanelPhase] = useState(() => (expandedAlbumId ? 'open' : 'closed'));
     const [panelHeight, setPanelHeight] = useState(0);
+    const [panelSongRowHeight, setPanelSongRowHeight] = useState(DEFAULT_INLINE_SONG_ROW_HEIGHT);
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
@@ -219,6 +221,21 @@ const AlbumGrid = ({
         // Add a tiny buffer to avoid fractional-pixel clipping at the bottom.
         const nextHeight = Math.ceil(node.scrollHeight) + 2;
         setPanelHeight((prev) => (Math.abs(prev - nextHeight) <= 1 ? prev : nextHeight));
+    }, []);
+
+    const measurePanelSongRowHeight = useCallback(() => {
+        const firstSong = panelContentRef.current?.querySelector?.('.song-list .song-item');
+        if (!firstSong) {
+            setPanelSongRowHeight((prev) => (
+                prev === DEFAULT_INLINE_SONG_ROW_HEIGHT ? prev : DEFAULT_INLINE_SONG_ROW_HEIGHT
+            ));
+            return;
+        }
+
+        const rectHeight = Number(firstSong.getBoundingClientRect?.().height) || 0;
+        const offsetHeight = Number(firstSong.offsetHeight) || 0;
+        const nextHeight = Math.ceil(Math.max(rectHeight, offsetHeight, DEFAULT_INLINE_SONG_ROW_HEIGHT));
+        setPanelSongRowHeight((prev) => (prev === nextHeight ? prev : nextHeight));
     }, []);
 
     const clearPanelTimers = useCallback(() => {
@@ -436,18 +453,20 @@ const AlbumGrid = ({
 
     useLayoutEffect(() => {
         if (!panelAlbum) return;
+        measurePanelSongRowHeight();
         measurePanelHeight();
-    }, [panelAlbum, measurePanelHeight, columns]);
+    }, [panelAlbum, measurePanelHeight, measurePanelSongRowHeight, columns, panelSongs.length, panelSongRowHeight]);
 
     useEffect(() => {
         const node = panelContentRef.current;
         if (!panelAlbum || !node || typeof ResizeObserver === 'undefined') return;
         const ro = new ResizeObserver(() => {
+            measurePanelSongRowHeight();
             measurePanelHeight();
         });
         ro.observe(node);
         return () => ro.disconnect();
-    }, [panelAlbum, measurePanelHeight]);
+    }, [panelAlbum, measurePanelHeight, measurePanelSongRowHeight]);
 
     const panelAtmosphereStyle = useMemo(() => {
         if (!panelCoverPalette) return null;
@@ -509,6 +528,7 @@ const AlbumGrid = ({
                     '--panel-offset-left': panelLayout.offsetLeft,
                     '--panel-anchor-x': panelLayout.anchorX,
                     '--inline-song-scroll-visible-count': String(INLINE_SONG_SCROLL_THRESHOLD),
+                    '--inline-song-row-height': `${panelSongRowHeight}px`,
                     willChange: 'height, opacity, margin-top, margin-bottom'
                 }}
             >

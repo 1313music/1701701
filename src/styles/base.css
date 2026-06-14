@@ -1395,11 +1395,10 @@ body {
   margin: 0;
   padding: 0;
   border-top: none;
-  --inline-song-row-height: 52px;
 }
 
 .album-inline-panel .song-list-shell.is-long-list .song-list {
-  max-height: calc(var(--inline-song-row-height) * var(--inline-song-scroll-visible-count, 12));
+  max-height: calc(var(--inline-song-row-height, 52px) * var(--inline-song-scroll-visible-count, 12));
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-gutter: stable;
@@ -1434,7 +1433,7 @@ body {
 .album-inline-panel .song-item {
   display: flex;
   align-items: center;
-  min-height: var(--inline-song-row-height);
+  min-height: var(--inline-song-row-height, 52px);
   padding: 10px 14px;
   border-radius: 9px;
   border-bottom: 1px solid color-mix(in srgb, var(--glass-border) 70%, transparent);
