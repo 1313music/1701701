@@ -54,6 +54,8 @@ const DEFAULT_ANNOUNCEMENT = Object.freeze({
   deliveryMode: 'modal',
   force: false,
   confirmText: '我知道了',
+  copyText: '',
+  copyButtonText: '',
   imageUrl: '',
   imageAlt: '',
   imageCaption: '',
@@ -196,6 +198,7 @@ const normalizeStoredHistory = (history, currentAnnouncement) => {
     .filter((entry) => entry && typeof entry === 'object')
     .map((entry) => {
       const imageUrl = normalizeText(entry.imageUrl || entry.image);
+      const copyText = normalizeText(entry.copyText || entry.copyContent || entry.clipboardText);
       return {
         ...DEFAULT_ANNOUNCEMENT,
         ...entry,
@@ -206,6 +209,10 @@ const normalizeStoredHistory = (history, currentAnnouncement) => {
         type: allowedType(normalizeText(entry.type, 'info')),
         deliveryMode: normalizeDeliveryMode(entry.deliveryMode || entry.notifyMode || entry.notificationMode),
         confirmText: normalizeText(entry.confirmText, '我知道了'),
+        copyText,
+        copyButtonText: copyText
+          ? normalizeText(entry.copyButtonText || entry.copyLabel || entry.clipboardButtonText, '复制文字')
+          : normalizeText(entry.copyButtonText || entry.copyLabel || entry.clipboardButtonText),
         imageUrl,
         imageAlt: imageUrl ? normalizeText(entry.imageAlt || entry.imageTitle || entry.title, '公告图片') : normalizeText(entry.imageAlt || entry.imageTitle),
         imageCaption: imageUrl ? normalizeText(entry.imageCaption || entry.caption) : '',
@@ -287,6 +294,7 @@ const normalizeAnnouncement = (payload, previousAnnouncement) => {
   if (!id) throw new Error('公告 id 不能为空');
   if (!content) throw new Error('公告正文不能为空');
   const imageUrl = normalizeText(source.imageUrl || source.image);
+  const copyText = normalizeText(source.copyText || source.copyContent || source.clipboardText);
 
   return {
     id,
@@ -300,6 +308,10 @@ const normalizeAnnouncement = (payload, previousAnnouncement) => {
     deliveryMode: normalizeDeliveryMode(source.deliveryMode || source.notifyMode || source.notificationMode),
     force: source.force === true,
     confirmText: normalizeText(source.confirmText, '我知道了'),
+    copyText,
+    copyButtonText: copyText
+      ? normalizeText(source.copyButtonText || source.copyLabel || source.clipboardButtonText, '复制文字')
+      : normalizeText(source.copyButtonText || source.copyLabel || source.clipboardButtonText),
     imageUrl,
     imageAlt: imageUrl ? normalizeText(source.imageAlt || source.imageTitle || source.title, '公告图片') : normalizeText(source.imageAlt || source.imageTitle),
     imageCaption: imageUrl ? normalizeText(source.imageCaption || source.caption) : '',

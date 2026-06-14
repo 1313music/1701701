@@ -36,6 +36,7 @@ const parseAnnouncement = (payload) => {
   const content = normalizeText(source.content || source.message);
   if (!id || !content) return null;
   const imageUrl = normalizeText(source.imageUrl || source.image);
+  const copyText = normalizeText(source.copyText || source.copyContent || source.clipboardText);
 
   return {
     id,
@@ -47,6 +48,10 @@ const parseAnnouncement = (payload) => {
     deliveryMode: normalizeDeliveryMode(source.deliveryMode || source.notifyMode || source.notificationMode),
     force: source.force === true,
     confirmText: normalizeText(source.confirmText, '我知道了'),
+    copyText,
+    copyButtonText: copyText
+      ? normalizeText(source.copyButtonText || source.copyLabel || source.clipboardButtonText, '复制文字')
+      : normalizeText(source.copyButtonText || source.copyLabel || source.clipboardButtonText),
     imageUrl,
     imageAlt: imageUrl ? normalizeText(source.imageAlt || source.imageTitle || source.title, '公告图片') : normalizeText(source.imageAlt || source.imageTitle),
     imageCaption: imageUrl ? normalizeText(source.imageCaption || source.caption) : '',

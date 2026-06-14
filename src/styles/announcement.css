@@ -174,11 +174,13 @@
 
 .announcement-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .announcement-btn {
-  flex: 1;
+  flex: 1 1 132px;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -206,6 +208,27 @@
 .announcement-btn.ghost {
   background: color-mix(in srgb, var(--bg-color) 62%, transparent);
   color: var(--text-main);
+}
+
+.announcement-btn.copy {
+  background: color-mix(in srgb, var(--main-color) 16%, var(--bg-color) 56%);
+  color: var(--text-main);
+}
+
+.announcement-btn.copy.is-success {
+  border-color: color-mix(in srgb, #37b86a 52%, var(--glass-border));
+  background: color-mix(in srgb, #37b86a 18%, var(--bg-color) 60%);
+}
+
+.announcement-btn.copy.is-error {
+  border-color: color-mix(in srgb, #d63f3f 52%, var(--glass-border));
+  background: color-mix(in srgb, #d63f3f 16%, var(--bg-color) 62%);
+}
+
+.announcement-btn:disabled {
+  cursor: progress;
+  opacity: 0.72;
+  transform: none;
 }
 
 .announcement-trigger {

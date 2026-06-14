@@ -20,6 +20,8 @@ vi.mock('../data/announcementAdminApi.js', () => ({
       type: 'info',
       force: false,
       confirmText: '我知道了',
+      copyText: '',
+      copyButtonText: '',
       linkText: '',
       linkUrl: '',
       startAt: '',
@@ -245,6 +247,8 @@ vi.mock('../data/announcementSource.js', () => ({
       type: 'info',
       force: false,
       confirmText: '我知道了',
+      copyText: '',
+      copyButtonText: '',
       linkText: '',
       linkUrl: '',
       startAt: '',
@@ -336,6 +340,12 @@ describe('AdminPage', () => {
     fireEvent.change(screen.getByLabelText('图片最大高度(px)'), {
       target: { value: '280' }
     });
+    fireEvent.change(screen.getByLabelText('复制按钮文字'), {
+      target: { value: '复制公众号名称' }
+    });
+    fireEvent.change(screen.getByLabelText('复制内容'), {
+      target: { value: '共享云音乐' }
+    });
     fireEvent.click(screen.getByRole('button', { name: '发布公告' }));
 
     await waitFor(() => {
@@ -350,7 +360,9 @@ describe('AdminPage', () => {
           imageUrl: 'https://cdn.example.com/notice.jpg',
           imageAlt: '公告配图',
           imageMaxWidth: '360',
-          imageMaxHeight: '280'
+          imageMaxHeight: '280',
+          copyButtonText: '复制公众号名称',
+          copyText: '共享云音乐'
         })
       }));
     });

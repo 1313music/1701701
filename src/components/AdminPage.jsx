@@ -106,6 +106,8 @@ const createDefaultDraft = () => ({
   deliveryMode: 'modal',
   force: false,
   confirmText: '我知道了',
+  copyText: '',
+  copyButtonText: '',
   imageUrl: '',
   imageAlt: '',
   imageCaption: '',
@@ -240,6 +242,8 @@ const serializeDraft = (draft) => ({
   type: String(draft.type || 'info').trim(),
   deliveryMode: draft.deliveryMode === 'silent' ? 'silent' : 'modal',
   confirmText: String(draft.confirmText || '').trim() || '我知道了',
+  copyText: String(draft.copyText || '').trim(),
+  copyButtonText: String(draft.copyButtonText || '').trim(),
   imageUrl: String(draft.imageUrl || '').trim(),
   imageAlt: String(draft.imageAlt || '').trim(),
   imageCaption: String(draft.imageCaption || '').trim(),
@@ -1402,6 +1406,24 @@ const AdminPage = () => {
                   placeholder="/about"
                 />
               </label>
+              <div className="admin-grid">
+                <label className="admin-field">
+                  <span>复制按钮文字</span>
+                  <input
+                    value={draft.copyButtonText}
+                    onChange={(event) => updateDraftField('copyButtonText', event.target.value)}
+                    placeholder="复制公众号名称"
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>复制内容</span>
+                  <input
+                    value={draft.copyText}
+                    onChange={(event) => updateDraftField('copyText', event.target.value)}
+                    placeholder="共享云音乐"
+                  />
+                </label>
+              </div>
             </section>
 
             <section className="admin-section">

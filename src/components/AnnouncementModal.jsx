@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import { copyTextToClipboard } from '../utils/appDomUtils.js';
 
 const isExternalUrl = (value) => /^https?:\/\//i.test(String(value || '').trim());
 
@@ -50,9 +52,12 @@ const getContentAlign = (announcement) => (
 const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm }) => {
   const [selectedHistoryId, setSelectedHistoryId] = useState('');
   const [isHistoryListOpen, setIsHistoryListOpen] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState({ key: '', status: 'idle' });
+  const copyStatusResetTimerRef = useRef(null);
   const handleClose = useCallback(() => {
     setSelectedHistoryId('');
     setIsHistoryListOpen(false);
+    setCopyFeedback({ key: '', status: 'idle' });
     onConfirm?.();
   }, [onConfirm, setIsHistoryListOpen, setSelectedHistoryId]);
 
@@ -71,6 +76,12 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
     };
   }, [announcement?.force, handleClose, open]);
 
+  useEffect(() => () => {
+    if (copyStatusResetTimerRef.current) {
+      clearTimeout(copyStatusResetTimerRef.current);
+    }
+  }, []);
+
   if (!open || !announcement) return null;
 
   const historyItems = Array.isArray(history) ? history : [];
@@ -79,11 +90,34 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
   const displayedAnnouncement = selectedHistory || announcement;
   const paragraphs = renderAnnouncementParagraphs(displayedAnnouncement.content);
   const hasLink = !isHistoryListView && Boolean(displayedAnnouncement.linkText && displayedAnnouncement.linkUrl);
+  const copyText = String(displayedAnnouncement.copyText || '').trim();
+  const displayTitle = isHistoryListView ? '历史公告' : displayedAnnouncement.title || '站点公告';
+  const copyFeedbackKey = `${displayedAnnouncement.id || displayTitle}:${copyText}`;
+  const copyStatus = copyFeedback.key === copyFeedbackKey ? copyFeedback.status : 'idle';
+  const hasCopyAction = !isHistoryListView && Boolean(copyText);
   const hasImage = Boolean(displayedAnnouncement.imageUrl);
   const isViewingHistory = Boolean(selectedHistory);
-  const displayTitle = isHistoryListView ? '历史公告' : displayedAnnouncement.title || '站点公告';
   const displayDate = isHistoryListView ? '' : formatAnnouncementDate(displayedAnnouncement);
   const showHistoryList = historyItems.length > 0 && isHistoryListView;
+  const copyButtonText = (() => {
+    if (copyStatus === 'success') return '已复制';
+    if (copyStatus === 'error') return '复制失败';
+    return displayedAnnouncement.copyButtonText || '复制文字';
+  })();
+  const handleCopyText = async () => {
+    setCopyFeedback({ key: copyFeedbackKey, status: 'pending' });
+    const copied = await copyTextToClipboard(copyText);
+    setCopyFeedback({ key: copyFeedbackKey, status: copied ? 'success' : 'error' });
+    if (copyStatusResetTimerRef.current) {
+      clearTimeout(copyStatusResetTimerRef.current);
+    }
+    copyStatusResetTimerRef.current = setTimeout(() => {
+      setCopyFeedback((current) => (
+        current.key === copyFeedbackKey ? { key: '', status: 'idle' } : current
+      ));
+      copyStatusResetTimerRef.current = null;
+    }, 1600);
+  };
 
   return (
     <div
@@ -187,6 +221,17 @@ const AnnouncementModal = ({ announcement, history = [], open = false, onConfirm
             >
               {displayedAnnouncement.linkText}
             </a>
+          )}
+          {hasCopyAction && (
+            <button
+              type="button"
+              className={`announcement-btn copy ${copyStatus === 'success' ? 'is-success' : ''} ${copyStatus === 'error' ? 'is-error' : ''}`}
+              onClick={handleCopyText}
+              aria-live="polite"
+              disabled={copyStatus === 'pending'}
+            >
+              {copyButtonText}
+            </button>
           )}
           <button
             type="button"

@@ -250,6 +250,7 @@ VITE_VIDEO_ACCESS_QR_URL=https://r2.1701701.xyz/QR/v.jpg
 - 公告支持可选通知方式字段：`deliveryMode`，`modal` 会自动弹窗，`silent` 只显示公告入口小圆点。
 - 公告支持可选正文对齐字段：`contentAlign`，可填 `left` 或 `center`。
 - 公告支持可选图片字段：`imageUrl`、`imageAlt`、`imageCaption`、`imageMaxWidth`、`imageMaxHeight`。
+- 公告支持可选复制按钮字段：`copyText` 是复制内容，`copyButtonText` 是按钮文字，例如复制公众号名称可填 `copyText: "共享云音乐"`、`copyButtonText: "复制公众号名称"`。
 - 后台发布新 `id` 公告时，会自动把上一条公告归档到 `history`，前台公告入口可回看历史公告；后台也可单条删除历史公告。
 
 ### 公告后台

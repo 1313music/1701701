@@ -1,10 +1,19 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../utils/appDomUtils.js', () => ({
+  copyTextToClipboard: vi.fn()
+}));
 
 import AnnouncementModal from './AnnouncementModal.jsx';
+import { copyTextToClipboard } from '../utils/appDomUtils.js';
 
 describe('AnnouncementModal', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders history announcements and lets users inspect one', () => {
     const handleConfirm = vi.fn();
 
@@ -61,5 +70,33 @@ describe('AnnouncementModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '返回最新' }));
     expect(screen.getByRole('heading', { name: '站点公告' })).toBeInTheDocument();
+  });
+
+  it('copies configured announcement text without closing the modal', async () => {
+    copyTextToClipboard.mockResolvedValue(true);
+    const handleConfirm = vi.fn();
+
+    render(
+      <AnnouncementModal
+        open
+        announcement={{
+          id: 'current',
+          title: '防走丢请关注我们的公众号',
+          content: '防走丢请关注我们的公众号',
+          copyText: '共享云音乐',
+          copyButtonText: '复制公众号名称',
+          confirmText: '我知道了'
+        }}
+        onConfirm={handleConfirm}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '复制公众号名称' }));
+
+    await waitFor(() => {
+      expect(copyTextToClipboard).toHaveBeenCalledWith('共享云音乐');
+      expect(screen.getByRole('button', { name: '已复制' })).toBeInTheDocument();
+    });
+    expect(handleConfirm).not.toHaveBeenCalled();
   });
 });
