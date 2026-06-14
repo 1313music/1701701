@@ -2225,13 +2225,21 @@
 
   .album-inline-panel .song-list {
     margin: 0;
+    max-height: min(34vh, 320px);
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color:
+      color-mix(in srgb, var(--text-secondary) 52%, transparent)
+      color-mix(in srgb, var(--text-secondary) 13%, transparent);
   }
 
   .album-inline-panel .song-list-shell.is-long-list .song-list {
-    max-height: min(48vh, 440px);
+    max-height: min(34vh, 320px);
   }
 
-  .album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar {
+  .album-inline-panel .song-list::-webkit-scrollbar {
     width: 8px;
   }
 

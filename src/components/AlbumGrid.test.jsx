@@ -1,8 +1,9 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AlbumGrid from './AlbumGrid.jsx';
+import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
 
 vi.mock('../utils/coverAtmosphere.js', () => ({
   buildCoverAtmosphereAssets: vi.fn().mockResolvedValue(null)
@@ -142,14 +143,44 @@ describe('AlbumGrid inline album panel', () => {
   });
 
   it('leaves regular-length album song lists unconstrained', async () => {
-    const shortAlbum = createLongAlbum(16);
+    const shortAlbum = createLongAlbum(14);
     render(<AlbumGrid {...createBaseProps({ musicAlbums: [shortAlbum] })} />);
 
     await waitFor(() => {
-      expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(16);
+      expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(14);
     });
 
     expect(document.body.querySelector('.song-list-shell')).not.toHaveClass('is-long-list');
+  });
+
+  it('keeps cached cover atmosphere visible after queued timers run', async () => {
+    const palette = {
+      accent: '178, 0, 0',
+      glow: '206, 28, 24',
+      shadow: '58, 0, 0'
+    };
+    vi.mocked(buildCoverAtmosphereAssets).mockResolvedValueOnce({ palette, topCover: '' });
+    vi.useFakeTimers();
+
+    try {
+      render(<AlbumGrid {...createBaseProps()} />);
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      const panel = document.body.querySelector('.album-inline-panel');
+      expect(panel).toHaveClass('has-cover-atmosphere');
+
+      await act(async () => {
+        vi.runOnlyPendingTimers();
+        await Promise.resolve();
+      });
+
+      expect(panel).toHaveClass('has-cover-atmosphere');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('adds random mix details and refresh control for virtual albums', async () => {

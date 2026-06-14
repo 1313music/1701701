@@ -12,7 +12,7 @@ const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
-const INLINE_SONG_SCROLL_THRESHOLD = 24;
+const INLINE_SONG_SCROLL_THRESHOLD = 14;
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -180,7 +180,7 @@ const AlbumGrid = ({
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
-    const [panelCoverPalette, setPanelCoverPalette] = useState(null);
+    const [panelCoverAtmosphere, setPanelCoverAtmosphere] = useState({ coverSrc: '', palette: null });
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
     const panelOpenTimerRef = useRef(null);
@@ -375,30 +375,31 @@ const AlbumGrid = ({
     );
     const panelAlbumMiniProgram = getAlbumMiniProgram(panelAlbum?.id);
     const panelCoverSrc = panelAlbum?.cover || '';
+    const panelCoverPalette = panelCoverAtmosphere.coverSrc === panelCoverSrc
+        ? panelCoverAtmosphere.palette
+        : null;
     const expandedMarginTop = isMobileLayout ? 8 : 12;
     const expandedMarginBottom = isMobileLayout ? 20 : 30;
 
     useEffect(() => {
         let cancelled = false;
-        const resetPaletteTimer = window.setTimeout(() => {
-            if (!cancelled) setPanelCoverPalette(null);
-        }, 0);
 
         if (!panelCoverSrc) {
             return () => {
                 cancelled = true;
-                window.clearTimeout(resetPaletteTimer);
             };
         }
 
         buildCoverAtmosphereAssets(panelCoverSrc).then((assets) => {
             if (cancelled) return;
-            setPanelCoverPalette(assets?.palette || null);
+            setPanelCoverAtmosphere({
+                coverSrc: panelCoverSrc,
+                palette: assets?.palette || null
+            });
         });
 
         return () => {
             cancelled = true;
-            window.clearTimeout(resetPaletteTimer);
         };
     }, [panelCoverSrc]);
 
