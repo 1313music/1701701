@@ -106,13 +106,15 @@ describe('useAndroidViewportVars', () => {
     vi.restoreAllMocks();
   });
 
-  const installVisualViewportMock = () => {
+  const installVisualViewportMock = (overrides = {}) => {
     const listeners = new Map();
     Object.defineProperty(window, 'visualViewport', {
       configurable: true,
       value: {
+        width: 390,
         height: 720,
         offsetTop: 0,
+        ...overrides,
         addEventListener: vi.fn((type, handler) => {
           listeners.set(type, handler);
         }),
@@ -153,5 +155,16 @@ describe('useAndroidViewportVars', () => {
     listeners.get('resize')?.();
 
     expect(setPropertySpy).toHaveBeenCalled();
+  });
+
+  it('exposes capped browser chrome gap and adaptive cover size for full-screen mobile layout', () => {
+    installVisualViewportMock({ width: 390, height: 724 });
+    const setPropertySpy = vi.spyOn(document.documentElement.style, 'setProperty');
+
+    renderHook(() => useAndroidViewportVars());
+
+    expect(setPropertySpy).toHaveBeenCalledWith('--mobile-browser-bottom-gap', '76px');
+    expect(setPropertySpy).toHaveBeenCalledWith('--mobile-browser-bottom-gap-capped', '24px');
+    expect(setPropertySpy).toHaveBeenCalledWith('--mobile-fullscreen-cover-size', '275px');
   });
 });

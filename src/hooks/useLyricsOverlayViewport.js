@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { shouldUseCompactMobileFullscreenLayout } from '../utils/mobileFullscreenLayout.js';
+
 const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
 
 export const getDesktopLyricEdgeOpacity = ({ lineTop, lineBottom, scrollerTop, scrollerHeight, isActive = false }) => {
@@ -64,8 +66,12 @@ export const useLyricsOverlayViewport = ({
     if (typeof window === 'undefined') return;
 
     const updateCompactViewport = () => {
+      const viewportWidth = Math.round(window.visualViewport?.width ?? window.innerWidth ?? 0);
       const viewportHeight = Math.round(window.visualViewport?.height ?? window.innerHeight ?? 0);
-      const compact = isMobileViewport() && viewportHeight > 0 && viewportHeight <= 720;
+      const compact = isMobileViewport() && shouldUseCompactMobileFullscreenLayout({
+        width: viewportWidth,
+        height: viewportHeight
+      });
       setIsCompactMobileViewport(compact);
     };
 

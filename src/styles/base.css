@@ -29,6 +29,8 @@
   --mobile-player-safe-bottom: 0px;
   --mobile-player-float-offset: 12px;
   --mobile-browser-bottom-gap: 0px;
+  --mobile-browser-bottom-gap-capped: 0px;
+  --mobile-fullscreen-cover-size: min(80vw, 360px);
   --mobile-main-bottom-padding: calc(98px + var(--mobile-browser-bottom-gap));
   --mobile-main-bottom-padding-no-player: calc(18px + var(--mobile-browser-bottom-gap));
 }

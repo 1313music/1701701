@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { isMacDesktopWebViewLike, isNativeAppWebView } from '../utils/appDomUtils.js';
+import { getAdaptiveMobileCoverSize } from '../utils/mobileFullscreenLayout.js';
 
 const isIOSDevice = () => /iPad|iPhone|iPod/.test(window.navigator.userAgent);
 const isAndroidDevice = () => /Android/i.test(window.navigator.userAgent || '');
@@ -51,7 +52,9 @@ export const shouldDeferViewportUpdate = ({ reason, isScrollGestureActive }) => 
 
 const clearViewportVars = (root) => {
   root.style.setProperty('--mobile-browser-bottom-gap', '0px');
+  root.style.setProperty('--mobile-browser-bottom-gap-capped', '0px');
   root.style.removeProperty('--mobile-fullscreen-height');
+  root.style.removeProperty('--mobile-fullscreen-cover-size');
   root.style.removeProperty('--mobile-layout-safe-top');
   root.style.removeProperty('--mobile-main-top-safe-offset');
   root.style.removeProperty('--mobile-layout-safe-bottom');
@@ -162,12 +165,14 @@ export const useAndroidViewportVars = () => {
 
       const vv = window.visualViewport;
       const viewportHeight = vv?.height ?? window.innerHeight;
+      const viewportWidth = vv?.width ?? window.innerWidth;
       const offsetTop = Math.max(vv?.offsetTop ?? 0, 0);
       const rawBottomGap = Math.max(window.innerHeight - (viewportHeight + offsetTop), 0);
       const isMobileWidth = window.innerWidth <= 1024;
       const browserBottomGap = isMobileWidth
         ? Math.min(Math.round(rawBottomGap), 120)
         : 0;
+      const cappedBrowserBottomGap = Math.min(browserBottomGap, 24);
       const probeStyle = probe ? window.getComputedStyle(probe) : null;
       const safeTopInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingTop)) : 0;
       const safeRightInset = probeStyle ? Math.round(readInsetValue(probeStyle.paddingRight)) : 0;
@@ -196,9 +201,21 @@ export const useAndroidViewportVars = () => {
           ? 24
           : 0;
       const safeTop = Math.max(measuredTopInset, fallbackTopInset);
+      const adaptiveCoverSize = isMobileWidth
+        ? getAdaptiveMobileCoverSize({
+          width: viewportWidth,
+          height: viewportHeight
+        })
+        : null;
 
       root.style.setProperty('--mobile-fullscreen-height', `${Math.round(viewportHeight)}px`);
       root.style.setProperty('--mobile-browser-bottom-gap', `${browserBottomGap}px`);
+      root.style.setProperty('--mobile-browser-bottom-gap-capped', `${cappedBrowserBottomGap}px`);
+      if (adaptiveCoverSize) {
+        root.style.setProperty('--mobile-fullscreen-cover-size', `${adaptiveCoverSize}px`);
+      } else {
+        root.style.removeProperty('--mobile-fullscreen-cover-size');
+      }
       root.style.setProperty('--mobile-layout-safe-top', `${safeTop}px`);
       root.style.setProperty('--mobile-main-top-safe-offset', `${safeTop}px`);
       root.style.setProperty('--mobile-layout-safe-bottom', `${safeBottomInset}px`);
