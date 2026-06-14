@@ -373,6 +373,11 @@ const PlayerBar = ({
                 </div>
 
                 <div className="player-actions">
+                    <SleepTimerControl
+                        remainingMs={sleepTimerRemainingMs}
+                        onStartSleepTimer={onStartSleepTimer}
+                        onCancelSleepTimer={onCancelSleepTimer}
+                    />
                     <VolumeControl
                         volume={volume}
                         isMuted={isMuted}
@@ -401,11 +406,6 @@ const PlayerBar = ({
                     >
                         <Share2 size={20} strokeWidth={2.2} absoluteStrokeWidth />
                     </button>
-                    <SleepTimerControl
-                        remainingMs={sleepTimerRemainingMs}
-                        onStartSleepTimer={onStartSleepTimer}
-                        onCancelSleepTimer={onCancelSleepTimer}
-                    />
                 </div>
             </footer>
         </>

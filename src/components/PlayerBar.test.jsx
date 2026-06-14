@@ -125,6 +125,14 @@ describe('PlayerBar', () => {
     expect(props.onShare).toHaveBeenCalledTimes(1);
   });
 
+  it('places the sleep timer first in the player action row', () => {
+    const props = createProps();
+    const { container } = render(<PlayerBar {...props} />);
+    const playerActions = container.querySelector('.player-actions');
+
+    expect(playerActions.firstElementChild).toHaveClass('sleep-timer-control');
+  });
+
   it('wires desktop volume controls without opening the full-screen player', () => {
     const props = createProps({ volume: 0.5 });
     render(<PlayerBar {...props} />);
