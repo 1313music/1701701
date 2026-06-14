@@ -1966,6 +1966,7 @@
     grid-template-areas:
       "title"
       "meta"
+      "note"
       "actions";
     row-gap: 5px;
     align-items: center;
@@ -2012,6 +2013,14 @@
     align-self: center;
     font-size: 13px;
     line-height: 1.35;
+  }
+
+  .album-inline-panel .album-local-storage-note {
+    grid-area: note;
+    max-width: 320px;
+    margin-top: 1px;
+    font-size: 12px;
+    line-height: 1.4;
   }
 
   .album-inline-panel.has-cover-atmosphere .album-metadata {

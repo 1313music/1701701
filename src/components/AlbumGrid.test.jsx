@@ -286,6 +286,7 @@ describe('AlbumGrid inline album panel', () => {
 
     expect(screen.getAllByRole('img', { name: '我的收藏' })).toHaveLength(2);
     expect(screen.getByText('我的收藏 • 0 首歌')).toBeInTheDocument();
+    expect(screen.getByText('收藏仅保存在当前设备。')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '播放收藏' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: '清空收藏' })).not.toBeInTheDocument();
     expect(screen.getByText('还没有收藏歌曲')).toBeInTheDocument();

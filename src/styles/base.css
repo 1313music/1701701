@@ -1194,6 +1194,14 @@ body {
   margin: 0;
 }
 
+.album-inline-panel .album-local-storage-note {
+  margin: 8px auto 0;
+  max-width: 210px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--text-secondary) 82%, transparent);
+}
+
 .album-inline-hero-actions {
   margin-top: 18px;
   display: flex;
@@ -1766,6 +1774,14 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.album-list-subheader .album-list-storage-note {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--text-secondary) 82%, transparent);
 }
 
 .album-list-actions {

@@ -147,6 +147,8 @@ describe('AlbumListOverlay mobile gestures', () => {
       expect(screen.getByRole('tab', { name: '当前专辑' })).toHaveAttribute('aria-selected', 'false');
       expect(screen.getByRole('tab', { name: '我的收藏' })).toHaveAttribute('aria-selected', 'true');
     });
+
+    expect(screen.getByText('1 首 · 收藏仅保存在当前设备。')).toBeInTheDocument();
   });
 
   it('does not switch tabs on horizontal swipe anymore', () => {

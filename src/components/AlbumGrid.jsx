@@ -388,6 +388,7 @@ const AlbumGrid = ({
         : isPanelVirtualAlbum && panelSourceAlbumCount > 0
         ? `来自 ${panelSourceAlbumCount} 张专辑 · ${panelSongs.length} 首`
         : `${panelAlbum?.artist || ''} • ${panelSongs.length} 首歌`;
+    const favoritesStorageNote = '收藏仅保存在当前设备。';
     const shouldShowClearFavorites = isPanelFavorites && panelSongs.length > 0;
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
@@ -518,6 +519,9 @@ const AlbumGrid = ({
                         <div className="album-info-text">
                             <h1 className="album-title">{panelAlbum.name}</h1>
                             <p className="album-metadata">{panelMetadata}</p>
+                            {isPanelFavorites && (
+                                <p className="album-local-storage-note">{favoritesStorageNote}</p>
+                            )}
                             <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''}`}>
                                 <button
                                     type="button"

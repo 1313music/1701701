@@ -334,6 +334,7 @@ const AlbumListOverlay = ({
             </span>
         ) : null
     );
+    const favoritesStorageNote = '收藏仅保存在当前设备。';
 
     const renderAlbumActions = (className = 'album-list-actions') => (
         <div className={className}>
@@ -476,10 +477,13 @@ const AlbumListOverlay = ({
                     {!mobile ? (
                         <>
                             <h4>我的收藏</h4>
-                            <p>{safeTempCount} 首</p>
+                            <p>{safeTempCount} 首 · {favoritesStorageNote}</p>
                         </>
                     ) : (
-                        <p className="album-list-mobile-tip">{`双击歌曲封面可加入收藏 · ${safeTempCount} 首`}</p>
+                        <>
+                            <p className="album-list-mobile-tip">{`双击歌曲封面可加入收藏 · ${safeTempCount} 首`}</p>
+                            <p className="album-list-storage-note">{favoritesStorageNote}</p>
+                        </>
                     )}
                 </div>
                 {renderFavoritesActions()}
