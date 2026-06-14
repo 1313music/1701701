@@ -41,6 +41,7 @@ const Sidebar = ({
     isSidebarCollapsed = false,
     setIsSidebarCollapsed,
     themePreference = 'dark',
+    resolvedTheme = themePreference,
     onThemeToggle,
     announcement,
     showAnnouncementTrigger = false,
@@ -52,9 +53,10 @@ const Sidebar = ({
         setView(newView);
     };
     const isGalleryActive = view === 'gallery';
-    const currentLabel = themePreference === 'dark' ? '深色' : '浅色';
-    const nextLabel = themePreference === 'dark' ? '浅色' : '深色';
-    const ThemeIcon = themePreference === 'dark' ? MoonIcon : SunIcon;
+    const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+    const currentLabel = currentTheme === 'dark' ? '深色' : '浅色';
+    const nextLabel = currentTheme === 'dark' ? '浅色' : '深色';
+    const ThemeIcon = currentTheme === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
     const sidebarToggleLabel = isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏';
     const handleMobileThemeToggle = (event) => {
@@ -161,9 +163,9 @@ const Sidebar = ({
                     {onThemeToggle && (
                         <button
                             type="button"
-                            className={`mobile-theme-switch ${themePreference === 'dark' ? 'is-dark' : ''}`}
+                            className={`mobile-theme-switch ${currentTheme === 'dark' ? 'is-dark' : ''}`}
                             role="switch"
-                            aria-checked={themePreference === 'dark'}
+                            aria-checked={currentTheme === 'dark'}
                             aria-label={themeToggleLabel}
                             title={themeToggleLabel}
                             onClick={handleMobileThemeToggle}
@@ -242,9 +244,9 @@ const Sidebar = ({
                     {onThemeToggle && (
                         <button
                             type="button"
-                            className={`sidebar-theme-control ${themePreference === 'dark' ? 'is-dark' : ''}`}
+                            className={`sidebar-theme-control ${currentTheme === 'dark' ? 'is-dark' : ''}`}
                             role="switch"
-                            aria-checked={themePreference === 'dark'}
+                            aria-checked={currentTheme === 'dark'}
                             aria-label={themeToggleLabel}
                             title={themeToggleLabel}
                             onClick={onThemeToggle}

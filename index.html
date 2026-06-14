@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN">
 
 <head>
   <meta charset="UTF-8" />
@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" content="transparent" />
   <meta name="description" content="1701701.xyz 是一个分享李志音乐与视频的网站，提供专辑、歌曲播放列表、现场视频与相关资源整理。" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
@@ -58,14 +59,19 @@
     }
 
     @media (prefers-color-scheme: light) {
-      #app-boot-splash {
+      html:not([data-theme]) #app-boot-splash {
         background: #f7f8fb;
         color: #111827;
+      }
+
+      html:not([data-theme]) .app-boot-spinner {
+        border-color: rgba(17, 24, 39, 0.18);
+        border-top-color: currentColor;
       }
     }
 
     @media (prefers-color-scheme: dark) {
-      #app-boot-splash {
+      html:not([data-theme]) #app-boot-splash {
         background: #121214;
         color: #f5f5f7;
       }
@@ -239,17 +245,17 @@
     }
 
     @media (prefers-color-scheme: light) {
-      .seo-static-shell {
+      html:not([data-theme]) .seo-static-shell {
         color: #111827;
       }
 
-      .seo-static-shell p,
-      .seo-static-shell li span,
-      .seo-static-items {
+      html:not([data-theme]) .seo-static-shell p,
+      html:not([data-theme]) .seo-static-shell li span,
+      html:not([data-theme]) .seo-static-items {
         color: rgba(17, 24, 39, 0.72);
       }
 
-      .seo-static-card {
+      html:not([data-theme]) .seo-static-card {
         border-color: rgba(17, 24, 39, 0.12);
         background: rgba(17, 24, 39, 0.03);
       }
@@ -282,7 +288,15 @@
       try {
         var root = document.documentElement;
         var storedTheme = window.localStorage.getItem('themePreference');
-        root.setAttribute('data-theme', storedTheme === 'light' ? 'light' : 'dark');
+        var storedThemeSource = window.localStorage.getItem('themePreferenceSource');
+        var systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        var hasManualTheme = storedTheme === 'light' || (storedTheme === 'dark' && storedThemeSource === 'manual');
+        var initialTheme = hasManualTheme ? storedTheme : systemTheme;
+        root.setAttribute('data-theme', initialTheme);
+        var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', initialTheme === 'dark' ? '#121214' : '#ffffff');
+        }
         var mq = window.matchMedia ? window.matchMedia('(display-mode: standalone)') : null;
         var mqStandalone = !!(mq && mq.matches);
         var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

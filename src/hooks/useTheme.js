@@ -7,15 +7,50 @@ import {
 } from './useThemeEnvironment.js';
 
 const THEME_PREFERENCE_KEY = 'themePreference';
-const DEFAULT_THEME = 'dark';
+const THEME_PREFERENCE_SOURCE_KEY = 'themePreferenceSource';
+const DEFAULT_THEME_PREFERENCE = 'system';
+const DEFAULT_RESOLVED_THEME = 'light';
+
+const isResolvedTheme = (theme) => theme === 'light' || theme === 'dark';
+
+const readSystemTheme = () => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return DEFAULT_RESOLVED_THEME;
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const readStoredThemePreference = () => {
+  if (typeof window === 'undefined') return DEFAULT_THEME_PREFERENCE;
+
+  try {
+    const stored = window.localStorage.getItem(THEME_PREFERENCE_KEY);
+    const source = window.localStorage.getItem(THEME_PREFERENCE_SOURCE_KEY);
+
+    if (stored === 'system') return 'system';
+    if (stored === 'light') return 'light';
+    if (stored === 'dark' && source === 'manual') return 'dark';
+    return DEFAULT_THEME_PREFERENCE;
+  } catch {
+    return DEFAULT_THEME_PREFERENCE;
+  }
+};
+
+const addMediaQueryChangeListener = (mediaQuery, listener) => {
+  if (typeof mediaQuery.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }
+  if (typeof mediaQuery.addListener === 'function') {
+    mediaQuery.addListener(listener);
+    return () => mediaQuery.removeListener(listener);
+  }
+  return () => {};
+};
 
 export const useTheme = ({ showToast } = {}) => {
-  const [themePreference, setThemePreference] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_THEME;
-    const stored = window.localStorage.getItem(THEME_PREFERENCE_KEY);
-    if (stored === 'light' || stored === 'dark') return stored;
-    return DEFAULT_THEME;
-  });
+  const [themePreference, setThemePreference] = useState(readStoredThemePreference);
+  const [systemTheme, setSystemTheme] = useState(readSystemTheme);
   const [showViewportDebug] = useState(() => {
     if (typeof window === 'undefined') return false;
     const params = new URLSearchParams(window.location.search);
@@ -23,15 +58,31 @@ export const useTheme = ({ showToast } = {}) => {
   });
   const [viewportDebug, setViewportDebug] = useState(null);
 
-  const resolvedTheme = useMemo(() => themePreference, [themePreference]);
+  const resolvedTheme = useMemo(
+    () => (isResolvedTheme(themePreference) ? themePreference : systemTheme),
+    [systemTheme, themePreference]
+  );
 
   const handleThemeToggle = useCallback((event) => {
-    const nextPreference = themePreference === 'dark' ? 'light' : 'dark';
+    const nextPreference = resolvedTheme === 'dark' ? 'light' : 'dark';
     const message = nextPreference === 'dark' ? '深色模式' : '浅色模式';
     setThemePreference(nextPreference);
     const anchorEvent = event?.currentTarget ? { currentTarget: event.currentTarget } : null;
     showToast?.(message, 'tone-add', { placement: 'side', anchorEvent });
-  }, [showToast, themePreference]);
+  }, [resolvedTheme, showToast]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const syncSystemTheme = () => {
+      setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
+    };
+    const removeMediaQueryListener = addMediaQueryChangeListener(mediaQuery, syncSystemTheme);
+    syncSystemTheme();
+
+    return removeMediaQueryListener;
+  }, []);
 
   useDisplayModeTheme({ resolvedTheme });
   useAndroidViewportVars();
@@ -41,6 +92,11 @@ export const useTheme = ({ showToast } = {}) => {
     if (typeof window === 'undefined') return;
     try {
       window.localStorage.setItem(THEME_PREFERENCE_KEY, themePreference);
+      if (isResolvedTheme(themePreference)) {
+        window.localStorage.setItem(THEME_PREFERENCE_SOURCE_KEY, 'manual');
+      } else {
+        window.localStorage.removeItem(THEME_PREFERENCE_SOURCE_KEY);
+      }
     } catch {
       // ignore storage errors
     }

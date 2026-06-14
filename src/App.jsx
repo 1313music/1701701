@@ -82,6 +82,7 @@ const App = () => {
 
   const {
     themePreference,
+    resolvedTheme,
     showViewportDebug,
     viewportDebug,
     handleThemeToggle
@@ -513,6 +514,7 @@ const App = () => {
               isSidebarCollapsed={isSidebarCollapsed}
               setIsSidebarCollapsed={setIsSidebarCollapsed}
               themePreference={themePreference}
+              resolvedTheme={resolvedTheme}
               onThemeToggle={handleThemeToggle}
               announcement={announcement}
               showAnnouncementTrigger={shouldShowAnnouncementTrigger}

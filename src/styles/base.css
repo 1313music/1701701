@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg-color: #ffffff;
   --main-color: #1d1d1f;
   --text-main: #1d1d1f;
@@ -65,6 +66,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg-color: #121214;
     --main-color: #ffffff;
     --text-main: #ffffff;
@@ -78,6 +80,7 @@
 }
 
 :root[data-theme='light'] {
+  color-scheme: light;
   --bg-color: #ffffff;
   --main-color: #1d1d1f;
   --text-main: #1d1d1f;
@@ -90,6 +93,7 @@
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --bg-color: #121214;
   --main-color: #ffffff;
   --text-main: #ffffff;

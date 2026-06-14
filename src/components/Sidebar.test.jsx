@@ -94,4 +94,24 @@ describe('Sidebar', () => {
     expect(handleThemeToggle).toHaveBeenCalledTimes(1);
     expect(setIsSidebarOpen).not.toHaveBeenCalled();
   });
+
+  it('renders the theme switch from the resolved system theme', () => {
+    render(
+      <Sidebar
+        view="library"
+        setView={vi.fn()}
+        isSidebarOpen={false}
+        setIsSidebarOpen={vi.fn()}
+        themePreference="system"
+        resolvedTheme="dark"
+        onThemeToggle={vi.fn()}
+      />
+    );
+
+    const themeSwitches = screen.getAllByRole('switch', { name: '主题：深色，点击切换为浅色' });
+
+    expect(themeSwitches).toHaveLength(2);
+    expect(themeSwitches[0]).toHaveAttribute('aria-checked', 'true');
+    expect(themeSwitches[1]).toHaveAttribute('aria-checked', 'true');
+  });
 });
