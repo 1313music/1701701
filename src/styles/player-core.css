@@ -2570,26 +2570,6 @@
   background: transparent;
 }
 
-.temp-clear-btn {
-  border: 1px solid var(--glass-border);
-  background: transparent;
-  color: var(--text-secondary);
-  min-height: 38px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.temp-clear-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text-main);
-}
-
 .app-toast {
   position: fixed;
   left: var(--toast-x, 0px);
@@ -2658,25 +2638,18 @@
 }
 
 
-[data-theme='dark'] .album-list-tab.active {
-  color: #121214;
-}
-
-[data-theme='light'] .album-play-btn,
-[data-theme='light'] .fav-play-btn {
+[data-theme='light'] .album-play-btn {
   background: #121214;
   color: #ffffff;
   border-color: transparent;
 }
 
-[data-theme='light'] .album-play-btn:not(:disabled):hover,
-[data-theme='light'] .fav-play-btn:not(:disabled):hover {
+[data-theme='light'] .album-play-btn:not(:disabled):hover {
   background: #121214;
   color: #ffffff;
 }
 
-[data-theme='dark'] .album-fav-all-btn,
-[data-theme='dark'] .temp-clear-btn {
+[data-theme='dark'] .album-fav-all-btn {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -2698,37 +2671,15 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-[data-theme='dark'] .album-list-tabs {
-  background: var(--glass-bg);
-}
-
 @media (max-width: 1024px) {
-  [data-theme='light'] .album-list-tabs {
-    background: rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
-
-  [data-theme='light'] .album-list-tab-slider {
-    background: #121214;
-    border: none;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
-  }
-
-  [data-theme='light'] .album-list-tab.active,
-  [data-theme='light'] .album-list-tab.active:hover {
-    color: #ffffff;
-  }
-
-  [data-theme='light'] .album-list-mobile-layout .album-play-btn,
-  [data-theme='light'] .album-list-mobile-layout .fav-play-btn {
+  [data-theme='light'] .album-list-mobile-layout .album-play-btn {
     background: #121214;
     color: #ffffff;
     border: none;
     box-shadow: none;
   }
 
-  [data-theme='light'] .album-list-mobile-layout .album-play-btn:hover,
-  [data-theme='light'] .album-list-mobile-layout .fav-play-btn:hover {
+  [data-theme='light'] .album-list-mobile-layout .album-play-btn:hover {
     background: #121214;
     color: #ffffff;
     filter: saturate(1.04);
@@ -2762,10 +2713,6 @@
 [data-theme='dark'] .album-list-body {
   scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
 }
-
-@media (max-width: 768px) {
-}
-
 
 @media (max-width: 768px) {
   .album-detail-header {

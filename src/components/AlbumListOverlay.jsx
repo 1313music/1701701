@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Heart, Play, Trash2, X } from 'lucide-react';
+import { Heart, Play, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
     getAlbumListOverlayMotionProps,
@@ -168,17 +168,11 @@ const AlbumListOverlay = ({
     isPlaying,
     playSongFromAlbum,
     tempPlaylistSet,
-    tempPlaylistCount,
-    tempPlaylistItems,
     onToggleTempSong,
-    onToggleAlbumFavorites,
-    onClearTempPlaylist,
-    onPlayFavorites
+    onToggleAlbumFavorites
 }) => {
     const shouldReduceMotion = useReducedMotion();
-    const [activeTab, setActiveTab] = useState('album');
     const [hoveredAlbumSrc, setHoveredAlbumSrc] = useState('');
-    const [hoveredFavoriteSrc, setHoveredFavoriteSrc] = useState('');
     const touchGestureRef = useRef({
         active: false,
         x: null,
@@ -187,10 +181,7 @@ const AlbumListOverlay = ({
         fromLeftEdge: false,
         fromTopDragZone: false
     });
-    const safeTempCount = typeof tempPlaylistCount === 'number' ? tempPlaylistCount : 0;
-    const safeTempItems = Array.isArray(tempPlaylistItems) ? tempPlaylistItems : [];
     const currentTrackSrc = currentTrack?.src || '';
-    const albumId = album?.id || '';
     const albumName = album?.name || '未知专辑';
     const safeAlbumSongs = Array.isArray(album?.songs) ? album.songs : [];
     const albumSongIds = safeAlbumSongs.map((song) => song?.src).filter(Boolean);
@@ -200,20 +191,9 @@ const AlbumListOverlay = ({
     const headerAlbumMeta = `${albumName} · ${albumSongCount} 首`;
 
     useEffect(() => {
-        if (!isOpen || !albumId || typeof window === 'undefined') return undefined;
-        const resetTabTimer = window.setTimeout(() => {
-            setActiveTab('album');
-        }, 0);
-        return () => {
-            window.clearTimeout(resetTabTimer);
-        };
-    }, [isOpen, albumId]);
-
-    useEffect(() => {
         if (isOpen || typeof window === 'undefined') return undefined;
         const clearHoverTimer = window.setTimeout(() => {
             setHoveredAlbumSrc('');
-            setHoveredFavoriteSrc('');
         }, 0);
         return () => {
             window.clearTimeout(clearHoverTimer);
@@ -334,7 +314,6 @@ const AlbumListOverlay = ({
             </span>
         ) : null
     );
-    const favoritesStorageNote = '收藏仅保存在当前设备。';
 
     const renderAlbumActions = (className = 'album-list-actions') => (
         <div className={className}>
@@ -368,40 +347,6 @@ const AlbumListOverlay = ({
                 />
                 {isAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
             </button>
-        </div>
-    );
-
-    const renderFavoritesActions = (className = 'album-list-actions') => (
-        <div className={className}>
-            <button
-                type="button"
-                className="fav-play-btn"
-                onClick={(event) => {
-                    event.stopPropagation();
-                    onPlayFavorites?.();
-                }}
-                disabled={safeTempCount === 0}
-            >
-                <Play size={16} strokeWidth={2.4} aria-hidden="true" />
-                播放收藏
-            </button>
-            {safeTempCount > 0 && (
-                <button
-                    type="button"
-                    className="temp-clear-btn"
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        if (typeof window !== 'undefined') {
-                            const shouldClear = window.confirm('确定要清空收藏吗？');
-                            if (!shouldClear) return;
-                        }
-                        onClearTempPlaylist?.(event);
-                    }}
-                >
-                    <Trash2 size={15} strokeWidth={2.3} aria-hidden="true" />
-                    清空列表
-                </button>
-            )}
         </div>
     );
 
@@ -470,78 +415,6 @@ const AlbumListOverlay = ({
         </>
     );
 
-    const renderFavoritesList = ({ mobile = false } = {}) => (
-        <>
-            <div className={`album-list-subheader ${mobile ? 'is-mobile' : ''}`}>
-                <div className="album-list-info">
-                    {!mobile ? (
-                        <>
-                            <h4>我的收藏</h4>
-                            <p>{safeTempCount} 首 · {favoritesStorageNote}</p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="album-list-mobile-tip">{`双击歌曲封面可加入收藏 · ${safeTempCount} 首`}</p>
-                            <p className="album-list-storage-note">{favoritesStorageNote}</p>
-                        </>
-                    )}
-                </div>
-                {renderFavoritesActions()}
-            </div>
-            <div className="album-list-body">
-                {safeTempItems.length === 0 && (
-                    <div className="song-empty">
-                        <span className="song-empty-icon" aria-hidden="true">
-                            <Heart size={22} strokeWidth={2} />
-                        </span>
-                        <span className="song-empty-copy">还没有添加歌曲</span>
-                    </div>
-                )}
-                {safeTempItems.map((item, index) => (
-                    <div
-                        key={item.song.src}
-                        className={getRowClassName(item.song)}
-                        onClick={() => onPlayFavorites?.(item.song)}
-                        onPointerEnter={() => setHoveredFavoriteSrc(item.song.src)}
-                        onPointerLeave={() => {
-                            setHoveredFavoriteSrc((previous) => (
-                                previous === item.song.src ? '' : previous
-                            ));
-                        }}
-                    >
-                        <span className="album-list-row-num">{index + 1}</span>
-                        <span className="album-list-row-main is-favorites">
-                            <FavoriteRowMarquee
-                                songName={item.song.name}
-                                albumName={item.album?.name || ''}
-                                allowMarquee={
-                                    currentTrackSrc === item.song.src
-                                    || hoveredFavoriteSrc === item.song.src
-                                }
-                            />
-                        </span>
-                        <span className="album-list-row-actions">
-                            <span className="album-list-row-status">{renderPlayingStatus(item.song)}</span>
-                            <button
-                                type="button"
-                                className="album-list-fav-btn active"
-                                aria-pressed="true"
-                                aria-label="取消收藏"
-                                title="取消收藏"
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    onToggleTempSong(item.song, event);
-                                }}
-                            >
-                                <Heart size={18} strokeWidth={2} fill="currentColor" />
-                            </button>
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </>
-    );
-
     const isMobile = isMobileViewport();
     const overlayMotionProps = getAlbumListOverlayMotionProps({ shouldReduceMotion });
     const panelMotionProps = getAlbumListPanelMotionProps({
@@ -574,68 +447,16 @@ const AlbumListOverlay = ({
                             </button>
                         </div>
 
-                        <div
-                            className="album-list-tabs"
-                            role="tablist"
-                            aria-label="歌曲列表视图切换"
-                            data-active-tab={activeTab}
-                        >
-                            <span className="album-list-tab-slider" aria-hidden="true" />
-                            <button
-                                type="button"
-                                className={`album-list-tab ${activeTab === 'album' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('album')}
-                                role="tab"
-                                aria-selected={activeTab === 'album'}
-                                aria-controls="album-list-mobile-album"
-                            >
-                                当前专辑
-                            </button>
-                            <button
-                                type="button"
-                                className={`album-list-tab ${activeTab === 'favorites' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('favorites')}
-                                role="tab"
-                                aria-selected={activeTab === 'favorites'}
-                                aria-controls="album-list-mobile-favorites"
-                            >
-                                我的收藏
-                            </button>
-                        </div>
-
                         <div className="album-list-desktop-layout">
                             <section className="album-list-main-column">
                                 {renderAlbumList()}
                             </section>
-                            <section className="album-list-favorites-column">
-                                {renderFavoritesList()}
-                            </section>
                         </div>
 
-                        <div
-                            className="album-list-mobile-layout"
-                            data-active-tab={activeTab}
-                        >
-                            <section
-                                id="album-list-mobile-album"
-                                role="tabpanel"
-                                className={`album-list-mobile-pane ${activeTab === 'album' ? 'active' : ''}`}
-                                hidden={activeTab !== 'album'}
-                            >
-                                <div className="album-list-mobile-column">
-                                    {renderAlbumList({ mobile: true })}
-                                </div>
-                            </section>
-                            <section
-                                id="album-list-mobile-favorites"
-                                role="tabpanel"
-                                className={`album-list-mobile-pane ${activeTab === 'favorites' ? 'active' : ''}`}
-                                hidden={activeTab !== 'favorites'}
-                            >
-                                <div className="album-list-mobile-column">
-                                    {renderFavoritesList({ mobile: true })}
-                                </div>
-                            </section>
+                        <div className="album-list-mobile-layout">
+                            <div className="album-list-mobile-column">
+                                {renderAlbumList({ mobile: true })}
+                            </div>
                         </div>
                     </Motion.div>
                 </Motion.div>

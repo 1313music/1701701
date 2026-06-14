@@ -128,36 +128,26 @@ describe('AlbumListOverlay mobile gestures', () => {
     vi.restoreAllMocks();
   });
 
-  it('still switches tabs on click', async () => {
+  it('renders only the current album list with inline favorite controls', async () => {
     render(<AlbumListOverlay {...createBaseProps()} />);
 
-    const albumTab = screen.getByRole('tab', { name: '当前专辑' });
-    const favoritesTab = screen.getByRole('tab', { name: '我的收藏' });
-
-    expect(albumTab).toHaveAttribute('aria-selected', 'true');
-    expect(favoritesTab).toHaveAttribute('aria-selected', 'false');
-
     await waitFor(() => {
-      expect(screen.getByRole('tab', { name: '当前专辑' })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getAllByText('测试专辑 · 2 首').length).toBeGreaterThan(0);
     });
 
-    fireEvent.click(screen.getByRole('tab', { name: '我的收藏' }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('tab', { name: '当前专辑' })).toHaveAttribute('aria-selected', 'false');
-      expect(screen.getByRole('tab', { name: '我的收藏' })).toHaveAttribute('aria-selected', 'true');
-    });
-
-    expect(screen.getByText('1 首 · 收藏仅保存在当前设备。')).toBeInTheDocument();
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(screen.queryByText('我的收藏')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '播放收藏' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: '播放全部' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: '收藏全部' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: '收藏' }).length).toBeGreaterThan(0);
   });
 
-  it('does not switch tabs on horizontal swipe anymore', () => {
+  it('ignores non-edge horizontal swipes', () => {
     const props = createBaseProps();
     render(<AlbumListOverlay {...props} />);
 
     const panel = document.body.querySelector('.album-list-panel');
-    const albumTab = screen.getByRole('tab', { name: '当前专辑' });
-    const favoritesTab = screen.getByRole('tab', { name: '我的收藏' });
 
     fireEvent.touchStart(panel, {
       touches: [{ clientX: 220, clientY: 180 }]
@@ -166,8 +156,7 @@ describe('AlbumListOverlay mobile gestures', () => {
       changedTouches: [{ clientX: 40, clientY: 186 }]
     });
 
-    expect(albumTab).toHaveAttribute('aria-selected', 'true');
-    expect(favoritesTab).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getAllByText('测试专辑 · 2 首').length).toBeGreaterThan(0);
     expect(props.onClose).not.toHaveBeenCalled();
   });
 

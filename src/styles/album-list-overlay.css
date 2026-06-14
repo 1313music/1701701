@@ -50,67 +50,6 @@
     letter-spacing: 0.02em;
   }
 
-  .album-list-tabs {
-    display: flex;
-    margin: 0 14px 8px;
-    padding: 3px;
-    gap: 0;
-    position: relative;
-    isolation: isolate;
-    border: 1px solid var(--glass-border);
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--glass-bg) 78%, transparent);
-    overflow: hidden;
-  }
-
-  .album-list-tab-slider {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: calc((100% - 6px) / 2);
-    height: calc(100% - 6px);
-    border-radius: 8px;
-    background: #ffffff;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-    transition: transform 0.42s cubic-bezier(0.22, 0.86, 0.22, 1), box-shadow 0.42s ease;
-    z-index: 0;
-    pointer-events: none;
-    will-change: transform;
-  }
-
-  .album-list-tabs[data-active-tab="favorites"] .album-list-tab-slider {
-    transform: translateX(100%);
-  }
-
-  .album-list-tab {
-    flex: 1;
-    position: relative;
-    z-index: 1;
-    border: none;
-    min-height: 38px;
-    padding: 6px 10px;
-    border-radius: 9px;
-    font-size: 14px;
-    font-weight: 700;
-    background: transparent;
-    color: var(--text-secondary);
-    transition: color 0.3s ease;
-  }
-
-  .album-list-tab.active {
-    background: transparent;
-    color: #121214;
-  }
-
-  .album-list-tab:hover {
-    background: transparent;
-    color: var(--text-main);
-  }
-
-  .album-list-tab.active:hover {
-    color: #121214;
-  }
-
   .album-list-desktop-layout {
     display: none;
   }
@@ -122,17 +61,6 @@
     min-height: 0;
     padding: 0 0 calc(10px + var(--mobile-fullscreen-safe-bottom) + var(--mobile-browser-bottom-gap));
     touch-action: pan-y;
-  }
-
-  .album-list-mobile-pane {
-    border-radius: 0;
-    display: none;
-    min-height: 0;
-    flex: 1;
-  }
-
-  .album-list-mobile-pane.active {
-    display: flex;
   }
 
   .album-list-mobile-column {
@@ -193,71 +121,39 @@
     text-overflow: ellipsis;
   }
 
-  .album-list-subheader.is-mobile .album-list-mobile-tip {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1.35;
-    color: var(--text-secondary);
-    max-width: 100%;
-    padding: 0 4px;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-  }
-
-  .album-list-subheader.is-mobile .album-list-storage-note {
-    margin: 4px auto 0;
-    max-width: 320px;
-    padding: 0 8px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.4;
-  }
-
   .album-list-actions {
     gap: 6px;
   }
 
   .album-list-subheader.is-mobile .album-list-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
-    max-width: 100%;
-    justify-content: center;
-    flex-wrap: nowrap;
+    max-width: 320px;
     align-items: center;
     gap: 8px;
-    margin-top: 0;
+    margin: 0 auto;
   }
 
   .album-list-mobile-layout .album-play-btn,
-  .album-list-mobile-layout .album-fav-all-btn,
-  .album-list-mobile-layout .fav-play-btn {
+  .album-list-mobile-layout .album-fav-all-btn {
     min-height: 38px;
+    width: 100%;
+    min-width: 0;
     font-size: 13px;
     padding: 6px 12px;
     border-radius: 10px;
   }
 
-  .album-list-mobile-layout .temp-clear-btn {
-    min-height: 38px;
-    border-radius: 10px;
-  }
-
-  .album-list-mobile-layout .album-play-btn,
-  .album-list-mobile-layout .fav-play-btn {
-    min-width: 118px;
+  .album-list-mobile-layout .album-play-btn {
     border: none;
     background: var(--main-color);
     color: var(--bg-color);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
   }
 
-  .album-list-mobile-layout .album-fav-all-btn,
-  .album-list-mobile-layout .temp-clear-btn {
+  .album-list-mobile-layout .album-fav-all-btn {
     border: 1px solid var(--glass-border);
-    min-width: 102px;
-    padding: 6px 10px;
     background: transparent;
     color: var(--text-secondary);
   }
@@ -348,19 +244,6 @@
     color: var(--text-main);
   }
 
-  .album-list-tabs + .album-list-mobile-layout {
-    margin-top: 0;
-    border-top: none;
-  }
-
-  .album-list-mobile-pane[hidden] {
-    display: none !important;
-  }
-
-  .album-list-mobile-pane:not([hidden]) {
-    display: flex;
-  }
-
   .song-empty {
     min-height: 220px;
     margin: 8px 2px;
@@ -373,25 +256,18 @@
   }
 }
 
-[data-theme='dark'] .album-list-tab.active {
-  color: #121214;
-}
-
-[data-theme='light'] .album-play-btn,
-[data-theme='light'] .fav-play-btn {
+[data-theme='light'] .album-play-btn {
   background: #121214;
   color: #ffffff;
   border-color: transparent;
 }
 
-[data-theme='light'] .album-play-btn:not(:disabled):hover,
-[data-theme='light'] .fav-play-btn:not(:disabled):hover {
+[data-theme='light'] .album-play-btn:not(:disabled):hover {
   background: #121214;
   color: #ffffff;
 }
 
-[data-theme='dark'] .album-fav-all-btn,
-[data-theme='dark'] .temp-clear-btn {
+[data-theme='dark'] .album-fav-all-btn {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -413,37 +289,15 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-[data-theme='dark'] .album-list-tabs {
-  background: var(--glass-bg);
-}
-
 @media (max-width: 1024px) {
-  [data-theme='light'] .album-list-tabs {
-    background: rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
-
-  [data-theme='light'] .album-list-tab-slider {
-    background: #121214;
-    border: none;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
-  }
-
-  [data-theme='light'] .album-list-tab.active,
-  [data-theme='light'] .album-list-tab.active:hover {
-    color: #ffffff;
-  }
-
-  [data-theme='light'] .album-list-mobile-layout .album-play-btn,
-  [data-theme='light'] .album-list-mobile-layout .fav-play-btn {
+  [data-theme='light'] .album-list-mobile-layout .album-play-btn {
     background: #121214;
     color: #ffffff;
     border: none;
     box-shadow: none;
   }
 
-  [data-theme='light'] .album-list-mobile-layout .album-play-btn:hover,
-  [data-theme='light'] .album-list-mobile-layout .fav-play-btn:hover {
+  [data-theme='light'] .album-list-mobile-layout .album-play-btn:hover {
     background: #121214;
     color: #ffffff;
     filter: saturate(1.04);

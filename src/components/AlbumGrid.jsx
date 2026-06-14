@@ -12,7 +12,7 @@ const LIBRARY_INTRO_DURATION_MS = 1400;
 const SONG_MARQUEE_GAP = 24;
 const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
-const INLINE_SONG_SCROLL_THRESHOLD = 14;
+const INLINE_SONG_SCROLL_THRESHOLD = 12;
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -118,7 +118,12 @@ const AlbumCoverArt = ({ album, className = '', alt }) => {
     const coverGrid = Array.isArray(album?.coverGrid)
         ? album.coverGrid.filter(Boolean).slice(0, 4)
         : [];
-    const isEmptyFavoritesCover = album?.virtualType === 'favorites' && !album?.cover && coverGrid.length === 0;
+    const isFavoritesCover = album?.virtualType === 'favorites';
+    const favoritesCoverGrid = isFavoritesCover && coverGrid.length === 0 && album?.cover
+        ? [album.cover]
+        : coverGrid;
+    const collageCovers = isFavoritesCover ? favoritesCoverGrid : coverGrid;
+    const isEmptyFavoritesCover = isFavoritesCover && collageCovers.length === 0;
 
     if (isEmptyFavoritesCover) {
         return (
@@ -128,19 +133,25 @@ const AlbumCoverArt = ({ album, className = '', alt }) => {
                 aria-label={alt || '我的收藏'}
             >
                 <Heart size={42} strokeWidth={2.1} aria-hidden="true" />
-                <span>收藏</span>
+                <span>我的收藏</span>
             </div>
         );
     }
 
-    if (coverGrid.length >= 2) {
+    if (collageCovers.length >= 2 || (isFavoritesCover && collageCovers.length >= 1)) {
+        const visibleCovers = isFavoritesCover ? collageCovers.slice(0, 3) : collageCovers;
         return (
             <div
-                className={`album-cover-collage is-count-${coverGrid.length} ${className}`}
+                className={`album-cover-collage is-count-${isFavoritesCover ? visibleCovers.length + 1 : visibleCovers.length} ${isFavoritesCover ? 'is-favorites-cover' : ''} ${className}`}
                 role="img"
                 aria-label={alt || `${album?.name || '专辑'} 封面`}
             >
-                {coverGrid.map((cover, index) => (
+                {isFavoritesCover && (
+                    <span className="album-cover-favorites-tile" aria-hidden="true">
+                        <Heart size={30} strokeWidth={2.1} />
+                    </span>
+                )}
+                {visibleCovers.map((cover, index) => (
                     <img
                         key={`${cover}-${index}`}
                         loading="lazy"
@@ -497,6 +508,7 @@ const AlbumGrid = ({
                     '--panel-width': panelLayout.width,
                     '--panel-offset-left': panelLayout.offsetLeft,
                     '--panel-anchor-x': panelLayout.anchorX,
+                    '--inline-song-scroll-visible-count': String(INLINE_SONG_SCROLL_THRESHOLD),
                     willChange: 'height, opacity, margin-top, margin-bottom'
                 }}
             >

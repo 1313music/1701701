@@ -150,17 +150,20 @@ describe('AlbumGrid inline album panel', () => {
     });
 
     expect(document.body.querySelector('.song-list-shell')).toHaveClass('is-long-list');
+    expect(document.body.querySelector('.album-inline-shell')).toHaveStyle({
+      '--inline-song-scroll-visible-count': '12'
+    });
     expect(screen.queryByRole('button', { name: '查看全部 30 首' })).not.toBeInTheDocument();
     expect(document.body.querySelector('.song-list-more-btn')).not.toBeInTheDocument();
     expect(document.body.querySelector('.song-source-cover')).not.toBeInTheDocument();
   });
 
   it('leaves regular-length album song lists unconstrained', async () => {
-    const shortAlbum = createLongAlbum(14);
+    const shortAlbum = createLongAlbum(12);
     render(<AlbumGrid {...createBaseProps({ musicAlbums: [shortAlbum] })} />);
 
     await waitFor(() => {
-      expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(14);
+      expect(document.body.querySelectorAll('.album-inline-panel .song-item')).toHaveLength(12);
     });
 
     expect(document.body.querySelector('.song-list-shell')).not.toHaveClass('is-long-list');
@@ -335,7 +338,8 @@ describe('AlbumGrid inline album panel', () => {
 
     expect(screen.getByText('我的收藏 • 3 首歌')).toBeInTheDocument();
     expect(screen.queryByText('来自 3 张专辑 · 3 首')).not.toBeInTheDocument();
-    expect(document.body.querySelectorAll('.album-cover-collage.is-count-3')).toHaveLength(2);
+    expect(document.body.querySelectorAll('.album-cover-collage.is-favorites-cover.is-count-4')).toHaveLength(2);
+    expect(document.body.querySelectorAll('.album-cover-favorites-tile')).toHaveLength(2);
 
     confirmSpy.mockReturnValueOnce(false);
     fireEvent.click(screen.getByRole('button', { name: '清空收藏' }));
