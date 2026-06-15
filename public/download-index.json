@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-03-12T15:18:25.810Z",
+  "updatedAt": "2026-06-15T11:27:57Z",
   "sections": [
     {
       "title": "叁缺壹吉隆坡站",
@@ -1820,6 +1820,14 @@
               "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Fhjsieorbxhjskslapqieuy/b1/main/lizhi/%E3%80%8A%E4%BD%A0%E5%A6%88%E9%80%BC%E2%80%94%E2%80%94%E4%B8%80%E4%B8%AA%E7%8E%B0%E5%AE%9E%E4%B8%BB%E4%B9%89%E8%80%85%E7%9A%84%E7%90%86%E6%83%B3%E4%B8%96%E7%95%8C%E3%80%8B%E5%BA%8F%E8%A8%80.pdf",
               "filename": "《你妈逼——一个现实主义者的理想世界》序言.pdf",
               "sortOrder": 30,
+              "enabled": true
+            },
+            {
+              "title": "李志与情感",
+              "url": "https://www.douban.com/topic/480367002/?_spm_id=MjQ0OTc2MDM1&dt_dapp=1&dt_platform=com.douban.activity.wechat_moments",
+              "sourceUrl": "https://www.douban.com/topic/480367002/?_spm_id=MjQ0OTc2MDM1&dt_dapp=1&dt_platform=com.douban.activity.wechat_moments",
+              "actionLabel": "原文",
+              "sortOrder": 40,
               "enabled": true
             }
           ]

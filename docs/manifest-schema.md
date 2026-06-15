@@ -142,6 +142,8 @@
 - `url` (必填)
 - `filename` (可选): 下载文件名
 - `previewUrl` (可选): 预览地址
+- `sourceUrl` (可选): 原文/来源地址；存在时资源按钮使用该地址跳转
+- `actionLabel` (可选): 来源跳转按钮文案，例如 `原文`
 - `sortOrder` (可选)
 - `enabled` (可选)
 

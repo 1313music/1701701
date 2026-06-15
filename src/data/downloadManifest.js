@@ -54,7 +54,9 @@ const normalizeItem = (item, assetBase = '') => {
     title,
     url,
     filename: String(item.filename || '').trim() || undefined,
-    previewUrl: resolveAssetUrl(item.previewUrl, assetBase) || undefined
+    previewUrl: resolveAssetUrl(item.previewUrl, assetBase) || undefined,
+    sourceUrl: resolveAssetUrl(item.sourceUrl, assetBase) || undefined,
+    actionLabel: String(item.actionLabel || '').trim() || undefined
   };
 };
 

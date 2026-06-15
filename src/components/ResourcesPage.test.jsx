@@ -79,6 +79,37 @@ describe('ResourcesPage', () => {
     );
   });
 
+  it('uses an original link action when sourceUrl is configured', async () => {
+    loadDownloadSections.mockResolvedValueOnce([
+      {
+        title: '其他资源',
+        groups: [
+          {
+            title: '资源下载',
+            items: [
+              {
+                title: '李志与情感',
+                url: 'https://www.douban.com/topic/480367002/',
+                sourceUrl: 'https://www.douban.com/topic/480367002/',
+                actionLabel: '原文'
+              }
+            ]
+          }
+        ]
+      }
+    ]);
+
+    render(<ResourcesPage />);
+
+    expect(await screen.findByText('李志与情感')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '原文' })).toHaveAttribute(
+      'href',
+      'https://www.douban.com/topic/480367002/'
+    );
+    expect(screen.queryByRole('link', { name: '预览' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '下载' })).not.toBeInTheDocument();
+  });
+
   it('renders the standalone resource preview page', async () => {
     window.history.replaceState(
       null,

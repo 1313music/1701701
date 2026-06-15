@@ -62,8 +62,18 @@ const useDownloadAction = (item) => {
     };
 };
 
+const getOriginalAction = (item) => {
+    const href = String(item?.sourceUrl || '').trim();
+    if (!href) return null;
+    return {
+        href,
+        label: String(item?.actionLabel || '').trim() || '原文'
+    };
+};
+
 export const DownloadItem = ({ item, forcePreview = false, getPreviewPath = getDownloadPreviewPath }) => {
     const previewHref = resolvePreviewHref(item, forcePreview, getPreviewPath);
+    const originalAction = getOriginalAction(item);
     const { status, label, handleDownload } = useDownloadAction(item);
 
     return (
@@ -80,14 +90,25 @@ export const DownloadItem = ({ item, forcePreview = false, getPreviewPath = getD
                         预览
                     </a>
                 )}
-                <button
-                    type="button"
-                    className={`download-action ${status}`}
-                    onClick={handleDownload}
-                    disabled={status === 'loading'}
-                >
-                    {label}
-                </button>
+                {originalAction ? (
+                    <a
+                        className="download-action"
+                        href={originalAction.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {originalAction.label}
+                    </a>
+                ) : (
+                    <button
+                        type="button"
+                        className={`download-action ${status}`}
+                        onClick={handleDownload}
+                        disabled={status === 'loading'}
+                    >
+                        {label}
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -99,6 +120,7 @@ export const DownloadPreviewPage = ({
     backHref = getPathForView('download'),
     backLabel = '返回下载页'
 }) => {
+    const originalAction = getOriginalAction(item);
     const { status, label, handleDownload } = useDownloadAction(item);
     const [isFrameLoading, setIsFrameLoading] = useState(true);
 
@@ -119,14 +141,25 @@ export const DownloadPreviewPage = ({
                         <ExternalLink size={15} strokeWidth={2.2} absoluteStrokeWidth />
                         新窗口打开
                     </a>
-                    <button
-                        type="button"
-                        className={`download-action ${status}`}
-                        onClick={handleDownload}
-                        disabled={status === 'loading'}
-                    >
-                        {label}
-                    </button>
+                    {originalAction ? (
+                        <a
+                            className="download-action"
+                            href={originalAction.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {originalAction.label}
+                        </a>
+                    ) : (
+                        <button
+                            type="button"
+                            className={`download-action ${status}`}
+                            onClick={handleDownload}
+                            disabled={status === 'loading'}
+                        >
+                            {label}
+                        </button>
+                    )}
                 </div>
             </div>
 

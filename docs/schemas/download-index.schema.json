@@ -120,6 +120,12 @@
         "previewUrl": {
           "type": "string"
         },
+        "sourceUrl": {
+          "type": "string"
+        },
+        "actionLabel": {
+          "type": "string"
+        },
         "sortOrder": {
           "type": "integer"
         },
@@ -130,4 +136,3 @@
     }
   }
 }
-

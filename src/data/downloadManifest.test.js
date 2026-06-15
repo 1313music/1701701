@@ -16,6 +16,7 @@ describe('downloadManifest asset normalization', () => {
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
+    window.history.replaceState(null, '', '/');
     __resetDownloadManifestCacheForTests();
     vi.restoreAllMocks();
   });
@@ -38,7 +39,9 @@ describe('downloadManifest asset normalization', () => {
                   {
                     title: '相对资源',
                     url: '../files/archive.zip',
-                    previewUrl: '../preview/archive.html'
+                    previewUrl: '../preview/archive.html',
+                    sourceUrl: '../source/original.html',
+                    actionLabel: '原文'
                   }
                 ]
               }
@@ -56,6 +59,8 @@ describe('downloadManifest asset normalization', () => {
     });
     expect(sections[0].groups[0].items[0].url).toBe('https://r2.1701701.xyz/files/archive.zip');
     expect(sections[0].groups[0].items[0].previewUrl).toBe('https://r2.1701701.xyz/preview/archive.html');
+    expect(sections[0].groups[0].items[0].sourceUrl).toBe('https://r2.1701701.xyz/source/original.html');
+    expect(sections[0].groups[0].items[0].actionLabel).toBe('原文');
   });
 
   it('returns stale persisted sections while notifying subscribers after a background refresh', async () => {
@@ -113,7 +118,9 @@ describe('downloadManifest asset normalization', () => {
                   title: '新资源',
                   url: 'https://example.com/fresh.zip',
                   filename: undefined,
-                  previewUrl: undefined
+                  previewUrl: undefined,
+                  sourceUrl: undefined,
+                  actionLabel: undefined
                 }
               ]
             }

@@ -24,6 +24,7 @@ const isPdfResource = (item) => {
 
 export const resolvePreviewSource = (item, forcePreview = false) => {
   if (item?.previewUrl) return item.previewUrl;
+  if (item?.sourceUrl) return '';
   if (!forcePreview || !item?.url) return '';
   if (isPdfResource(item)) {
     return `${PDF_PREVIEW_VIEWER}${encodeURIComponent(item.url)}`;
