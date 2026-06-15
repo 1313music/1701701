@@ -15,10 +15,12 @@ const createBaseProps = (overrides = {}) => ({
 
 describe('useLyricsOverlayViewport', () => {
   let originalInnerWidth;
+  let originalMatchMedia;
   let originalResizeObserver;
 
   beforeEach(() => {
     originalInnerWidth = window.innerWidth;
+    originalMatchMedia = window.matchMedia;
     originalResizeObserver = globalThis.ResizeObserver;
   });
 
@@ -27,7 +29,12 @@ describe('useLyricsOverlayViewport', () => {
       configurable: true,
       value: originalInnerWidth
     });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: originalMatchMedia
+    });
     globalThis.ResizeObserver = originalResizeObserver;
+    document.documentElement.classList.remove('mac-desktop-webview-like');
     vi.restoreAllMocks();
   });
 
@@ -158,6 +165,27 @@ describe('useLyricsOverlayViewport', () => {
     });
 
     expect(setIsLyricsOpen).not.toHaveBeenCalled();
+  });
+
+  it('keeps fine-pointer mac desktop webviews on the desktop layout below the mobile breakpoint', () => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 900
+    });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn((query) => ({
+        matches: query === '(hover: hover) and (pointer: fine)',
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn()
+      }))
+    });
+    document.documentElement.classList.add('mac-desktop-webview-like');
+
+    const { result } = renderHook(() => useLyricsOverlayViewport(createBaseProps()));
+
+    expect(result.current.isMobileViewport()).toBe(false);
   });
 
   it('computes stronger opacity near the center and lighter opacity near the edges', () => {

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { shouldUseCompactMobileFullscreenLayout } from '../utils/mobileFullscreenLayout.js';
 
 const MOBILE_CLOSE_EDGE_SWIPE_MAX_START_X = 64;
+const DESKTOP_FINE_POINTER_QUERY = '(hover: hover) and (pointer: fine)';
 
 export const getDesktopLyricEdgeOpacity = ({ lineTop, lineBottom, scrollerTop, scrollerHeight, isActive = false }) => {
   if (
@@ -57,10 +58,17 @@ export const useLyricsOverlayViewport = ({
     document.documentElement.classList.contains('mac-desktop-webview-like')
   ), []);
 
+  const isDesktopWebViewViewport = useCallback(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+    if (!document.documentElement.classList.contains('mac-desktop-webview-like')) return false;
+    if (typeof window.matchMedia !== 'function') return true;
+    return window.matchMedia(DESKTOP_FINE_POINTER_QUERY).matches;
+  }, []);
+
   const isMobileViewport = useCallback(() => {
     if (typeof window === 'undefined') return false;
-    return window.innerWidth <= 1024;
-  }, []);
+    return window.innerWidth <= 1024 && !isDesktopWebViewViewport();
+  }, [isDesktopWebViewViewport]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

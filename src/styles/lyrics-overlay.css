@@ -974,9 +974,7 @@
 /* Adjustments for content inside Flip Card */
 .xl-cover {
   width: 100%;
-  
-  max-width: nonebox;
-  /* Override prev styles */
+  max-width: 440px;
   margin: 0;
   box-shadow: none;
   /* Shadow handled by card */
@@ -2058,5 +2056,98 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0 60px;
+  }
+}
+
+@media (max-width: 1024px) and (hover: hover) and (pointer: fine) {
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player {
+    height: 100vh;
+    min-height: 100vh;
+    max-height: none;
+    background: #05070c;
+    color: #fff;
+    contain: none;
+    touch-action: auto;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player::before {
+    inset: -10%;
+    opacity: 0.96;
+    background-image: var(--cover-image);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transform: scale(1.1);
+    filter: blur(78px) saturate(1.1) brightness(0.48);
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player::after {
+    opacity: 1;
+    background:
+      radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.08), transparent 30%),
+      radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.05), transparent 34%),
+      linear-gradient(180deg, rgba(3, 5, 8, 0.52), rgba(3, 5, 8, 0.9));
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .mobile-player-content {
+    display: none !important;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .desktop-player-content {
+    display: flex !important;
+    flex: 1;
+    min-height: 0;
+    gap: clamp(32px, 5vw, 64px);
+    padding: 0 clamp(32px, 5vw, 56px) clamp(24px, 4vh, 44px);
+    position: relative;
+    z-index: 1;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .album-view {
+    flex: 0 0 min(42%, 360px);
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .xl-cover {
+    width: min(300px, 32vw);
+    height: auto;
+    max-width: 300px;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .track-meta {
+    max-width: 320px;
+    height: 96px;
+    flex-basis: 96px;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .track-meta h2 {
+    color: #fff;
+    font-size: 28px;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .track-meta p {
+    color: #fff;
+    font-size: 18px;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .overlay-controls {
+    max-width: 360px;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .lyrics-view.desktop-lyrics {
+    display: flex !important;
+    flex: 1;
+    width: auto;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  :root.mac-desktop-webview-like .lyrics-overlay.mobile-fullscreen-player .lyrics-scroller {
+    height: min(70vh, calc(100vh - 170px));
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 40px clamp(24px, 4vw, 48px) 56px;
   }
 }
