@@ -1,4 +1,4 @@
-import { SHOW_DOWNLOAD_PAGE } from './featureFlags.js';
+import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './featureFlags.js';
 
 export const SITE_URL = 'https://1701701.xyz';
 export const SITE_NAME = '1701701.xyz';
@@ -7,6 +7,7 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
 export const SEO_VIEW_PATHS = Object.freeze({
   library: '/',
   video: '/video/',
+  resources: '/resources/',
   download: '/download/',
   gallery: '/gallery/',
   app: '/app/',
@@ -16,11 +17,15 @@ export const SEO_VIEW_PATHS = Object.freeze({
 export const PUBLIC_SEO_VIEWS = Object.freeze([
   'library',
   'video',
+  'resources',
   'download',
   'gallery',
   'app',
   'about'
-].filter((view) => SHOW_DOWNLOAD_PAGE || view !== 'download'));
+].filter((view) => (
+  (view !== 'download' || SHOW_DOWNLOAD_PAGE)
+  && (view !== 'resources' || SHOW_RESOURCES_PAGE)
+)));
 
 export const LI_ZHI_ENTITY_LINKS = Object.freeze([
   'https://musicbrainz.org/artist/e54bc357-19aa-4e1f-9795-3346e486d5db',
@@ -90,6 +95,20 @@ export const SEO_MAP = Object.freeze({
       '李志跨年',
       '叁缺壹现场',
       '叁缺壹吉隆坡站'
+    ]
+  },
+  resources: {
+    title: '李志资料 | 1701701.xyz',
+    heading: '李志资料',
+    description: '整理李志相关文字资料、吉他谱、PDF 文档与可预览资源，方便集中浏览与下载。',
+    pageType: 'CollectionPage',
+    keywords: [
+      '李志资料',
+      '李志自传',
+      '李志吉他谱',
+      '李志乐谱',
+      '李志 PDF',
+      '李志文章'
     ]
   },
   download: {

@@ -46,6 +46,20 @@ describe('Sidebar', () => {
     expect(screen.queryByRole('button', { name: '下载' })).not.toBeInTheDocument();
   });
 
+  it('shows the resources navigation independently from downloads', () => {
+    render(
+      <Sidebar
+        view="library"
+        setView={vi.fn()}
+        isSidebarOpen={false}
+        setIsSidebarOpen={vi.fn()}
+      />
+    );
+
+    expect(screen.getAllByRole('button', { name: '资料' })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: '下载' })).not.toBeInTheDocument();
+  });
+
   it('shows announcement trigger in the mobile topbar slot', () => {
     const handleOpenAnnouncement = vi.fn();
 

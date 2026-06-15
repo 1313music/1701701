@@ -34,12 +34,13 @@ import {
   SITE_URL,
   WALINE_SERVER_URL
 } from './utils/appShellConfig.js';
-import { SHOW_DOWNLOAD_PAGE } from './utils/featureFlags.js';
+import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './utils/featureFlags.js';
 
 const LyricsOverlay = lazy(() => import('./components/LyricsOverlay.jsx'));
 const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'));
 const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
 const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
+const ResourcesPage = lazy(() => import('./components/ResourcesPage.jsx'));
 const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
@@ -495,7 +496,11 @@ const App = () => {
       }
       return;
     }
-    if ((SHOW_DOWNLOAD_PAGE && view === 'download') || view === 'video') {
+    if (
+      (SHOW_DOWNLOAD_PAGE && view === 'download')
+      || (SHOW_RESOURCES_PAGE && view === 'resources')
+      || view === 'video'
+    ) {
       return;
     }
     signalBootReady();
@@ -587,6 +592,20 @@ const App = () => {
                       onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
                         new URL(getPathForView('download'), SITE_URL).toString(),
                         '下载页链接已复制',
+                        anchorOrOptions
+                      )}
+                    />
+                  </Suspense>
+                </div>
+              )}
+              {SHOW_RESOURCES_PAGE && view === 'resources' && (
+                <div className="view-panel view-panel-resources">
+                  <Suspense fallback={pageLoadingFallback}>
+                    <ResourcesPage
+                      onInitialReady={signalBootReady}
+                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                        new URL(getPathForView('resources'), SITE_URL).toString(),
+                        '资料页链接已复制',
                         anchorOrOptions
                       )}
                     />

@@ -19,6 +19,22 @@ describe('DownloadPage', () => {
   beforeEach(() => {
     loadDownloadSections.mockResolvedValue([
       {
+        title: '其他歌曲',
+        groups: [
+          {
+            title: '翻唱/现场/即兴/微博/未收录',
+            items: [
+              {
+                title: '现场资料示例',
+                url: 'https://example.com/live-note.pdf',
+                filename: '现场资料示例.pdf',
+                previewUrl: 'https://example.com/live-note-preview.pdf'
+              }
+            ]
+          }
+        ]
+      },
+      {
         title: '其他资源',
         groups: [
           {
@@ -47,12 +63,21 @@ describe('DownloadPage', () => {
     window.history.replaceState(null, '', '/');
   });
 
+  it('does not render resource documents on the download page', async () => {
+    render(<DownloadPage />);
+
+    expect(await screen.findByText('现场资料示例')).toBeInTheDocument();
+    expect(screen.queryByText('《李志自传》')).not.toBeInTheDocument();
+  });
+
   it('links downloadable previews to internal standalone preview routes', async () => {
     render(<DownloadPage />);
 
-    expect(await screen.findByRole('link', { name: '预览' })).toHaveAttribute(
+    fireEvent.click(await screen.findByRole('button', { name: /翻唱\/现场\/即兴\/微博\/未收录/ }));
+
+    expect(screen.getByRole('link', { name: '预览' })).toHaveAttribute(
       'href',
-      '/download/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0'
+      '/download/preview/%E7%8E%B0%E5%9C%BA%E8%B5%84%E6%96%99%E7%A4%BA%E4%BE%8B'
     );
   });
 
@@ -60,18 +85,18 @@ describe('DownloadPage', () => {
     window.history.replaceState(
       null,
       '',
-      '/download/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0'
+      '/download/preview/%E7%8E%B0%E5%9C%BA%E8%B5%84%E6%96%99%E7%A4%BA%E4%BE%8B'
     );
 
     render(<DownloadPage />);
 
-    expect(await screen.findByRole('heading', { name: '《李志自传》' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '现场资料示例' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '返回下载页' })).toHaveAttribute('href', '/download');
     expect(screen.getByText('文档较大，首次加载可能需要 5 到 20 秒。若长时间空白，可尝试右上角“新窗口打开”。')).toBeInTheDocument();
     expect(screen.getByText('预览加载中，请稍等…')).toBeInTheDocument();
-    expect(screen.getByTitle('《李志自传》 文档预览')).toHaveAttribute(
+    expect(screen.getByTitle('现场资料示例 文档预览')).toHaveAttribute(
       'src',
-      `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent('https://example.com/lizhi-biography.pdf')}`
+      'https://example.com/live-note-preview.pdf'
     );
   });
 
@@ -79,12 +104,12 @@ describe('DownloadPage', () => {
     window.history.replaceState(
       null,
       '',
-      '/download/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0'
+      '/download/preview/%E7%8E%B0%E5%9C%BA%E8%B5%84%E6%96%99%E7%A4%BA%E4%BE%8B'
     );
 
     render(<DownloadPage />);
 
-    const iframe = await screen.findByTitle('《李志自传》 文档预览');
+    const iframe = await screen.findByTitle('现场资料示例 文档预览');
     fireEvent.load(iframe);
 
     expect(screen.queryByText('预览加载中，请稍等…')).not.toBeInTheDocument();

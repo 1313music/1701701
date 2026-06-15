@@ -1,9 +1,10 @@
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from './seoConfig.js';
-import { SHOW_DOWNLOAD_PAGE } from './featureFlags.js';
+import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './featureFlags.js';
 
 export const VIEW_PATHS = Object.freeze({
   library: '/',
   video: '/video',
+  resources: '/resources',
   download: '/download',
   gallery: '/gallery',
   app: '/app',
@@ -15,6 +16,7 @@ export const VIEW_PATHS = Object.freeze({
 export const VIEW_QUERY_KEYS = Object.freeze({
   library: ['albumId', 'songId', 'song'],
   video: ['videoId', 'videoCategory'],
+  resources: [],
   download: [],
   gallery: [],
   app: [],
@@ -24,7 +26,10 @@ export const VIEW_QUERY_KEYS = Object.freeze({
 });
 
 export const AVAILABLE_VIEWS = new Set(
-  Object.keys(VIEW_PATHS).filter((view) => SHOW_DOWNLOAD_PAGE || view !== 'download')
+  Object.keys(VIEW_PATHS).filter((view) => (
+    (view !== 'download' || SHOW_DOWNLOAD_PAGE)
+    && (view !== 'resources' || SHOW_RESOURCES_PAGE)
+  ))
 );
 
 export { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL };
@@ -34,6 +39,7 @@ export const WECHAT_VIDEO_PASSWORD_KEYWORD = '密码';
 export const WECHAT_OFFICIAL_ACCOUNT_QR_URL = 'https://p1.music.126.net/iMUBvGOv8WsuiwXYEAojmQ==/109951172851448166.jpg';
 export const APP_READY_EVENT = 'app-initial-ready';
 export const DOWNLOAD_PREVIEW_PATH_PREFIX = `${VIEW_PATHS.download}/preview`;
+export const RESOURCE_PREVIEW_PATH_PREFIX = `${VIEW_PATHS.resources}/preview`;
 
 const normalizePathname = (pathname = '/') => {
   if (!pathname) return '/';
@@ -63,19 +69,55 @@ export const getDownloadPreviewSlugFromPathname = (pathname = '/') => {
   }
 };
 
+export const getResourcePreviewPath = (slug = '') => {
+  const normalizedSlug = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
+  if (!normalizedSlug) return VIEW_PATHS.resources;
+  return `${RESOURCE_PREVIEW_PATH_PREFIX}/${encodeURIComponent(normalizedSlug)}`;
+};
+
+export const getResourcePreviewSlugFromPathname = (pathname = '/') => {
+  const normalized = normalizePathname(pathname);
+  const prefix = `${RESOURCE_PREVIEW_PATH_PREFIX}/`;
+  if (!normalized.startsWith(prefix)) return '';
+  const rawSlug = normalized.slice(prefix.length);
+  if (!rawSlug) return '';
+  try {
+    return decodeURIComponent(rawSlug);
+  } catch {
+    return rawSlug;
+  }
+};
+
 const isDownloadPathname = (pathname = '/') => {
   const normalized = normalizePathname(pathname);
   return normalized === VIEW_PATHS.download || Boolean(getDownloadPreviewSlugFromPathname(normalized));
+};
+
+const isResourcesPathname = (pathname = '/') => {
+  const normalized = normalizePathname(pathname);
+  return normalized === VIEW_PATHS.resources || Boolean(getResourcePreviewSlugFromPathname(normalized));
 };
 
 export const shouldRedirectDisabledDownloadPath = (locationLike) => (
   !SHOW_DOWNLOAD_PAGE && isDownloadPathname(locationLike?.pathname)
 );
 
+export const shouldRedirectDisabledResourcesPath = (locationLike) => (
+  !SHOW_RESOURCES_PAGE && isResourcesPathname(locationLike?.pathname)
+);
+
+export const shouldRedirectDisabledDownloadResourcePath = (locationLike) => (
+  shouldRedirectDisabledDownloadPath(locationLike)
+  || shouldRedirectDisabledResourcesPath(locationLike)
+);
+
 const getViewFromPathname = (pathname = '/') => {
   const normalized = normalizePathname(pathname);
   if (SHOW_DOWNLOAD_PAGE && getDownloadPreviewSlugFromPathname(normalized)) {
     return 'download';
+  }
+  if (SHOW_RESOURCES_PAGE && getResourcePreviewSlugFromPathname(normalized)) {
+    return 'resources';
   }
   const matched = Object.entries(VIEW_PATHS).find(([, path]) => path === normalized);
   if (!matched) return null;

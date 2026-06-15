@@ -6,7 +6,7 @@ import {
   getCanonicalSearchForView,
   getPathForView,
   resolveViewFromLocation,
-  shouldRedirectDisabledDownloadPath
+  shouldRedirectDisabledDownloadResourcePath
 } from '../utils/appShellConfig.js';
 
 const createInitialLyricsCommentRequest = () => ({
@@ -25,7 +25,7 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
   const [locationSearch, setLocationSearch] = useState(() => (
     typeof window === 'undefined'
       ? ''
-      : shouldRedirectDisabledDownloadPath(window.location)
+      : shouldRedirectDisabledDownloadResourcePath(window.location)
         ? ''
         : getCanonicalSearchForView(resolveViewFromLocation(window.location), window.location.search)
   ));
@@ -182,7 +182,7 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !shouldRedirectDisabledDownloadPath(window.location)) return;
+    if (typeof window === 'undefined' || !shouldRedirectDisabledDownloadResourcePath(window.location)) return;
     window.history.replaceState(null, '', getPathForView('library'));
   }, []);
 

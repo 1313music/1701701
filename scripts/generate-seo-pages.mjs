@@ -13,6 +13,7 @@ import {
   getCanonicalUrlForView,
   getSeoConfigForView
 } from '../src/utils/seoConfig.js';
+import { isResourceSection } from '../src/utils/downloadResourceUtils.js';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.join(projectRoot, 'dist');
@@ -29,6 +30,7 @@ const HTML_ENTITIES = Object.freeze({
 const PAGE_META = Object.freeze({
   library: { changefreq: 'daily', priority: '1.0' },
   video: { changefreq: 'daily', priority: '0.9' },
+  resources: { changefreq: 'daily', priority: '0.8' },
   download: { changefreq: 'daily', priority: '0.9' },
   gallery: { changefreq: 'daily', priority: '0.9' },
   app: { changefreq: 'weekly', priority: '0.8' },
@@ -138,6 +140,7 @@ const buildNavigation = () => {
   const labels = {
     library: '音乐',
     video: '视频',
+    resources: '资料',
     download: '下载',
     gallery: '图库',
     app: 'APP',
@@ -267,7 +270,7 @@ const buildVideoSection = (videoCategories) => {
   return buildCardSection('视频分类', cards);
 };
 
-const buildDownloadSection = (downloadSections) => {
+const buildDownloadSection = (downloadSections, title = '资源分类') => {
   const cards = enabledSorted(downloadSections).slice(0, 10).map((section) => {
     const groupSummaries = enabledSorted(section.groups)
       .slice(0, 6)
@@ -290,16 +293,19 @@ const buildDownloadSection = (downloadSections) => {
         </article>`;
   });
 
-  return buildCardSection('资源分类', cards);
+  return buildCardSection(title, cards);
 };
 
-const buildStatsSection = ({ musicAlbums, videoCategories, downloadSections }) => {
+const buildStatsSection = ({ musicAlbums, videoCategories, downloadSections, resourceSections }) => {
   const albumCount = countEnabled(musicAlbums);
   const songCount = enabledSorted(musicAlbums).reduce((total, album) => total + countSongs(album), 0);
   const videoCount = enabledSorted(videoCategories).reduce((total, category) => (
     total + countVideoLeaves(category.items)
   ), 0);
   const downloadCount = enabledSorted(downloadSections).reduce((total, section) => (
+    total + countDownloadItems(section)
+  ), 0);
+  const resourceCount = enabledSorted(resourceSections).reduce((total, section) => (
     total + countDownloadItems(section)
   ), 0);
   const stats = [
@@ -309,6 +315,9 @@ const buildStatsSection = ({ musicAlbums, videoCategories, downloadSections }) =
 
   if (PUBLIC_SEO_VIEWS.includes('download')) {
     stats.push(`<li><strong>下载资源</strong><span>${countEnabled(downloadSections)} 个分区，约 ${downloadCount} 个资源条目</span></li>`);
+  }
+  if (PUBLIC_SEO_VIEWS.includes('resources')) {
+    stats.push(`<li><strong>资料文档</strong><span>${countEnabled(resourceSections)} 个分区，约 ${resourceCount} 份资料</span></li>`);
   }
 
   return buildListSection('站内内容概览', stats);
@@ -325,7 +334,7 @@ const buildGenericSection = (view) => {
       'iPhone 和 iPad 用户可以通过浏览器添加到主屏幕，以 PWA 方式使用。'
     ],
     about: [
-      '本站整理李志音乐、现场视频、下载资源与相关说明。',
+      '本站整理李志音乐、现场视频、资料文档、下载资源与相关说明。',
       '内容以资料索引、播放列表和站内导航为主，方便集中检索。'
     ]
   };
@@ -343,6 +352,7 @@ const buildStaticContent = (view, manifestData) => {
   sections.push(buildStatsSection(manifestData));
   if (view === 'library') sections.push(buildAlbumSection(manifestData.musicAlbums));
   if (view === 'video') sections.push(buildVideoSection(manifestData.videoCategories));
+  if (view === 'resources') sections.push(buildDownloadSection(manifestData.resourceSections, '资料分类'));
   if (view === 'download') sections.push(buildDownloadSection(manifestData.downloadSections));
   if (['gallery', 'app', 'about'].includes(view)) sections.push(buildGenericSection(view));
 
@@ -454,6 +464,7 @@ const main = async () => {
   const lastmodByView = {
     library: toIsoDate(musicManifest.updatedAt) || buildDate,
     video: toIsoDate(videoManifest.updatedAt) || buildDate,
+    resources: toIsoDate(downloadManifest.updatedAt) || buildDate,
     download: toIsoDate(downloadManifest.updatedAt) || buildDate,
     gallery: buildDate,
     app: buildDate,
@@ -465,10 +476,12 @@ const main = async () => {
     downloadManifest.updatedAt
   );
 
+  const rawDownloadSections = enabledSorted(downloadManifest.sections);
   const manifestData = {
     musicAlbums: enabledSorted(musicManifest.albums),
     videoCategories: enabledSorted(videoManifest.categories),
-    downloadSections: enabledSorted(downloadManifest.sections)
+    downloadSections: rawDownloadSections.filter((section) => !isResourceSection(section)),
+    resourceSections: rawDownloadSections.filter(isResourceSection)
   };
 
   for (const view of PUBLIC_SEO_VIEWS) {

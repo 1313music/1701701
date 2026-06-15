@@ -8,14 +8,14 @@ import {
     Video,
     Download,
     Images,
-    ChevronLeft,
-    ChevronRight,
+    FileText,
+    PanelLeft,
     Smartphone,
     Info,
     MessageSquareMore
 } from 'lucide-react';
 import AnnouncementTrigger from './AnnouncementTrigger.jsx';
-import { SHOW_DOWNLOAD_PAGE } from '../utils/featureFlags.js';
+import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
 
 const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
     String(import.meta.env.VITE_SHOW_COMMENT_NAV || '').trim().toLowerCase()
@@ -26,7 +26,9 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
         type="button"
         className={`nav-item ${active ? 'active' : ''}`}
         onClick={onClick}
+        aria-label={label}
         aria-pressed={active}
+        data-tooltip={label}
     >
         {icon}
         <span>{label}</span>
@@ -132,6 +134,14 @@ const Sidebar = ({
                         active={isGalleryActive}
                         onClick={() => handleNavClick('gallery')}
                     />
+                    {SHOW_RESOURCES_PAGE && (
+                        <NavItem
+                            icon={<FileText size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="资料"
+                            active={view === 'resources'}
+                            onClick={() => handleNavClick('resources')}
+                        />
+                    )}
                     {SHOW_DOWNLOAD_PAGE && (
                         <NavItem
                             icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
@@ -183,15 +193,31 @@ const Sidebar = ({
             </div>
 
             <aside className={`sidebar ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
-                <div
-                    className="logo"
-                    onClick={() => handleNavClick('library')}
-                    onKeyDown={handleLogoKeyDown}
-                    role="button"
-                    tabIndex={0}
-                >
-                    <div className="logo-box" />
-                    <span className="logo-text">1701701.xyz</span>
+                <div className="sidebar-header">
+                    <div
+                        className="logo"
+                        onClick={() => handleNavClick('library')}
+                        onKeyDown={handleLogoKeyDown}
+                        role="button"
+                        tabIndex={0}
+                    >
+                        <div className="logo-box" />
+                        <span className="logo-text">1701701.xyz</span>
+                    </div>
+                    <button
+                        type="button"
+                        className="sidebar-header-toggle"
+                        onClick={() => {
+                            if (setIsSidebarCollapsed) {
+                                setIsSidebarCollapsed((prev) => !prev);
+                            }
+                        }}
+                        aria-label={sidebarToggleLabel}
+                        title={sidebarToggleLabel}
+                        data-tooltip={sidebarToggleLabel}
+                    >
+                        <PanelLeft size={22} strokeWidth={2.4} absoluteStrokeWidth />
+                    </button>
                 </div>
 
                 <div className="nav-group">
@@ -213,6 +239,14 @@ const Sidebar = ({
                         active={isGalleryActive}
                         onClick={() => handleNavClick('gallery')}
                     />
+                    {SHOW_RESOURCES_PAGE && (
+                        <NavItem
+                            icon={<FileText size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="资料"
+                            active={view === 'resources'}
+                            onClick={() => handleNavClick('resources')}
+                        />
+                    )}
                     {SHOW_DOWNLOAD_PAGE && (
                         <NavItem
                             icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}
@@ -244,42 +278,19 @@ const Sidebar = ({
                     {onThemeToggle && (
                         <button
                             type="button"
-                            className={`sidebar-theme-control ${currentTheme === 'dark' ? 'is-dark' : ''}`}
+                            className={`nav-item sidebar-theme-control ${currentTheme === 'dark' ? 'is-dark' : ''}`}
                             role="switch"
                             aria-checked={currentTheme === 'dark'}
                             aria-label={themeToggleLabel}
                             title={themeToggleLabel}
+                            data-tooltip="外观"
                             onClick={onThemeToggle}
                         >
-                            <span className="sidebar-theme-main">
-                                <ThemeIcon size={20} strokeWidth={2.4} absoluteStrokeWidth />
-                                <span className="sidebar-theme-label">
-                                    外观
-                                </span>
-                            </span>
-                            <span className="sidebar-theme-track" aria-hidden="true">
-                                <span className="sidebar-theme-thumb" />
-                            </span>
+                            <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
+                            <span>外观</span>
                         </button>
                     )}
                 </div>
-                <button
-                    type="button"
-                    className="sidebar-edge-toggle"
-                    onClick={() => {
-                        if (setIsSidebarCollapsed) {
-                            setIsSidebarCollapsed((prev) => !prev);
-                        }
-                    }}
-                    aria-label={sidebarToggleLabel}
-                    title={sidebarToggleLabel}
-                >
-                    {isSidebarCollapsed ? (
-                        <ChevronRight size={16} />
-                    ) : (
-                        <ChevronLeft size={16} />
-                    )}
-                </button>
             </aside>
         </>
     );

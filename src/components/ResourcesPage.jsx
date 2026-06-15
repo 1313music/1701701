@@ -1,41 +1,70 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { Share2, BookOpen } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Share2 } from 'lucide-react';
 import '../styles/download.css';
 import {
     loadDownloadSections,
     subscribeToDownloadSections
 } from '../data/downloadManifest';
 import {
-    getDownloadPreviewSlugFromPathname,
-    getPathForView
+    getPathForView,
+    getResourcePreviewPath,
+    getResourcePreviewSlugFromPathname
 } from '../utils/appShellConfig.js';
-import {
-    DownloadGroup,
-    DownloadPreviewPage
-} from './DownloadResourceList.jsx';
-import {
-    findPreviewItemBySlug,
-    PDF_PREVIEW_VIEWER_BASE
-} from '../utils/downloadPreviewUtils.js';
 import {
     countSectionItems,
     splitDownloadResourceSections
 } from '../utils/downloadResourceUtils.js';
+import {
+    DownloadItem,
+    DownloadPreviewPage
+} from './DownloadResourceList.jsx';
+import {
+    findPreviewItemBySlug
+} from '../utils/downloadPreviewUtils.js';
 
-const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
-    const [downloadSections, setDownloadSections] = useState([]);
+const getResourceSectionTitle = (section) => (
+    section.title === '其他资源' ? '资料' : section.title
+);
+
+const getResourceGroup = (group) => (
+    group.title === '资源下载'
+        ? { ...group, title: '全部资料' }
+        : group
+);
+
+const ResourceCard = ({ group }) => (
+    <article className="resources-card">
+        <div className="resources-card-head">
+            <h2>{group.title}</h2>
+            <span>{group.items.length} 份</span>
+        </div>
+        <div className="resources-card-list">
+            {group.items.map((item) => (
+                <DownloadItem
+                    key={`${item.title}-${item.url}`}
+                    item={item}
+                    forcePreview
+                    getPreviewPath={getResourcePreviewPath}
+                />
+            ))}
+        </div>
+    </article>
+);
+
+const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
+    const [allSections, setAllSections] = useState([]);
     const [isSectionsLoading, setIsSectionsLoading] = useState(true);
     const [sectionsLoadError, setSectionsLoadError] = useState('');
     const [sectionsRetryKey, setSectionsRetryKey] = useState(0);
     const previewSlug = typeof window === 'undefined'
         ? ''
-        : getDownloadPreviewSlugFromPathname(window.location.pathname);
+        : getResourcePreviewSlugFromPathname(window.location.pathname);
 
     useEffect(() => {
         let canceled = false;
         const unsubscribe = subscribeToDownloadSections((sections) => {
             if (canceled) return;
-            setDownloadSections(Array.isArray(sections) ? sections : []);
+            setAllSections(Array.isArray(sections) ? sections : []);
             setSectionsLoadError('');
             setIsSectionsLoading(false);
         });
@@ -45,11 +74,11 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
             try {
                 const sections = await loadDownloadSections();
                 if (canceled) return;
-                setDownloadSections(Array.isArray(sections) ? sections : []);
+                setAllSections(Array.isArray(sections) ? sections : []);
             } catch (error) {
                 if (canceled) return;
-                setDownloadSections([]);
-                setSectionsLoadError(error?.message || '下载清单加载失败');
+                setAllSections([]);
+                setSectionsLoadError(error?.message || '资料清单加载失败');
             } finally {
                 if (!canceled) {
                     setIsSectionsLoading(false);
@@ -62,33 +91,27 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
             unsubscribe();
         };
     }, [sectionsRetryKey]);
+
     useEffect(() => {
         if (!isSectionsLoading && typeof onInitialReady === 'function') {
             onInitialReady();
         }
     }, [isSectionsLoading, onInitialReady]);
-    useEffect(() => {
-        if (typeof window === 'undefined' || typeof fetch !== 'function') return;
-        const warmupTimer = window.setTimeout(() => {
-            fetch(PDF_PREVIEW_VIEWER_BASE, { cache: 'force-cache' }).catch(() => {
-                // no-op
-            });
-        }, 80);
-        return () => {
-            window.clearTimeout(warmupTimer);
-        };
-    }, []);
 
+    const resourceSections = useMemo(
+        () => splitDownloadResourceSections(allSections).resourceSections,
+        [allSections]
+    );
     const sectionStats = useMemo(() => {
         const map = new Map();
-        splitDownloadResourceSections(downloadSections).downloadSections.forEach((section) => {
+        resourceSections.forEach((section) => {
             map.set(section.title, countSectionItems(section));
         });
         return map;
-    }, [downloadSections]);
-    const visibleDownloadSections = useMemo(
-        () => splitDownloadResourceSections(downloadSections).downloadSections,
-        [downloadSections]
+    }, [resourceSections]);
+    const previewEntry = useMemo(
+        () => findPreviewItemBySlug(resourceSections, previewSlug),
+        [resourceSections, previewSlug]
     );
 
     const handleRetrySections = () => {
@@ -101,20 +124,10 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
             anchorEvent: { currentTarget: event.currentTarget }
         });
     };
-    const shouldDefaultOpenGroup = (sectionTitle, groupTitle) => (
-        sectionTitle === '其他资源' && groupTitle === '资源下载'
-    );
-    const shouldForcePreviewGroup = (sectionTitle, groupTitle) => (
-        sectionTitle === '其他资源' && groupTitle === '资源下载'
-    );
-    const previewEntry = useMemo(
-        () => findPreviewItemBySlug(downloadSections, previewSlug),
-        [downloadSections, previewSlug]
-    );
 
     if (previewSlug) {
         return (
-            <div className="download-page download-v2 download-preview-route">
+            <div className="download-page download-v2 resources-page download-preview-route">
                 {isSectionsLoading && (
                     <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
                         <span className="page-loading-ring" aria-hidden="true" />
@@ -132,9 +145,8 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
                                 <div className="download-group-body">
                                     <p>{sectionsLoadError}</p>
                                     <div className="download-preview-error-actions">
-                                        <a className="download-preview-back" href={getPathForView('download')}>
-                                            <ArrowLeft size={16} strokeWidth={2.2} absoluteStrokeWidth />
-                                            返回下载页
+                                        <a className="download-preview-back" href={getPathForView('resources')}>
+                                            返回资料页
                                         </a>
                                         <button
                                             type="button"
@@ -155,6 +167,8 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
                         key={previewEntry.previewSrc}
                         item={previewEntry.item}
                         previewSrc={previewEntry.previewSrc}
+                        backHref={getPathForView('resources')}
+                        backLabel="返回资料页"
                     />
                 )}
 
@@ -166,11 +180,10 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
                         <div className="download-groups">
                             <div className="download-group open">
                                 <div className="download-group-body">
-                                    <p>当前链接对应的资源不存在，或暂不支持站内预览。</p>
+                                    <p>当前链接对应的资料不存在，或暂不支持站内预览。</p>
                                     <div className="download-preview-error-actions">
-                                        <a className="download-preview-back" href={getPathForView('download')}>
-                                            <ArrowLeft size={16} strokeWidth={2.2} absoluteStrokeWidth />
-                                            返回下载页
+                                        <a className="download-preview-back" href={getPathForView('resources')}>
+                                            返回资料页
                                         </a>
                                     </div>
                                 </div>
@@ -183,40 +196,20 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
     }
 
     return (
-        <div className="download-page download-v2">
-            <section className="download-priority-note" aria-label="下载说明">
-                <p>本页只提供小程序暂未收录歌曲的下载，更多专辑与歌曲，请在下方小程序内搜索获取。</p>
-            </section>
-
-            <section className="download-intro">
-                <div className="download-intro-top">
-                    <div className="download-intro-media">
-                        <img loading="lazy" src="https://p1.music.126.net/h1WFXzKQ6qpjB1STRsD5Qg==/109951172851448634.jpg" alt="SongSharing 小程序二维码" />
+        <div className="download-page download-v2 resources-page">
+            <section className="resources-hero" aria-label="资料">
+                <div className="resources-hero-header">
+                    <div>
+                        <h1>资料</h1>
+                        <p>文字、乐谱与 PDF 文档集中整理。</p>
                     </div>
-                </div>
-                <div className="download-intro-body">
-                    <div className="download-intro-brand">
-                        <h2>SongSharing</h2>
-                        <p>小程序</p>
-                    </div>
-                    <div className="download-intro-title">海量曲库 · 智能搜索 · 一键上传</div>
-                    <p className="download-intro-tip">一个帮你一键上传歌曲到网易云音乐云盘的小工具。</p>
-                    <div className="download-intro-actions">
-                        <a
-                            className="download-intro-link"
-                            href="https://mp.weixin.qq.com/s/pHsFSPTn3Cd7MXV81J4NHg"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <BookOpen size={15} strokeWidth={2.2} absoluteStrokeWidth />
-                            使用指南
-                        </a>
+                    <div className="resources-header-actions">
                         {typeof onCopyPageLink === 'function' && (
                             <button
                                 type="button"
-                                className="download-intro-link download-intro-page-share"
+                                className="resources-share"
                                 onClick={handleCopyPageLink}
-                                aria-label="分享下载页"
+                                aria-label="分享资料页"
                             >
                                 <Share2 size={15} strokeWidth={2.2} absoluteStrokeWidth />
                                 分享本页
@@ -255,42 +248,36 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
                 </section>
             )}
 
-            {!isSectionsLoading && !sectionsLoadError && visibleDownloadSections.map((section) => {
-                const isCenteredHeader = [
-                    "叁缺壹吉隆坡站",
-                    "叁缺壹东京站",
-                    "其他歌曲",
-                ].includes(section.title);
-                const countUnit = section.title === '其他资源' ? '个' : '首';
-                return (
-                <section key={section.title} className="download-section-block">
-                    <div
-                        className={
-                            isCenteredHeader
-                                ? "download-section-header download-section-header--centered"
-                                : "download-section-header"
-                        }
-                    >
-                        <h3>{section.title}</h3>
-                        <span className="download-section-count">
-                            {sectionStats.get(section.title)} {countUnit}
-                        </span>
+            {!isSectionsLoading && !sectionsLoadError && resourceSections.length === 0 && (
+                <section className="download-section-block">
+                    <div className="download-section-header">
+                        <h3>暂无资料</h3>
                     </div>
-                    <div className="download-groups">
+                </section>
+            )}
+
+            {!isSectionsLoading && !sectionsLoadError && resourceSections.map((section) => (
+                <section key={section.title} className="download-section-block resources-section-block">
+                    {resourceSections.length > 1 && (
+                        <div className="download-section-header">
+                            <h3>{getResourceSectionTitle(section)}</h3>
+                            <span className="download-section-count">
+                                {sectionStats.get(section.title)} 份
+                            </span>
+                        </div>
+                    )}
+                    <div className="resources-grid">
                         {section.groups.map((group) => (
-                            <DownloadGroup
+                            <ResourceCard
                                 key={group.title}
-                                group={group}
-                                defaultOpen={shouldDefaultOpenGroup(section.title, group.title)}
-                                forcePreview={shouldForcePreviewGroup(section.title, group.title)}
+                                group={getResourceGroup(group)}
                             />
                         ))}
                     </div>
                 </section>
-                );
-            })}
+            ))}
         </div>
     );
 };
 
-export default DownloadPage;
+export default ResourcesPage;
