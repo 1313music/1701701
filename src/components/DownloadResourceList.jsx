@@ -1,14 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { Download as DownloadIcon, ExternalLink, Share2 } from 'lucide-react';
 
-import { getDownloadPreviewPath, getPathForView } from '../utils/appShellConfig.js';
+import { getDownloadPreviewPath } from '../utils/appShellConfig.js';
+import { copyTextToClipboard } from '../utils/appDomUtils.js';
+import { SITE_URL } from '../utils/seoConfig.js';
 import {
     fetchAndTriggerDownload,
     resolvePreviewHref,
     triggerDownloadWithFallback
 } from '../utils/downloadPreviewUtils.js';
 
-const PREVIEW_LOADING_HINT = '文档较大，首次加载可能需要 5 到 20 秒。若长时间空白，可尝试右上角“新窗口打开”。';
+const PREVIEW_LOADING_HINT = '预览加载较慢时，可直接打开原件。';
+const SHARE_STATUS_RESET_MS = 1600;
+
+const formatDisplayTitle = (title) => {
+    const rawTitle = String(title || '').trim();
+    const titleMatch = rawTitle.match(/^《([^》]+)》(.*)$/);
+    if (!titleMatch) return rawTitle;
+
+    const suffix = titleMatch[2].trim();
+    return suffix ? `${titleMatch[1]} ${suffix}` : titleMatch[1];
+};
 
 const useDownloadAction = (item) => {
     const [status, setStatus] = useState('idle');
@@ -75,10 +87,11 @@ export const DownloadItem = ({ item, forcePreview = false, getPreviewPath = getD
     const previewHref = resolvePreviewHref(item, forcePreview, getPreviewPath);
     const originalAction = getOriginalAction(item);
     const { status, label, handleDownload } = useDownloadAction(item);
+    const displayTitle = formatDisplayTitle(item.title);
 
     return (
         <div className="download-item-row">
-            <div className="download-item-title">{item.title}</div>
+            <div className="download-item-title">{displayTitle}</div>
             <div className="download-item-actions">
                 {previewHref && (
                     <a
@@ -116,67 +129,115 @@ export const DownloadItem = ({ item, forcePreview = false, getPreviewPath = getD
 
 export const DownloadPreviewPage = ({
     item,
-    previewSrc,
-    backHref = getPathForView('download'),
-    backLabel = '返回下载页'
+    previewSrc
 }) => {
     const originalAction = getOriginalAction(item);
     const { status, label, handleDownload } = useDownloadAction(item);
     const [isFrameLoading, setIsFrameLoading] = useState(true);
+    const [shareStatus, setShareStatus] = useState('idle');
+    const shareStatusTimerRef = useRef(null);
+    const displayTitle = formatDisplayTitle(item.title);
+
+    useEffect(() => () => {
+        if (shareStatusTimerRef.current) {
+            clearTimeout(shareStatusTimerRef.current);
+        }
+    }, []);
+
+    const resetShareStatusLater = () => {
+        if (shareStatusTimerRef.current) clearTimeout(shareStatusTimerRef.current);
+        shareStatusTimerRef.current = setTimeout(() => {
+            shareStatusTimerRef.current = null;
+            setShareStatus('idle');
+        }, SHARE_STATUS_RESET_MS);
+    };
+
+    const getPreviewShareUrl = () => {
+        if (typeof window === 'undefined') return '';
+        return new URL(
+            `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            SITE_URL
+        ).toString();
+    };
+
+    const handleCopyPreviewLink = async () => {
+        if (shareStatus === 'loading') return;
+        const shareUrl = getPreviewShareUrl();
+        if (!shareUrl) return;
+        setShareStatus('loading');
+        const copied = await copyTextToClipboard(shareUrl);
+        setShareStatus(copied ? 'copied' : 'error');
+        resetShareStatusLater();
+    };
+
+    const shareLabel = useMemo(() => {
+        if (shareStatus === 'loading') return '复制中...';
+        if (shareStatus === 'copied') return '已复制';
+        if (shareStatus === 'error') return '复制失败';
+        return '分享';
+    }, [shareStatus]);
 
     return (
         <section className="download-preview-page-shell" aria-label="文档预览页">
-            <div className="download-preview-toolbar">
-                <a className="download-preview-back" href={backHref}>
-                    <ArrowLeft size={16} strokeWidth={2.2} absoluteStrokeWidth />
-                    {backLabel}
-                </a>
-                <div className="download-preview-toolbar-actions">
-                    <a
-                        className="download-preview-link"
-                        href={previewSrc}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <ExternalLink size={15} strokeWidth={2.2} absoluteStrokeWidth />
-                        新窗口打开
-                    </a>
-                    {originalAction ? (
+            <div className="download-preview-header">
+                <div className="download-preview-heading">
+                    <span className="download-preview-eyebrow">Preview</span>
+                    <h1>{displayTitle}</h1>
+                </div>
+
+                <div className="download-preview-toolbar">
+                    <div className="download-preview-toolbar-actions">
                         <a
-                            className="download-action"
-                            href={originalAction.href}
+                            className="download-preview-link"
+                            href={previewSrc}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            {originalAction.label}
+                            <ExternalLink size={15} strokeWidth={2.2} absoluteStrokeWidth />
+                            打开原件
                         </a>
-                    ) : (
+                        {originalAction ? (
+                            <a
+                                className="download-action"
+                                href={originalAction.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <ExternalLink size={15} strokeWidth={2.2} absoluteStrokeWidth />
+                                {originalAction.label}
+                            </a>
+                        ) : (
+                            <button
+                                type="button"
+                                className={`download-action ${status}`}
+                                onClick={handleDownload}
+                                disabled={status === 'loading'}
+                            >
+                                <DownloadIcon size={15} strokeWidth={2.2} absoluteStrokeWidth />
+                                {label}
+                            </button>
+                        )}
                         <button
                             type="button"
-                            className={`download-action ${status}`}
-                            onClick={handleDownload}
-                            disabled={status === 'loading'}
+                            className={`download-preview-link download-preview-share ${shareStatus}`}
+                            onClick={handleCopyPreviewLink}
+                            disabled={shareStatus === 'loading'}
+                            aria-label="复制预览链接"
+                            title="复制预览链接"
                         >
-                            {label}
+                            <Share2 size={15} strokeWidth={2.2} absoluteStrokeWidth />
+                            {shareLabel}
                         </button>
-                    )}
+                    </div>
                 </div>
             </div>
 
-            <div className="download-preview-heading">
-                <span className="download-preview-eyebrow">Preview</span>
-                <h1>{item.title}</h1>
-                <p>{item.filename || 'PDF 文档'}</p>
-            </div>
-
-            <div
-                className={`download-preview-notice ${isFrameLoading ? 'is-loading' : ''}`}
-                role="status"
-                aria-live="polite"
-            >
-                {isFrameLoading && <span className="page-loading-ring" aria-hidden="true" />}
-                <p>{PREVIEW_LOADING_HINT}</p>
-            </div>
+            {isFrameLoading && (
+                <div className="download-preview-notice" role="status" aria-live="polite">
+                    <span className="page-loading-ring" aria-hidden="true" />
+                    <p>{PREVIEW_LOADING_HINT}</p>
+                </div>
+            )}
 
             <div className="download-preview-frame-shell">
                 {isFrameLoading && (
@@ -188,7 +249,7 @@ export const DownloadPreviewPage = ({
                 <iframe
                     className="download-preview-frame"
                     src={previewSrc}
-                    title={`${item.title} 文档预览`}
+                    title={`${displayTitle} 文档预览`}
                     loading="lazy"
                     onLoad={() => setIsFrameLoading(false)}
                 />

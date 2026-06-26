@@ -56,7 +56,7 @@ describe('Sidebar', () => {
       />
     );
 
-    expect(screen.getAllByRole('button', { name: '资料' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: '文档' })).toHaveLength(2);
     expect(screen.queryByRole('button', { name: '下载' })).not.toBeInTheDocument();
   });
 

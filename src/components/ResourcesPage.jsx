@@ -23,12 +23,12 @@ import {
 } from '../utils/downloadPreviewUtils.js';
 
 const getResourceSectionTitle = (section) => (
-    section.title === '其他资源' ? '资料' : section.title
+    section.title === '其他资源' ? '文档' : section.title
 );
 
 const getResourceGroup = (group) => (
     group.title === '资源下载'
-        ? { ...group, title: '全部资料' }
+        ? { ...group, title: '全部文档' }
         : group
 );
 
@@ -78,7 +78,7 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
             } catch (error) {
                 if (canceled) return;
                 setAllSections([]);
-                setSectionsLoadError(error?.message || '资料清单加载失败');
+                setSectionsLoadError(error?.message || '文档清单加载失败');
             } finally {
                 if (!canceled) {
                     setIsSectionsLoading(false);
@@ -146,7 +146,7 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
                                     <p>{sectionsLoadError}</p>
                                     <div className="download-preview-error-actions">
                                         <a className="download-preview-back" href={getPathForView('resources')}>
-                                            返回资料页
+                                            返回文档页
                                         </a>
                                         <button
                                             type="button"
@@ -167,8 +167,6 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
                         key={previewEntry.previewSrc}
                         item={previewEntry.item}
                         previewSrc={previewEntry.previewSrc}
-                        backHref={getPathForView('resources')}
-                        backLabel="返回资料页"
                     />
                 )}
 
@@ -180,10 +178,10 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
                         <div className="download-groups">
                             <div className="download-group open">
                                 <div className="download-group-body">
-                                    <p>当前链接对应的资料不存在，或暂不支持站内预览。</p>
+                                    <p>当前链接对应的文档不存在，或暂不支持站内预览。</p>
                                     <div className="download-preview-error-actions">
                                         <a className="download-preview-back" href={getPathForView('resources')}>
-                                            返回资料页
+                                            返回文档页
                                         </a>
                                     </div>
                                 </div>
@@ -197,10 +195,10 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
 
     return (
         <div className="download-page download-v2 resources-page">
-            <section className="resources-hero" aria-label="资料">
+            <section className="resources-hero" aria-label="文档">
                 <div className="resources-hero-header">
-                    <div>
-                        <h1>资料</h1>
+                    <div className="resources-hero-copy">
+                        <h1>文档</h1>
                         <p>文字、乐谱与 PDF 文档集中整理。</p>
                     </div>
                     <div className="resources-header-actions">
@@ -209,10 +207,9 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
                                 type="button"
                                 className="resources-share"
                                 onClick={handleCopyPageLink}
-                                aria-label="分享资料页"
+                                aria-label="分享文档页"
                             >
-                                <Share2 size={15} strokeWidth={2.2} absoluteStrokeWidth />
-                                分享本页
+                                <Share2 size={18} strokeWidth={2.2} absoluteStrokeWidth />
                             </button>
                         )}
                     </div>
@@ -251,7 +248,7 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
             {!isSectionsLoading && !sectionsLoadError && resourceSections.length === 0 && (
                 <section className="download-section-block">
                     <div className="download-section-header">
-                        <h3>暂无资料</h3>
+                        <h3>暂无文档</h3>
                     </div>
                 </section>
             )}

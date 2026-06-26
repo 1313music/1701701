@@ -127,8 +127,7 @@ const AppPage = ({ onCopyPageLink }) => {
               })}
               aria-label="分享 APP 页"
             >
-              <Share2 size={16} strokeWidth={2.2} absoluteStrokeWidth />
-              分享本页
+              <Share2 size={18} strokeWidth={2.2} absoluteStrokeWidth />
             </button>
           )}
         </div>

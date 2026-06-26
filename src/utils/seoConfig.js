@@ -98,11 +98,12 @@ export const SEO_MAP = Object.freeze({
     ]
   },
   resources: {
-    title: '李志资料 | 1701701.xyz',
-    heading: '李志资料',
-    description: '整理李志相关文字资料、吉他谱、PDF 文档与可预览资源，方便集中浏览与下载。',
+    title: '李志文档 | 1701701.xyz',
+    heading: '李志文档',
+    description: '整理李志相关文字、吉他谱、PDF 文档与可预览资源，方便集中浏览与下载。',
     pageType: 'CollectionPage',
     keywords: [
+      '李志文档',
       '李志资料',
       '李志自传',
       '李志吉他谱',

@@ -1,11 +1,16 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ResourcesPage from './ResourcesPage.jsx';
 
-const { loadDownloadSections } = vi.hoisted(() => ({
+const { copyTextToClipboard, loadDownloadSections } = vi.hoisted(() => ({
+  copyTextToClipboard: vi.fn(),
   loadDownloadSections: vi.fn()
+}));
+
+vi.mock('../utils/appDomUtils.js', () => ({
+  copyTextToClipboard
 }));
 
 vi.mock('../data/downloadManifest', () => ({
@@ -48,6 +53,7 @@ describe('ResourcesPage', () => {
         ]
       }
     ]);
+    copyTextToClipboard.mockResolvedValue(true);
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       blob: async () => new Blob(['pdf'])
@@ -64,9 +70,9 @@ describe('ResourcesPage', () => {
   it('renders only resource documents', async () => {
     render(<ResourcesPage />);
 
-    expect(await screen.findByText('《李志自传》')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '资料', level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '全部资料', level: 2 })).toBeInTheDocument();
+    expect(await screen.findByText('李志自传')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '文档', level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '全部文档', level: 2 })).toBeInTheDocument();
     expect(screen.queryByText('现场音频')).not.toBeInTheDocument();
   });
 
@@ -119,9 +125,20 @@ describe('ResourcesPage', () => {
 
     render(<ResourcesPage />);
 
-    expect(await screen.findByRole('heading', { name: '《李志自传》' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '返回资料页' })).toHaveAttribute('href', '/resources');
-    expect(screen.getByTitle('《李志自传》 文档预览')).toHaveAttribute(
+    expect(await screen.findByRole('heading', { name: '李志自传' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '返回文档页' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '打开原件' })).toHaveAttribute(
+      'href',
+      'https://mozilla.github.io/pdf.js/web/viewer.html?file=https%3A%2F%2Fexample.com%2Flizhi-biography.pdf'
+    );
+    fireEvent.click(screen.getByRole('button', { name: '复制预览链接' }));
+    await waitFor(() => {
+      expect(copyTextToClipboard).toHaveBeenCalledWith(
+        'https://1701701.xyz/resources/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0'
+      );
+    });
+    expect(screen.getByRole('button', { name: '复制预览链接' })).toHaveTextContent('已复制');
+    expect(screen.getByTitle('李志自传 文档预览')).toHaveAttribute(
       'src',
       `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent('https://example.com/lizhi-biography.pdf')}`
     );
@@ -136,9 +153,10 @@ describe('ResourcesPage', () => {
 
     render(<ResourcesPage />);
 
-    const iframe = await screen.findByTitle('《李志自传》 文档预览');
+    const iframe = await screen.findByTitle('李志自传 文档预览');
     fireEvent.load(iframe);
 
     expect(screen.queryByText('预览加载中，请稍等…')).not.toBeInTheDocument();
+    expect(screen.queryByText('预览加载较慢时，可直接打开原件。')).not.toBeInTheDocument();
   });
 });

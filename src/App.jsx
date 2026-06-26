@@ -605,7 +605,7 @@ const App = () => {
                       onInitialReady={signalBootReady}
                       onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
                         new URL(getPathForView('resources'), SITE_URL).toString(),
-                        '资料页链接已复制',
+                        '文档页链接已复制',
                         anchorOrOptions
                       )}
                     />

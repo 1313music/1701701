@@ -137,7 +137,7 @@ const Sidebar = ({
                     {SHOW_RESOURCES_PAGE && (
                         <NavItem
                             icon={<FileText size={20} strokeWidth={2.4} absoluteStrokeWidth />}
-                            label="资料"
+                            label="文档"
                             active={view === 'resources'}
                             onClick={() => handleNavClick('resources')}
                         />
@@ -242,7 +242,7 @@ const Sidebar = ({
                     {SHOW_RESOURCES_PAGE && (
                         <NavItem
                             icon={<FileText size={22} strokeWidth={2.4} absoluteStrokeWidth />}
-                            label="资料"
+                            label="文档"
                             active={view === 'resources'}
                             onClick={() => handleNavClick('resources')}
                         />

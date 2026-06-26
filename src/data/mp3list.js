@@ -367,7 +367,7 @@ export const musicAlbums = [
       { name: "和你在一起", src: "https://r2.1701701.xyz/mp3/动静/05.和你在一起 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/05.和你在一起 (2015动静版).lrc" },
       { name: "忽然", src: "https://r2.1701701.xyz/mp3/动静/06.忽然 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/06.忽然 (2015动静版).lrc" },
       { name: "定西", src: "https://r2.1701701.xyz/mp3/动静/07.定西 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/07.定西 (2015动静版).lrc" },
-      { name: "方式", src: "https://r2.1701701.xyz/mp3/动静/08.方式 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/08.方式 (2015动静版).lrc" },
+      { name: "地方", src: "https://r2.1701701.xyz/mp3/动静/08.地方 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/08.地方 (2015动静版).lrc" },
       { name: "这个世界会好吗", src: "https://r2.1701701.xyz/mp3/动静/09.这个世界会好吗 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/09.这个世界会好吗 (2015动静版).lrc" },
       { name: "墙上的向日葵", src: "https://r2.1701701.xyz/mp3/动静/10.墙上的向日葵 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/10.墙上的向日葵 (2015动静版).lrc" },
       { name: "尽头", src: "https://r2.1701701.xyz/mp3/动静/11.尽头 (2015动静版).mp3", lrc: "https://r2.1701701.xyz/lrc/动静/11.尽头 (2015动静版).lrc" }
