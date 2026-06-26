@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { isMacDesktopWebViewLike } from './appDomUtils.js';
+import {
+  isAndroidNativeAppWebView,
+  isMacDesktopWebViewLike,
+  saveShareCardToNativeAlbum
+} from './appDomUtils.js';
 
 const setNavigatorField = (key, value) => {
   Object.defineProperty(globalThis.navigator, key, {
@@ -46,5 +50,40 @@ describe('isMacDesktopWebViewLike', () => {
     window.__TAURI_INTERNALS__ = {};
 
     expect(isMacDesktopWebViewLike()).toBe(true);
+  });
+});
+
+describe('native Android share card saving', () => {
+  afterEach(() => {
+    delete window.Capacitor;
+    vi.restoreAllMocks();
+  });
+
+  it('calls the injected Capacitor share card saver plugin', async () => {
+    const saveToAlbum = vi.fn().mockResolvedValue({ uri: 'content://media/image/1' });
+    window.Capacitor = {
+      getPlatform: () => 'android',
+      isNativePlatform: () => true,
+      Plugins: {
+        ShareCardSaver: { saveToAlbum }
+      }
+    };
+
+    expect(isAndroidNativeAppWebView()).toBe(true);
+    await expect(saveShareCardToNativeAlbum('data:image/png;base64,AA==', 'card.png')).resolves.toBe('saved');
+    expect(saveToAlbum).toHaveBeenCalledWith({
+      dataUrl: 'data:image/png;base64,AA==',
+      filename: 'card.png'
+    });
+  });
+
+  it('reports unavailable outside the Android native app', async () => {
+    window.Capacitor = {
+      getPlatform: () => 'web',
+      isNativePlatform: () => false,
+      Plugins: {}
+    };
+
+    await expect(saveShareCardToNativeAlbum('data:image/png;base64,AA==', 'card.png')).resolves.toBe('unavailable');
   });
 });

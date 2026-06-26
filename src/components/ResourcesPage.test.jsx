@@ -137,7 +137,7 @@ describe('ResourcesPage', () => {
         'https://1701701.xyz/resources/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0'
       );
     });
-    expect(screen.getByRole('button', { name: '复制预览链接' })).toHaveTextContent('已复制');
+    expect(screen.getByRole('button', { name: '复制预览链接' })).toHaveTextContent('链接已复制');
     expect(screen.getByTitle('李志自传 文档预览')).toHaveAttribute(
       'src',
       `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent('https://example.com/lizhi-biography.pdf')}`

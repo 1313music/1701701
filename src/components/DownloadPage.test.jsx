@@ -108,7 +108,7 @@ describe('DownloadPage', () => {
         'https://1701701.xyz/download/preview/%E7%8E%B0%E5%9C%BA%E8%B5%84%E6%96%99%E7%A4%BA%E4%BE%8B'
       );
     });
-    expect(screen.getByRole('button', { name: '复制预览链接' })).toHaveTextContent('已复制');
+    expect(screen.getByRole('button', { name: '复制预览链接' })).toHaveTextContent('链接已复制');
     expect(screen.getByText('预览加载较慢时，可直接打开原件。')).toBeInTheDocument();
     expect(screen.getByText('预览加载中，请稍等…')).toBeInTheDocument();
     expect(screen.getByTitle('现场资料示例 文档预览')).toHaveAttribute(

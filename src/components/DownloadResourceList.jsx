@@ -172,7 +172,7 @@ export const DownloadPreviewPage = ({
 
     const shareLabel = useMemo(() => {
         if (shareStatus === 'loading') return '复制中...';
-        if (shareStatus === 'copied') return '已复制';
+        if (shareStatus === 'copied') return '链接已复制';
         if (shareStatus === 'error') return '复制失败';
         return '分享';
     }, [shareStatus]);

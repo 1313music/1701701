@@ -4,8 +4,10 @@ import {
   copyTextToClipboard,
   dataUrlToFile,
   downloadDataUrl,
+  isAndroidNativeAppWebView,
   isIOSDevice,
-  openImagePreviewWindow
+  openImagePreviewWindow,
+  saveShareCardToNativeAlbum
 } from '../utils/appDomUtils.js';
 
 export const useSharePanel = ({ getCurrentTrackSharePayload, showToast }) => {
@@ -101,7 +103,20 @@ export const useSharePanel = ({ getCurrentTrackSharePayload, showToast }) => {
 
   const handleShareCardImage = useCallback(async () => {
     if (!shareCardDataUrl) return;
-    const file = dataUrlToFile(shareCardDataUrl, `1701701-share-card-${Date.now()}.png`);
+    const filename = `1701701-share-card-${Date.now()}.png`;
+    const nativeSaveResult = await saveShareCardToNativeAlbum(shareCardDataUrl, filename);
+
+    if (nativeSaveResult === 'saved') {
+      showToast('分享卡片已保存到相册', 'tone-add', { placement: 'side' });
+      return;
+    }
+
+    if (nativeSaveResult === 'failed' && isAndroidNativeAppWebView()) {
+      showToast('保存失败，请检查相册权限', 'tone-remove', { placement: 'side' });
+      return;
+    }
+
+    const file = dataUrlToFile(shareCardDataUrl, filename);
     const canUseSystemShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
     if (isIOSDevice() && canUseSystemShare) {

@@ -87,6 +87,62 @@ export const downloadDataUrl = (dataUrl, filename) => {
   document.body.removeChild(link);
 };
 
+const getCapacitor = () => {
+  if (typeof window === 'undefined') return null;
+  return window.Capacitor || null;
+};
+
+const getCapacitorPlatform = () => {
+  const capacitor = getCapacitor();
+  if (!capacitor) return '';
+  if (typeof capacitor.getPlatform === 'function') {
+    try {
+      return capacitor.getPlatform();
+    } catch {
+      return '';
+    }
+  }
+  if (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent || '')) {
+    return 'android';
+  }
+  return '';
+};
+
+export const isAndroidNativeAppWebView = () => (
+  isNativeAppWebView() && getCapacitorPlatform() === 'android'
+);
+
+const getNativeShareCardSaver = () => {
+  const capacitor = getCapacitor();
+  const plugin = capacitor?.Plugins?.ShareCardSaver;
+  if (typeof plugin?.saveToAlbum === 'function') {
+    return plugin;
+  }
+
+  if (typeof capacitor?.registerPlugin !== 'function') return null;
+
+  try {
+    const registeredPlugin = capacitor.registerPlugin('ShareCardSaver');
+    return typeof registeredPlugin?.saveToAlbum === 'function' ? registeredPlugin : null;
+  } catch {
+    return null;
+  }
+};
+
+export const saveShareCardToNativeAlbum = async (dataUrl, filename) => {
+  if (!dataUrl || !isAndroidNativeAppWebView()) return 'unavailable';
+
+  const plugin = getNativeShareCardSaver();
+  if (!plugin) return 'unavailable';
+
+  try {
+    await plugin.saveToAlbum({ dataUrl, filename });
+    return 'saved';
+  } catch {
+    return 'failed';
+  }
+};
+
 export const saveImageToAlbum = async (imageUrl, filename) => {
   if (!imageUrl || typeof window === 'undefined' || typeof document === 'undefined') {
     return 'failed';
