@@ -136,6 +136,7 @@ describe('AlbumListOverlay mobile gestures', () => {
     });
 
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(screen.getAllByText('当前播放').length).toBeGreaterThan(0);
     expect(screen.queryByText('我的收藏')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '播放收藏' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: '播放全部' }).length).toBeGreaterThan(0);

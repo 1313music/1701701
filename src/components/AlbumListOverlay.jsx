@@ -356,7 +356,7 @@ const AlbumListOverlay = ({
                 <div className="album-list-info">
                     {!mobile ? (
                         <>
-                            <h4>当前专辑</h4>
+                            <h4>当前播放</h4>
                             <p>{headerAlbumMeta}</p>
                         </>
                     ) : (

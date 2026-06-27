@@ -6,6 +6,7 @@
   --text-secondary: #86868b;
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(0, 0, 0, 0.08);
+  --album-expanded-ring: rgba(120, 120, 128, 0.36);
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 80px;
   --player-height: 88px;
@@ -73,6 +74,7 @@
     --text-secondary: #a1a1a6;
     --glass-bg: rgba(28, 28, 30, 0.85);
     --glass-border: rgba(255, 255, 255, 0.1);
+    --album-expanded-ring: color-mix(in srgb, var(--main-color) 78%, rgba(255, 255, 255, 0.42));
     --sidebar-bg: rgba(20, 20, 22, 0.95);
     --player-bg: rgba(25, 25, 27, 0.98);
     --hover-bg: rgba(255, 255, 255, 0.1);
@@ -87,6 +89,7 @@
   --text-secondary: #86868b;
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(0, 0, 0, 0.08);
+  --album-expanded-ring: rgba(120, 120, 128, 0.36);
   --sidebar-bg: rgba(255, 255, 255, 0.95);
   --player-bg: rgba(255, 255, 255, 0.95);
   --hover-bg: rgba(0, 0, 0, 0.04);
@@ -100,6 +103,7 @@
   --text-secondary: #a1a1a6;
   --glass-bg: rgba(28, 28, 30, 0.85);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --album-expanded-ring: color-mix(in srgb, var(--main-color) 78%, rgba(255, 255, 255, 0.42));
   --sidebar-bg: rgba(20, 20, 22, 0.95);
   --player-bg: rgba(25, 25, 27, 0.98);
   --hover-bg: rgba(255, 255, 255, 0.1);
@@ -945,7 +949,7 @@ body {
 .track-card.is-expanded .card-cover-container {
   transform: translateY(-4px);
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--main-color) 78%, rgba(255, 255, 255, 0.42)),
+    0 0 0 2px var(--album-expanded-ring),
     0 14px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -2190,7 +2194,7 @@ body {
 
 .track-card.is-expanded:hover .card-cover-container {
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--main-color) 78%, rgba(255, 255, 255, 0.42)),
+    0 0 0 2px var(--album-expanded-ring),
     0 14px 32px rgba(0, 0, 0, 0.2);
 }
 

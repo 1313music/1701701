@@ -321,10 +321,6 @@ const App = () => {
     sharedTargetRef.current = null;
   }, [currentAlbum, currentTrack, locationSearch, replaceLocationSearch, view]);
 
-  const listAlbum = currentAlbum?.id === FAVORITES_ALBUM_ID && currentSongInfo?.album
-    ? currentSongInfo.album
-    : currentAlbum;
-
   const playFavorites = (song) => {
     if (!favoriteAlbum || favoriteAlbum.songs.length === 0) return;
 
@@ -758,7 +754,7 @@ const App = () => {
                 <AlbumListOverlay
                   isOpen={isAlbumListOpen}
                   onClose={() => setAlbumListOverlayOpen(false)}
-                  album={listAlbum}
+                  album={currentAlbum}
                   currentTrack={currentTrack}
                   isPlaying={isPlaying}
                   playSongFromAlbum={playSongFromAlbum}
