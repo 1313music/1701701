@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CommentSection from './CommentSection.jsx';
 
-const { init, openWalineAuthOverlay, getComment } = vi.hoisted(() => ({
+const { init, openWalineAuthOverlay, openWalineProfileOverlay, getComment } = vi.hoisted(() => ({
   init: vi.fn(),
   openWalineAuthOverlay: vi.fn(),
+  openWalineProfileOverlay: vi.fn(),
   getComment: vi.fn()
 }));
 
@@ -19,6 +20,7 @@ vi.mock('@waline/client/style', () => ({}));
 vi.mock('../vendors/waline-api.js', () => ({
   WALINE_AUTH_SUCCESS_EVENT: 'waline-auth-success',
   openWalineAuthOverlay,
+  openWalineProfileOverlay,
   getComment
 }));
 
@@ -34,6 +36,9 @@ const renderWalineShell = (el) => {
     <textarea></textarea>
     <div class="wl-footer">
       <button class="wl-btn">原始登录</button>
+    </div>
+    <div class="wl-login-info">
+      <a href="https://comments.example.com/ui/profile" class="wl-login-nick">谢尔比</a>
     </div>
   `;
 };
@@ -102,6 +107,13 @@ describe('CommentSection', () => {
       serverURL: 'https://comments.example.com',
       lang: 'zh-CN',
       mode: 'register'
+    });
+
+    fireEvent.click(screen.getByRole('link', { name: '打开 Waline 账号设置' }));
+
+    expect(openWalineProfileOverlay).toHaveBeenCalledWith({
+      serverURL: 'https://comments.example.com',
+      lang: 'zh-CN'
     });
   });
 
