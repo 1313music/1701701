@@ -4,7 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   getWalineHeaderText,
   syncWalineAuthButtons,
-  syncWalineHeaderPlaceholders
+  syncWalineHeaderPlaceholders,
+  syncWalineProfileAction
 } from './walineDomAdapter.js';
 
 const createRoot = () => {
@@ -69,5 +70,27 @@ describe('walineDomAdapter', () => {
 
     expect(root.querySelector('.wl-register-btn')).not.toBeInTheDocument();
   });
-});
 
+  it('bridges logged-in profile links to the local profile action', () => {
+    const root = document.createElement('div');
+    const onProfile = vi.fn();
+    const walineProfileHandler = vi.fn();
+    root.innerHTML = `
+      <div class="wl-login-info">
+        <a href="https://comments.example.com/ui/profile" class="wl-login-nick">谢尔比</a>
+      </div>
+    `;
+
+    const profileLink = root.querySelector('.wl-login-nick');
+    profileLink.addEventListener('click', walineProfileHandler);
+
+    syncWalineProfileAction({ root, onProfile });
+    syncWalineProfileAction({ root, onProfile });
+
+    fireEvent.click(profileLink);
+
+    expect(profileLink).toHaveAttribute('aria-label', '打开 Waline 账号设置');
+    expect(onProfile).toHaveBeenCalledTimes(1);
+    expect(walineProfileHandler).not.toHaveBeenCalled();
+  });
+});

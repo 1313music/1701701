@@ -71,3 +71,22 @@ export const syncWalineAuthButtons = ({ root, onLogin, onRegister }) => {
   controlledLoginButton.insertAdjacentElement('afterend', registerButton);
 };
 
+export const syncWalineProfileAction = ({ root, onProfile }) => {
+  if (!root) return;
+
+  const profileLinks = root.querySelectorAll('.wl-login-info .wl-login-nick');
+  profileLinks.forEach((link) => {
+    link.__walineProfileAction = onProfile;
+    link.setAttribute('aria-label', '打开 Waline 账号设置');
+
+    if (link.dataset.walineProfileBridge === 'true') return;
+
+    link.dataset.walineProfileBridge = 'true';
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      link.__walineProfileAction?.(event);
+    }, true);
+  });
+};

@@ -519,6 +519,19 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 8%, transparent);
 }
 
+.waline-auth-field input[readonly] {
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.waline-auth-help {
+  margin: -2px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
 .waline-auth-check {
   display: inline-flex;
   align-items: center;

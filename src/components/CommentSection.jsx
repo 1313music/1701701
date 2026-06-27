@@ -4,11 +4,13 @@ import '@waline/client/style';
 import {
   WALINE_AUTH_SUCCESS_EVENT,
   getComment,
-  openWalineAuthOverlay
+  openWalineAuthOverlay,
+  openWalineProfileOverlay
 } from '../vendors/waline-api.js';
 import {
   syncWalineAuthButtons,
-  syncWalineHeaderPlaceholders
+  syncWalineHeaderPlaceholders,
+  syncWalineProfileAction
 } from '../vendors/walineDomAdapter.js';
 import '../styles/comments.css';
 
@@ -60,6 +62,14 @@ const CommentSection = ({
     });
   }, [serverURL]);
 
+  const openProfilePage = useCallback(() => {
+    if (!serverURL) return;
+    openWalineProfileOverlay({
+      serverURL,
+      lang: 'zh-CN'
+    });
+  }, [serverURL]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
@@ -85,13 +95,22 @@ const CommentSection = ({
     });
   }, [openLoginPage, openRegisterPage]);
 
+  const syncProfileAction = useCallback(() => {
+    syncWalineProfileAction({
+      root: containerRef.current,
+      onProfile: openProfilePage
+    });
+  }, [openProfilePage]);
+
   const scheduleHeaderSync = useCallback(() => {
     syncHeaderPlaceholders();
     syncAuthButtons();
+    syncProfileAction();
     if (typeof window !== 'undefined' && window.requestAnimationFrame) {
       window.requestAnimationFrame(() => {
         syncHeaderPlaceholders();
         syncAuthButtons();
+        syncProfileAction();
       });
     }
     if (syncTimerRef.current) {
@@ -101,8 +120,9 @@ const CommentSection = ({
       syncTimerRef.current = null;
       syncHeaderPlaceholders();
       syncAuthButtons();
+      syncProfileAction();
     }, 120);
-  }, [syncAuthButtons, syncHeaderPlaceholders]);
+  }, [syncAuthButtons, syncHeaderPlaceholders, syncProfileAction]);
 
   const markPrimaryDebugLoading = useCallback(() => {
     setPrimaryDebug((previous) => ({
