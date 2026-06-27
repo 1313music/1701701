@@ -46,14 +46,51 @@ const lizhizhuangbiManifest = {
   ]
 };
 
+const lizhizhuangbiBlogManifest = {
+  target: 'lizhizhuangbi.com/blog',
+  displayMode: 'catalog',
+  unitLabel: '历史页面',
+  snapshots: [
+    {
+      id: '20120226030910-www-lizhizhuangbi-com-80-blog-p-321',
+      timestamp: '20120226030910',
+      capturedAt: '2012-02-26T03:09:10Z',
+      label: '2012-02-26',
+      title: '李志招聘兼职法律顾问',
+      pageType: 'post',
+      pageTypeLabel: '文章',
+      original: 'http://www.lizhizhuangbi.com:80/blog/?p=321',
+      sitePath: '/archives/lizhizhuangbi-blog/pages/20120226030910-www-lizhizhuangbi-com-80-blog-p-321/index.html',
+      sourceSitePath: '/archives/lizhizhuangbi-blog/pages/20120226030910-www-lizhizhuangbi-com-80-blog-p-321/source.html',
+      waybackUrl: 'https://web.archive.org/web/20120226030910/http://www.lizhizhuangbi.com:80/blog/?p=321'
+    }
+  ]
+};
+
 describe('NanjingLizhiArchivePage', () => {
   const originalFetch = globalThis.fetch;
 
-  beforeEach(() => {
+  const mockFetch = ({ showBlogArchive = false } = {}) => {
     globalThis.fetch = vi.fn(async (url) => ({
       ok: true,
-      json: async () => (String(url).includes('lizhizhuangbi') ? lizhizhuangbiManifest : manifest)
+      json: async () => {
+        const urlText = String(url);
+        if (urlText.endsWith('/archive-config.json')) {
+          return { showBlogArchive };
+        }
+        if (urlText.includes('lizhizhuangbi-blog')) {
+          return lizhizhuangbiBlogManifest;
+        }
+        if (urlText.includes('lizhizhuangbi')) {
+          return lizhizhuangbiManifest;
+        }
+        return manifest;
+      }
     }));
+  };
+
+  beforeEach(() => {
+    mockFetch();
   });
 
   afterEach(() => {
@@ -68,6 +105,7 @@ describe('NanjingLizhiArchivePage', () => {
     expect(screen.getByRole('heading', { name: '旧官网档案馆' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'nanjinglizhi.cn' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'lizhizhuangbi.com' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.queryByRole('tab', { name: 'lizhizhuangbi.com/blog' })).not.toBeInTheDocument();
     expect(screen.queryByText('指定快照')).not.toBeInTheDocument();
     expect(screen.getByTitle('nanjinglizhi.cn 2013-06-07 存档')).toHaveAttribute(
       'src',
@@ -105,5 +143,24 @@ describe('NanjingLizhiArchivePage', () => {
       '/archives/lizhizhuangbi/snapshots/20110715023458/index.html'
     );
     expect(globalThis.fetch).toHaveBeenCalledWith('/archives/lizhizhuangbi/manifest.json', { cache: 'no-cache' });
+  });
+
+  it('shows the blog archive only when the runtime switch is enabled', async () => {
+    mockFetch({ showBlogArchive: true });
+
+    render(<NanjingLizhiArchivePage />);
+
+    const blogTab = await screen.findByRole('tab', { name: 'lizhizhuangbi.com/blog' });
+    fireEvent.click(blogTab);
+
+    expect(await screen.findByLabelText('选择档案页面')).toBeInTheDocument();
+    expect(screen.getByTitle('lizhizhuangbi.com/blog 2012-02-26 存档')).toHaveAttribute(
+      'src',
+      '/archives/lizhizhuangbi-blog/pages/20120226030910-www-lizhizhuangbi-com-80-blog-p-321/index.html'
+    );
+    expect(globalThis.fetch).toHaveBeenCalledWith('/archive-config.json', {
+      cache: 'no-store',
+      signal: expect.any(AbortSignal)
+    });
   });
 });

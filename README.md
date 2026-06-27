@@ -33,6 +33,15 @@ npm run check
 说明：项目使用单页应用路由，Cloudflare Pages 通过 `public/_redirects` 将这些路径统一回退到首页入口。
 资源下载页 `/download` 默认隐藏；需要重新展示时，在构建环境设置 `VITE_SHOW_DOWNLOAD_PAGE=true`。
 专辑详情里的“扫码保存到网易云盘”小程序码默认展示；需要隐藏时，在构建环境设置 `VITE_SHOW_MINI_PROGRAM_QR=false`。
+档案馆 `/archive` 默认不显示 `lizhizhuangbi.com/blog`。需要临时开放时，改部署后的 `/archive-config.json`：
+
+```json
+{
+  "showBlogArchive": true
+}
+```
+
+刷新页面即可生效，不需要重新构建。`VITE_ENABLE_BLOG_ARCHIVE` 只作为配置文件读取失败时的构建兜底。
 
 ## 访问统计（Umami）
 

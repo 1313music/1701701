@@ -452,9 +452,20 @@ const AlbumGrid = ({
     }, [panelCoverSrc]);
 
     useLayoutEffect(() => {
-        if (!panelAlbum) return;
-        measurePanelSongRowHeight();
-        measurePanelHeight();
+        if (!panelAlbum) return undefined;
+
+        const measurePanel = () => {
+            measurePanelSongRowHeight();
+            measurePanelHeight();
+        };
+
+        if (typeof window.requestAnimationFrame === 'function') {
+            const frameId = window.requestAnimationFrame(measurePanel);
+            return () => window.cancelAnimationFrame(frameId);
+        }
+
+        const timerId = window.setTimeout(measurePanel, 0);
+        return () => window.clearTimeout(timerId);
     }, [panelAlbum, measurePanelHeight, measurePanelSongRowHeight, columns, panelSongs.length, panelSongRowHeight]);
 
     useEffect(() => {

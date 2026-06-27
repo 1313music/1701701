@@ -49,6 +49,8 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--glass-border);
@@ -57,6 +59,7 @@
 }
 
 .archive-source-button {
+  min-width: 0;
   min-height: 32px;
   padding: 0 12px;
   border: 0;
@@ -84,6 +87,39 @@
 .archive-source-button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--archive-accent) 36%, transparent);
+}
+
+.archive-snapshot-picker-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.archive-snapshot-picker-row span {
+  white-space: nowrap;
+}
+
+.archive-snapshot-picker {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0 36px 0 12px;
+  background: var(--glass-bg);
+  color: var(--text-main);
+  font: inherit;
+  letter-spacing: 0;
+}
+
+.archive-snapshot-picker:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--archive-accent) 42%, var(--glass-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--archive-accent) 22%, transparent);
 }
 
 .archive-shell {
@@ -304,15 +340,23 @@
 
   .archive-source-switch {
     width: 100%;
+    justify-content: stretch;
   }
 
   .archive-source-button {
     flex: 1 1 0;
+    padding: 0 8px;
+    font-size: 12px;
   }
 
 }
 
 @media (max-width: 560px) {
+  .archive-snapshot-picker-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
   .archive-timeline {
     overflow-x: auto;
     scrollbar-width: none;
