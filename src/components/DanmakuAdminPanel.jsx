@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   RefreshCw,
   Search,
@@ -9,6 +9,7 @@ import {
   deleteDanmakuItem,
   loadDanmakuItems
 } from '../data/danmakuAdminApi.js';
+import { buildVideoDanmakuId } from '../data/videoDanmakuConfig.js';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: '全部' },
@@ -47,9 +48,68 @@ const formatDanmakuType = (value) => {
   return '滚动';
 };
 
+const stripDanmakuHashSuffix = (value) => String(value || '').replace(/-[a-z0-9]+$/i, '');
+
+const buildVideoOptions = (videoCatalog) => {
+  const videoCategories = Array.isArray(videoCatalog?.videoCategories)
+    ? videoCatalog.videoCategories
+    : [];
+  const videoData = videoCatalog?.videoData && typeof videoCatalog.videoData === 'object'
+    ? videoCatalog.videoData
+    : {};
+  const options = [];
+  const seenKeys = new Set();
+
+  const walkItems = (items, path, categoryId) => {
+    if (!Array.isArray(items)) return;
+
+    items.forEach((item) => {
+      if (!item) return;
+
+      const isFolder = item.isFolder || item.folderId;
+      if (isFolder) {
+        const folderId = String(item.folderId || item.id || '').trim();
+        if (!folderId) return;
+
+        const folderTitle = String(item.title || folderId).trim() || folderId;
+        walkItems(videoData[folderId], [...path, folderTitle], categoryId);
+        return;
+      }
+
+      const video = {
+        ...item,
+        _categoryId: categoryId
+      };
+      const videoKey = buildVideoDanmakuId(video, categoryId);
+      if (!videoKey || seenKeys.has(videoKey)) return;
+
+      const title = String(item.title || item.id || videoKey).trim() || videoKey;
+      const pathLabel = path.filter(Boolean).join(' / ');
+      options.push({
+        videoKey,
+        title,
+        pathLabel,
+        displayLabel: pathLabel ? `${pathLabel} / ${title}` : title
+      });
+      seenKeys.add(videoKey);
+    });
+  };
+
+  videoCategories.forEach((category) => {
+    const categoryId = String(category?.id || '').trim();
+    if (!categoryId) return;
+
+    const categoryName = String(category?.name || categoryId).trim() || categoryId;
+    walkItems(videoData[categoryId], [categoryName], categoryId);
+  });
+
+  return options;
+};
+
 const DanmakuAdminPanel = ({
   token,
   apiConfigured,
+  videoCatalog,
   onStatusChange = () => {}
 }) => {
   const [statusFilter, setStatusFilter] = useState('all');
@@ -60,6 +120,39 @@ const DanmakuAdminPanel = ({
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [actionId, setActionId] = useState('');
+  const videoOptions = useMemo(() => buildVideoOptions(videoCatalog), [videoCatalog]);
+  const videoOptionByKey = useMemo(() => new Map(
+    videoOptions.map((option) => [option.videoKey, option])
+  ), [videoOptions]);
+  const videoOptionByStablePrefix = useMemo(() => {
+    const prefixMap = new Map();
+    const duplicatedPrefixes = new Set();
+
+    videoOptions.forEach((option) => {
+      const stablePrefix = stripDanmakuHashSuffix(option.videoKey);
+      if (!stablePrefix) return;
+
+      if (prefixMap.has(stablePrefix)) {
+        duplicatedPrefixes.add(stablePrefix);
+      } else {
+        prefixMap.set(stablePrefix, option);
+      }
+    });
+
+    duplicatedPrefixes.forEach((prefix) => {
+      prefixMap.delete(prefix);
+    });
+
+    return prefixMap;
+  }, [videoOptions]);
+  const getVideoOption = useCallback((videoKey) => (
+    videoOptionByKey.get(videoKey)
+      || videoOptionByStablePrefix.get(stripDanmakuHashSuffix(videoKey))
+      || null
+  ), [videoOptionByKey, videoOptionByStablePrefix]);
+  const hasUnknownVideoFilter = Boolean(
+    videoKeyFilter && videoOptions.length > 0 && !videoOptionByKey.has(videoKeyFilter)
+  );
 
   const loadItems = useCallback(async () => {
     if (!apiConfigured) {
@@ -149,12 +242,29 @@ const DanmakuAdminPanel = ({
             </select>
           </label>
           <label className="admin-field">
-            <span>弹幕池 ID</span>
-            <input
-              value={videoKeyFilter}
-              onChange={(event) => setVideoKeyFilter(event.target.value)}
-              placeholder="留空查看全部视频"
-            />
+            <span>视频</span>
+            {videoOptions.length > 0 ? (
+              <select
+                value={videoKeyFilter}
+                onChange={(event) => setVideoKeyFilter(event.target.value)}
+              >
+                <option value="">全部视频</option>
+                {hasUnknownVideoFilter && (
+                  <option value={videoKeyFilter}>{videoKeyFilter}</option>
+                )}
+                {videoOptions.map((option) => (
+                  <option key={option.videoKey} value={option.videoKey}>
+                    {option.displayLabel}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                value={videoKeyFilter}
+                onChange={(event) => setVideoKeyFilter(event.target.value)}
+                placeholder="留空查看全部视频"
+              />
+            )}
           </label>
           <label className="admin-field admin-field-full">
             <span>搜索</span>
@@ -189,38 +299,57 @@ const DanmakuAdminPanel = ({
         <div className="admin-section-title">弹幕列表（{total}）</div>
         {items.length > 0 ? (
           <div className="admin-danmaku-list">
-            {items.map((item) => (
-              <article className="admin-danmaku-item" key={item.id}>
-                <div className="admin-danmaku-main">
-                  <div className="admin-danmaku-head">
-                    <span className={`admin-danmaku-status ${item.status}`}>
-                      {STATUS_LABELS[item.status] || item.status}
-                    </span>
-                    <span>{formatVideoTime(item.time)}</span>
-                    <span>{formatDanmakuType(item.type)}</span>
-                    <span>{formatCreatedAt(item.createdAt)}</span>
+            {items.map((item) => {
+              const videoOption = getVideoOption(item.videoKey);
+
+              return (
+                <article className="admin-danmaku-item" key={item.id}>
+                  <div className="admin-danmaku-main">
+                    <div className="admin-danmaku-head">
+                      <span className={`admin-danmaku-status ${item.status}`}>
+                        {STATUS_LABELS[item.status] || item.status}
+                      </span>
+                      <span>{formatVideoTime(item.time)}</span>
+                      <span>{formatDanmakuType(item.type)}</span>
+                      <span>{formatCreatedAt(item.createdAt)}</span>
+                    </div>
+                    <p>{item.text}</p>
+                    <div className="admin-danmaku-video">
+                      {videoOption ? (
+                        <>
+                          <strong>{videoOption.title}</strong>
+                          {videoOption.pathLabel && (
+                            <span>{videoOption.pathLabel}</span>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <strong>未知视频</strong>
+                          <span>{item.videoKey}</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="admin-danmaku-meta">
+                      <span title={item.videoKey}>{item.videoKey}</span>
+                      <span>{item.author}</span>
+                      <span style={{ color: item.colorHex }}>{item.colorHex}</span>
+                    </div>
                   </div>
-                  <p>{item.text}</p>
-                  <div className="admin-danmaku-meta">
-                    <span>{item.videoKey}</span>
-                    <span>{item.author}</span>
-                    <span style={{ color: item.colorHex }}>{item.colorHex}</span>
+                  <div className="admin-danmaku-actions">
+                    <button
+                      type="button"
+                      className="admin-icon-btn danger"
+                      onClick={() => handleDelete(item)}
+                      disabled={Boolean(actionId)}
+                      aria-label={`删除弹幕：${item.text}`}
+                      title="删除弹幕"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                </div>
-                <div className="admin-danmaku-actions">
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger"
-                    onClick={() => handleDelete(item)}
-                    disabled={Boolean(actionId)}
-                    aria-label={`删除弹幕：${item.text}`}
-                    title="删除弹幕"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="admin-empty">

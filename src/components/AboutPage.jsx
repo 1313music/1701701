@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/about.css';
+import { copyTextToClipboard } from '../utils/appDomUtils.js';
 
 const officialCd = {
     title: '官方专辑',
@@ -8,21 +9,64 @@ const officialCd = {
     href: 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97'
 };
 
+const officialAccounts = [
+    {
+        title: '共享云音乐',
+        image: '/img/shared-cloud-music-qrcode.jpg'
+    },
+    {
+        title: '民谣俱乐部',
+        image: '/img/folk-club-qrcode.jpg'
+    }
+];
+
 const AboutPage = () => {
     const [isJumpOpen, setIsJumpOpen] = useState(false);
+    const [isQrOpen, setIsQrOpen] = useState(false);
+    const [copyFeedback, setCopyFeedback] = useState({ name: '', status: 'idle' });
+    const copyFeedbackTimerRef = useRef(null);
+    const isModalOpen = isJumpOpen || isQrOpen;
 
     useEffect(() => {
-        if (!isJumpOpen) return;
+        if (!isModalOpen) return;
         const prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         return () => {
             document.body.style.overflow = prevOverflow;
         };
-    }, [isJumpOpen]);
+    }, [isModalOpen]);
 
     const handleConfirmJump = () => {
         window.open(officialCd.href, '_blank', 'noopener,noreferrer');
         setIsJumpOpen(false);
+    };
+
+    useEffect(() => () => {
+        if (copyFeedbackTimerRef.current) {
+            clearTimeout(copyFeedbackTimerRef.current);
+        }
+    }, []);
+
+    const getCopyNameButtonText = (name) => {
+        if (copyFeedback.name !== name) return '复制名称';
+        if (copyFeedback.status === 'success') return '已复制';
+        if (copyFeedback.status === 'error') return '复制失败';
+        return '复制中';
+    };
+
+    const handleCopyAccountName = async (name) => {
+        if (copyFeedbackTimerRef.current) {
+            clearTimeout(copyFeedbackTimerRef.current);
+        }
+        setCopyFeedback({ name, status: 'pending' });
+        const copied = await copyTextToClipboard(name);
+        setCopyFeedback({ name, status: copied ? 'success' : 'error' });
+        copyFeedbackTimerRef.current = setTimeout(() => {
+            setCopyFeedback((current) => (
+                current.name === name ? { name: '', status: 'idle' } : current
+            ));
+            copyFeedbackTimerRef.current = null;
+        }, 1600);
     };
 
     return (
@@ -42,7 +86,7 @@ const AboutPage = () => {
             <p>所有资源来源于互联网，版权属于李志先生。仅限个人学习、研究、欣赏之用，完全免费，禁止用于商业目的。</p>
         </section>
 
-        <section className="about-v3-section">
+        <section className="about-v3-section about-v3-official-section">
             <div className="about-v3-grid about-v3-grid-single">
                 <button
                     type="button"
@@ -58,7 +102,75 @@ const AboutPage = () => {
                     </div>
                 </button>
             </div>
+            <button
+                type="button"
+                className="about-v3-contact-entry"
+                onClick={() => setIsQrOpen(true)}
+            >
+                <span>公众号</span>
+                <small>共享云音乐 / 民谣俱乐部</small>
+            </button>
         </section>
+
+        <section className="about-v3-contact about-v3-contact-inline" aria-labelledby="about-v3-contact-title">
+            <div className="about-v3-contact-head">
+                <h2 id="about-v3-contact-title">公众号</h2>
+                <p>扫码关注</p>
+            </div>
+            <div className="about-v3-contact-list">
+                {officialAccounts.map((account) => (
+                    <div className="about-v3-contact-item" key={account.title}>
+                        <img
+                            className="about-v3-contact-qr"
+                            loading="lazy"
+                            src={account.image}
+                            alt={`${account.title}公众号二维码`}
+                        />
+                        <div className="about-v3-contact-copy">
+                            <h3>{account.title}</h3>
+                            <button
+                                type="button"
+                                className="about-v3-copy-name"
+                                aria-label={`复制${account.title}名称`}
+                                onClick={() => handleCopyAccountName(account.title)}
+                                disabled={copyFeedback.name === account.title && copyFeedback.status === 'pending'}
+                            >
+                                {getCopyNameButtonText(account.title)}
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+        {isQrOpen && (
+            <div className="about-qr-modal" onClick={() => setIsQrOpen(false)}>
+                <div className="about-qr-card" onClick={(event) => event.stopPropagation()}>
+                    <div className="about-qr-head">
+                        <h3>公众号</h3>
+                        <button type="button" onClick={() => setIsQrOpen(false)}>关闭</button>
+                    </div>
+                    <div className="about-qr-list">
+                        {officialAccounts.map((account) => (
+                            <div className="about-qr-item" key={account.title}>
+                                <img loading="lazy" src={account.image} alt={`${account.title}公众号二维码`} />
+                                <div>
+                                    <h4>{account.title}</h4>
+                                    <button
+                                        type="button"
+                                        className="about-v3-copy-name"
+                                        aria-label={`复制${account.title}名称`}
+                                        onClick={() => handleCopyAccountName(account.title)}
+                                        disabled={copyFeedback.name === account.title && copyFeedback.status === 'pending'}
+                                    >
+                                        {getCopyNameButtonText(account.title)}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )}
         {isJumpOpen && (
             <div className="about-jump-modal" onClick={() => setIsJumpOpen(false)}>
                 <div className="about-jump-card" onClick={(event) => event.stopPropagation()}>

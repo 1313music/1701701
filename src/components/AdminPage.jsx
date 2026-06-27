@@ -581,7 +581,11 @@ const AdminPage = () => {
   }, [activePanel, isAuthenticated, musicAlbums.length]);
 
   useEffect(() => {
-    if (isAuthenticated && activePanel === ADMIN_PANEL_VIDEO && videoCatalog.videoCategories.length === 0) {
+    if (
+      isAuthenticated
+      && (activePanel === ADMIN_PANEL_VIDEO || activePanel === ADMIN_PANEL_DANMAKU)
+      && videoCatalog.videoCategories.length === 0
+    ) {
       void loadVideoCatalogForAdmin();
     }
   }, [activePanel, isAuthenticated, loadVideoCatalogForAdmin, videoCatalog.videoCategories.length]);
@@ -2163,6 +2167,7 @@ const AdminPage = () => {
           <DanmakuAdminPanel
             token={token}
             apiConfigured={danmakuAdminApiConfigured}
+            videoCatalog={videoCatalog}
             onStatusChange={setDanmakuStatus}
           />
         )}

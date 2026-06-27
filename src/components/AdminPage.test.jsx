@@ -140,7 +140,7 @@ vi.mock('../data/danmakuAdminApi.js', () => ({
     items: [
       {
         id: 'danmaku-1',
-        videoKey: 'video-live-demo-01',
+        videoKey: 'video-live-demo-01-1xeymi1',
         time: 12,
         type: 0,
         color: 16777215,
@@ -213,6 +213,14 @@ vi.mock('../data/videoManifest.js', () => ({
           title: 'Demo Folder',
           thumb: 'https://r2.example.com/img/demo.jpg',
           isFolder: true
+        }
+      ],
+      'demo-folder': [
+        {
+          id: 'demo-01',
+          title: 'Demo Video',
+          url: 'https://video.example.com/demo/playlist.m3u8',
+          thumb: 'https://r2.example.com/img/demo.jpg'
         }
       ]
     }
@@ -638,6 +646,8 @@ describe('AdminPage', () => {
       }));
     });
     expect(await screen.findByText('现场真好')).toBeInTheDocument();
+    expect(await screen.findByText('Demo Video')).toBeInTheDocument();
+    expect(screen.getByText('现场视频 / Demo Folder')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '删除弹幕：现场真好' }));
 
