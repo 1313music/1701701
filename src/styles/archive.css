@@ -1,0 +1,328 @@
+.archive-page {
+  --archive-accent: #9f3928;
+  --archive-accent-soft: rgba(159, 57, 40, 0.11);
+  --archive-cyan: #2f6f73;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-theme='dark'] .archive-page {
+  --archive-accent: #e07865;
+  --archive-accent-soft: rgba(224, 120, 101, 0.16);
+  --archive-cyan: #72b5b3;
+}
+
+.archive-header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.archive-header-copy {
+  min-width: 0;
+}
+
+.archive-header h1 {
+  margin: 0 0 6px;
+  color: var(--text-main);
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.archive-header p {
+  max-width: 660px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.archive-source-switch {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--glass-bg) 76%, transparent);
+}
+
+.archive-source-button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.archive-source-button:hover {
+  color: var(--text-main);
+  background: var(--hover-bg);
+}
+
+.archive-source-button.is-active {
+  color: var(--text-main);
+  background: color-mix(in srgb, var(--archive-accent) 16%, transparent);
+}
+
+.archive-source-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--archive-accent) 36%, transparent);
+}
+
+.archive-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.archive-timeline {
+  min-width: 0;
+  border: 0;
+  overflow: hidden;
+  padding: 0 0 2px;
+}
+
+.archive-timeline::-webkit-scrollbar {
+  display: none;
+}
+
+.archive-timeline-list {
+  display: grid;
+  gap: 0;
+  position: relative;
+  width: 100%;
+  padding: 16px 0 0;
+}
+
+.archive-timeline-list::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--glass-border);
+}
+
+.archive-timeline-item {
+  width: 100%;
+  min-height: 28px;
+  padding: 11px 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  transition: color 0.16s ease;
+}
+
+.archive-timeline-item::before {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-color);
+  border: 1px solid var(--glass-border);
+  transform: translateX(-50%);
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.archive-timeline-item:hover {
+  color: var(--text-main);
+}
+
+.archive-timeline-item:hover::before {
+  border-color: color-mix(in srgb, var(--archive-accent) 38%, var(--glass-border));
+}
+
+.archive-timeline-item:focus-visible {
+  outline: none;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--archive-accent) 36%, transparent);
+}
+
+.archive-timeline-item.is-active {
+  color: var(--text-main);
+}
+
+.archive-timeline-item.is-active::before {
+  width: 10px;
+  height: 10px;
+  background: var(--archive-accent);
+  border-color: var(--archive-accent);
+  transform: translateX(-50%) translateY(-1px);
+}
+
+.archive-timeline-item time {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.archive-timeline-list.is-dense .archive-timeline-item time {
+  font-size: 10px;
+}
+
+.archive-preview {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.archive-retry {
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-main);
+  background: var(--glass-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.archive-retry:hover {
+  border-color: color-mix(in srgb, var(--archive-accent) 36%, var(--glass-border));
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+
+.archive-frame-shell {
+  position: relative;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  padding: 12px;
+  transition: min-height 0.18s ease;
+}
+
+.archive-frame-viewport {
+  position: relative;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.archive-frame {
+  display: block;
+  border: 0;
+  background: #ffffff;
+  transform-origin: top left;
+  overflow: hidden;
+}
+
+.archive-frame-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #555555;
+  background: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+}
+
+.archive-empty {
+  min-height: 360px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 28px;
+}
+
+.archive-empty h2 {
+  color: var(--text-main);
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.archive-empty p {
+  max-width: 520px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (max-width: 900px) {
+  .archive-page {
+    gap: 12px;
+  }
+
+  .archive-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .archive-header h1 {
+    font-size: 30px;
+  }
+
+  .archive-source-switch {
+    width: 100%;
+  }
+
+  .archive-source-button {
+    flex: 1 1 0;
+  }
+
+}
+
+@media (max-width: 560px) {
+  .archive-timeline {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .archive-timeline-list {
+    min-width: 720px;
+  }
+
+  .archive-frame-shell {
+    padding: 8px;
+  }
+}

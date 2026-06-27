@@ -60,6 +60,24 @@ describe('Sidebar', () => {
     expect(screen.queryByRole('button', { name: '下载' })).not.toBeInTheDocument();
   });
 
+  it('shows the archive navigation as a standalone section', () => {
+    const setView = vi.fn();
+    render(
+      <Sidebar
+        view="library"
+        setView={setView}
+        isSidebarOpen={false}
+        setIsSidebarOpen={vi.fn()}
+      />
+    );
+
+    const archiveButtons = screen.getAllByRole('button', { name: '档案' });
+    expect(archiveButtons).toHaveLength(2);
+
+    fireEvent.click(archiveButtons[0]);
+    expect(setView).toHaveBeenCalledWith('archive');
+  });
+
   it('shows announcement trigger in the mobile topbar slot', () => {
     const handleOpenAnnouncement = vi.fn();
 

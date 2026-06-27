@@ -41,6 +41,7 @@ const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'))
 const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
 const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
 const ResourcesPage = lazy(() => import('./components/ResourcesPage.jsx'));
+const NanjingLizhiArchivePage = lazy(() => import('./components/NanjingLizhiArchivePage.jsx'));
 const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
@@ -427,7 +428,7 @@ const App = () => {
 
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
-  const hasPlayerChrome = view !== 'video' && view !== 'admin';
+  const hasPlayerChrome = view !== 'video' && view !== 'admin' && view !== 'archive';
   const shouldShowAnnouncementTrigger = view !== 'admin';
 
   useAudioPlaybackShortcuts({
@@ -605,6 +606,13 @@ const App = () => {
                         anchorOrOptions
                       )}
                     />
+                  </Suspense>
+                </div>
+              )}
+              {view === 'archive' && (
+                <div className="view-panel view-panel-archive">
+                  <Suspense fallback={pageLoadingFallback}>
+                    <NanjingLizhiArchivePage />
                   </Suspense>
                 </div>
               )}

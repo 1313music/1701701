@@ -12,7 +12,8 @@ import {
     PanelLeft,
     Smartphone,
     Info,
-    MessageSquareMore
+    MessageSquareMore,
+    Archive
 } from 'lucide-react';
 import AnnouncementTrigger from './AnnouncementTrigger.jsx';
 import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
@@ -142,6 +143,12 @@ const Sidebar = ({
                             onClick={() => handleNavClick('resources')}
                         />
                     )}
+                    <NavItem
+                        icon={<Archive size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="档案"
+                        active={view === 'archive'}
+                        onClick={() => handleNavClick('archive')}
+                    />
                     {SHOW_DOWNLOAD_PAGE && (
                         <NavItem
                             icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
@@ -247,6 +254,12 @@ const Sidebar = ({
                             onClick={() => handleNavClick('resources')}
                         />
                     )}
+                    <NavItem
+                        icon={<Archive size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="档案"
+                        active={view === 'archive'}
+                        onClick={() => handleNavClick('archive')}
+                    />
                     {SHOW_DOWNLOAD_PAGE && (
                         <NavItem
                             icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}

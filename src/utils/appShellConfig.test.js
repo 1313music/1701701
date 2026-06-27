@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AVAILABLE_VIEWS,
   getDownloadPreviewPath,
+  getPathForView,
   getResourcePreviewPath,
   resolveViewFromLocation,
   shouldRedirectDisabledDownloadResourcePath,
@@ -29,6 +30,11 @@ describe('appShellConfig', () => {
       pathname: '/resources/preview/%E6%9D%8E%E5%BF%97%E8%87%AA%E4%BC%A0',
       search: ''
     })).toBe('resources');
+    expect(resolveViewFromLocation({
+      pathname: '/archive',
+      search: ''
+    })).toBe('archive');
+    expect(getPathForView('archive')).toBe('/archive');
     expect(shouldRedirectDisabledDownloadPath({
       pathname: '/download/'
     })).toBe(true);

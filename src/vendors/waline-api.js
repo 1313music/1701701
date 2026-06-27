@@ -30,6 +30,18 @@ const authOverlayState = {
   previousOverflow: ''
 };
 
+const profileOverlayState = {
+  overlay: null,
+  status: null,
+  form: null,
+  fields: {},
+  submitButton: null,
+  serverURL: '',
+  lang: 'zh-CN',
+  userInfo: null,
+  previousOverflow: ''
+};
+
 const normalizeServerURL = (serverURL) => String(serverURL || '').replace(/\/+$/, '');
 
 const buildWalineUrl = (serverURL, path, lang, params = {}) => {
@@ -84,16 +96,24 @@ const requestWaline = async ({ serverURL, lang, path, method = 'GET', body, toke
   return payload?.data ?? null;
 };
 
-const showAuthStatus = (message = '', type = 'error') => {
-  if (!authOverlayState.status) return;
+const showStatus = (statusElement, message = '', type = 'error') => {
+  if (!statusElement) return;
 
-  authOverlayState.status.hidden = !message;
-  authOverlayState.status.textContent = message;
-  authOverlayState.status.classList.remove('is-error', 'is-success', 'is-info');
+  statusElement.hidden = !message;
+  statusElement.textContent = message;
+  statusElement.classList.remove('is-error', 'is-success', 'is-info');
 
   if (message) {
-    authOverlayState.status.classList.add(`is-${type}`);
+    statusElement.classList.add(`is-${type}`);
   }
+};
+
+const showAuthStatus = (message = '', type = 'error') => {
+  showStatus(authOverlayState.status, message, type);
+};
+
+const showProfileStatus = (message = '', type = 'error') => {
+  showStatus(profileOverlayState.status, message, type);
 };
 
 const setBusy = (mode, busy) => {
@@ -116,6 +136,21 @@ const setBusy = (mode, busy) => {
   });
 };
 
+const setProfileBusy = (busy) => {
+  if (profileOverlayState.submitButton) {
+    profileOverlayState.submitButton.disabled = busy;
+    profileOverlayState.submitButton.textContent = busy ? '保存中...' : '更新我的档案';
+  }
+
+  if (!profileOverlayState.form) return;
+
+  const elements = profileOverlayState.form.querySelectorAll('input, button');
+  elements.forEach((element) => {
+    if (element === profileOverlayState.submitButton) return;
+    element.disabled = busy;
+  });
+};
+
 const toggleTwoFactorField = (enabled) => {
   const wrapper = authOverlayState.fields.loginCodeWrap;
   const input = authOverlayState.fields.loginCode;
@@ -128,6 +163,24 @@ const toggleTwoFactorField = (enabled) => {
   if (!enabled) {
     input.value = '';
   }
+};
+
+const parseStoredWalineUser = (value) => {
+  if (!value || value === 'null') return null;
+
+  try {
+    const userInfo = JSON.parse(value);
+    return userInfo && typeof userInfo === 'object' && userInfo.token ? userInfo : null;
+  } catch {
+    return null;
+  }
+};
+
+const readStoredWalineUser = () => {
+  if (typeof window === 'undefined') return null;
+
+  return parseStoredWalineUser(window.localStorage.getItem(WALINE_USER_STORAGE_KEY))
+    || parseStoredWalineUser(window.sessionStorage.getItem(WALINE_USER_STORAGE_KEY));
 };
 
 const persistWalineUser = (userInfo) => {
@@ -169,11 +222,26 @@ const persistWalineUser = (userInfo) => {
   }
 };
 
+const emitWalineAuthSuccess = (userInfo) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(WALINE_AUTH_SUCCESS_EVENT, { detail: userInfo }));
+  }
+};
+
 const focusCurrentMode = () => {
   const field = authOverlayState.mode === 'register'
     ? authOverlayState.fields.registerNick
     : authOverlayState.fields.loginEmail;
 
+  if (!field) return;
+
+  window.setTimeout(() => {
+    field.focus({ preventScroll: true });
+  }, 0);
+};
+
+const focusProfileForm = () => {
+  const field = profileOverlayState.fields.profileNick;
   if (!field) return;
 
   window.setTimeout(() => {
@@ -192,6 +260,17 @@ const closeWalineAuthOverlay = () => {
   }
 };
 
+const closeWalineProfileOverlay = () => {
+  if (!profileOverlayState.overlay) return;
+
+  profileOverlayState.overlay.hidden = true;
+  profileOverlayState.overlay.classList.remove('is-visible');
+
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = profileOverlayState.previousOverflow;
+  }
+};
+
 const resolvePendingLogin = (userInfo) => {
   if (typeof authOverlayState.pendingResolver === 'function') {
     authOverlayState.pendingResolver(userInfo);
@@ -201,10 +280,7 @@ const resolvePendingLogin = (userInfo) => {
 
 const finalizeWalineLogin = (userInfo) => {
   persistWalineUser(userInfo);
-
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(WALINE_AUTH_SUCCESS_EVENT, { detail: userInfo }));
-  }
+  emitWalineAuthSuccess(userInfo);
 
   closeWalineAuthOverlay();
   resolvePendingLogin(userInfo);
@@ -381,9 +457,74 @@ const handleRegisterSubmit = async (event) => {
   }
 };
 
+const isValidHomepage = (value) => {
+  const homepage = String(value || '').trim();
+  return !homepage || /^https?:\/\//i.test(homepage);
+};
+
+const handleProfileSubmit = async (event) => {
+  event.preventDefault();
+
+  const currentUserInfo = profileOverlayState.userInfo || readStoredWalineUser();
+  const displayName = profileOverlayState.fields.profileNick?.value?.trim() || '';
+  const homepage = profileOverlayState.fields.profileUrl?.value?.trim() || '';
+
+  if (!currentUserInfo?.token) {
+    showProfileStatus('请先登录后再更新资料');
+    return;
+  }
+
+  if (!displayName || displayName.length < 2) {
+    showProfileStatus('请输入正确的昵称');
+    return;
+  }
+
+  if (!isValidHomepage(homepage)) {
+    showProfileStatus('个人主页需以 http:// 或 https:// 开头，或者留空');
+    return;
+  }
+
+  setProfileBusy(true);
+  showProfileStatus('');
+
+  try {
+    await requestWaline({
+      serverURL: profileOverlayState.serverURL,
+      lang: profileOverlayState.lang,
+      path: 'user',
+      method: 'PUT',
+      token: currentUserInfo.token,
+      body: {
+        display_name: displayName,
+        url: homepage
+      }
+    });
+
+    const nextUserInfo = {
+      ...currentUserInfo,
+      display_name: displayName,
+      url: homepage
+    };
+
+    profileOverlayState.userInfo = nextUserInfo;
+    persistWalineUser(nextUserInfo);
+    emitWalineAuthSuccess(nextUserInfo);
+    closeWalineProfileOverlay();
+  } catch (error) {
+    showProfileStatus(error instanceof Error ? error.message : '更新失败，请稍后重试');
+  } finally {
+    setProfileBusy(false);
+  }
+};
+
 const handleWalineAuthKeydown = (event) => {
   if (event.key !== 'Escape' || authOverlayState.overlay?.hidden) return;
   closeWalineAuthOverlay();
+};
+
+const handleWalineProfileKeydown = (event) => {
+  if (event.key !== 'Escape' || profileOverlayState.overlay?.hidden) return;
+  closeWalineProfileOverlay();
 };
 
 const ensureWalineAuthOverlay = () => {
@@ -520,6 +661,80 @@ const ensureWalineAuthOverlay = () => {
   };
 };
 
+const ensureWalineProfileOverlay = () => {
+  if (typeof document === 'undefined' || profileOverlayState.overlay) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'waline-auth-overlay waline-profile-overlay';
+  overlay.hidden = true;
+  overlay.innerHTML = `
+    <div class="waline-auth-modal waline-profile-modal" role="dialog" aria-modal="true" aria-labelledby="waline-profile-title">
+      <div class="waline-auth-header">
+        <div class="waline-auth-heading">
+          <span class="waline-auth-eyebrow">Waline 账号</span>
+          <h3 id="waline-profile-title">个人设置</h3>
+        </div>
+        <div class="waline-auth-controls">
+          <button type="button" class="waline-auth-close" aria-label="关闭账号设置">关闭</button>
+        </div>
+      </div>
+      <div class="waline-auth-body">
+        <p class="waline-auth-status" hidden></p>
+        <form class="waline-auth-form waline-profile-form" novalidate>
+          <label class="waline-auth-field">
+            <span>昵称</span>
+            <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
+          </label>
+          <label class="waline-auth-field">
+            <span>邮箱</span>
+            <input type="email" name="email" autocomplete="email" readonly />
+          </label>
+          <label class="waline-auth-field">
+            <span>个人主页地址</span>
+            <input type="url" name="url" autocomplete="url" placeholder="可留空，填写时需以 http:// 或 https:// 开头" />
+          </label>
+          <p class="waline-auth-help">个人主页不是必填项，留空也可以保存。</p>
+          <button type="submit" class="waline-auth-submit">更新我的档案</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const modal = overlay.querySelector('.waline-profile-modal');
+  const closeButton = overlay.querySelector('.waline-auth-close');
+  const status = overlay.querySelector('.waline-auth-status');
+  const form = overlay.querySelector('.waline-profile-form');
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      closeWalineProfileOverlay();
+    }
+  });
+
+  modal?.addEventListener('click', (event) => {
+    event.stopPropagation();
+  });
+
+  closeButton?.addEventListener('click', () => {
+    closeWalineProfileOverlay();
+  });
+
+  form?.addEventListener('submit', handleProfileSubmit);
+
+  document.body.appendChild(overlay);
+  window.addEventListener('keydown', handleWalineProfileKeydown);
+
+  profileOverlayState.overlay = overlay;
+  profileOverlayState.status = status;
+  profileOverlayState.form = form;
+  profileOverlayState.fields = {
+    profileNick: form?.querySelector('input[name="nick"]'),
+    profileEmail: form?.querySelector('input[name="email"]'),
+    profileUrl: form?.querySelector('input[name="url"]')
+  };
+  profileOverlayState.submitButton = form?.querySelector('.waline-auth-submit');
+};
+
 export const openWalineAuthOverlay = ({ serverURL, lang = 'zh-CN', mode = 'login' }) => {
   if (typeof window === 'undefined' || !serverURL) {
     return new Promise(() => {});
@@ -539,6 +754,42 @@ export const openWalineAuthOverlay = ({ serverURL, lang = 'zh-CN', mode = 'login
   return new Promise((resolve) => {
     authOverlayState.pendingResolver = resolve;
   });
+};
+
+export const openWalineProfileOverlay = ({ serverURL, lang = 'zh-CN' }) => {
+  if (typeof window === 'undefined' || !serverURL) return false;
+
+  const userInfo = readStoredWalineUser();
+
+  if (!userInfo?.token) {
+    void openWalineAuthOverlay({ serverURL, lang, mode: 'login' });
+    return false;
+  }
+
+  ensureWalineProfileOverlay();
+
+  profileOverlayState.serverURL = serverURL;
+  profileOverlayState.lang = lang;
+  profileOverlayState.userInfo = userInfo;
+  profileOverlayState.previousOverflow = document.body.style.overflow;
+
+  if (profileOverlayState.fields.profileNick) {
+    profileOverlayState.fields.profileNick.value = userInfo.display_name || '';
+  }
+  if (profileOverlayState.fields.profileEmail) {
+    profileOverlayState.fields.profileEmail.value = userInfo.email || '';
+  }
+  if (profileOverlayState.fields.profileUrl) {
+    profileOverlayState.fields.profileUrl.value = userInfo.url || '';
+  }
+
+  document.body.style.overflow = 'hidden';
+  profileOverlayState.overlay.hidden = false;
+  profileOverlayState.overlay.classList.add('is-visible');
+  showProfileStatus('');
+  focusProfileForm();
+
+  return true;
 };
 
 export const login = ({ serverURL, lang }) => openWalineAuthOverlay({

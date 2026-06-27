@@ -31,6 +31,7 @@ const PAGE_META = Object.freeze({
   library: { changefreq: 'daily', priority: '1.0' },
   video: { changefreq: 'daily', priority: '0.9' },
   resources: { changefreq: 'daily', priority: '0.8' },
+  archive: { changefreq: 'weekly', priority: '0.8' },
   download: { changefreq: 'daily', priority: '0.9' },
   gallery: { changefreq: 'daily', priority: '0.9' },
   app: { changefreq: 'weekly', priority: '0.8' },
@@ -141,6 +142,7 @@ const buildNavigation = () => {
     library: '音乐',
     video: '视频',
     resources: '资料',
+    archive: '档案',
     download: '下载',
     gallery: '图库',
     app: 'APP',
@@ -336,6 +338,10 @@ const buildGenericSection = (view) => {
     about: [
       '本站整理李志音乐、现场视频、资料文档、下载资源与相关说明。',
       '内容以资料索引、播放列表和站内导航为主，方便集中检索。'
+    ],
+    archive: [
+      '整理 nanjinglizhi.cn 在 Internet Archive Wayback Machine 中保存的代表版本。',
+      '页面按时间线展示旧官网快照，并保留本地 HTML 与 Wayback 原始链接。'
     ]
   };
 
@@ -354,7 +360,7 @@ const buildStaticContent = (view, manifestData) => {
   if (view === 'video') sections.push(buildVideoSection(manifestData.videoCategories));
   if (view === 'resources') sections.push(buildDownloadSection(manifestData.resourceSections, '资料分类'));
   if (view === 'download') sections.push(buildDownloadSection(manifestData.downloadSections));
-  if (['gallery', 'app', 'about'].includes(view)) sections.push(buildGenericSection(view));
+  if (['gallery', 'app', 'about', 'archive'].includes(view)) sections.push(buildGenericSection(view));
 
   return `    <main class="seo-static-shell" aria-label="${escapeHtml(currentSeo.heading)}">
       <h1>${escapeHtml(currentSeo.heading)}</h1>
@@ -465,6 +471,7 @@ const main = async () => {
     library: toIsoDate(musicManifest.updatedAt) || buildDate,
     video: toIsoDate(videoManifest.updatedAt) || buildDate,
     resources: toIsoDate(downloadManifest.updatedAt) || buildDate,
+    archive: buildDate,
     download: toIsoDate(downloadManifest.updatedAt) || buildDate,
     gallery: buildDate,
     app: buildDate,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import '../styles/about.css';
 import { copyTextToClipboard } from '../utils/appDomUtils.js';
 
@@ -7,6 +8,12 @@ const officialCd = {
     subtitle: '购买正版',
     image: 'https://p1.music.126.net/e6J7eFqsAwVFFuctHbXEgg==/109951167945120210.jpg',
     href: 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97'
+};
+
+const supportQr = {
+    title: '支持本站',
+    subtitle: '扫码支持',
+    image: 'https://p1.music.126.net/2okpfR3EE8OJdP9MKcwuVg==/109951173468389389.jpg'
 };
 
 const officialAccounts = [
@@ -26,6 +33,7 @@ const AboutPage = () => {
     const [copyFeedback, setCopyFeedback] = useState({ name: '', status: 'idle' });
     const copyFeedbackTimerRef = useRef(null);
     const isModalOpen = isJumpOpen || isQrOpen;
+    const portalRoot = typeof document === 'undefined' ? null : document.body;
 
     useEffect(() => {
         if (!isModalOpen) return;
@@ -86,8 +94,15 @@ const AboutPage = () => {
             <p>所有资源来源于互联网，版权属于李志先生。仅限个人学习、研究、欣赏之用，完全免费，禁止用于商业目的。</p>
         </section>
 
+        <section className="about-v3-archive" aria-label="旧官网档案馆">
+            <a className="about-v3-archive-entry" href="/archive">
+                <span>旧官网档案馆</span>
+                <small>nanjinglizhi.cn 的 Wayback 存档</small>
+            </a>
+        </section>
+
         <section className="about-v3-section about-v3-official-section">
-            <div className="about-v3-grid about-v3-grid-single">
+            <div className="about-v3-grid about-v3-official-grid">
                 <button
                     type="button"
                     className="about-v3-card about-v3-card--cta"
@@ -101,6 +116,15 @@ const AboutPage = () => {
                         <span>购买正版</span>
                     </div>
                 </button>
+                <div className="about-v3-card">
+                    <div className="about-v3-card-media">
+                        <img loading="lazy" src={supportQr.image} alt={`${supportQr.title}二维码`} />
+                    </div>
+                    <div className="about-v3-card-body">
+                        <h3>{supportQr.title}</h3>
+                        <span>{supportQr.subtitle}</span>
+                    </div>
+                </div>
             </div>
             <button
                 type="button"
@@ -115,7 +139,7 @@ const AboutPage = () => {
         <section className="about-v3-contact about-v3-contact-inline" aria-labelledby="about-v3-contact-title">
             <div className="about-v3-contact-head">
                 <h2 id="about-v3-contact-title">公众号</h2>
-                <p>扫码关注</p>
+                <p>⚠️ 防失联请关注公众号，最新地址与重要通知将优先发布。</p>
             </div>
             <div className="about-v3-contact-list">
                 {officialAccounts.map((account) => (
@@ -142,7 +166,7 @@ const AboutPage = () => {
                 ))}
             </div>
         </section>
-        {isQrOpen && (
+        {isQrOpen && portalRoot && createPortal((
             <div className="about-qr-modal" onClick={() => setIsQrOpen(false)}>
                 <div className="about-qr-card" onClick={(event) => event.stopPropagation()}>
                     <div className="about-qr-head">
@@ -170,8 +194,8 @@ const AboutPage = () => {
                     </div>
                 </div>
             </div>
-        )}
-        {isJumpOpen && (
+        ), portalRoot)}
+        {isJumpOpen && portalRoot && createPortal((
             <div className="about-jump-modal" onClick={() => setIsJumpOpen(false)}>
                 <div className="about-jump-card" onClick={(event) => event.stopPropagation()}>
                     <h3>即将前往 tower.jp</h3>
@@ -194,7 +218,7 @@ const AboutPage = () => {
                     </div>
                 </div>
             </div>
-        )}
+        ), portalRoot)}
     </div>
     );
 };
