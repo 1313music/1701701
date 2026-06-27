@@ -12,11 +12,11 @@ const officialCd = {
 const officialAccounts = [
     {
         title: '共享云音乐',
-        image: '/img/shared-cloud-music-qrcode.jpg'
+        image: 'https://p1.music.126.net/DS_fxjI4TFZymft2hcnhKA==/109951173460969360.jpg'
     },
     {
         title: '民谣俱乐部',
-        image: '/img/folk-club-qrcode.jpg'
+        image: 'https://p1.music.126.net/tDzmXS4sGZDEJx4HKLqPww==/109951173460972219.jpg'
     }
 ];
 
