@@ -121,7 +121,7 @@ describe('NanjingLizhiArchivePage', () => {
       );
     });
     expect(screen.getByTitle('nanjinglizhi.cn 2018-04-21 存档')).toHaveAttribute('scrolling', 'no');
-    expect(screen.queryByRole('link', { name: 'Wayback' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '原始快照' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '原始 HTML' })).not.toBeInTheDocument();
     expect(screen.queryByText('当前快照')).not.toBeInTheDocument();
     expect(screen.queryByText('时间线')).not.toBeInTheDocument();

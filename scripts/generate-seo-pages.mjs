@@ -340,8 +340,8 @@ const buildGenericSection = (view) => {
       '内容以资料索引、播放列表和站内导航为主，方便集中检索。'
     ],
     archive: [
-      '整理 nanjinglizhi.cn 在 Internet Archive Wayback Machine 中保存的代表版本。',
-      '页面按时间线展示旧官网快照，并保留本地 HTML 与 Wayback 原始链接。'
+      '整理 nanjinglizhi.cn 的旧官网代表版本。',
+      '页面按时间线展示旧官网快照，并保留本地 HTML。'
     ]
   };
 

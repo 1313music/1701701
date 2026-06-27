@@ -2,16 +2,16 @@
   "target": "nanjinglizhi.cn",
   "generatedAt": "2026-06-27T15:08:36.086Z",
   "source": {
-    "name": "Internet Archive Wayback Machine CDX API",
+    "name": "公开网页存档 CDX API",
     "uniqueHtmlUrl": "https://web.archive.org/cdx?url=*.nanjinglizhi.cn/*&output=json&fl=timestamp,original,statuscode,mimetype,digest&filter=statuscode:200&filter=mimetype:text/html&collapse=digest",
     "homepageCapturesUrl": "https://web.archive.org/cdx?url=www.nanjinglizhi.cn/&output=json&fl=timestamp,original,statuscode,mimetype,digest&filter=statuscode:200&filter=mimetype:text/html",
     "timelineUrl": "https://web.archive.org/web/*/nanjinglizhi.cn"
   },
   "notes": [
-    "HTML snapshots are representative versions collapsed by Wayback digest.",
+    "HTML snapshots are representative versions collapsed by content digest.",
     "The 2018-04-21 capture is included separately because it was the URL requested by the user, although its digest matches the 2017-11-09 version.",
     "index.html rewrites relative page assets to local files under each snapshot assets directory; source.html keeps the raw fetched HTML.",
-    "If an asset cannot be downloaded, index.html keeps a Wayback replay URL for that asset.",
+    "If an asset cannot be downloaded, index.html keeps a archive replay URL for that asset.",
     "Expired hosting redirect captures are skipped because they are not meaningful old-site content."
   ],
   "snapshots": [

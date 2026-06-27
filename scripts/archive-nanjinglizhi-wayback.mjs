@@ -212,7 +212,7 @@ const injectArchiveHead = (html, snapshot) => {
     '<!--',
     `Archived from: ${snapshot.original}`,
     `Captured at: ${timestampToDateTimeLabel(snapshot.timestamp)}`,
-    `Wayback source: ${replayUrl(snapshot.timestamp, snapshot.original, '')}`,
+    `Archive source: ${replayUrl(snapshot.timestamp, snapshot.original, '')}`,
     `Downloaded at: ${GENERATED_AT}`,
     '-->'
   ].join('\n');
@@ -250,7 +250,7 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>李志官网 Wayback 存档</title>
+  <title>李志官网 旧版存档</title>
   <style>
     :root {
       color-scheme: light;
@@ -335,13 +335,13 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
 </head>
 <body>
   <main>
-    <h1>李志官网 Wayback 存档</h1>
-    <p class="lead">这里保存的是 Internet Archive Wayback Machine 上 ${escapeHtml(TARGET)} 的 HTML 代表版本。每个版本按内容摘要去重，另保留了用户指定的 2018-04-21 快照。</p>
+    <h1>李志官网 旧版存档</h1>
+    <p class="lead">这里保存的是 公开网页存档 上 ${escapeHtml(TARGET)} 的 HTML 代表版本。每个版本按内容摘要去重，另保留了用户指定的 2018-04-21 快照。</p>
     <div class="toolbar">
       <a href="./manifest.json">manifest.json</a>
       <a href="./cdx-unique-html.json">CDX 去重列表</a>
       <a href="./cdx-homepage-captures.json">首页全部捕获</a>
-      <a href="https://web.archive.org/web/*/${escapeHtml(TARGET)}" target="_blank" rel="noreferrer">Wayback 原始时间线</a>
+      <a href="https://web.archive.org/web/*/${escapeHtml(TARGET)}" target="_blank" rel="noreferrer">原始时间线</a>
     </div>
     <section class="grid" aria-label="存档快照">
       ${snapshots.map((snapshot) => `
@@ -353,7 +353,7 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
         <div class="actions">
           <a href="${escapeHtml(snapshot.localPath)}">本地版</a>
           <a href="${escapeHtml(snapshot.sourcePath)}">原始 HTML</a>
-          <a href="${escapeHtml(snapshot.waybackUrl)}" target="_blank" rel="noreferrer">Wayback</a>
+          <a href="${escapeHtml(snapshot.waybackUrl)}" target="_blank" rel="noreferrer">原始快照</a>
         </div>
       </article>`).join('')}
     </section>
@@ -442,16 +442,16 @@ const main = async () => {
     target: TARGET,
     generatedAt: GENERATED_AT,
     source: {
-      name: 'Internet Archive Wayback Machine CDX API',
+      name: '公开网页存档 CDX API',
       uniqueHtmlUrl: CDX_UNIQUE_HTML_URL,
       homepageCapturesUrl: CDX_HOMEPAGE_CAPTURES_URL,
       timelineUrl: `https://web.archive.org/web/*/${TARGET}`
     },
     notes: [
-      'HTML snapshots are representative versions collapsed by Wayback digest.',
+      'HTML snapshots are representative versions collapsed by content digest.',
       'The 2018-04-21 capture is included separately because it was the URL requested by the user, although its digest matches the 2017-11-09 version.',
       'index.html rewrites relative page assets to local files under each snapshot assets directory; source.html keeps the raw fetched HTML.',
-      'If an asset cannot be downloaded, index.html keeps a Wayback replay URL for that asset.',
+      'If an asset cannot be downloaded, index.html keeps a archive replay URL for that asset.',
       'Expired hosting redirect captures are skipped because they are not meaningful old-site content.'
     ],
     snapshots: savedSnapshots
@@ -465,7 +465,7 @@ const main = async () => {
   await writeFile(
     path.join(OUTPUT_DIR, 'README.md'),
     [
-      '# nanjinglizhi.cn Wayback archive',
+      '# nanjinglizhi.cn web archive',
       '',
       `Generated at: ${GENERATED_AT}`,
       '',
@@ -473,14 +473,14 @@ const main = async () => {
       '',
       '- `manifest.json`: machine-readable snapshot list for the React site.',
       '- `index.html`: static browser for the saved snapshots.',
-      '- `snapshots/<timestamp>/source.html`: raw HTML from Wayback `id_` replay.',
+      '- `snapshots/<timestamp>/source.html`: raw HTML from archive `id_` replay.',
       '- `snapshots/<timestamp>/index.html`: renderable HTML with local asset links where available.',
       '- `snapshots/<timestamp>/assets/`: locally saved relative image/icon assets for that snapshot.',
       '- `snapshots/<timestamp>/assets.json`: per-snapshot asset download report.',
       '- `cdx-unique-html.json`: unique HTML captures returned by the CDX API.',
       '- `cdx-homepage-captures.json`: all 200 OK homepage captures returned by the CDX API.',
       '',
-      'Source: Internet Archive Wayback Machine.',
+      'Source: 公开网页存档.',
       ''
     ].join('\n')
   );

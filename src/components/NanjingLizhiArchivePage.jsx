@@ -79,11 +79,11 @@ const getSnapshotKey = (snapshot) => snapshot?.id || snapshot?.timestamp || '';
 
 const formatSnapshotOption = (snapshot) => (
     snapshot?.optionLabel
-    || [
+    || Array.from(new Set([
         formatDateLabel(snapshot),
         snapshot?.pageTypeLabel,
         snapshot?.title || snapshot?.label
-    ].filter(Boolean).join(' · ')
+    ].filter(Boolean))).join(' · ')
 );
 
 const NanjingLizhiArchivePage = () => {
@@ -97,6 +97,7 @@ const NanjingLizhiArchivePage = () => {
     const [manifestError, setManifestError] = useState('');
     const [retryKey, setRetryKey] = useState(0);
     const [isFrameLoading, setIsFrameLoading] = useState(true);
+    const [isCompactViewport, setIsCompactViewport] = useState(false);
     const [frameMetrics, setFrameMetrics] = useState({
         contentWidth: DEFAULT_FRAME_WIDTH,
         contentHeight: DEFAULT_FRAME_HEIGHT,
@@ -128,6 +129,21 @@ const NanjingLizhiArchivePage = () => {
         return () => {
             canceled = true;
             controller.abort();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+
+        const query = window.matchMedia('(max-width: 560px)');
+        const syncCompactViewport = () => setIsCompactViewport(query.matches);
+        syncCompactViewport();
+
+        query.addEventListener?.('change', syncCompactViewport);
+        query.addListener?.(syncCompactViewport);
+        return () => {
+            query.removeEventListener?.('change', syncCompactViewport);
+            query.removeListener?.(syncCompactViewport);
         };
     }, []);
 
@@ -297,7 +313,7 @@ const NanjingLizhiArchivePage = () => {
     };
     const activeArchiveLabel = manifest?.target || activeArchive.label;
     const unitLabel = manifest?.unitLabel || '历史快照';
-    const usesSnapshotPicker = manifest?.displayMode === 'catalog' || snapshots.length > 60;
+    const usesSnapshotPicker = isCompactViewport || manifest?.displayMode === 'catalog' || snapshots.length > 60;
 
     return (
         <div className="archive-page">

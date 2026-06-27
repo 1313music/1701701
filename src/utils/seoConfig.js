@@ -117,7 +117,7 @@ export const SEO_MAP = Object.freeze({
   archive: {
     title: '李志旧官网档案馆 | 1701701.xyz',
     heading: '李志旧官网档案馆',
-    description: '整理 nanjinglizhi.cn 在 Internet Archive Wayback Machine 中保存的李志旧官网代表版本，按时间线浏览 2013 至 2019 年的网页快照。',
+    description: '整理 nanjinglizhi.cn 的李志旧官网代表版本，按时间线浏览 2013 至 2019 年的网页快照。',
     pageType: 'CollectionPage',
     keywords: [
       '李志官网',
@@ -125,7 +125,6 @@ export const SEO_MAP = Object.freeze({
       'nanjinglizhi.cn',
       '李志档案',
       '李志资料',
-      'Wayback Machine',
       '网页存档'
     ]
   },

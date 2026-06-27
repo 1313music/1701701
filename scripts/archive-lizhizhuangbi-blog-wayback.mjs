@@ -292,7 +292,7 @@ const injectArchiveHead = (html, snapshot) => {
     '<!--',
     `Archived from: ${snapshot.original}`,
     `Captured at: ${timestampToDateTimeLabel(snapshot.timestamp)}`,
-    `Wayback source: ${replayUrl(snapshot.timestamp, snapshot.original, '')}`,
+    `Archive source: ${replayUrl(snapshot.timestamp, snapshot.original, '')}`,
     `Downloaded at: ${GENERATED_AT}`,
     '-->'
   ].join('\n');
@@ -475,7 +475,7 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>李志官方博客 Wayback 存档</title>
+  <title>李志官方博客 旧版存档</title>
   <style>
     :root {
       color-scheme: light;
@@ -558,12 +558,12 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
 </head>
 <body>
   <main>
-    <h1>李志官方博客 Wayback 存档</h1>
-    <p class="lead">这里保存的是 Internet Archive Wayback Machine 上 ${escapeHtml(TARGET)} 的旧 WordPress 页面。后期停放页、错误页和无关内容已过滤。</p>
+    <h1>李志官方博客 旧版存档</h1>
+    <p class="lead">这里保存的是 公开网页存档 上 ${escapeHtml(TARGET)} 的旧 WordPress 页面。后期停放页、错误页和无关内容已过滤。</p>
     <div class="toolbar">
       <a href="./manifest.json">manifest.json</a>
       <a href="./cdx-queries.json">CDX 查询结果</a>
-      <a href="https://web.archive.org/web/*/${escapeHtml(TARGET)}" target="_blank" rel="noreferrer">Wayback 原始时间线</a>
+      <a href="https://web.archive.org/web/*/${escapeHtml(TARGET)}" target="_blank" rel="noreferrer">原始时间线</a>
     </div>
     <section class="grid" aria-label="存档页面">
       ${snapshots.map((snapshot) => `
@@ -574,7 +574,7 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
         <div class="actions">
           <a href="${escapeHtml(snapshot.localPath)}">本地版</a>
           <a href="${escapeHtml(snapshot.sourcePath)}">原始 HTML</a>
-          <a href="${escapeHtml(snapshot.waybackUrl)}" target="_blank" rel="noreferrer">Wayback</a>
+          <a href="${escapeHtml(snapshot.waybackUrl)}" target="_blank" rel="noreferrer">原始快照</a>
         </div>
       </article>`).join('')}
     </section>
@@ -660,12 +660,12 @@ const main = async () => {
     displayMode: 'catalog',
     generatedAt: GENERATED_AT,
     source: {
-      name: 'Internet Archive Wayback Machine CDX API',
+      name: '公开网页存档 CDX API',
       queries: CDX_QUERIES,
       timelineUrl: `https://web.archive.org/web/*/${TARGET}`
     },
     notes: [
-      'HTML pages are old WordPress blog pages discovered from Wayback CDX queries for /blog/, ?p=, ?m=, ?cat=, and ?paged= paths.',
+      'HTML pages are old WordPress blog pages discovered from archive CDX queries for /blog/, ?p=, ?m=, ?cat=, and ?paged= paths.',
       'Later parked, error, and unrelated captures are skipped by old-blog content markers.',
       'index.html rewrites same-site image, CSS, and JS assets to local files under each page assets directory where available.',
       'If an asset cannot be downloaded from its capture, the script tries to repair it from another saved blog page with the same local asset path.'
@@ -682,7 +682,7 @@ const main = async () => {
   await writeFile(
     path.join(OUTPUT_DIR, 'README.md'),
     [
-      '# lizhizhuangbi.com/blog Wayback archive',
+      '# lizhizhuangbi.com/blog web archive',
       '',
       `Generated at: ${GENERATED_AT}`,
       '',
@@ -690,13 +690,13 @@ const main = async () => {
       '',
       '- `manifest.json`: machine-readable saved page list for the React site.',
       '- `index.html`: static browser for saved blog pages.',
-      '- `pages/<id>/source.html`: raw HTML from Wayback `id_` replay.',
+      '- `pages/<id>/source.html`: raw HTML from archive `id_` replay.',
       '- `pages/<id>/index.html`: renderable HTML with same-site asset links rewritten locally where available.',
       '- `pages/<id>/assets/`: locally saved same-site image/CSS/JS assets for that page.',
       '- `pages/<id>/assets.json`: per-page asset download report.',
       '- `cdx-queries.json`: CDX query rows used to discover blog pages.',
       '',
-      'Source: Internet Archive Wayback Machine.',
+      'Source: 公开网页存档.',
       ''
     ].join('\n')
   );

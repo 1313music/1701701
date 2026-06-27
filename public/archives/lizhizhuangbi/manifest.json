@@ -2,17 +2,17 @@
   "target": "lizhizhuangbi.com",
   "generatedAt": "2026-06-27T15:55:10.587Z",
   "source": {
-    "name": "Internet Archive Wayback Machine CDX API",
+    "name": "公开网页存档 CDX API",
     "uniqueHomepageUrl": "https://web.archive.org/cdx?url=www.lizhizhuangbi.com/&output=json&fl=timestamp,original,statuscode,mimetype,digest&filter=statuscode:200&filter=mimetype:text/html&collapse=digest",
     "requiredCaptureUrl": "https://web.archive.org/cdx?url=www.lizhizhuangbi.com/&output=json&fl=timestamp,original,statuscode,mimetype,digest&filter=statuscode:200&filter=mimetype:text/html&from=201106&to=201108",
     "timelineUrl": "https://web.archive.org/web/*/lizhizhuangbi.com"
   },
   "notes": [
-    "HTML snapshots are homepage versions collapsed by Wayback digest.",
+    "HTML snapshots are homepage versions collapsed by content digest.",
     "The 2011-07-15 capture is included separately because it was the URL requested by the user, although its digest matches nearby 2011 captures.",
     "Only pages matching the old official lizhizhuangbi.com site markers are saved; parked, error, redirect, and unrelated captures are skipped.",
     "index.html rewrites relative page assets to local files under each snapshot assets directory; source.html keeps the raw fetched HTML.",
-    "If an asset cannot be downloaded, index.html keeps a Wayback replay URL for that asset."
+    "If an asset cannot be downloaded, index.html keeps a archive replay URL for that asset."
   ],
   "snapshots": [
     {

@@ -97,7 +97,7 @@ const AboutPage = () => {
         <section className="about-v3-archive" aria-label="旧官网档案馆">
             <a className="about-v3-archive-entry" href="/archive">
                 <span>旧官网档案馆</span>
-                <small>nanjinglizhi.cn 的 Wayback 存档</small>
+                <small>nanjinglizhi.cn 旧官网存档</small>
             </a>
         </section>
 

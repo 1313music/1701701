@@ -326,35 +326,67 @@
 
 @media (max-width: 900px) {
   .archive-page {
-    gap: 12px;
+    gap: 10px;
   }
 
   .archive-header {
     align-items: flex-start;
     flex-direction: column;
+    gap: 10px;
+    padding-bottom: 9px;
   }
 
   .archive-header h1 {
-    font-size: 30px;
+    font-size: 28px;
+    line-height: 1.08;
+    margin-bottom: 4px;
+  }
+
+  .archive-header p {
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   .archive-source-switch {
     width: 100%;
+    display: flex;
+    flex-wrap: wrap;
     justify-content: stretch;
+    gap: 3px;
   }
 
   .archive-source-button {
-    flex: 1 1 0;
+    flex: 1 1 112px;
     padding: 0 8px;
     font-size: 12px;
+    min-height: 34px;
   }
-
 }
 
 @media (max-width: 560px) {
+  .archive-page {
+    gap: 9px;
+  }
+
+  .archive-header h1 {
+    font-size: 27px;
+  }
+
+  .archive-source-button {
+    padding: 0 6px;
+    font-size: 11px;
+  }
+
   .archive-snapshot-picker-row {
     grid-template-columns: 1fr;
     gap: 6px;
+    font-size: 12px;
+  }
+
+  .archive-snapshot-picker {
+    min-height: 36px;
+    padding-left: 10px;
+    font-size: 12px;
   }
 
   .archive-timeline {
@@ -362,11 +394,12 @@
     scrollbar-width: none;
   }
 
-  .archive-timeline-list {
-    min-width: 720px;
+  .archive-frame-shell {
+    padding: 4px;
+    border-radius: 7px;
   }
 
-  .archive-frame-shell {
-    padding: 8px;
+  .archive-frame-viewport {
+    border-radius: 5px;
   }
 }

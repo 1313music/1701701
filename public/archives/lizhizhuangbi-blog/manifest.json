@@ -4,7 +4,7 @@
   "displayMode": "catalog",
   "generatedAt": "2026-06-27T16:27:43.144Z",
   "source": {
-    "name": "Internet Archive Wayback Machine CDX API",
+    "name": "公开网页存档 CDX API",
     "queries": [
       {
         "id": "blog-home-www",
@@ -50,7 +50,7 @@
     "timelineUrl": "https://web.archive.org/web/*/lizhizhuangbi.com/blog"
   },
   "notes": [
-    "HTML pages are old WordPress blog pages discovered from Wayback CDX queries for /blog/, ?p=, ?m=, ?cat=, and ?paged= paths.",
+    "HTML pages are old WordPress blog pages discovered from archive CDX queries for /blog/, ?p=, ?m=, ?cat=, and ?paged= paths.",
     "Later parked, error, and unrelated captures are skipped by old-blog content markers.",
     "index.html rewrites same-site image, CSS, and JS assets to local files under each page assets directory where available.",
     "If an asset cannot be downloaded from its capture, the script tries to repair it from another saved blog page with the same local asset path."
