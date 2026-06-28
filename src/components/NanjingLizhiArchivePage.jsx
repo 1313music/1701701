@@ -11,14 +11,14 @@ import '../styles/archive.css';
 
 const ALL_ARCHIVE_SOURCES = [
     {
-        id: 'nanjinglizhi',
-        label: 'nanjinglizhi.cn',
-        manifestUrl: '/archives/nanjinglizhi/manifest.json'
-    },
-    {
         id: 'lizhizhuangbi',
         label: 'lizhizhuangbi.com',
         manifestUrl: '/archives/lizhizhuangbi/manifest.json'
+    },
+    {
+        id: 'nanjinglizhi',
+        label: 'nanjinglizhi.cn',
+        manifestUrl: '/archives/nanjinglizhi/manifest.json'
     },
     {
         id: 'lizhizhuangbi-blog',

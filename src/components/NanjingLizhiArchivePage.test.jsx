@@ -98,29 +98,24 @@ describe('NanjingLizhiArchivePage', () => {
     vi.clearAllMocks();
   });
 
-  it('loads the archive manifest and switches the selected snapshot', async () => {
+  it('loads the earlier official site domain first', async () => {
     render(<NanjingLizhiArchivePage />);
 
-    expect(await screen.findByRole('button', { name: '查看 2013-06-07 快照' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: '查看 2011-07-15 快照' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '旧官网档案馆' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'nanjinglizhi.cn' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'lizhizhuangbi.com' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+      'lizhizhuangbi.com',
+      'nanjinglizhi.cn'
+    ]);
+    expect(screen.getByRole('tab', { name: 'lizhizhuangbi.com' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'nanjinglizhi.cn' })).toHaveAttribute('aria-selected', 'false');
     expect(screen.queryByRole('tab', { name: 'lizhizhuangbi.com/blog' })).not.toBeInTheDocument();
     expect(screen.queryByText('指定快照')).not.toBeInTheDocument();
-    expect(screen.getByTitle('nanjinglizhi.cn 2013-06-07 存档')).toHaveAttribute(
+    expect(screen.getByTitle('lizhizhuangbi.com 2011-07-15 存档')).toHaveAttribute(
       'src',
-      '/archives/nanjinglizhi/snapshots/20130607181829/index.html'
+      '/archives/lizhizhuangbi/snapshots/20110715023458/index.html'
     );
-
-    fireEvent.click(screen.getByRole('button', { name: '查看 2018-04-21 快照' }));
-
-    await waitFor(() => {
-      expect(screen.getByTitle('nanjinglizhi.cn 2018-04-21 存档')).toHaveAttribute(
-        'src',
-        '/archives/nanjinglizhi/snapshots/20180421034504/index.html'
-      );
-    });
-    expect(screen.getByTitle('nanjinglizhi.cn 2018-04-21 存档')).toHaveAttribute('scrolling', 'no');
+    expect(screen.getByTitle('lizhizhuangbi.com 2011-07-15 存档')).toHaveAttribute('scrolling', 'no');
     expect(screen.queryByRole('link', { name: '原始快照' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '原始 HTML' })).not.toBeInTheDocument();
     expect(screen.queryByText('当前快照')).not.toBeInTheDocument();
@@ -132,17 +127,26 @@ describe('NanjingLizhiArchivePage', () => {
   it('switches between saved old official site domains', async () => {
     render(<NanjingLizhiArchivePage />);
 
-    expect(await screen.findByRole('button', { name: '查看 2013-06-07 快照' })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('tab', { name: 'lizhizhuangbi.com' }));
-
     expect(await screen.findByRole('button', { name: '查看 2011-07-15 快照' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'lizhizhuangbi.com' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByTitle('lizhizhuangbi.com 2011-07-15 存档')).toHaveAttribute(
+
+    fireEvent.click(screen.getByRole('tab', { name: 'nanjinglizhi.cn' }));
+
+    expect(await screen.findByRole('button', { name: '查看 2013-06-07 快照' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'nanjinglizhi.cn' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByTitle('nanjinglizhi.cn 2013-06-07 存档')).toHaveAttribute(
       'src',
-      '/archives/lizhizhuangbi/snapshots/20110715023458/index.html'
+      '/archives/nanjinglizhi/snapshots/20130607181829/index.html'
     );
-    expect(globalThis.fetch).toHaveBeenCalledWith('/archives/lizhizhuangbi/manifest.json', { cache: 'no-cache' });
+    expect(globalThis.fetch).toHaveBeenCalledWith('/archives/nanjinglizhi/manifest.json', { cache: 'no-cache' });
+
+    fireEvent.click(screen.getByRole('button', { name: '查看 2018-04-21 快照' }));
+
+    await waitFor(() => {
+      expect(screen.getByTitle('nanjinglizhi.cn 2018-04-21 存档')).toHaveAttribute(
+        'src',
+        '/archives/nanjinglizhi/snapshots/20180421034504/index.html'
+      );
+    });
   });
 
   it('shows the blog archive only when the runtime switch is enabled', async () => {
