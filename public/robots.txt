@@ -2,6 +2,7 @@ User-agent: *
 Disallow: /myadmin
 Disallow: /comment
 Disallow: /download/preview/
+Disallow: /archives/lizhizhuangbi-blog/
 Allow: /
 
 Sitemap: https://1701701.xyz/sitemap.xml

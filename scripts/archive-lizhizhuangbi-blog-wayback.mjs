@@ -299,7 +299,7 @@ const injectArchiveHead = (html, snapshot) => {
   const injectedHead = [
     archiveComment,
     '<base target="_blank">',
-    '<meta name="robots" content="noindex">',
+    '<meta name="robots" content="noindex,nofollow,noarchive,noimageindex">',
     '<meta http-equiv="Content-Security-Policy" content="script-src \'none\'; object-src \'none\'; base-uri \'self\'; img-src \'self\' data: https://web.archive.org https://web-static.archive.org;">'
   ].join('\n');
 
@@ -474,7 +474,7 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
+  <meta name="robots" content="noindex,nofollow,noarchive,noimageindex">
   <title>李志官方博客 旧版存档</title>
   <style>
     :root {
@@ -501,26 +501,9 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
       color: #5f5a53;
       line-height: 1.7;
     }
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 0 0 22px;
-    }
-    .toolbar a,
     .snapshot a {
       color: #6f3f1f;
       text-decoration: none;
-    }
-    .toolbar a {
-      display: inline-flex;
-      min-height: 38px;
-      align-items: center;
-      border: 1px solid #d4c6b5;
-      border-radius: 8px;
-      padding: 0 12px;
-      background: #fffaf4;
-      font-weight: 600;
     }
     .grid {
       display: grid;
@@ -548,8 +531,6 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
     }
     .snapshot .actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
       margin-top: 12px;
       font-size: 14px;
       font-weight: 600;
@@ -559,12 +540,7 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
 <body>
   <main>
     <h1>李志官方博客 旧版存档</h1>
-    <p class="lead">这里保存的是 公开网页存档 上 ${escapeHtml(TARGET)} 的旧 WordPress 页面。后期停放页、错误页和无关内容已过滤。</p>
-    <div class="toolbar">
-      <a href="./manifest.json">manifest.json</a>
-      <a href="./cdx-queries.json">CDX 查询结果</a>
-      <a href="https://web.archive.org/web/*/${escapeHtml(TARGET)}" target="_blank" rel="noreferrer">原始时间线</a>
-    </div>
+    <p class="lead">这里保存的是 ${escapeHtml(TARGET)} 的旧 WordPress 页面。</p>
     <section class="grid" aria-label="存档页面">
       ${snapshots.map((snapshot) => `
       <article class="snapshot">
@@ -572,8 +548,6 @@ const buildSnapshotIndex = (snapshots) => `<!doctype html>
         <p>${escapeHtml(timestampToDateTimeLabel(snapshot.timestamp))}</p>
         <p>${escapeHtml(snapshot.pageTypeLabel)} · ${escapeHtml(snapshot.original)}</p>
         <div class="actions">
-          <a href="${escapeHtml(snapshot.localPath)}">本地版</a>
-          <a href="${escapeHtml(snapshot.sourcePath)}">原始 HTML</a>
           <a href="${escapeHtml(snapshot.waybackUrl)}" target="_blank" rel="noreferrer">原始快照</a>
         </div>
       </article>`).join('')}
