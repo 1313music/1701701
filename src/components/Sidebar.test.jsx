@@ -71,7 +71,7 @@ describe('Sidebar', () => {
       />
     );
 
-    const archiveButtons = screen.getAllByRole('button', { name: '档案' });
+    const archiveButtons = screen.getAllByRole('button', { name: '旧站' });
     expect(archiveButtons).toHaveLength(2);
 
     fireEvent.click(archiveButtons[0]);

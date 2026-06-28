@@ -142,7 +142,7 @@ const buildNavigation = () => {
     library: '音乐',
     video: '视频',
     resources: '资料',
-    archive: '档案',
+    archive: '旧站',
     download: '下载',
     gallery: '图库',
     app: 'APP',

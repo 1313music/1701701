@@ -145,7 +145,7 @@ const Sidebar = ({
                     )}
                     <NavItem
                         icon={<Archive size={20} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="档案"
+                        label="旧站"
                         active={view === 'archive'}
                         onClick={() => handleNavClick('archive')}
                     />
@@ -256,7 +256,7 @@ const Sidebar = ({
                     )}
                     <NavItem
                         icon={<Archive size={22} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="档案"
+                        label="旧站"
                         active={view === 'archive'}
                         onClick={() => handleNavClick('archive')}
                     />
