@@ -1141,7 +1141,15 @@
   }
 
   .about-v3-official-grid {
-    grid-template-columns: repeat(2, minmax(0, 220px));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: min(360px, 100%);
+    margin: 0 auto;
+  }
+
+  .about-v3-official-grid .about-v3-card-media {
+    width: clamp(108px, 30vw, 124px);
+    max-width: clamp(108px, 30vw, 124px);
   }
 
   .about-v3-contact-entry {
@@ -1189,8 +1197,10 @@
   }
 
   .about-v3-official-grid {
-    grid-template-columns: repeat(2, minmax(0, clamp(108px, 30vw, 124px)));
-    gap: 36px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: min(360px, 100%);
+    margin: 0 auto;
   }
 
   .about-v3-contact {
@@ -1232,6 +1242,7 @@
   .about-v3-official-grid .about-v3-card {
     flex-direction: column;
     align-items: center;
+    gap: 8px;
     text-align: center;
   }
 
