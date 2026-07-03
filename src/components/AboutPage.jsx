@@ -29,20 +29,18 @@ const officialAccounts = [
 
 const AboutPage = () => {
     const [isJumpOpen, setIsJumpOpen] = useState(false);
-    const [isQrOpen, setIsQrOpen] = useState(false);
     const [copyFeedback, setCopyFeedback] = useState({ name: '', status: 'idle' });
     const copyFeedbackTimerRef = useRef(null);
-    const isModalOpen = isJumpOpen || isQrOpen;
     const portalRoot = typeof document === 'undefined' ? null : document.body;
 
     useEffect(() => {
-        if (!isModalOpen) return;
+        if (!isJumpOpen) return;
         const prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         return () => {
             document.body.style.overflow = prevOverflow;
         };
-    }, [isModalOpen]);
+    }, [isJumpOpen]);
 
     const handleConfirmJump = () => {
         window.open(officialCd.href, '_blank', 'noopener,noreferrer');
@@ -126,14 +124,6 @@ const AboutPage = () => {
                     </div>
                 </div>
             </div>
-            <button
-                type="button"
-                className="about-v3-contact-entry"
-                onClick={() => setIsQrOpen(true)}
-            >
-                <span>公众号</span>
-                <small>共享云音乐 / 民谣俱乐部</small>
-            </button>
         </section>
 
         <section className="about-v3-contact about-v3-contact-inline" aria-labelledby="about-v3-contact-title">
@@ -166,35 +156,6 @@ const AboutPage = () => {
                 ))}
             </div>
         </section>
-        {isQrOpen && portalRoot && createPortal((
-            <div className="about-qr-modal" onClick={() => setIsQrOpen(false)}>
-                <div className="about-qr-card" onClick={(event) => event.stopPropagation()}>
-                    <div className="about-qr-head">
-                        <h3>公众号</h3>
-                        <button type="button" onClick={() => setIsQrOpen(false)}>关闭</button>
-                    </div>
-                    <div className="about-qr-list">
-                        {officialAccounts.map((account) => (
-                            <div className="about-qr-item" key={account.title}>
-                                <img loading="lazy" src={account.image} alt={`${account.title}公众号二维码`} />
-                                <div>
-                                    <h4>{account.title}</h4>
-                                    <button
-                                        type="button"
-                                        className="about-v3-copy-name"
-                                        aria-label={`复制${account.title}名称`}
-                                        onClick={() => handleCopyAccountName(account.title)}
-                                        disabled={copyFeedback.name === account.title && copyFeedback.status === 'pending'}
-                                    >
-                                        {getCopyNameButtonText(account.title)}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        ), portalRoot)}
         {isJumpOpen && portalRoot && createPortal((
             <div className="about-jump-modal" onClick={() => setIsJumpOpen(false)}>
                 <div className="about-jump-card" onClick={(event) => event.stopPropagation()}>
