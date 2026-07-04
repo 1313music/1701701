@@ -35,6 +35,7 @@ const PAGE_META = Object.freeze({
   download: { changefreq: 'daily', priority: '0.9' },
   gallery: { changefreq: 'daily', priority: '0.9' },
   app: { changefreq: 'weekly', priority: '0.8' },
+  support: { changefreq: 'monthly', priority: '0.6' },
   about: { changefreq: 'weekly', priority: '0.7' }
 });
 
@@ -443,6 +444,9 @@ const getSitemapImagesForView = (view, manifestData) => {
 const buildSitemap = (lastmodByView, manifestData) => {
   const urls = PUBLIC_SEO_VIEWS.map((view) => {
     const meta = PAGE_META[view];
+    if (!meta) {
+      throw new Error(`Missing sitemap metadata for SEO view "${view}"`);
+    }
     const imageEntries = buildSitemapImageEntries(getSitemapImagesForView(view, manifestData));
     return `  <url>
     <loc>${escapeHtml(getCanonicalUrlForView(view))}</loc>
@@ -475,6 +479,7 @@ const main = async () => {
     download: toIsoDate(downloadManifest.updatedAt) || buildDate,
     gallery: buildDate,
     app: buildDate,
+    support: buildDate,
     about: buildDate
   };
   lastmodByView.library = latestIsoDate(
