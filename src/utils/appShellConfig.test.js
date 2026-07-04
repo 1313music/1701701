@@ -35,6 +35,11 @@ describe('appShellConfig', () => {
       search: ''
     })).toBe('archive');
     expect(getPathForView('archive')).toBe('/archive');
+    expect(resolveViewFromLocation({
+      pathname: '/support',
+      search: ''
+    })).toBe('support');
+    expect(getPathForView('support')).toBe('/support');
     expect(shouldRedirectDisabledDownloadPath({
       pathname: '/download/'
     })).toBe(true);

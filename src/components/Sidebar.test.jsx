@@ -78,6 +78,43 @@ describe('Sidebar', () => {
     expect(setView).toHaveBeenCalledWith('archive');
   });
 
+  it('routes support navigation clicks', () => {
+    const setView = vi.fn();
+    render(
+      <Sidebar
+        view="library"
+        setView={setView}
+        isSidebarOpen={false}
+        setIsSidebarOpen={vi.fn()}
+      />
+    );
+
+    const supportButtons = screen.getAllByRole('button', { name: '支持' });
+    expect(supportButtons).toHaveLength(2);
+
+    fireEvent.click(supportButtons[0]);
+    expect(setView).toHaveBeenCalledWith('support');
+  });
+
+  it('places support after about in both navigation layouts', () => {
+    render(
+      <Sidebar
+        view="library"
+        setView={vi.fn()}
+        isSidebarOpen={false}
+        setIsSidebarOpen={vi.fn()}
+      />
+    );
+
+    const mobileLabels = Array.from(document.querySelectorAll('.mobile-menu-content .nav-item'))
+      .map((item) => item.getAttribute('aria-label'));
+    const desktopLabels = Array.from(document.querySelectorAll('.sidebar .nav-group .nav-item'))
+      .map((item) => item.getAttribute('aria-label'));
+
+    expect(mobileLabels.indexOf('支持')).toBe(mobileLabels.indexOf('关于') + 1);
+    expect(desktopLabels.indexOf('支持')).toBe(desktopLabels.indexOf('关于') + 1);
+  });
+
   it('shows announcement trigger in the mobile topbar slot', () => {
     const handleOpenAnnouncement = vi.fn();
 

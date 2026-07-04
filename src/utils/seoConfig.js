@@ -12,6 +12,7 @@ export const SEO_VIEW_PATHS = Object.freeze({
   download: '/download/',
   gallery: '/gallery/',
   app: '/app/',
+  support: '/support/',
   about: '/about/'
 });
 
@@ -23,6 +24,7 @@ export const PUBLIC_SEO_VIEWS = Object.freeze([
   'download',
   'gallery',
   'app',
+  'support',
   'about'
 ].filter((view) => (
   (view !== 'download' || SHOW_DOWNLOAD_PAGE)
@@ -164,6 +166,13 @@ export const SEO_MAP = Object.freeze({
       'iOS PWA',
       '添加到主屏幕'
     ]
+  },
+  support: {
+    title: '支持本站 | 1701701.xyz',
+    heading: '逛累了？来跟站长碰个杯',
+    description: '1701701.xyz 的支持入口，可以微信赞赏请站长喝杯冰啤酒，也可以扫码看广告免费支持。',
+    pageType: 'AboutPage',
+    keywords: ['支持本站', '1701701.xyz', '李志音乐站']
   },
   about: {
     title: '关于本站 | 1701701.xyz',

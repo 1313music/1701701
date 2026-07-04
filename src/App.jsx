@@ -45,6 +45,7 @@ const NanjingLizhiArchivePage = lazy(() => import('./components/NanjingLizhiArch
 const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const AppPage = lazy(() => import('./components/AppPage.jsx'));
+const SupportPage = lazy(() => import('./components/SupportPage.jsx'));
 const AdminPage = lazy(() => import('./components/AdminPage.jsx'));
 const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
 
@@ -627,6 +628,13 @@ const App = () => {
                 <div className="view-panel view-panel-about">
                   <Suspense fallback={pageLoadingFallback}>
                     <AboutPage />
+                  </Suspense>
+                </div>
+              )}
+              {view === 'support' && (
+                <div className="view-panel view-panel-support">
+                  <Suspense fallback={pageLoadingFallback}>
+                    <SupportPage />
                   </Suspense>
                 </div>
               )}

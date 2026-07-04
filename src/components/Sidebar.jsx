@@ -12,6 +12,7 @@ import {
     PanelLeft,
     Smartphone,
     Info,
+    ThumbsUp,
     MessageSquareMore,
     Archive
 } from 'lucide-react';
@@ -177,6 +178,12 @@ const Sidebar = ({
                         active={view === 'about'}
                         onClick={() => handleNavClick('about')}
                     />
+                    <NavItem
+                        icon={<ThumbsUp size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="支持"
+                        active={view === 'support'}
+                        onClick={() => handleNavClick('support')}
+                    />
                     {onThemeToggle && (
                         <button
                             type="button"
@@ -287,6 +294,12 @@ const Sidebar = ({
                         label="关于"
                         active={view === 'about'}
                         onClick={() => handleNavClick('about')}
+                    />
+                    <NavItem
+                        icon={<ThumbsUp size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                        label="支持"
+                        active={view === 'support'}
+                        onClick={() => handleNavClick('support')}
                     />
                     {onThemeToggle && (
                         <button

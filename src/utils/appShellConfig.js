@@ -9,6 +9,7 @@ export const VIEW_PATHS = Object.freeze({
   download: '/download',
   gallery: '/gallery',
   app: '/app',
+  support: '/support',
   about: '/about',
   admin: '/myadmin',
   comment: '/comment'
@@ -22,6 +23,7 @@ export const VIEW_QUERY_KEYS = Object.freeze({
   download: [],
   gallery: [],
   app: [],
+  support: [],
   about: [],
   admin: [],
   comment: []
