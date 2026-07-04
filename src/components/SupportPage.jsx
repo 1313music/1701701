@@ -4,37 +4,35 @@ import '../styles/support.css';
 
 const supportOptions = [
     {
-        title: '请站长喝杯冰啤酒',
+        title: '请喝杯冰啤酒',
         icon: '🍺',
-        label: '随心请客',
+        label: '微信赞赏码',
         description: [
-            '吨吨吨！',
-            '碰个杯，全凭缘分和心情。',
-            '顺手给站长满上一罐冰啤酒，快乐加倍。'
+            '金额自由，全凭心意。',
+            '不用留言，感谢支持。'
         ],
-        action: '扫码碰个杯',
+        action: '微信赞赏',
         alt: '微信赞赏码',
         image: 'https://p1.music.126.net/ifGbpzmPVmB_S5ikLD9GZA==/109951173466867867.jpg'
     },
     {
-        title: '让广告商来买单',
-        icon: '🍾',
+        title: '免费点个赞',
+        icon: '👍',
         label: '免费支持',
         description: [
-            '薅羊毛！',
-            '动动手指戳一下看个短片。',
-            '让广告商替你把这杯酒钱付了，双赢。'
+            '顺手帮忙看个短视频广告。',
+            '无需花费金钱，同样是很大的支持。'
         ],
-        action: '扫码薅羊毛',
+        action: '观看广告',
         alt: '免费支持二维码',
         image: 'https://p1.music.126.net/2okpfR3EE8OJdP9MKcwuVg==/109951173468389389.jpg'
     }
 ];
 
 const supportNotes = [
-    '全场免单',
-    '随缘碰杯',
-    '开心就好'
+    '独立维护',
+    '完全免费',
+    '随缘支持'
 ];
 
 const SupportPage = () => (
@@ -45,12 +43,9 @@ const SupportPage = () => (
                     <ThumbsUp size={18} strokeWidth={2.5} absoluteStrokeWidth />
                     <span>支持本站</span>
                 </div>
-                <h1 id="support-title" aria-label="逛累了？来跟站长碰个杯 🥂">
-                    <span>逛累了？来跟站长碰个杯</span>
-                    <span className="support-title-emoji" aria-hidden="true">🥂</span>
-                </h1>
+                <h1 id="support-title">支持 1701701.xyz</h1>
                 <p>
-                    这里全场免费，随时欢迎来打个招呼。如果刚好心情不错，不如一起隔空干一杯？
+                    本站内容完全免费开放。如果你刚好心情不错，欢迎顺手请站长喝杯饮料。
                 </p>
                 <ul className="support-notes">
                     {supportNotes.map((note) => (

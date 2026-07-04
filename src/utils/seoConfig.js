@@ -169,8 +169,8 @@ export const SEO_MAP = Object.freeze({
   },
   support: {
     title: '支持本站 | 1701701.xyz',
-    heading: '逛累了？来跟站长碰个杯',
-    description: '1701701.xyz 的支持入口，可以微信赞赏请站长喝杯冰啤酒，也可以扫码看广告免费支持。',
+    heading: '支持 1701701.xyz',
+    description: '1701701.xyz 的支持入口，本站内容完全免费开放，可以通过微信赞赏或观看广告随缘支持。',
     pageType: 'AboutPage',
     keywords: ['支持本站', '1701701.xyz', '李志音乐站']
   },
