@@ -680,6 +680,12 @@
   transform: scale(1.05);
 }
 
+.player-controls .skip-back-btn:active,
+.player-controls .skip-forward-btn:active,
+.player-controls .main-play-btn:active {
+  transform: scale(0.94);
+}
+
 [data-theme='dark'] .main-play-btn,
 [data-theme='dark'] .mode-btn,
 [data-theme='dark'] .skip-back-btn,
@@ -1038,7 +1044,7 @@
 
   .main-play-btn:active,
   .player-controls .skip-forward-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.92) !important;
   }
 
   .player-controls .main-play-btn .apple-player-icon {

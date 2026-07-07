@@ -568,7 +568,7 @@ const LyricsOverlay = ({
                                         </button>
                                         <button
                                             type="button"
-                                            className="icon-btn"
+                                            className="icon-btn overlay-skip-btn"
                                             onClick={handlePrev}
                                             aria-label="上一首"
                                         >
@@ -584,7 +584,7 @@ const LyricsOverlay = ({
                                         </button>
                                         <button
                                             type="button"
-                                            className="icon-btn"
+                                            className="icon-btn overlay-skip-btn"
                                             onClick={handleNext}
                                             aria-label="下一首"
                                         >
