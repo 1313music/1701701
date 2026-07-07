@@ -14,7 +14,8 @@ import {
 } from '../vendors/walineDomAdapter.js';
 import '../styles/comments.css';
 
-const COMMENT_SORT_BY = 'insertedAt_asc';
+const COMMENT_DEFAULT_SORTING = 'latest';
+const COMMENT_SORT_BY = 'insertedAt_desc';
 const createPrimaryDebugState = () => ({
   loading: false,
   error: '',
@@ -162,8 +163,13 @@ const CommentSection = ({
       lang: 'zh-CN',
       locale: {
         comment: '评论',
-        sofa: ''
+        sofa: '',
+        oldest: '按正序',
+        latest: '按倒序'
       },
+      commentSorting: COMMENT_DEFAULT_SORTING,
+      imageUploader: false,
+      search: false,
       noCopyright: true,
       noRss: true,
       emoji: [

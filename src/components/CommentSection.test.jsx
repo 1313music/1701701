@@ -85,6 +85,16 @@ describe('CommentSection', () => {
       expect(init).toHaveBeenCalledTimes(1);
     });
 
+    expect(init).toHaveBeenCalledWith(expect.objectContaining({
+      commentSorting: 'latest',
+      imageUploader: false,
+      search: false,
+      locale: expect.objectContaining({
+        oldest: '按正序',
+        latest: '按倒序'
+      })
+    }));
+
     const nickInput = container.querySelector('input[name="nick"]');
     const emailInput = container.querySelector('input[name="mail"]');
     const textarea = container.querySelector('textarea');
