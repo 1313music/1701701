@@ -8,18 +8,17 @@ describe('SupportPage', () => {
   it('renders the standalone support QR page', () => {
     render(<SupportPage />);
 
-    expect(screen.getByRole('heading', { name: '支持 1701701.xyz', level: 1 })).toBeInTheDocument();
-    expect(screen.getByText('独立维护')).toBeInTheDocument();
-    expect(screen.getByText('完全免费')).toBeInTheDocument();
-    expect(screen.getByText('随缘支持')).toBeInTheDocument();
-    expect(screen.getByText('免费支持')).toBeInTheDocument();
-    expect(screen.getByText('微信赞赏码')).toBeInTheDocument();
-    expect(screen.getByText('请喝杯冰啤酒')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '1701701.xyz', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText('一方音乐自留地 · 你的每一次停留，皆是动力。')).toBeInTheDocument();
+    expect(screen.getByText('因乐相逢')).toBeInTheDocument();
+    expect(screen.getByText('自由分享')).toBeInTheDocument();
+    expect(screen.getByText('行路有光')).toBeInTheDocument();
+    expect(screen.getByText('赞赏支持')).toBeInTheDocument();
     expect(screen.getByText('金额自由，全凭心意。')).toBeInTheDocument();
-    expect(screen.getByText('不用留言，感谢支持。')).toBeInTheDocument();
-    expect(screen.getByText('免费点个赞')).toBeInTheDocument();
-    expect(screen.getByText('顺手帮忙看个短视频广告。')).toBeInTheDocument();
-    expect(screen.getByText('无需花费金钱，同样是很大的支持。')).toBeInTheDocument();
+    expect(screen.getByText('静默相伴，已是共鸣。')).toBeInTheDocument();
+    expect(screen.getByText('免费支持')).toBeInTheDocument();
+    expect(screen.getByText('顺手观看一段短视频。')).toBeInTheDocument();
+    expect(screen.getByText('无需破费，亦是微小而重要的微光。')).toBeInTheDocument();
     expect(screen.getByText('微信赞赏')).toBeInTheDocument();
     expect(screen.getByText('观看广告')).toBeInTheDocument();
     expect(screen.getByAltText('微信赞赏码')).toHaveAttribute(

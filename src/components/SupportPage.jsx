@@ -4,24 +4,22 @@ import '../styles/support.css';
 
 const supportOptions = [
     {
-        title: '请喝杯冰啤酒',
+        title: '赞赏支持',
         icon: '🍺',
-        label: '微信赞赏码',
         description: [
             '金额自由，全凭心意。',
-            '不用留言，感谢支持。'
+            '静默相伴，已是共鸣。'
         ],
         action: '微信赞赏',
         alt: '微信赞赏码',
         image: 'https://p1.music.126.net/ifGbpzmPVmB_S5ikLD9GZA==/109951173466867867.jpg'
     },
     {
-        title: '免费点个赞',
-        icon: '👍',
-        label: '免费支持',
+        title: '免费支持',
+        icon: '🎬',
         description: [
-            '顺手帮忙看个短视频广告。',
-            '无需花费金钱，同样是很大的支持。'
+            '顺手观看一段短视频。',
+            '无需破费，亦是微小而重要的微光。'
         ],
         action: '观看广告',
         alt: '免费支持二维码',
@@ -30,9 +28,9 @@ const supportOptions = [
 ];
 
 const supportNotes = [
-    '独立维护',
-    '完全免费',
-    '随缘支持'
+    '因乐相逢',
+    '自由分享',
+    '行路有光'
 ];
 
 const SupportPage = () => (
@@ -40,12 +38,12 @@ const SupportPage = () => (
         <section className="support-shell" aria-labelledby="support-title">
             <header className="support-intro">
                 <div className="support-kicker">
-                    <ThumbsUp size={18} strokeWidth={2.5} absoluteStrokeWidth />
+                    <ThumbsUp size={22} strokeWidth={2.5} absoluteStrokeWidth />
                     <span>支持本站</span>
                 </div>
-                <h1 id="support-title">支持 1701701.xyz</h1>
+                <h1 id="support-title">1701701.xyz</h1>
                 <p>
-                    本站内容完全免费开放。如果你刚好心情不错，欢迎顺手请站长喝杯饮料。
+                    一方音乐自留地 · 你的每一次停留，皆是动力。
                 </p>
                 <ul className="support-notes">
                     {supportNotes.map((note) => (
@@ -57,7 +55,6 @@ const SupportPage = () => (
                 {supportOptions.map((option) => (
                     <div className="support-qr" key={option.title}>
                         <div className="support-card-head">
-                            <span className="support-qr-label">{option.label}</span>
                             <h2>
                                 <span>{option.title}</span>
                                 <span className="support-title-emoji" aria-hidden="true">{option.icon}</span>
