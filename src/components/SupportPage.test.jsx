@@ -17,8 +17,8 @@ describe('SupportPage', () => {
     expect(screen.getByText('金额自由，全凭心意。')).toBeInTheDocument();
     expect(screen.getByText('静默相伴，已是共鸣。')).toBeInTheDocument();
     expect(screen.getByText('免费支持')).toBeInTheDocument();
-    expect(screen.getByText('顺手观看一段短视频。')).toBeInTheDocument();
-    expect(screen.getByText('无需破费，亦是微小而重要的微光。')).toBeInTheDocument();
+    expect(screen.getByText('顺手消耗一波广告商的预算。')).toBeInTheDocument();
+    expect(screen.getByText('不花一分钱，也能让服务器电力满满。')).toBeInTheDocument();
     expect(screen.getByText('微信赞赏')).toBeInTheDocument();
     expect(screen.getByText('观看广告')).toBeInTheDocument();
     expect(screen.getByAltText('微信赞赏码')).toHaveAttribute(
