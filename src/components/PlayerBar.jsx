@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { Play, Pause, ListMusic, Share2, Heart, MessageSquareMore, Volume1, Volume2, VolumeX } from 'lucide-react';
-import { Maximize2Icon } from './icons/AppIcons';
+import { ListMusic, Share2, Heart, MessageSquareMore, Volume1, Volume2, VolumeX } from 'lucide-react';
+import { ApplePauseIcon, ApplePlayIcon, AppleSkipIcon, Maximize2Icon } from './icons/AppIcons';
 import { formatTime } from '../utils/formatUtils';
 import SleepTimerControl from './SleepTimerControl.jsx';
 
@@ -339,8 +339,7 @@ const PlayerBar = ({
                             onClick={handlePrev}
                             aria-label="上一首"
                         >
-                            <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
-                            <Play size={20} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
+                            <AppleSkipIcon direction="prev" />
                         </button>
                         <button
                             type="button"
@@ -349,8 +348,8 @@ const PlayerBar = ({
                             aria-label={isPlaying ? '暂停播放' : '播放'}
                         >
                             {isPlaying
-                                ? <Pause size={32} fill="currentColor" />
-                                : <Play size={32} fill="currentColor" style={{ marginLeft: '4px' }} />}
+                                ? <ApplePauseIcon />
+                                : <ApplePlayIcon />}
                         </button>
                         <button
                             type="button"
@@ -358,8 +357,7 @@ const PlayerBar = ({
                             onClick={handleNext}
                             aria-label="下一首"
                         >
-                            <Play size={20} fill="currentColor" style={{ marginRight: '-8px' }} />
-                            <Play size={20} fill="currentColor" />
+                            <AppleSkipIcon />
                         </button>
                         <button
                             type="button"

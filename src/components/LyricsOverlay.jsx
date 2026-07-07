@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Pause, ListMusic, Heart, Share2, ChevronDown, MessageSquareMore, X } from 'lucide-react';
+import { ListMusic, Heart, Share2, ChevronDown, MessageSquareMore, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../styles/lyrics-overlay.css';
 import { formatTime } from '../utils/formatUtils';
@@ -10,6 +10,7 @@ import { useLyricsOverlayComments } from '../hooks/useLyricsOverlayComments.js';
 import { useLyricsOverlayProgress } from '../hooks/useLyricsOverlayProgress.js';
 import { useLyricsOverlayViewport } from '../hooks/useLyricsOverlayViewport.js';
 import SleepTimerControl from './SleepTimerControl.jsx';
+import { ApplePauseIcon, ApplePlayIcon, AppleSkipIcon } from './icons/AppIcons.jsx';
 
 const SPECTRUM_BARS = [
     34, 62, 42, 78, 52, 90, 48, 70, 38, 84, 58, 96,
@@ -453,15 +454,13 @@ const LyricsOverlay = ({
                                         {getPlayModeIcon(24)}
                                     </button>
                                     <button className="mobile-control-btn" onClick={handlePrev}>
-                                        <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
-                                        <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
+                                        <AppleSkipIcon direction="prev" />
                                     </button>
                                     <button className="mobile-play-btn" onClick={handlePlayPause}>
-                                        {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" style={{ marginLeft: '4px' }} />}
+                                        {isPlaying ? <ApplePauseIcon /> : <ApplePlayIcon />}
                                     </button>
                                     <button className="mobile-control-btn" onClick={handleNext}>
-                                        <Play size={24} fill="currentColor" style={{ marginRight: '-8px' }} />
-                                        <Play size={24} fill="currentColor" />
+                                        <AppleSkipIcon />
                                     </button>
                                     <button className="mobile-playlist-btn" onClick={() => setIsAlbumListOpen(true)}>
                                         <ListMusic size={24} strokeWidth={2.4} absoluteStrokeWidth />
@@ -573,8 +572,7 @@ const LyricsOverlay = ({
                                             onClick={handlePrev}
                                             aria-label="上一首"
                                         >
-                                            <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)', marginRight: '-8px' }} />
-                                            <Play size={24} fill="currentColor" style={{ transform: 'rotate(180deg)' }} />
+                                            <AppleSkipIcon direction="prev" />
                                         </button>
                                         <button
                                             type="button"
@@ -582,7 +580,7 @@ const LyricsOverlay = ({
                                             onClick={handlePlayPause}
                                             aria-label={isPlaying ? '暂停' : '播放'}
                                         >
-                                            {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: '6px' }} />}
+                                            {isPlaying ? <ApplePauseIcon /> : <ApplePlayIcon />}
                                         </button>
                                         <button
                                             type="button"
@@ -590,8 +588,7 @@ const LyricsOverlay = ({
                                             onClick={handleNext}
                                             aria-label="下一首"
                                         >
-                                            <Play size={24} fill="currentColor" style={{ marginRight: '-8px' }} />
-                                            <Play size={24} fill="currentColor" />
+                                            <AppleSkipIcon />
                                         </button>
                                         <button
                                             type="button"

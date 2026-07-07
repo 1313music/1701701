@@ -135,6 +135,14 @@
   transform: scale(0.95);
 }
 
+.lyrics-overlay .apple-player-icon {
+  display: block;
+  fill: currentColor;
+  color: currentColor;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
 .overlay-content {
   flex: 1;
   display: flex;
@@ -447,6 +455,16 @@
   outline: none;
   border-radius: 999px;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.44);
+}
+
+.overlay-buttons .icon-btn .apple-player-icon {
+  width: 46px;
+  height: 40px;
+}
+
+.overlay-play-btn .apple-player-icon {
+  width: 56px;
+  height: 49px;
 }
 
 .lyrics-view {
@@ -1922,6 +1940,17 @@
 
   .mobile-play-btn:active {
     transform: scale(0.92);
+  }
+
+  .mobile-control-btn .apple-player-icon,
+  .mobile-play-btn .apple-player-icon {
+    width: 42px;
+    height: 37px;
+  }
+
+  .mobile-play-btn .apple-player-icon {
+    width: 48px;
+    height: 42px;
   }
 
   .mobile-playlist-btn {
