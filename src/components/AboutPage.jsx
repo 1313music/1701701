@@ -2,18 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import '../styles/about.css';
 import { copyTextToClipboard } from '../utils/appDomUtils.js';
+import { SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
 
 const officialCd = {
-    title: '官方专辑',
-    subtitle: '购买正版',
-    image: 'https://p1.music.126.net/e6J7eFqsAwVFFuctHbXEgg==/109951167945120210.jpg',
     href: 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97'
-};
-
-const supportQr = {
-    title: '支持本站',
-    subtitle: '扫码支持',
-    image: 'https://p1.music.126.net/2okpfR3EE8OJdP9MKcwuVg==/109951173468389389.jpg'
 };
 
 const officialAccounts = [
@@ -90,40 +82,28 @@ const AboutPage = () => {
             <p>李志，独立音乐人。偶像派歌手。</p>
             <p>本站收录了李志先生的音乐作品，纪录片《我们的叁叁肆》、《逼哥夜话》系列以及跨年演唱会、巡演、音乐节等现场视频。</p>
             <p>所有资源来源于互联网，版权属于李志先生。仅限个人学习、研究、欣赏之用，完全免费，禁止用于商业目的。</p>
-        </section>
-
-        <section className="about-v3-archive" aria-label="旧官网档案馆">
-            <a className="about-v3-archive-entry" href="/archive">
-                <span>旧官网档案馆</span>
-                <small>nanjinglizhi.cn 旧官网存档</small>
-            </a>
-        </section>
-
-        <section className="about-v3-section about-v3-official-section">
-            <div className="about-v3-grid about-v3-official-grid">
+            <p className="about-v3-purchase-note">
+                <span>支持正版：</span>
                 <button
                     type="button"
-                    className="about-v3-card about-v3-card--cta"
+                    className="about-v3-purchase-link"
                     onClick={() => setIsJumpOpen(true)}
                 >
-                    <div className="about-v3-card-media">
-                        <img loading="lazy" src={officialCd.image} alt={officialCd.title} />
-                    </div>
-                    <div className="about-v3-card-body">
-                        <h3>{officialCd.title}</h3>
-                        <span>购买正版</span>
-                    </div>
+                    官方专辑购买渠道
                 </button>
-                <div className="about-v3-card">
-                    <div className="about-v3-card-media">
-                        <img loading="lazy" src={supportQr.image} alt={`${supportQr.title}二维码`} />
-                    </div>
-                    <div className="about-v3-card-body">
-                        <h3>{supportQr.title}</h3>
-                        <span>{supportQr.subtitle}</span>
-                    </div>
-                </div>
-            </div>
+            </p>
+            <p className="about-v3-related-note">
+                <span>相关资料：</span>
+                <span className="about-v3-related-links">
+                    {SHOW_RESOURCES_PAGE && (
+                        <>
+                            <a className="about-v3-related-link" href="/resources">文档</a>
+                            <span className="about-v3-related-separator" aria-hidden="true">/</span>
+                        </>
+                    )}
+                    <a className="about-v3-related-link" href="/archive">旧官网档案馆</a>
+                </span>
+            </p>
         </section>
 
         <section className="about-v3-contact about-v3-contact-inline" aria-labelledby="about-v3-contact-title">

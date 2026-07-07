@@ -17,6 +17,15 @@ describe('AboutPage', () => {
   it('shows official account QR codes inline without a modal entry', () => {
     render(<AboutPage />);
 
+    expect(screen.getByText('支持正版：')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '官方专辑购买渠道' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '官方专辑' })).not.toBeInTheDocument();
+    expect(screen.getByText('相关资料：')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '文档' })).toHaveAttribute('href', '/resources');
+    expect(screen.getByRole('link', { name: '旧官网档案馆' })).toHaveAttribute('href', '/archive');
+    expect(screen.queryByText('支持本站')).not.toBeInTheDocument();
+    expect(screen.queryByText('扫码支持')).not.toBeInTheDocument();
+    expect(screen.queryByAltText('支持本站二维码')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '公众号' })).toBeInTheDocument();
     expect(screen.getByAltText('共享云音乐公众号二维码')).toHaveAttribute(
       'src',
@@ -28,6 +37,15 @@ describe('AboutPage', () => {
     );
     expect(screen.queryByRole('button', { name: /公众号.*共享云音乐/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '关闭' })).not.toBeInTheDocument();
+  });
+
+  it('opens the external purchase confirmation from the low-key official album link', () => {
+    render(<AboutPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: '官方专辑购买渠道' }));
+
+    expect(screen.getByRole('heading', { name: '即将前往 tower.jp' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '确认跳转' })).toBeInTheDocument();
   });
 
   it('copies an official account name from the inline QR section', async () => {
