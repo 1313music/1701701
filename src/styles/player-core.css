@@ -2090,6 +2090,10 @@
     line-height: 1.55;
   }
 
+  .album-inline-profile-toggle {
+    font-size: 9px;
+  }
+
   .album-inline-profile + .album-inline-hero-actions {
     margin-top: 11px;
   }
@@ -2119,6 +2123,11 @@
     max-width: 224px;
   }
 
+  .album-inline-hero-actions.no-qr.has-purchase {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 336px;
+  }
+
   .album-inline-hero-actions.has-qr {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     max-width: 100%;
@@ -2143,6 +2152,7 @@
   .album-inline-fav-all-btn,
   .album-inline-secondary-btn,
   .album-inline-clear-favorites-btn,
+  .album-inline-purchase-btn,
   .album-inline-qr-btn {
     width: 100%;
     min-width: 0;
@@ -2162,6 +2172,7 @@
   .album-inline-fav-all-btn,
   .album-inline-secondary-btn,
   .album-inline-clear-favorites-btn,
+  .album-inline-purchase-btn,
   .album-inline-qr-btn {
     overflow: visible;
   }
@@ -2191,6 +2202,11 @@
 
   .album-inline-hero-actions.no-qr .album-inline-fav-all-btn {
     grid-column: 2;
+    grid-row: 1;
+  }
+
+  .album-inline-hero-actions.no-qr .album-inline-purchase-btn {
+    grid-column: 3;
     grid-row: 1;
   }
 
@@ -2232,6 +2248,7 @@
   .album-inline-fav-all-btn svg,
   .album-inline-secondary-btn svg,
   .album-inline-clear-favorites-btn svg,
+  .album-inline-purchase-btn svg,
   .album-inline-qr-btn svg {
     width: 14px;
     height: 14px;

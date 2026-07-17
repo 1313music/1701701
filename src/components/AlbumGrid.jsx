@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Heart, ListMusic, Play, QrCode, RefreshCw, Shuffle, Trash2, X } from 'lucide-react';
+import { ChevronDown, Heart, ListMusic, Play, QrCode, RefreshCw, ShoppingBag, Shuffle, Trash2, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { formatAlbumReleaseDate, getAlbumProfile } from '../data/albumProfiles.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
+import ExternalJumpDialog from './ExternalJumpDialog.jsx';
 
 const PANEL_EXIT_MS = 280;
 const PANEL_MAX_WIDTH = 1180;
@@ -15,6 +16,91 @@ const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
 const INLINE_SONG_SCROLL_THRESHOLD = 12;
 const DEFAULT_INLINE_SONG_ROW_HEIGHT = 52;
+const PROFILE_COLLAPSED_LINES = 5;
+const ALBUM_PURCHASE_URL = 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97';
+const PURCHASABLE_ALBUM_IDS = new Set(['volume1', 'volume2', 'volume3', 'tokyo-live']);
+
+const AlbumReleaseDate = ({ value }) => {
+    const formattedDate = formatAlbumReleaseDate(value);
+    const releaseParts = formattedDate.split(/\s+\/\s+/);
+
+    if (releaseParts.length < 2) {
+        return <p className="album-inline-release-date">{formattedDate} 发行</p>;
+    }
+
+    return (
+        <p className="album-inline-release-date">
+            {releaseParts[0]} / <br />
+            {releaseParts.slice(1).join(' / ')} 发行
+        </p>
+    );
+};
+
+const AlbumProfileDescription = ({ description }) => {
+    const copyRef = useRef(null);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isCollapsible, setIsCollapsible] = useState(false);
+
+    const measureDescription = useCallback(() => {
+        const node = copyRef.current;
+        if (!node || typeof window === 'undefined' || isExpanded) return;
+
+        const style = window.getComputedStyle(node);
+        const fontSize = parseFloat(style.fontSize) || 12;
+        const parsedLineHeight = parseFloat(style.lineHeight);
+        const lineHeight = Number.isFinite(parsedLineHeight) && parsedLineHeight >= fontSize
+            ? parsedLineHeight
+            : fontSize * 1.62;
+        const collapsedHeight = lineHeight * PROFILE_COLLAPSED_LINES;
+        const nextIsCollapsible = node.scrollHeight > collapsedHeight + 1;
+
+        setIsCollapsible((previous) => (
+            previous === nextIsCollapsible ? previous : nextIsCollapsible
+        ));
+    }, [isExpanded]);
+
+    useLayoutEffect(() => {
+        measureDescription();
+
+        const node = copyRef.current;
+        if (!node || typeof ResizeObserver === 'undefined') return undefined;
+
+        const observer = new ResizeObserver(measureDescription);
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [description, measureDescription]);
+
+    return (
+        <div className={`album-inline-profile-description ${isCollapsible ? 'is-collapsible' : ''} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`}>
+            <p
+                ref={copyRef}
+                className={`album-inline-profile-copy ${isExpanded ? 'is-expanded' : 'is-clamped'}`}
+            >
+                {description}
+            </p>
+            {isCollapsible && (
+                <button
+                    type="button"
+                    className="album-inline-profile-toggle"
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? '折叠专辑介绍' : '显示完整介绍'}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        setIsExpanded((previous) => !previous);
+                    }}
+                >
+                    {isExpanded ? '收起' : '展开'}
+                    <ChevronDown
+                        className="album-inline-profile-toggle-icon"
+                        size={13}
+                        strokeWidth={2.2}
+                        aria-hidden="true"
+                    />
+                </button>
+            )}
+        </div>
+    );
+};
 
 const getNodeWidth = (node) => {
     if (!node) return 0;
@@ -209,6 +295,7 @@ const AlbumGrid = ({
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
+    const [purchasePrompt, setPurchasePrompt] = useState(null);
     const [panelCoverAtmosphere, setPanelCoverAtmosphere] = useState({ coverSrc: '', palette: null });
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
@@ -425,6 +512,9 @@ const AlbumGrid = ({
     const panelAlbumMiniProgram = getAlbumMiniProgram(panelAlbum?.id);
     const panelAlbumProfile = getAlbumProfile(panelAlbum);
     const panelProfileDescription = panelAlbumProfile?.description || '';
+    const panelAlbumPurchaseUrl = PURCHASABLE_ALBUM_IDS.has(panelAlbum?.id)
+        ? ALBUM_PURCHASE_URL
+        : '';
     const panelCoverSrc = panelAlbum?.cover || '';
     const panelCoverPalette = panelCoverAtmosphere.coverSrc === panelCoverSrc
         ? panelCoverAtmosphere.palette
@@ -576,9 +666,7 @@ const AlbumGrid = ({
                                     {(panelAlbumProfile.releaseDate || panelAlbumProfile.sourceName) && (
                                         <div className="album-inline-profile-meta">
                                             {panelAlbumProfile.releaseDate && (
-                                                <p className="album-inline-release-date">
-                                                    {formatAlbumReleaseDate(panelAlbumProfile.releaseDate)} 发行
-                                                </p>
+                                                <AlbumReleaseDate value={panelAlbumProfile.releaseDate} />
                                             )}
                                             {panelAlbumProfile.sourceUrl && (
                                                 <a
@@ -599,13 +687,14 @@ const AlbumGrid = ({
                                         </div>
                                     )}
                                     {panelProfileDescription && (
-                                        <p className="album-inline-profile-copy">
-                                            {panelProfileDescription}
-                                        </p>
+                                        <AlbumProfileDescription
+                                            key={panelAlbum.id}
+                                            description={panelProfileDescription}
+                                        />
                                     )}
                                 </section>
                             )}
-                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''}`}>
+                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${panelAlbumPurchaseUrl ? 'has-purchase' : ''} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''}`}>
                                 <button
                                     type="button"
                                     onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])}
@@ -687,6 +776,21 @@ const AlbumGrid = ({
                                             aria-hidden="true"
                                         />
                                         {isPanelAlbumFullyFavorited ? '取消收藏' : '收藏全部'}
+                                    </button>
+                                )}
+                                {panelAlbumPurchaseUrl && (
+                                    <button
+                                        type="button"
+                                        className="album-inline-purchase-btn"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            setPurchasePrompt({
+                                                url: panelAlbumPurchaseUrl
+                                            });
+                                        }}
+                                    >
+                                        <ShoppingBag size={17} strokeWidth={2.2} aria-hidden="true" />
+                                        购买专辑
                                     </button>
                                 )}
                                 {panelAlbumMiniProgram && (
@@ -845,6 +949,12 @@ const AlbumGrid = ({
                 {gridItems}
             </div>
             {mobileQrDialog}
+            <ExternalJumpDialog
+                isOpen={Boolean(purchasePrompt)}
+                href={purchasePrompt?.url || ''}
+                host="tower.jp"
+                onClose={() => setPurchasePrompt(null)}
+            />
         </>
     );
 };

@@ -219,6 +219,143 @@ describe('AlbumGrid inline album panel', () => {
     expect(screen.getByRole('button', { name: '收藏全部' })).toBeInTheDocument();
   });
 
+  it('keeps paired release dates on two stable lines without splitting 发行', async () => {
+    const album = {
+      ...createLongAlbum(24),
+      id: 'volume2',
+      name: 'Best Selection Songs 2004-2018 (Volume.2) Ballads（叙事歌）'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    const releaseDate = await waitFor(() => document.body.querySelector('.album-inline-release-date'));
+
+    expect(releaseDate).toHaveTextContent('2020.05.18（LP） / 2020.05.27（CD） 发行');
+    expect(releaseDate.querySelectorAll('br')).toHaveLength(1);
+  });
+
+  it.each(['volume1', 'volume2', 'volume3', 'tokyo-live'])(
+    'shows the existing external-site warning before purchasing %s',
+    async (albumId) => {
+      const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+      const album = {
+        ...createLongAlbum(10),
+        id: albumId,
+        name: `可购买专辑 ${albumId}`
+      };
+      render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+      const purchaseButton = await screen.findByRole('button', { name: '购买专辑' });
+
+      fireEvent.click(purchaseButton);
+
+      expect(screen.getByRole('dialog', { name: '即将前往 tower.jp' })).toBeInTheDocument();
+      expect(
+        screen.getByText('该站点在国内网络可能无法正常访问，建议使用科学上网。是否继续？')
+      ).toBeInTheDocument();
+      expect(document.body.querySelector('.album-inline-hero-actions')).toHaveClass('has-purchase');
+
+      fireEvent.click(screen.getByRole('button', { name: '确认跳转' }));
+
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97',
+        '_blank',
+        'noopener,noreferrer'
+      );
+      expect(screen.queryByRole('dialog', { name: '即将前往 tower.jp' })).not.toBeInTheDocument();
+    }
+  );
+
+  it('does not show the purchase link for other albums', async () => {
+    const album = {
+      ...createLongAlbum(8),
+      id: '1701',
+      name: '1701'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('1701专辑资料')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: '购买专辑' })).not.toBeInTheDocument();
+  });
+
+  it('collapses descriptions beyond five rendered lines and toggles the full copy', async () => {
+    let profileResizeCallback;
+    globalThis.ResizeObserver = class {
+      constructor(callback) {
+        this.callback = callback;
+      }
+
+      observe(node) {
+        if (node.classList?.contains('album-inline-profile-copy')) {
+          profileResizeCallback = this.callback;
+        }
+      }
+
+      disconnect() {}
+    };
+    vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(function scrollHeight() {
+      if (!this.classList?.contains('album-inline-profile-copy')) return 0;
+      return this.classList.contains('is-expanded') ? 20 : 120;
+    });
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((node) => (
+      node.classList?.contains('album-inline-profile-copy')
+        ? { fontSize: '12px', lineHeight: '20px' }
+        : originalGetComputedStyle(node)
+    ));
+    const album = {
+      ...createLongAlbum(24),
+      id: 'volume2',
+      name: 'Best Selection Songs Volume.2'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    const expandButton = await screen.findByRole('button', { name: '显示完整介绍' });
+    const description = document.body.querySelector('.album-inline-profile-copy');
+
+    expect(description).toHaveClass('is-clamped');
+    expect(expandButton).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(expandButton);
+
+    act(() => profileResizeCallback?.());
+
+    expect(description).toHaveClass('is-expanded');
+    expect(description).not.toHaveClass('is-clamped');
+    expect(screen.getByRole('button', { name: '折叠专辑介绍' })).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: '折叠专辑介绍' }));
+
+    expect(description).toHaveClass('is-clamped');
+  });
+
+  it('shows descriptions of five lines or fewer without a toggle', async () => {
+    vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(function scrollHeight() {
+      return this.classList?.contains('album-inline-profile-copy') ? 100 : 0;
+    });
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((node) => (
+      node.classList?.contains('album-inline-profile-copy')
+        ? { fontSize: '12px', lineHeight: '20px' }
+        : originalGetComputedStyle(node)
+    ));
+    const album = {
+      ...createLongAlbum(8),
+      id: '1701',
+      name: '1701'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('1701专辑资料')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: '显示完整介绍' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '折叠专辑介绍' })).not.toBeInTheDocument();
+  });
+
   it('shows the track-metadata 其他 collection note without a fake external link', async () => {
     const album = {
       ...createLongAlbum(8),

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import '../styles/about.css';
 import { copyTextToClipboard } from '../utils/appDomUtils.js';
 import { SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
+import ExternalJumpDialog from './ExternalJumpDialog.jsx';
 
 const officialCd = {
     href: 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97'
@@ -23,21 +23,6 @@ const AboutPage = () => {
     const [isJumpOpen, setIsJumpOpen] = useState(false);
     const [copyFeedback, setCopyFeedback] = useState({ name: '', status: 'idle' });
     const copyFeedbackTimerRef = useRef(null);
-    const portalRoot = typeof document === 'undefined' ? null : document.body;
-
-    useEffect(() => {
-        if (!isJumpOpen) return;
-        const prevOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = prevOverflow;
-        };
-    }, [isJumpOpen]);
-
-    const handleConfirmJump = () => {
-        window.open(officialCd.href, '_blank', 'noopener,noreferrer');
-        setIsJumpOpen(false);
-    };
 
     useEffect(() => () => {
         if (copyFeedbackTimerRef.current) {
@@ -136,30 +121,12 @@ const AboutPage = () => {
                 ))}
             </div>
         </section>
-        {isJumpOpen && portalRoot && createPortal((
-            <div className="about-jump-modal" onClick={() => setIsJumpOpen(false)}>
-                <div className="about-jump-card" onClick={(event) => event.stopPropagation()}>
-                    <h3>即将前往 tower.jp</h3>
-                    <p>该站点在国内网络可能无法正常访问，建议使用科学上网。是否继续？</p>
-                    <div className="about-jump-actions">
-                        <button
-                            type="button"
-                            className="about-jump-btn ghost"
-                            onClick={() => setIsJumpOpen(false)}
-                        >
-                            取消
-                        </button>
-                        <button
-                            type="button"
-                            className="about-jump-btn"
-                            onClick={handleConfirmJump}
-                        >
-                            确认跳转
-                        </button>
-                    </div>
-                </div>
-            </div>
-        ), portalRoot)}
+        <ExternalJumpDialog
+            isOpen={isJumpOpen}
+            href={officialCd.href}
+            host="tower.jp"
+            onClose={() => setIsJumpOpen(false)}
+        />
     </div>
     );
 };

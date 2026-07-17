@@ -1220,10 +1220,11 @@ body {
 .album-inline-release-date {
   margin: 0;
   color: color-mix(in srgb, var(--text-secondary) 88%, transparent);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 650;
   line-height: 1.35;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .album-inline-profile-source {
@@ -1249,6 +1250,79 @@ body {
   line-height: 1.62;
   overflow-wrap: anywhere;
   white-space: pre-line;
+}
+
+.album-inline-profile-description {
+  position: relative;
+}
+
+.album-inline-profile-copy.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  -webkit-mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(90deg, #000 0, #000 calc(100% - 54px), transparent calc(100% - 38px));
+  -webkit-mask-position: top left, bottom left;
+  -webkit-mask-size: 100% calc(100% - 1.62em), 100% 1.62em;
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(90deg, #000 0, #000 calc(100% - 54px), transparent calc(100% - 38px));
+  mask-position: top left, bottom left;
+  mask-size: 100% calc(100% - 1.62em), 100% 1.62em;
+  mask-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.album-inline-profile-toggle {
+  position: absolute;
+  right: -4px;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.62;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.album-inline-profile-description.is-collapsed .album-inline-profile-toggle {
+  padding-left: 0;
+  background: transparent;
+}
+
+.album-inline-profile-description.is-expanded .album-inline-profile-copy {
+  display: inline;
+}
+
+.album-inline-profile-description.is-expanded .album-inline-profile-toggle {
+  position: static;
+  margin-left: 4px;
+  padding-left: 0;
+  background: transparent;
+  vertical-align: 0;
+}
+
+.album-inline-profile-toggle:hover {
+  color: var(--text-main);
+}
+
+.album-inline-profile-toggle-icon {
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.album-inline-profile-toggle[aria-expanded='true'] .album-inline-profile-toggle-icon {
+  transform: rotate(180deg);
 }
 
 .album-inline-profile + .album-inline-hero-actions {
@@ -1297,6 +1371,7 @@ body {
 .album-inline-fav-all-btn,
 .album-inline-secondary-btn,
 .album-inline-clear-favorites-btn,
+.album-inline-purchase-btn,
 .album-inline-qr-btn {
   border: 1px solid var(--glass-border);
   background: transparent;
@@ -1314,19 +1389,22 @@ body {
   gap: 8px;
   font-size: 14px;
   white-space: nowrap;
+  text-decoration: none;
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .album-inline-fav-all-btn:hover,
 .album-inline-secondary-btn:hover,
 .album-inline-clear-favorites-btn:hover,
+.album-inline-purchase-btn:hover,
 .album-inline-qr-btn:hover {
   transform: translateY(-1px);
   background: var(--hover-bg);
 }
 
 .album-inline-secondary-btn,
-.album-inline-clear-favorites-btn {
+.album-inline-clear-favorites-btn,
+.album-inline-purchase-btn {
   color: var(--text-main);
 }
 
