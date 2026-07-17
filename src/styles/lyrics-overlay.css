@@ -2053,12 +2053,21 @@
   }
 }
 
-/* Desktop Fullscreen Player - Keep Original Style */
+/* Desktop Fullscreen Player - Responsive, centered split view */
 @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
   .lyrics-overlay {
+    --desktop-header-height: clamp(72px, 8.8vh, 100px);
+    --desktop-cover-size: clamp(280px, min(25vw, 39vh), 440px);
+    --desktop-content-gap: clamp(56px, 6vw, 128px);
+    --desktop-page-gutter: clamp(40px, 4.5vw, 88px);
     background: rgba(5, 7, 12, 0.94);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  .overlay-header {
+    height: var(--desktop-header-height);
+    padding-inline: var(--desktop-page-gutter);
   }
 
   .lyrics-overlay::before {
@@ -2091,7 +2100,78 @@
   }
 
   .desktop-player-content {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: minmax(420px, 0.9fr) minmax(0, 1.1fr);
+    flex: 1 1 auto;
+    width: min(1760px, calc(100% - (2 * var(--desktop-page-gutter))));
+    min-height: 0;
+    margin: 0 auto;
+    padding: 0 0 clamp(20px, 3vh, 44px);
+    column-gap: var(--desktop-content-gap);
+    box-sizing: border-box;
+  }
+
+  .album-view {
+    width: auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .xl-cover {
+    width: var(--desktop-cover-size);
+    height: var(--desktop-cover-size);
+    max-width: var(--desktop-cover-size);
+    flex: 0 0 var(--desktop-cover-size);
+  }
+
+  .track-meta {
+    width: min(100%, var(--desktop-cover-size));
+    max-width: var(--desktop-cover-size);
+    height: clamp(84px, 10vh, 112px);
+    flex-basis: clamp(84px, 10vh, 112px);
+    margin-top: clamp(12px, 2vh, 20px);
+  }
+
+  .track-meta h2 {
+    font-size: clamp(26px, min(2vw, 3.3vh), 34px);
+  }
+
+  .track-meta p {
+    font-size: clamp(17px, 1.35vw, 24px);
+  }
+
+  .overlay-controls {
+    width: min(100%, 480px);
+    max-width: 480px;
+    margin-top: clamp(18px, 3.4vh, 40px);
+  }
+
+  .overlay-comment-row {
+    margin-bottom: clamp(14px, 2.3vh, 26px);
+  }
+
+  .overlay-buttons {
+    margin-top: clamp(14px, 2.2vh, 25px);
+  }
+
+  .overlay-play-btn {
+    width: clamp(56px, 6.4vh, 72px);
+    height: clamp(56px, 6.4vh, 72px);
+  }
+
+  .lyrics-view.desktop-lyrics {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .lyric-line {
+    font-size: clamp(26px, min(1.8vw, 3.1vh), 32px);
+    padding-block: clamp(18px, 2.2vh, 24px);
+  }
+
+  .lyric-line.active {
+    font-size: clamp(34px, min(2.35vw, 4vh), 42px);
   }
 
   .lyrics-view.desktop-lyrics,
@@ -2100,6 +2180,7 @@
   }
 
   .lyrics-scroller {
+    height: min(70vh, calc(100vh - var(--desktop-header-height) - 48px));
     mask-image: linear-gradient(
       to bottom,
       transparent 0%,
@@ -2120,7 +2201,7 @@
     );
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 0 60px;
+    padding: 0 clamp(24px, 3.5vw, 60px);
   }
 }
 
