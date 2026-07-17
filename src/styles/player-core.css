@@ -2086,7 +2086,7 @@
   }
 
   .album-inline-profile-copy {
-    --album-profile-collapsed-lines: 3;
+    --album-profile-collapsed-lines: 4;
     font-size: 13px;
     line-height: 1.6;
   }

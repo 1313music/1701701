@@ -394,9 +394,9 @@ describe('AlbumGrid inline album panel', () => {
     expect(screen.queryByRole('button', { name: '折叠专辑介绍' })).not.toBeInTheDocument();
   });
 
-  it('uses the responsive three-line limit when configured by CSS', async () => {
+  it('uses the responsive four-line limit when configured by CSS', async () => {
     vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(function scrollHeight() {
-      return this.classList?.contains('album-inline-profile-copy') ? 80 : 0;
+      return this.classList?.contains('album-inline-profile-copy') ? 100 : 0;
     });
     const originalGetComputedStyle = window.getComputedStyle.bind(window);
     vi.spyOn(window, 'getComputedStyle').mockImplementation((node) => (
@@ -405,7 +405,7 @@ describe('AlbumGrid inline album panel', () => {
             fontSize: '13px',
             lineHeight: '20px',
             getPropertyValue: (property) => (
-              property === '--album-profile-collapsed-lines' ? '3' : ''
+              property === '--album-profile-collapsed-lines' ? '4' : ''
             )
           }
         : originalGetComputedStyle(node)
@@ -421,6 +421,36 @@ describe('AlbumGrid inline album panel', () => {
 
     expect(document.body.querySelector('.album-inline-profile-copy')).toHaveClass('is-clamped');
     expect(expandButton).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('shows official-site sources as text while keeping other external sources linked', async () => {
+    const officialAlbum = {
+      ...createLongAlbum(8),
+      id: 'van-gogh',
+      name: '梵高先生'
+    };
+    const mediaAlbum = {
+      ...createLongAlbum(8),
+      id: 'hangzhou-jiuqiuhui',
+      name: '杭州酒球会'
+    };
+    const { rerender } = render(
+      <AlbumGrid {...createBaseProps({ musicAlbums: [officialAlbum], expandedAlbumId: officialAlbum.id })} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('来源：李志官网')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('link', { name: '来源：李志官网' })).not.toBeInTheDocument();
+
+    rerender(
+      <AlbumGrid {...createBaseProps({ musicAlbums: [mediaAlbum], expandedAlbumId: mediaAlbum.id })} />
+    );
+
+    expect(await screen.findByRole('link', { name: '来源：都市快报' })).toHaveAttribute(
+      'href',
+      'https://hznews.hangzhou.com.cn/wenti/content/2015-08/07/content_5875318.htm'
+    );
   });
 
   it('shows the track-metadata 其他 collection note without a fake external link', async () => {

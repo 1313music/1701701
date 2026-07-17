@@ -19,6 +19,7 @@ const DEFAULT_INLINE_SONG_ROW_HEIGHT = 52;
 const DEFAULT_PROFILE_COLLAPSED_LINES = 5;
 const ALBUM_PURCHASE_URL = 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97';
 const PURCHASABLE_ALBUM_IDS = new Set(['volume1', 'volume2', 'volume3', 'tokyo-live']);
+const OFFICIAL_WEBSITE_SOURCE_PATTERN = /官网|官方网站/;
 
 const AlbumReleaseDate = ({ value }) => {
     const formattedDate = formatAlbumReleaseDate(value);
@@ -571,6 +572,10 @@ const AlbumGrid = ({
     const panelAlbumMiniProgram = getAlbumMiniProgram(panelAlbum?.id);
     const panelAlbumProfile = getAlbumProfile(panelAlbum);
     const panelProfileDescription = panelAlbumProfile?.description || '';
+    const panelProfileSourceUrl = panelAlbumProfile?.sourceUrl
+        && !OFFICIAL_WEBSITE_SOURCE_PATTERN.test(panelAlbumProfile.sourceName || '')
+        ? panelAlbumProfile.sourceUrl
+        : '';
     const panelAlbumPurchaseUrl = PURCHASABLE_ALBUM_IDS.has(panelAlbum?.id)
         ? ALBUM_PURCHASE_URL
         : '';
@@ -732,10 +737,10 @@ const AlbumGrid = ({
                                             {panelAlbumProfile.releaseDate && (
                                                 <AlbumReleaseDate value={panelAlbumProfile.releaseDate} />
                                             )}
-                                            {panelAlbumProfile.sourceUrl && (
+                                            {panelProfileSourceUrl && (
                                                 <a
                                                     className="album-inline-profile-source"
-                                                    href={panelAlbumProfile.sourceUrl}
+                                                    href={panelProfileSourceUrl}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     onClick={(event) => event.stopPropagation()}
@@ -743,7 +748,7 @@ const AlbumGrid = ({
                                                     来源：{panelAlbumProfile.sourceName || '资料页'}
                                                 </a>
                                             )}
-                                            {panelAlbumProfile.sourceName && !panelAlbumProfile.sourceUrl && (
+                                            {panelAlbumProfile.sourceName && !panelProfileSourceUrl && (
                                                 <span className="album-inline-profile-source">
                                                     来源：{panelAlbumProfile.sourceName}
                                                 </span>
