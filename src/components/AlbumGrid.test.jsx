@@ -196,6 +196,46 @@ describe('AlbumGrid inline album panel', () => {
     expect(document.body.querySelector('.song-list-shell')).not.toHaveClass('is-long-list');
   });
 
+  it('shows release information above the unchanged album actions', async () => {
+    const album = {
+      ...createLongAlbum(8),
+      id: '1701',
+      name: '1701'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2014.05.22 发行')).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText('1701专辑资料')).toBeInTheDocument();
+    expect(screen.getByText(/专辑名取自好友的排练房房号\s+李志第七张录音室创作专辑/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '来源：维基百科' })).toHaveAttribute(
+      'href',
+      'https://zh.wikipedia.org/wiki/%E6%9D%8E%E5%BF%97'
+    );
+    expect(screen.queryByRole('button', { name: '展开' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '播放全部' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '收藏全部' })).toBeInTheDocument();
+  });
+
+  it('shows the track-metadata 其他 collection note without a fake external link', async () => {
+    const album = {
+      ...createLongAlbum(8),
+      id: 'other',
+      name: '其他'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/收录不同场合留下的现场与弹唱录音/)).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText('其他专辑资料')).toBeInTheDocument();
+    expect(document.body.querySelector('.album-inline-profile-meta')).toHaveTextContent('来源：曲目文件信息');
+    expect(screen.queryByRole('link', { name: '来源：曲目文件信息' })).not.toBeInTheDocument();
+  });
+
   it('keeps cached cover atmosphere visible after queued timers run', async () => {
     const palette = {
       accent: '178, 0, 0',

@@ -29,6 +29,10 @@ describe('musicManifest asset normalization', () => {
             id: 'album-1',
             name: 'Album',
             cover: '../covers/album.jpg',
+            releaseDate: '2014-05-22',
+            description: 'Album introduction',
+            profileSourceName: 'Album Notes',
+            profileSourceUrl: '../notes/album.html',
             songs: [
               {
                 id: 'song-1',
@@ -46,6 +50,10 @@ describe('musicManifest asset normalization', () => {
     const albums = await loadMusicManifestAlbums();
 
     expect(albums[0].cover).toBe('https://r2.1701701.xyz/covers/album.jpg');
+    expect(albums[0].releaseDate).toBe('2014-05-22');
+    expect(albums[0].description).toBe('Album introduction');
+    expect(albums[0].profileSourceName).toBe('Album Notes');
+    expect(albums[0].profileSourceUrl).toBe('https://r2.1701701.xyz/notes/album.html');
     expect(albums[0].songs[0].src).toBe('https://r2.1701701.xyz/audio/song.mp3');
     expect(albums[0].songs[0].lrc).toBe('https://r2.1701701.xyz/lyrics/song.lrc');
     expect(albums[0].songs[0].cover).toBe('https://r2.1701701.xyz/covers/song.jpg');

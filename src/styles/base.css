@@ -1201,6 +1201,60 @@ body {
   color: color-mix(in srgb, var(--text-secondary) 82%, transparent);
 }
 
+.album-inline-profile {
+  width: min(100%, 232px);
+  margin: 18px auto 0;
+  padding: 1px 0 1px 14px;
+  border-left: 2px solid color-mix(in srgb, var(--text-secondary) 36%, transparent);
+  text-align: left;
+}
+
+.album-inline-profile-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 5px;
+}
+
+.album-inline-release-date {
+  margin: 0;
+  color: color-mix(in srgb, var(--text-secondary) 88%, transparent);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.album-inline-profile-source {
+  color: color-mix(in srgb, var(--text-secondary) 72%, transparent);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.18s ease;
+}
+
+.album-inline-profile-source:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.album-inline-profile-copy {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.album-inline-profile + .album-inline-hero-actions {
+  margin-top: 14px;
+}
+
 .album-inline-hero-actions {
   margin-top: 18px;
   display: flex;

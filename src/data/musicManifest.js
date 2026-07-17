@@ -95,6 +95,10 @@ const normalizeAlbum = (album, assetBase = '') => {
     cover: resolveAssetUrl(album.cover, assetBase),
     year: Number.isFinite(Number(album.year)) ? Number(album.year) : undefined,
     type: String(album.type || '').trim() || undefined,
+    releaseDate: String(album.releaseDate || '').trim() || undefined,
+    description: String(album.description || '').trim() || undefined,
+    profileSourceName: String(album.profileSourceName || '').trim() || undefined,
+    profileSourceUrl: resolveAssetUrl(album.profileSourceUrl, assetBase) || undefined,
     songs
   };
 };

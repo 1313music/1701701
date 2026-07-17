@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Heart, ListMusic, Play, QrCode, RefreshCw, Shuffle, Trash2, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
+import { formatAlbumReleaseDate, getAlbumProfile } from '../data/albumProfiles.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
 
 const PANEL_EXIT_MS = 280;
@@ -422,6 +423,8 @@ const AlbumGrid = ({
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
     const panelAlbumMiniProgram = getAlbumMiniProgram(panelAlbum?.id);
+    const panelAlbumProfile = getAlbumProfile(panelAlbum);
+    const panelProfileDescription = panelAlbumProfile?.description || '';
     const panelCoverSrc = panelAlbum?.cover || '';
     const panelCoverPalette = panelCoverAtmosphere.coverSrc === panelCoverSrc
         ? panelCoverAtmosphere.palette
@@ -564,6 +567,43 @@ const AlbumGrid = ({
                             <p className="album-metadata">{panelMetadata}</p>
                             {isPanelFavorites && (
                                 <p className="album-local-storage-note">{favoritesStorageNote}</p>
+                            )}
+                            {panelAlbumProfile && (
+                                <section
+                                    className="album-inline-profile"
+                                    aria-label={`${panelAlbum.name}专辑资料`}
+                                >
+                                    {(panelAlbumProfile.releaseDate || panelAlbumProfile.sourceName) && (
+                                        <div className="album-inline-profile-meta">
+                                            {panelAlbumProfile.releaseDate && (
+                                                <p className="album-inline-release-date">
+                                                    {formatAlbumReleaseDate(panelAlbumProfile.releaseDate)} 发行
+                                                </p>
+                                            )}
+                                            {panelAlbumProfile.sourceUrl && (
+                                                <a
+                                                    className="album-inline-profile-source"
+                                                    href={panelAlbumProfile.sourceUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    onClick={(event) => event.stopPropagation()}
+                                                >
+                                                    来源：{panelAlbumProfile.sourceName || '资料页'}
+                                                </a>
+                                            )}
+                                            {panelAlbumProfile.sourceName && !panelAlbumProfile.sourceUrl && (
+                                                <span className="album-inline-profile-source">
+                                                    来源：{panelAlbumProfile.sourceName}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                    {panelProfileDescription && (
+                                        <p className="album-inline-profile-copy">
+                                            {panelProfileDescription}
+                                        </p>
+                                    )}
+                                </section>
                             )}
                             <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''}`}>
                                 <button
