@@ -292,6 +292,9 @@ const AlbumGrid = ({
     const [panelPhase, setPanelPhase] = useState(() => (expandedAlbumId ? 'open' : 'closed'));
     const [panelHeight, setPanelHeight] = useState(0);
     const [panelSongRowHeight, setPanelSongRowHeight] = useState(DEFAULT_INLINE_SONG_ROW_HEIGHT);
+    const [panelSongListMaxHeight, setPanelSongListMaxHeight] = useState(
+        DEFAULT_INLINE_SONG_ROW_HEIGHT * INLINE_SONG_SCROLL_THRESHOLD
+    );
     const [hoveredPanelSongSrc, setHoveredPanelSongSrc] = useState('');
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
@@ -311,19 +314,68 @@ const AlbumGrid = ({
         setPanelHeight((prev) => (Math.abs(prev - nextHeight) <= 1 ? prev : nextHeight));
     }, []);
 
-    const measurePanelSongRowHeight = useCallback(() => {
-        const firstSong = panelContentRef.current?.querySelector?.('.song-list .song-item');
+    const measurePanelSongLayout = useCallback(() => {
+        const panel = panelContentRef.current;
+        const firstSong = panel?.querySelector?.('.song-list .song-item');
         if (!firstSong) {
             setPanelSongRowHeight((prev) => (
                 prev === DEFAULT_INLINE_SONG_ROW_HEIGHT ? prev : DEFAULT_INLINE_SONG_ROW_HEIGHT
+            ));
+            const fallbackListHeight = DEFAULT_INLINE_SONG_ROW_HEIGHT * INLINE_SONG_SCROLL_THRESHOLD;
+            setPanelSongListMaxHeight((prev) => (
+                prev === fallbackListHeight ? prev : fallbackListHeight
             ));
             return;
         }
 
         const rectHeight = Number(firstSong.getBoundingClientRect?.().height) || 0;
         const offsetHeight = Number(firstSong.offsetHeight) || 0;
-        const nextHeight = Math.ceil(Math.max(rectHeight, offsetHeight, DEFAULT_INLINE_SONG_ROW_HEIGHT));
-        setPanelSongRowHeight((prev) => (prev === nextHeight ? prev : nextHeight));
+        const nextRowHeight = Math.ceil(Math.max(rectHeight, offsetHeight, DEFAULT_INLINE_SONG_ROW_HEIGHT));
+        setPanelSongRowHeight((prev) => (prev === nextRowHeight ? prev : nextRowHeight));
+
+        const panelDisplay = typeof window === 'undefined'
+            ? ''
+            : window.getComputedStyle(panel).display;
+        const header = panel?.querySelector?.('.album-inline-header');
+        const listShell = panel?.querySelector?.('.song-list-shell');
+        const shellMarginTop = listShell && typeof window !== 'undefined'
+            ? parseFloat(window.getComputedStyle(listShell).marginTop) || 0
+            : 0;
+        const baselineListHeight = nextRowHeight * INLINE_SONG_SCROLL_THRESHOLD;
+        let availableDesktopHeight = 0;
+
+        if (panelDisplay === 'grid' && header && typeof window !== 'undefined') {
+            const headerStyle = window.getComputedStyle(header);
+            const headerChildren = Array.from(header.children).filter((child) => (
+                window.getComputedStyle(child).position !== 'absolute'
+            ));
+            const childrenHeight = headerChildren.reduce((total, child) => {
+                const childRectHeight = Number(child.getBoundingClientRect?.().height) || 0;
+                const childOffsetHeight = Number(child.offsetHeight) || 0;
+                return total + Math.max(childRectHeight, childOffsetHeight);
+            }, 0);
+            const headerGap = parseFloat(headerStyle.rowGap)
+                || parseFloat(headerStyle.gap)
+                || 0;
+            const headerPadding = (parseFloat(headerStyle.paddingTop) || 0)
+                + (parseFloat(headerStyle.paddingBottom) || 0);
+            const measuredContentHeight = childrenHeight > 0
+                ? childrenHeight + headerGap * Math.max(0, headerChildren.length - 1) + headerPadding
+                : Math.max(
+                    Number(header.getBoundingClientRect?.().height) || 0,
+                    Number(header.offsetHeight) || 0
+                );
+
+            availableDesktopHeight = Math.max(
+                0,
+                Math.floor(measuredContentHeight - shellMarginTop)
+            );
+        }
+        const nextListMaxHeight = Math.max(baselineListHeight, availableDesktopHeight);
+
+        setPanelSongListMaxHeight((prev) => (
+            prev === nextListMaxHeight ? prev : nextListMaxHeight
+        ));
     }, []);
 
     const clearPanelTimers = useCallback(() => {
@@ -548,7 +600,7 @@ const AlbumGrid = ({
         if (!panelAlbum) return undefined;
 
         const measurePanel = () => {
-            measurePanelSongRowHeight();
+            measurePanelSongLayout();
             measurePanelHeight();
         };
 
@@ -559,18 +611,22 @@ const AlbumGrid = ({
 
         const timerId = window.setTimeout(measurePanel, 0);
         return () => window.clearTimeout(timerId);
-    }, [panelAlbum, measurePanelHeight, measurePanelSongRowHeight, columns, panelSongs.length, panelSongRowHeight]);
+    }, [panelAlbum, measurePanelHeight, measurePanelSongLayout, columns, panelSongs.length, panelSongRowHeight, panelSongListMaxHeight]);
 
     useEffect(() => {
         const node = panelContentRef.current;
         if (!panelAlbum || !node || typeof ResizeObserver === 'undefined') return;
         const ro = new ResizeObserver(() => {
-            measurePanelSongRowHeight();
+            measurePanelSongLayout();
             measurePanelHeight();
         });
         ro.observe(node);
+        const header = node.querySelector('.album-inline-header');
+        if (header) ro.observe(header);
+        const headerInfo = node.querySelector('.album-inline-header .album-info-text');
+        if (headerInfo) ro.observe(headerInfo);
         return () => ro.disconnect();
-    }, [panelAlbum, measurePanelHeight, measurePanelSongRowHeight]);
+    }, [panelAlbum, measurePanelHeight, measurePanelSongLayout]);
 
     const panelAtmosphereStyle = useMemo(() => {
         if (!panelCoverPalette) return null;
@@ -633,6 +689,7 @@ const AlbumGrid = ({
                     '--panel-anchor-x': panelLayout.anchorX,
                     '--inline-song-scroll-visible-count': String(INLINE_SONG_SCROLL_THRESHOLD),
                     '--inline-song-row-height': `${panelSongRowHeight}px`,
+                    '--inline-song-list-max-height': `${panelSongListMaxHeight}px`,
                     willChange: 'height, opacity, margin-top, margin-bottom'
                 }}
             >

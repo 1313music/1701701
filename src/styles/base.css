@@ -1501,7 +1501,10 @@ body {
 }
 
 .album-inline-panel .song-list-shell.is-long-list .song-list {
-  max-height: calc(var(--inline-song-row-height, 52px) * var(--inline-song-scroll-visible-count, 12));
+  max-height: var(
+    --inline-song-list-max-height,
+    calc(var(--inline-song-row-height, 52px) * var(--inline-song-scroll-visible-count, 12))
+  );
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-gutter: stable;

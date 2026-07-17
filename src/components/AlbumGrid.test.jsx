@@ -152,7 +152,8 @@ describe('AlbumGrid inline album panel', () => {
     expect(document.body.querySelector('.song-list-shell')).toHaveClass('is-long-list');
     expect(document.body.querySelector('.album-inline-shell')).toHaveStyle({
       '--inline-song-scroll-visible-count': '12',
-      '--inline-song-row-height': '52px'
+      '--inline-song-row-height': '52px',
+      '--inline-song-list-max-height': '624px'
     });
     expect(screen.queryByRole('button', { name: '查看全部 30 首' })).not.toBeInTheDocument();
     expect(document.body.querySelector('.song-list-more-btn')).not.toBeInTheDocument();
@@ -180,7 +181,43 @@ describe('AlbumGrid inline album panel', () => {
     await waitFor(() => {
       expect(document.body.querySelector('.album-inline-shell')).toHaveStyle({
         '--inline-song-scroll-visible-count': '12',
-        '--inline-song-row-height': '57px'
+        '--inline-song-row-height': '57px',
+        '--inline-song-list-max-height': '684px'
+      });
+    });
+  });
+
+  it('expands the song viewport to match a taller desktop album header', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function getBoundingClientRect() {
+      const height = this.classList?.contains('album-inline-header')
+        ? 760
+        : this.classList?.contains('song-item')
+          ? 52
+          : 0;
+      return {
+        x: 0,
+        y: 0,
+        top: 0,
+        right: 0,
+        bottom: height,
+        left: 0,
+        width: 0,
+        height,
+        toJSON: () => ({})
+      };
+    });
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((node) => {
+      if (node.classList?.contains('album-inline-panel')) return { display: 'grid' };
+      if (node.classList?.contains('song-list-shell')) return { marginTop: '4px' };
+      return originalGetComputedStyle(node);
+    });
+
+    render(<AlbumGrid {...createBaseProps()} />);
+
+    await waitFor(() => {
+      expect(document.body.querySelector('.album-inline-shell')).toHaveStyle({
+        '--inline-song-list-max-height': '756px'
       });
     });
   });
