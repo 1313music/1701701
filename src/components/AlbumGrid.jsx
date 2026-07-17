@@ -16,7 +16,7 @@ const SONG_MARQUEE_MIN_DURATION = 9;
 const SONG_MARQUEE_SPEED = 36;
 const INLINE_SONG_SCROLL_THRESHOLD = 12;
 const DEFAULT_INLINE_SONG_ROW_HEIGHT = 52;
-const PROFILE_COLLAPSED_LINES = 5;
+const DEFAULT_PROFILE_COLLAPSED_LINES = 5;
 const ALBUM_PURCHASE_URL = 'https://tower.jp/search/item/%E6%9D%8E%E5%BF%97';
 const PURCHASABLE_ALBUM_IDS = new Set(['volume1', 'volume2', 'volume3', 'tokyo-live']);
 
@@ -51,7 +51,14 @@ const AlbumProfileDescription = ({ description }) => {
         const lineHeight = Number.isFinite(parsedLineHeight) && parsedLineHeight >= fontSize
             ? parsedLineHeight
             : fontSize * 1.62;
-        const collapsedHeight = lineHeight * PROFILE_COLLAPSED_LINES;
+        const configuredLines = parseInt(
+            style.getPropertyValue?.('--album-profile-collapsed-lines') || '',
+            10
+        );
+        const collapsedLines = Number.isFinite(configuredLines) && configuredLines > 0
+            ? configuredLines
+            : DEFAULT_PROFILE_COLLAPSED_LINES;
+        const collapsedHeight = lineHeight * collapsedLines;
         const nextIsCollapsible = node.scrollHeight > collapsedHeight + 1;
 
         setIsCollapsible((previous) => (
@@ -74,7 +81,7 @@ const AlbumProfileDescription = ({ description }) => {
         <div className={`album-inline-profile-description ${isCollapsible ? 'is-collapsible' : ''} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`}>
             <p
                 ref={copyRef}
-                className={`album-inline-profile-copy ${isExpanded ? 'is-expanded' : 'is-clamped'}`}
+                className={`album-inline-profile-copy ${isExpanded ? 'is-expanded' : ''} ${isCollapsible && !isExpanded ? 'is-clamped' : ''}`}
             >
                 {description}
             </p>

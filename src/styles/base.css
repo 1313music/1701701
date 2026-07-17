@@ -1220,7 +1220,7 @@ body {
 .album-inline-release-date {
   margin: 0;
   color: color-mix(in srgb, var(--text-secondary) 88%, transparent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   line-height: 1.35;
   letter-spacing: 0.01em;
@@ -1229,7 +1229,7 @@ body {
 
 .album-inline-profile-source {
   color: color-mix(in srgb, var(--text-secondary) 72%, transparent);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   line-height: 1.35;
   text-decoration: none;
@@ -1244,10 +1244,11 @@ body {
 }
 
 .album-inline-profile-copy {
+  --album-profile-collapsed-lines: 5;
   margin: 0;
   color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.62;
+  font-size: 14px;
+  line-height: 1.6;
   overflow-wrap: anywhere;
   white-space: pre-line;
 }
@@ -1259,18 +1260,18 @@ body {
 .album-inline-profile-copy.is-clamped {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: var(--album-profile-collapsed-lines);
   -webkit-mask-image:
     linear-gradient(#000, #000),
     linear-gradient(90deg, #000 0, #000 calc(100% - 54px), transparent calc(100% - 38px));
   -webkit-mask-position: top left, bottom left;
-  -webkit-mask-size: 100% calc(100% - 1.62em), 100% 1.62em;
+  -webkit-mask-size: 100% calc(100% - 1.6em), 100% 1.6em;
   -webkit-mask-repeat: no-repeat;
   mask-image:
     linear-gradient(#000, #000),
     linear-gradient(90deg, #000 0, #000 calc(100% - 54px), transparent calc(100% - 38px));
   mask-position: top left, bottom left;
-  mask-size: 100% calc(100% - 1.62em), 100% 1.62em;
+  mask-size: 100% calc(100% - 1.6em), 100% 1.6em;
   mask-repeat: no-repeat;
   overflow: hidden;
 }
@@ -1288,9 +1289,9 @@ body {
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.62;
+  line-height: 1.6;
   cursor: pointer;
   transition: color 0.18s ease;
 }

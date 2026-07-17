@@ -389,8 +389,38 @@ describe('AlbumGrid inline album panel', () => {
       expect(screen.getByLabelText('1701专辑资料')).toBeInTheDocument();
     });
 
+    expect(document.body.querySelector('.album-inline-profile-copy')).not.toHaveClass('is-clamped');
     expect(screen.queryByRole('button', { name: '显示完整介绍' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '折叠专辑介绍' })).not.toBeInTheDocument();
+  });
+
+  it('uses the responsive three-line limit when configured by CSS', async () => {
+    vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(function scrollHeight() {
+      return this.classList?.contains('album-inline-profile-copy') ? 80 : 0;
+    });
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((node) => (
+      node.classList?.contains('album-inline-profile-copy')
+        ? {
+            fontSize: '13px',
+            lineHeight: '20px',
+            getPropertyValue: (property) => (
+              property === '--album-profile-collapsed-lines' ? '3' : ''
+            )
+          }
+        : originalGetComputedStyle(node)
+    ));
+    const album = {
+      ...createLongAlbum(8),
+      id: '1701',
+      name: '1701'
+    };
+    render(<AlbumGrid {...createBaseProps({ musicAlbums: [album], expandedAlbumId: album.id })} />);
+
+    const expandButton = await screen.findByRole('button', { name: '显示完整介绍' });
+
+    expect(document.body.querySelector('.album-inline-profile-copy')).toHaveClass('is-clamped');
+    expect(expandButton).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('shows the track-metadata 其他 collection note without a fake external link', async () => {

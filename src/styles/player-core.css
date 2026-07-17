@@ -2073,7 +2073,7 @@
   }
 
   .album-inline-release-date {
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
   }
 
@@ -2082,16 +2082,17 @@
   }
 
   .album-inline-profile-source {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .album-inline-profile-copy {
-    font-size: 11px;
-    line-height: 1.55;
+    --album-profile-collapsed-lines: 3;
+    font-size: 13px;
+    line-height: 1.6;
   }
 
   .album-inline-profile-toggle {
-    font-size: 9px;
+    font-size: 13px;
   }
 
   .album-inline-profile + .album-inline-hero-actions {
