@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-27T03:11:01.000Z",
+  "updatedAt": "2026-07-13T15:12:44.382Z",
   "albums": [
     {
       "id": "san-que-yi-kl",
@@ -23,7 +23,7 @@
           "id": "san-que-yi-kl-02",
           "trackNumber": 2,
           "name": "01-开场-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/01-开场-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/01-%E5%BC%80%E5%9C%BA-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -32,7 +32,7 @@
           "id": "san-que-yi-kl-03",
           "trackNumber": 3,
           "name": "02-黑色信封-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/02-黑色信封-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/02-%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -41,7 +41,7 @@
           "id": "san-que-yi-kl-04",
           "trackNumber": 4,
           "name": "03-定西-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/03-定西-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/03-%E5%AE%9A%E8%A5%BF-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -50,7 +50,7 @@
           "id": "san-que-yi-kl-05",
           "trackNumber": 5,
           "name": "04-南方春末的城市-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/04-南方春末的城市-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/04-%E5%8D%97%E6%96%B9%E6%98%A5%E6%9C%AB%E7%9A%84%E5%9F%8E%E5%B8%82-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -59,7 +59,7 @@
           "id": "san-que-yi-kl-06",
           "trackNumber": 6,
           "name": "05-中场休息①-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/05-中场休息①-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/05-%E4%B8%AD%E5%9C%BA%E4%BC%91%E6%81%AF%E2%91%A0-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -68,7 +68,7 @@
           "id": "san-que-yi-kl-07",
           "trackNumber": 7,
           "name": "06-天空之城-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/06-天空之城-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/06-%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -77,7 +77,7 @@
           "id": "san-que-yi-kl-08",
           "trackNumber": 8,
           "name": "07-关于郑州的记忆-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/07-关于郑州的记忆-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/07-%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -86,7 +86,7 @@
           "id": "san-que-yi-kl-09",
           "trackNumber": 9,
           "name": "08-苍井空-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/08-苍井空-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/08-%E8%8B%8D%E4%BA%95%E7%A9%BA-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -95,7 +95,7 @@
           "id": "san-que-yi-kl-10",
           "trackNumber": 10,
           "name": "09-秋天的老狼-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/09-秋天的老狼-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/09-%E7%A7%8B%E5%A4%A9%E7%9A%84%E8%80%81%E7%8B%BC-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -104,7 +104,7 @@
           "id": "san-que-yi-kl-11",
           "trackNumber": 11,
           "name": "10-铅笔-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/10-铅笔-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/10-%E9%93%85%E7%AC%94-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -113,7 +113,7 @@
           "id": "san-que-yi-kl-12",
           "trackNumber": 12,
           "name": "11-鸵鸟&&墙上的向日葵-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/11-鸵鸟&&墙上的向日葵-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/11-%E9%B8%B5%E9%B8%9F%26%26%E5%A2%99%E4%B8%8A%E7%9A%84%E5%90%91%E6%97%A5%E8%91%B5-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -122,7 +122,7 @@
           "id": "san-que-yi-kl-13",
           "trackNumber": 13,
           "name": "12-鼠说-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/12-鼠说-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/12-%E9%BC%A0%E8%AF%B4-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -131,7 +131,7 @@
           "id": "san-que-yi-kl-14",
           "trackNumber": 14,
           "name": "13-翁庆年的六英镑-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/13-翁庆年的六英镑-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/13-%E7%BF%81%E5%BA%86%E5%B9%B4%E7%9A%84%E5%85%AD%E8%8B%B1%E9%95%91-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -140,7 +140,7 @@
           "id": "san-que-yi-kl-15",
           "trackNumber": 15,
           "name": "14-中场休息②-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/14-中场休息②-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/14-%E4%B8%AD%E5%9C%BA%E4%BC%91%E6%81%AF%E2%91%A1-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -149,7 +149,7 @@
           "id": "san-que-yi-kl-16",
           "trackNumber": 16,
           "name": "15-万晓利出场-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/15-万晓利出场-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/15-%E4%B8%87%E6%99%93%E5%88%A9%E5%87%BA%E5%9C%BA-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -158,7 +158,7 @@
           "id": "san-que-yi-kl-17",
           "trackNumber": 17,
           "name": "16-孤独鸟&&陀螺-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/16-孤独鸟&&陀螺-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/16-%E5%AD%A4%E7%8B%AC%E9%B8%9F%26%26%E9%99%80%E8%9E%BA-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -167,7 +167,7 @@
           "id": "san-que-yi-kl-18",
           "trackNumber": 18,
           "name": "17-和你在一起-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/17-和你在一起-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/17-%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -176,7 +176,7 @@
           "id": "san-que-yi-kl-19",
           "trackNumber": 19,
           "name": "18-杭州&&董卓瑶-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/18-杭州&&董卓瑶-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/18-%E6%9D%AD%E5%B7%9E%26%26%E8%91%A3%E5%8D%93%E7%91%B6-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -185,7 +185,7 @@
           "id": "san-que-yi-kl-20",
           "trackNumber": 20,
           "name": "19-南京越来越远-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/19-离南京越来越远-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/19-%E7%A6%BB%E5%8D%97%E4%BA%AC%E8%B6%8A%E6%9D%A5%E8%B6%8A%E8%BF%9C-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -194,7 +194,7 @@
           "id": "san-que-yi-kl-21",
           "trackNumber": 21,
           "name": "20-中场休息③-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/20-中场休息③-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/20-%E4%B8%AD%E5%9C%BA%E4%BC%91%E6%81%AF%E2%91%A2-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -203,7 +203,7 @@
           "id": "san-que-yi-kl-22",
           "trackNumber": 22,
           "name": "21-梵高先生-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/21-梵高先生-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/21-%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -212,7 +212,7 @@
           "id": "san-que-yi-kl-23",
           "trackNumber": 23,
           "name": "22-这个世界会好吗-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/22-这个世界会好吗-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/22-%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -221,7 +221,7 @@
           "id": "san-que-yi-kl-24",
           "trackNumber": 24,
           "name": "23-倒影-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/23-倒影-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/23-%E5%80%92%E5%BD%B1-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -230,7 +230,7 @@
           "id": "san-que-yi-kl-25",
           "trackNumber": 25,
           "name": "24-下雨-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/24-下雨-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/24-%E4%B8%8B%E9%9B%A8-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -239,7 +239,7 @@
           "id": "san-que-yi-kl-26",
           "trackNumber": 26,
           "name": "25-被禁忌的游戏&&来了-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/25-被禁忌的游戏&&来了-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/25-%E8%A2%AB%E7%A6%81%E5%BF%8C%E7%9A%84%E6%B8%B8%E6%88%8F%26%26%E6%9D%A5%E4%BA%86-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -248,7 +248,7 @@
           "id": "san-que-yi-kl-27",
           "trackNumber": 27,
           "name": "26-忽然-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/26-忽然-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/26-%E5%BF%BD%E7%84%B6-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -257,7 +257,7 @@
           "id": "san-que-yi-kl-28",
           "trackNumber": 28,
           "name": "27-热河-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/27-热河-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/27-%E7%83%AD%E6%B2%B3-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -266,7 +266,7 @@
           "id": "san-que-yi-kl-29",
           "trackNumber": 29,
           "name": "28-山阴路的夏天&&致谢-吉隆坡•叁缺壹1112",
-          "src": "https://jlp.1701701.xyz/mp3/28-山阴路的夏天&&致谢-吉隆坡•叁缺壹1112.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1112/28-%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9%26%26%E8%87%B4%E8%B0%A2-%E5%90%89%E9%9A%86%E5%9D%A1%E2%80%A2%E5%8F%81%E7%BC%BA%E5%A3%B91112.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -275,7 +275,7 @@
           "id": "san-que-yi-kl-30",
           "trackNumber": 30,
           "name": "11月11日开场音乐(以下来自了了)",
-          "src": "https://r3.1701701.xyz/1111/开场音乐.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%BC%80%E5%9C%BA%E9%9F%B3%E4%B9%90.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -284,7 +284,7 @@
           "id": "san-que-yi-kl-31",
           "trackNumber": 31,
           "name": "黑色信封+李志出场(1111)",
-          "src": "https://r3.1701701.xyz/1111/黑色信封_LZ出场.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81_LZ%E5%87%BA%E5%9C%BA.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -293,7 +293,7 @@
           "id": "san-que-yi-kl-32",
           "trackNumber": 32,
           "name": "定西(1111)",
-          "src": "https://r3.1701701.xyz/1111/定西.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%AE%9A%E8%A5%BF.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -302,7 +302,7 @@
           "id": "san-que-yi-kl-33",
           "trackNumber": 33,
           "name": "春末的南方城市(1111)",
-          "src": "https://r3.1701701.xyz/1111/春末的南方城市.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E6%98%A5%E6%9C%AB%E7%9A%84%E5%8D%97%E6%96%B9%E5%9F%8E%E5%B8%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -311,7 +311,7 @@
           "id": "san-que-yi-kl-34",
           "trackNumber": 34,
           "name": "天空之城(1111)",
-          "src": "https://r3.1701701.xyz/1111/天空之城.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -320,7 +320,7 @@
           "id": "san-que-yi-kl-35",
           "trackNumber": 35,
           "name": "关于郑州的记忆(1111)",
-          "src": "https://r3.1701701.xyz/1111/关于郑州的记忆.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -329,7 +329,7 @@
           "id": "san-que-yi-kl-36",
           "trackNumber": 36,
           "name": "苍井空(1111)",
-          "src": "https://r3.1701701.xyz/1111/苍井空.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E8%8B%8D%E4%BA%95%E7%A9%BA.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -338,7 +338,7 @@
           "id": "san-que-yi-kl-37",
           "trackNumber": 37,
           "name": "秋天的老狼(1111)",
-          "src": "https://r3.1701701.xyz/1111/秋天的老狼.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E7%A7%8B%E5%A4%A9%E7%9A%84%E8%80%81%E7%8B%BC.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -347,7 +347,7 @@
           "id": "san-que-yi-kl-38",
           "trackNumber": 38,
           "name": "铅笔(1111)",
-          "src": "https://r3.1701701.xyz/1111/铅笔.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E9%93%85%E7%AC%94.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -356,7 +356,7 @@
           "id": "san-que-yi-kl-39",
           "trackNumber": 39,
           "name": "鼠说(1111)",
-          "src": "https://r3.1701701.xyz/1111/鼠说.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E9%BC%A0%E8%AF%B4.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -365,7 +365,7 @@
           "id": "san-que-yi-kl-40",
           "trackNumber": 40,
           "name": "和你在一起+李志二次出场(1111)",
-          "src": "https://r3.1701701.xyz/1111/和你在一起_LZ二次出场.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7_LZ%E4%BA%8C%E6%AC%A1%E5%87%BA%E5%9C%BA.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -374,7 +374,7 @@
           "id": "san-que-yi-kl-41",
           "trackNumber": 41,
           "name": "杭州(1111)",
-          "src": "https://r3.1701701.xyz/1111/杭州.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E6%9D%AD%E5%B7%9E.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -383,7 +383,7 @@
           "id": "san-que-yi-kl-42",
           "trackNumber": 42,
           "name": "董卓瑶(1111)",
-          "src": "https://r3.1701701.xyz/1111/董卓瑶.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E8%91%A3%E5%8D%93%E7%91%B6.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -392,7 +392,7 @@
           "id": "san-que-yi-kl-43",
           "trackNumber": 43,
           "name": "南京越来越远(1111)",
-          "src": "https://r3.1701701.xyz/1111/这谜一样的旅途我已走了很远.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E8%BF%99%E8%B0%9C%E4%B8%80%E6%A0%B7%E7%9A%84%E6%97%85%E9%80%94%E6%88%91%E5%B7%B2%E8%B5%B0%E4%BA%86%E5%BE%88%E8%BF%9C.mp3",
           "lrc": "",
           "cover": "https://p1.music.126.net/L7SYrgl6vT8teZh9RS3JfQ==/109951172357992296.jpg",
           "enabled": true
@@ -401,7 +401,7 @@
           "id": "san-que-yi-kl-44",
           "trackNumber": 44,
           "name": "梵高先生(1111)",
-          "src": "https://r3.1701701.xyz/1111/梵高先生.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -410,7 +410,7 @@
           "id": "san-que-yi-kl-45",
           "trackNumber": 45,
           "name": "这个世界会好吗(1111)",
-          "src": "https://r3.1701701.xyz/1111/这个世界会好吗.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -419,7 +419,7 @@
           "id": "san-que-yi-kl-46",
           "trackNumber": 46,
           "name": "倒影(1111)",
-          "src": "https://r3.1701701.xyz/1111/倒影.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%80%92%E5%BD%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -428,7 +428,7 @@
           "id": "san-que-yi-kl-47",
           "trackNumber": 47,
           "name": "下雨(1111)",
-          "src": "https://r3.1701701.xyz/1111/下雨.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%8B%E9%9B%A8.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -437,7 +437,7 @@
           "id": "san-que-yi-kl-48",
           "trackNumber": 48,
           "name": "被禁忌的游戏(1111)",
-          "src": "https://r3.1701701.xyz/1111/被禁忌的游戏.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E8%A2%AB%E7%A6%81%E5%BF%8C%E7%9A%84%E6%B8%B8%E6%88%8F.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -446,7 +446,7 @@
           "id": "san-que-yi-kl-49",
           "trackNumber": 49,
           "name": "来了(1111)",
-          "src": "https://r3.1701701.xyz/1111/来了.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E6%9D%A5%E4%BA%86.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -455,7 +455,7 @@
           "id": "san-que-yi-kl-50",
           "trackNumber": 50,
           "name": "忽然(1111)",
-          "src": "https://r3.1701701.xyz/1111/忽然.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%BF%BD%E7%84%B6.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -464,7 +464,7 @@
           "id": "san-que-yi-kl-51",
           "trackNumber": 51,
           "name": "热河+成员介绍(1111)",
-          "src": "https://r3.1701701.xyz/1111/热河_成员介绍.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E7%83%AD%E6%B2%B3_%E6%88%90%E5%91%98%E4%BB%8B%E7%BB%8D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -473,7 +473,7 @@
           "id": "san-que-yi-kl-52",
           "trackNumber": 52,
           "name": "山阴路的夏天(1111)",
-          "src": "https://r3.1701701.xyz/1111/山阴路的夏天.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -482,7 +482,7 @@
           "id": "san-que-yi-kl-53",
           "trackNumber": 53,
           "name": "花瓶(1111)",
-          "src": "https://r3.1701701.xyz/1111/花瓶_原唱ZWW.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E8%8A%B1%E7%93%B6_%E5%8E%9F%E5%94%B1ZWW.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -491,7 +491,7 @@
           "id": "san-que-yi-kl-54",
           "trackNumber": 54,
           "name": "中间talk-01(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-01.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-01.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -500,7 +500,7 @@
           "id": "san-que-yi-kl-55",
           "trackNumber": 55,
           "name": "中间talk-02(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-02.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-02.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -509,7 +509,7 @@
           "id": "san-que-yi-kl-56",
           "trackNumber": 56,
           "name": "中间talk-03(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-03.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-03.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -518,7 +518,7 @@
           "id": "san-que-yi-kl-57",
           "trackNumber": 57,
           "name": "中间talk-04-关于新歌的对话(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-04_关于新歌的对话.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-04_%E5%85%B3%E4%BA%8E%E6%96%B0%E6%AD%8C%E7%9A%84%E5%AF%B9%E8%AF%9D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -527,7 +527,7 @@
           "id": "san-que-yi-kl-58",
           "trackNumber": 58,
           "name": "中间talk-05(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-05.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-05.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -536,7 +536,7 @@
           "id": "san-que-yi-kl-59",
           "trackNumber": 59,
           "name": "中间talk-06-致谢环节(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-06_致谢环节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-06_%E8%87%B4%E8%B0%A2%E7%8E%AF%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -545,7 +545,7 @@
           "id": "san-que-yi-kl-60",
           "trackNumber": 60,
           "name": "中间talk-07-安可前说的话(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-07_安可前说的话.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-07_%E5%AE%89%E5%8F%AF%E5%89%8D%E8%AF%B4%E7%9A%84%E8%AF%9D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -554,7 +554,7 @@
           "id": "san-que-yi-kl-61",
           "trackNumber": 61,
           "name": "中间talk-08-结尾落幕(1111)",
-          "src": "https://r3.1701701.xyz/1111/中间talk-08_结尾落幕.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%81%E7%BC%BA%E5%A3%B9%E5%90%89%E9%9A%86%E5%9D%A1%E7%AB%99/1111/%E4%B8%AD%E9%97%B4talk-08_%E7%BB%93%E5%B0%BE%E8%90%BD%E5%B9%95.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3566,7 +3566,7 @@
           "id": "volume1-01",
           "trackNumber": 1,
           "name": "黒い封筒(2004)(黑色信封Black Envelope)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A1 黒い封筒(2004)(黑色信封Black Envelope).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A1%20%E9%BB%92%E3%81%84%E5%B0%81%E7%AD%92(2004)(%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81Black%20Envelope).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3575,7 +3575,7 @@
           "id": "volume1-02",
           "trackNumber": 2,
           "name": "晩春の南方都市(2005)(春末的南方城市A southern city in a late spring day)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A2 晩春の南方都市(2005)(春末的南方城市A southern city in a late spring day).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A2%20%E6%99%A9%E6%98%A5%E3%81%AE%E5%8D%97%E6%96%B9%E9%83%BD%E5%B8%82(2005)(%E6%98%A5%E6%9C%AB%E7%9A%84%E5%8D%97%E6%96%B9%E5%9F%8E%E5%B8%82A%20southern%20city%20in%20a%20late%20spring%20day).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3584,7 +3584,7 @@
           "id": "volume1-03",
           "trackNumber": 3,
           "name": "君と(2006)(和你在一起Be with you)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A3 君と(2006)(和你在一起Be with you).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A3%20%E5%90%9B%E3%81%A8(2006)(%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7Be%20with%20you).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3593,7 +3593,7 @@
           "id": "volume1-04",
           "trackNumber": 4,
           "name": "青い空(2009)(苍井空Sky city)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A4 青い空(2009)(苍井空Sky city).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A4%20%E9%9D%92%E3%81%84%E7%A9%BA(2009)(%E8%8B%8D%E4%BA%95%E7%A9%BASky%20city).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3602,7 +3602,7 @@
           "id": "volume1-05",
           "trackNumber": 5,
           "name": "天空の城(2009)(天空之城Sky city)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A5 天空の城(2009)(天空之城Sky city).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A5%20%E5%A4%A9%E7%A9%BA%E3%81%AE%E5%9F%8E(2009)(%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8ESky%20city).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3611,7 +3611,7 @@
           "id": "volume1-06",
           "trackNumber": 6,
           "name": "壁のヒマワリ(2010)(墙上的向日葵Sunflower on the wall)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A6 壁のヒマワリ(2010)(墙上的向日葵Sunflower on the wall).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A6%20%E5%A3%81%E3%81%AE%E3%83%92%E3%83%9E%E3%83%AF%E3%83%AA(2010)(%E5%A2%99%E4%B8%8A%E7%9A%84%E5%90%91%E6%97%A5%E8%91%B5Sunflower%20on%20the%20wall).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3620,7 +3620,7 @@
           "id": "volume1-07",
           "trackNumber": 7,
           "name": "鄭州の記憶(2010)(关于郑州的记忆Memory about Zhengzhou )",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A7 鄭州の記憶(2010)(关于郑州的记忆Memory about Zhengzhou ).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A7%20%E9%84%AD%E5%B7%9E%E3%81%AE%E8%A8%98%E6%86%B6(2010)(%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86Memory%20about%20Zhengzhou%20).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3629,7 +3629,7 @@
           "id": "volume1-08",
           "trackNumber": 8,
           "name": "山陰路の夏(2011)(山阴路的夏天Nanjing summer day)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A8 山陰路の夏(2011)(山阴路的夏天Nanjing summer day).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A8%20%E5%B1%B1%E9%99%B0%E8%B7%AF%E3%81%AE%E5%A4%8F(2011)(%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9Nanjing%20summer%20day).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3638,7 +3638,7 @@
           "id": "volume1-09",
           "trackNumber": 9,
           "name": "杭州(2011)(杭州Hangzhou)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A9 杭州(2011)(杭州Hangzhou).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A9%20%E6%9D%AD%E5%B7%9E(2011)(%E6%9D%AD%E5%B7%9EHangzhou).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3647,7 +3647,7 @@
           "id": "volume1-10",
           "trackNumber": 10,
           "name": "この世界に未来はあるの？(2006)(这个世界会好吗Has man a future)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/A10 この世界に未来はあるの？(2006)(这个世界会好吗Has man a future).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/A10%20%E3%81%93%E3%81%AE%E4%B8%96%E7%95%8C%E3%81%AB%E6%9C%AA%E6%9D%A5%E3%81%AF%E3%81%82%E3%82%8B%E3%81%AE%EF%BC%9F(2006)(%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97Has%20man%20a%20future).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3656,7 +3656,7 @@
           "id": "volume1-11",
           "trackNumber": 11,
           "name": "黒い封筒(2015 Live)(黑色信封Black Envelope)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B1 黒い封筒(2015 Live)(黑色信封Black Envelope).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B1%20%E9%BB%92%E3%81%84%E5%B0%81%E7%AD%92(2015%20Live)(%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81Black%20Envelope).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3665,7 +3665,7 @@
           "id": "volume1-12",
           "trackNumber": 12,
           "name": "晩春の南方都市(2015 Live)(春末的南方城市A southern city in a late spring day)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B2 晩春の南方都市(2015 Live)(春末的南方城市A southern city in a late spring day).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B2%20%E6%99%A9%E6%98%A5%E3%81%AE%E5%8D%97%E6%96%B9%E9%83%BD%E5%B8%82(2015%20Live)(%E6%98%A5%E6%9C%AB%E7%9A%84%E5%8D%97%E6%96%B9%E5%9F%8E%E5%B8%82A%20southern%20city%20in%20a%20late%20spring%20day).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3674,7 +3674,7 @@
           "id": "volume1-13",
           "trackNumber": 13,
           "name": "君と(2015 Live)(和你在一起Be with you)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B3 君と(2015 Live)(和你在一起Be with you).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B3%20%E5%90%9B%E3%81%A8(2015%20Live)(%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7Be%20with%20you).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3683,7 +3683,7 @@
           "id": "volume1-14",
           "trackNumber": 14,
           "name": "青い空(2015 Live)(苍井空Blue sky)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B4 青い空(2015 Live)(苍井空Blue sky).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B4%20%E9%9D%92%E3%81%84%E7%A9%BA(2015%20Live)(%E8%8B%8D%E4%BA%95%E7%A9%BABlue%20sky).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3692,7 +3692,7 @@
           "id": "volume1-15",
           "trackNumber": 15,
           "name": "天空の城(2017 Live)(天空之城Sky city)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B5 天空の城(2017 Live)(天空之城Sky city).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B5%20%E5%A4%A9%E7%A9%BA%E3%81%AE%E5%9F%8E(2017%20Live)(%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8ESky%20city).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3701,7 +3701,7 @@
           "id": "volume1-16",
           "trackNumber": 16,
           "name": "壁のヒマワリ(2014 Live)(墙上的向日葵Sunflower on the wall)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B6 壁のヒマワリ(2014 Live)(墙上的向日葵Sunflower on the wall).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B6%20%E5%A3%81%E3%81%AE%E3%83%92%E3%83%9E%E3%83%AF%E3%83%AA(2014%20Live)(%E5%A2%99%E4%B8%8A%E7%9A%84%E5%90%91%E6%97%A5%E8%91%B5Sunflower%20on%20the%20wall).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3710,7 +3710,7 @@
           "id": "volume1-17",
           "trackNumber": 17,
           "name": "鄭州の記憶(2018 Live)(关于郑州的记忆Memory about Zhengzhou)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B7 鄭州の記憶(2018 Live)(关于郑州的记忆Memory about Zhengzhou).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B7%20%E9%84%AD%E5%B7%9E%E3%81%AE%E8%A8%98%E6%86%B6(2018%20Live)(%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86Memory%20about%20Zhengzhou).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3719,7 +3719,7 @@
           "id": "volume1-18",
           "trackNumber": 18,
           "name": "山陰路の夏(2014 Live)(山阴路的夏天Nanjing summer day)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B8 山陰路の夏(2014 Live)(山阴路的夏天Nanjing summer day).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B8%20%E5%B1%B1%E9%99%B0%E8%B7%AF%E3%81%AE%E5%A4%8F(2014%20Live)(%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9Nanjing%20summer%20day).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3728,7 +3728,7 @@
           "id": "volume1-19",
           "trackNumber": 19,
           "name": "杭州(2015 Live)(杭州Hangzhou)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B9 杭州(2015 Live)(杭州Hangzhou).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B9%20%E6%9D%AD%E5%B7%9E(2015%20Live)(%E6%9D%AD%E5%B7%9EHangzhou).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3737,7 +3737,7 @@
           "id": "volume1-20",
           "trackNumber": 20,
           "name": "この世界に未来はあるの？(2018 Live)(这个世界会好吗Has man a future)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018/B10 この世界に未来はあるの？(2018 Live)(这个世界会好吗Has man a future).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018/B10%20%E3%81%93%E3%81%AE%E4%B8%96%E7%95%8C%E3%81%AB%E6%9C%AA%E6%9D%A5%E3%81%AF%E3%81%82%E3%82%8B%E3%81%AE%EF%BC%9F(2018%20Live)(%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97Has%20man%20a%20future).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3756,7 +3756,7 @@
           "id": "volume2-01",
           "trackNumber": 1,
           "name": "禁じられた遊び(被禁忌的游戏2004)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A1 禁じられた遊び(被禁忌的游戏2004).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A1%20%E7%A6%81%E3%81%98%E3%82%89%E3%82%8C%E3%81%9F%E9%81%8A%E3%81%B3(%E8%A2%AB%E7%A6%81%E5%BF%8C%E7%9A%84%E6%B8%B8%E6%88%8F2004).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3765,7 +3765,7 @@
           "id": "volume2-02",
           "trackNumber": 2,
           "name": "ゴッホ(梵高先生2005)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A2 ゴッホ(梵高先生2005).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A2%20%E3%82%B4%E3%83%83%E3%83%9B(%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F2005).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3774,7 +3774,7 @@
           "id": "volume2-03",
           "trackNumber": 3,
           "name": "ママ(妈妈2006)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A3 ママ(妈妈2006).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A3%20%E3%83%9E%E3%83%9E(%E5%A6%88%E5%A6%882006).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3783,7 +3783,7 @@
           "id": "volume2-04",
           "trackNumber": 4,
           "name": "結婚(结婚 feat.老狼&万晓利(2009)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A4 結婚(结婚 feat.老狼&万晓利(2009).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A4%20%E7%B5%90%E5%A9%9A(%E7%BB%93%E5%A9%9A%20feat.%E8%80%81%E7%8B%BC%26%E4%B8%87%E6%99%93%E5%88%A9(2009).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3792,7 +3792,7 @@
           "id": "volume2-05",
           "trackNumber": 5,
           "name": "鉛筆(铅笔2010)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A5 鉛筆(铅笔2010).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A5%20%E9%89%9B%E7%AD%86(%E9%93%85%E7%AC%942010).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3801,7 +3801,7 @@
           "id": "volume2-06",
           "trackNumber": 6,
           "name": "探しもの(寻找2011)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A6 探しもの(寻找2011).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A6%20%E6%8E%A2%E3%81%97%E3%82%82%E3%81%AE(%E5%AF%BB%E6%89%BE2011).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3810,7 +3810,7 @@
           "id": "volume2-07",
           "trackNumber": 7,
           "name": "門(门2011)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A7 門(门2011).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A7%20%E9%96%80(%E9%97%A82011).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3819,7 +3819,7 @@
           "id": "volume2-08",
           "trackNumber": 8,
           "name": "雨(下雨2011)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A8 雨(下雨2011).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A8%20%E9%9B%A8(%E4%B8%8B%E9%9B%A82011).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3828,7 +3828,7 @@
           "id": "volume2-09",
           "trackNumber": 9,
           "name": "見える(看见2014)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A9 見える(看见2014).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A9%20%E8%A6%8B%E3%81%88%E3%82%8B(%E7%9C%8B%E8%A7%812014).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3837,7 +3837,7 @@
           "id": "volume2-10",
           "trackNumber": 10,
           "name": "熱河(热河2014)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A10 熱河(热河2014).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A10%20%E7%86%B1%E6%B2%B3(%E7%83%AD%E6%B2%B32014).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3846,7 +3846,7 @@
           "id": "volume2-11",
           "trackNumber": 11,
           "name": "死人(死人2016)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A11 死人(死人2016).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A11%20%E6%AD%BB%E4%BA%BA(%E6%AD%BB%E4%BA%BA2016).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3855,7 +3855,7 @@
           "id": "volume2-12",
           "trackNumber": 12,
           "name": "あなたが北京を去ってから、僕に話しかける人はいない(你离开了南京,从此没有人和我说话2005)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/A12 あなたが北京を去ってから、僕に話しかける人はいない(你离开了南京,从此没有人和我说话2005).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/A12%20%E3%81%82%E3%81%AA%E3%81%9F%E3%81%8C%E5%8C%97%E4%BA%AC%E3%82%92%E5%8E%BB%E3%81%A3%E3%81%A6%E3%81%8B%E3%82%89%E3%80%81%E5%83%95%E3%81%AB%E8%A9%B1%E3%81%97%E3%81%8B%E3%81%91%E3%82%8B%E4%BA%BA%E3%81%AF%E3%81%84%E3%81%AA%E3%81%84(%E4%BD%A0%E7%A6%BB%E5%BC%80%E4%BA%86%E5%8D%97%E4%BA%AC%2C%E4%BB%8E%E6%AD%A4%E6%B2%A1%E6%9C%89%E4%BA%BA%E5%92%8C%E6%88%91%E8%AF%B4%E8%AF%9D2005).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3864,7 +3864,7 @@
           "id": "volume2-13",
           "trackNumber": 13,
           "name": "禁じられた遊び(被禁忌的游戏2019 Live 洗心革面)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B1 禁じられた遊び(被禁忌的游戏2019 Live 洗心革面).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B1%20%E7%A6%81%E3%81%98%E3%82%89%E3%82%8C%E3%81%9F%E9%81%8A%E3%81%B3(%E8%A2%AB%E7%A6%81%E5%BF%8C%E7%9A%84%E6%B8%B8%E6%88%8F2019%20Live%20%E6%B4%97%E5%BF%83%E9%9D%A9%E9%9D%A2).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3873,7 +3873,7 @@
           "id": "volume2-14",
           "trackNumber": 14,
           "name": "ゴッホ(梵高先生2015 Live 玩偶之主录音棚)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B2 ゴッホ(梵高先生2015 Live 玩偶之主录音棚).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B2%20%E3%82%B4%E3%83%83%E3%83%9B(%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F2015%20Live%20%E7%8E%A9%E5%81%B6%E4%B9%8B%E4%B8%BB%E5%BD%95%E9%9F%B3%E6%A3%9A).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3882,7 +3882,7 @@
           "id": "volume2-15",
           "trackNumber": 15,
           "name": "ママ(妈妈2015 Live i-O)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B3 ママ(妈妈2015 Live i-O).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B3%20%E3%83%9E%E3%83%9E(%E5%A6%88%E5%A6%882015%20Live%20i-O).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3891,7 +3891,7 @@
           "id": "volume2-16",
           "trackNumber": 16,
           "name": "結婚(结婚2009 Live工体东路没有人)",
-          "src": "https://r3.1701701.xyz/best/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(叙事歌)/B4 結婚(结婚2009 Live工体东路没有人).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B4%20%E7%B5%90%E5%A9%9A(%E7%BB%93%E5%A9%9A2009%20Live%E5%B7%A5%E4%BD%93%E4%B8%9C%E8%B7%AF%E6%B2%A1%E6%9C%89%E4%BA%BA).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3900,7 +3900,7 @@
           "id": "volume2-17",
           "trackNumber": 17,
           "name": "鉛筆(铅笔2017 Live 电声与管弦乐)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B5 铅笔(2017 Live 电声与管弦乐).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B5%20%E9%93%85%E7%AC%94(2017%20Live%20%E7%94%B5%E5%A3%B0%E4%B8%8E%E7%AE%A1%E5%BC%A6%E4%B9%90).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3909,7 +3909,7 @@
           "id": "volume2-18",
           "trackNumber": 18,
           "name": "探しもの(寻找2018 Live 电声与管弦乐II)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B6 探しもの(寻找2018 Live 电声与管弦乐II).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B6%20%E6%8E%A2%E3%81%97%E3%82%82%E3%81%AE(%E5%AF%BB%E6%89%BE2018%20Live%20%E7%94%B5%E5%A3%B0%E4%B8%8E%E7%AE%A1%E5%BC%A6%E4%B9%90II).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3918,7 +3918,7 @@
           "id": "volume2-19",
           "trackNumber": 19,
           "name": "門(门2017 Live 电声与管弦乐)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B7 門(门2017 Live 电声与管弦乐).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B7%20%E9%96%80(%E9%97%A82017%20Live%20%E7%94%B5%E5%A3%B0%E4%B8%8E%E7%AE%A1%E5%BC%A6%E4%B9%90).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3927,7 +3927,7 @@
           "id": "volume2-20",
           "trackNumber": 20,
           "name": "雨(下雨2015 Live i-O)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B8 雨(下雨2015 Live i-O).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B8%20%E9%9B%A8(%E4%B8%8B%E9%9B%A82015%20Live%20i-O).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3936,7 +3936,7 @@
           "id": "volume2-21",
           "trackNumber": 21,
           "name": "見える(看见2018 Live 爵士乐与不插电)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B9 見える(看见2018 Live 爵士乐与不插电).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B9%20%E8%A6%8B%E3%81%88%E3%82%8B(%E7%9C%8B%E8%A7%812018%20Live%20%E7%88%B5%E5%A3%AB%E4%B9%90%E4%B8%8E%E4%B8%8D%E6%8F%92%E7%94%B5).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3945,7 +3945,7 @@
           "id": "volume2-22",
           "trackNumber": 22,
           "name": "熱河(热河2018 Live 爵士乐与不插电)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B10 熱河(热河2018 Live 爵士乐与不插电).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B10%20%E7%86%B1%E6%B2%B3(%E7%83%AD%E6%B2%B32018%20Live%20%E7%88%B5%E5%A3%AB%E4%B9%90%E4%B8%8E%E4%B8%8D%E6%8F%92%E7%94%B5).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3954,7 +3954,7 @@
           "id": "volume2-23",
           "trackNumber": 23,
           "name": "死人(死人2018 Live 爵士乐与不插电)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B11 死人(死人2018 Live 爵士乐与不插电).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B11%20%E6%AD%BB%E4%BA%BA(%E6%AD%BB%E4%BA%BA2018%20Live%20%E7%88%B5%E5%A3%AB%E4%B9%90%E4%B8%8E%E4%B8%8D%E6%8F%92%E7%94%B5).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3963,7 +3963,7 @@
           "id": "volume2-24",
           "trackNumber": 24,
           "name": "あなたが北京を去ってから、僕に話しかける人はいない(你离开了南京,从此没有人和我说话2015 Live 看见)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.2)Ballads(叙事歌)/B12 あなたが北京を去ってから、僕に話しかける人はいない(你离开了南京,从此没有人和我说话2015 Live 看见).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.2)Ballads(%E5%8F%99%E4%BA%8B%E6%AD%8C)/B12%20%E3%81%82%E3%81%AA%E3%81%9F%E3%81%8C%E5%8C%97%E4%BA%AC%E3%82%92%E5%8E%BB%E3%81%A3%E3%81%A6%E3%81%8B%E3%82%89%E3%80%81%E5%83%95%E3%81%AB%E8%A9%B1%E3%81%97%E3%81%8B%E3%81%91%E3%82%8B%E4%BA%BA%E3%81%AF%E3%81%84%E3%81%AA%E3%81%84(%E4%BD%A0%E7%A6%BB%E5%BC%80%E4%BA%86%E5%8D%97%E4%BA%AC%2C%E4%BB%8E%E6%AD%A4%E6%B2%A1%E6%9C%89%E4%BA%BA%E5%92%8C%E6%88%91%E8%AF%B4%E8%AF%9D2015%20Live%20%E7%9C%8B%E8%A7%81).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3982,7 +3982,7 @@
           "id": "volume3-01",
           "trackNumber": 1,
           "name": "カフカ(2004)(卡夫卡_Kafka)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A1 カフカ(2004)(卡夫卡_Kafka).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A1%20%E3%82%AB%E3%83%95%E3%82%AB(2004)(%E5%8D%A1%E5%A4%AB%E5%8D%A1_Kafka).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -3991,7 +3991,7 @@
           "id": "volume3-02",
           "trackNumber": 2,
           "name": "董卓瑶(2005)(董卓瑶_Ms_Dong)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A2 董卓瑶(2005)(董卓瑶_Ms_Dong).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A2%20%E8%91%A3%E5%8D%93%E7%91%B6(2005)(%E8%91%A3%E5%8D%93%E7%91%B6_Ms_Dong).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4000,7 +4000,7 @@
           "id": "volume3-03",
           "trackNumber": 3,
           "name": "翁慶年(ウェン・チンニエン)の６ポンド(2006)(翁庆年的六英镑_Wengs_6_Pounds)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A3 翁慶年(ウェン・チンニエン)の６ポンド(2006)(翁庆年的六英镑_Wengs_6_Pounds).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A3%20%E7%BF%81%E6%85%B6%E5%B9%B4(%E3%82%A6%E3%82%A7%E3%83%B3%E3%83%BB%E3%83%81%E3%83%B3%E3%83%8B%E3%82%A8%E3%83%B3)%E3%81%AE%EF%BC%96%E3%83%9D%E3%83%B3%E3%83%89(2006)(%E7%BF%81%E5%BA%86%E5%B9%B4%E7%9A%84%E5%85%AD%E8%8B%B1%E9%95%91_Wengs_6_Pounds).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4009,7 +4009,7 @@
           "id": "volume3-04",
           "trackNumber": 4,
           "name": "愛(2009)(爱_Love)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A4 愛(2009)(爱_Love).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A4%20%E6%84%9B(2009)(%E7%88%B1_Love).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4018,7 +4018,7 @@
           "id": "volume3-05",
           "trackNumber": 5,
           "name": "突然(2010)(忽然_Suddenly)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A5 突然(2010)(忽然_Suddenly).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A5%20%E7%AA%81%E7%84%B6(2010)(%E5%BF%BD%E7%84%B6_Suddenly).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4027,7 +4027,7 @@
           "id": "volume3-06",
           "trackNumber": 6,
           "name": "果て(2011)(尽头_The_End)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A6 果て(2011)(尽头_The_End).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A6%20%E6%9E%9C%E3%81%A6(2011)(%E5%B0%BD%E5%A4%B4_The_End).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4036,7 +4036,7 @@
           "id": "volume3-07",
           "trackNumber": 7,
           "name": "象(2014)(⼤象_Elephant)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A7 象(2014)(⼤象_Elephant).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A7%20%E8%B1%A1(2014)(%E2%BC%A4%E8%B1%A1_Elephant).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4045,7 +4045,7 @@
           "id": "volume3-08",
           "trackNumber": 8,
           "name": "定西(2014)(定西_Dingxi)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A8 定西(2014)(定西_Dingxi).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A8%20%E5%AE%9A%E8%A5%BF(2014)(%E5%AE%9A%E8%A5%BF_Dingxi).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4054,7 +4054,7 @@
           "id": "volume3-09",
           "trackNumber": 9,
           "name": "ある夜(2016)(⼀个夜晚_One_Night_in_Nowhere)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A9 ある夜(2016)(⼀个夜晚_One_Night_in_Nowhere).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A9%20%E3%81%82%E3%82%8B%E5%A4%9C(2016)(%E2%BC%80%E4%B8%AA%E5%A4%9C%E6%99%9A_One_Night_in_Nowhere).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4063,7 +4063,7 @@
           "id": "volume3-10",
           "trackNumber": 10,
           "name": "反射(2009)(倒影_Reflection)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/A10 反射(2009)(倒影_Reflection).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/A10%20%E5%8F%8D%E5%B0%84(2009)(%E5%80%92%E5%BD%B1_Reflection).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4072,7 +4072,7 @@
           "id": "volume3-11",
           "trackNumber": 11,
           "name": "カフカ(2016 Live_动静)(卡夫卡_Kafka)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B1 カフカ(2016 Live_动静)(卡夫卡_Kafka).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B1%20%E3%82%AB%E3%83%95%E3%82%AB(2016%20Live_%E5%8A%A8%E9%9D%99)(%E5%8D%A1%E5%A4%AB%E5%8D%A1_Kafka).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4081,7 +4081,7 @@
           "id": "volume3-12",
           "trackNumber": 12,
           "name": "董卓瑶(2015 Live_看见)(董卓瑶_Ms_Dong)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B2 董卓瑶(2015 Live_看见)(董卓瑶_Ms_Dong).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B2%20%E8%91%A3%E5%8D%93%E7%91%B6(2015%20Live_%E7%9C%8B%E8%A7%81)(%E8%91%A3%E5%8D%93%E7%91%B6_Ms_Dong).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4090,7 +4090,7 @@
           "id": "volume3-13",
           "trackNumber": 13,
           "name": "翁慶年の６ポンド(2018 Live_爵士乐与不插电)(翁庆年的六英镑_Wengs_6_Pounds)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B3 翁慶年の６ポンド(2018 Live_爵士乐与不插电)(翁庆年的六英镑_Wengs_6_Pounds).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B3%20%E7%BF%81%E6%85%B6%E5%B9%B4%E3%81%AE%EF%BC%96%E3%83%9D%E3%83%B3%E3%83%89(2018%20Live_%E7%88%B5%E5%A3%AB%E4%B9%90%E4%B8%8E%E4%B8%8D%E6%8F%92%E7%94%B5)(%E7%BF%81%E5%BA%86%E5%B9%B4%E7%9A%84%E5%85%AD%E8%8B%B1%E9%95%91_Wengs_6_Pounds).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4099,7 +4099,7 @@
           "id": "volume3-14",
           "trackNumber": 14,
           "name": "愛(2018 Live_爵士乐与不插电)(爱_Love)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B4 愛(2018 Live_爵士乐与不插电)(爱_Love).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B4%20%E6%84%9B(2018%20Live_%E7%88%B5%E5%A3%AB%E4%B9%90%E4%B8%8E%E4%B8%8D%E6%8F%92%E7%94%B5)(%E7%88%B1_Love).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4108,7 +4108,7 @@
           "id": "volume3-15",
           "trackNumber": 15,
           "name": "突然(2016 Live_动静)(忽然_Suddenly)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B5 突然(2016 Live_动静)(忽然_Suddenly).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B5%20%E7%AA%81%E7%84%B6(2016%20Live_%E5%8A%A8%E9%9D%99)(%E5%BF%BD%E7%84%B6_Suddenly).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4117,7 +4117,7 @@
           "id": "volume3-16",
           "trackNumber": 16,
           "name": "果て(2017 Live_电声与管弦乐)(尽头_The_End)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B6 果て(2017 Live_电声与管弦乐)(尽头_The_End).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B6%20%E6%9E%9C%E3%81%A6(2017%20Live_%E7%94%B5%E5%A3%B0%E4%B8%8E%E7%AE%A1%E5%BC%A6%E4%B9%90)(%E5%B0%BD%E5%A4%B4_The_End).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4126,7 +4126,7 @@
           "id": "volume3-17",
           "trackNumber": 17,
           "name": "象(2017 Live_电声与管弦乐)(⼤象_Elephant)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B7 象(2017 Live_电声与管弦乐)(⼤象_Elephant).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B7%20%E8%B1%A1(2017%20Live_%E7%94%B5%E5%A3%B0%E4%B8%8E%E7%AE%A1%E5%BC%A6%E4%B9%90)(%E2%BC%A4%E8%B1%A1_Elephant).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4135,7 +4135,7 @@
           "id": "volume3-18",
           "trackNumber": 18,
           "name": "定西(2017 Live_电声与管弦乐)(定西_Dingxi)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B8 定西(2017 Live_电声与管弦乐)(定西_Dingxi).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B8%20%E5%AE%9A%E8%A5%BF(2017%20Live_%E7%94%B5%E5%A3%B0%E4%B8%8E%E7%AE%A1%E5%BC%A6%E4%B9%90)(%E5%AE%9A%E8%A5%BF_Dingxi).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4144,7 +4144,7 @@
           "id": "volume3-19",
           "trackNumber": 19,
           "name": "ある夜(2019 Live_洗心革面)(⼀个夜晚_One_Night_in_Nowhere)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B9 ある夜(2019 Live_洗心革面)(⼀个夜晚_One_Night_in_Nowhere).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B9%20%E3%81%82%E3%82%8B%E5%A4%9C(2019%20Live_%E6%B4%97%E5%BF%83%E9%9D%A9%E9%9D%A2)(%E2%BC%80%E4%B8%AA%E5%A4%9C%E6%99%9A_One_Night_in_Nowhere).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4153,7 +4153,7 @@
           "id": "volume3-20",
           "trackNumber": 20,
           "name": "反射(2019 Live_洗心革面)(倒影_Reflection)",
-          "src": "https://r3.1701701.xyz/best/Best Selection Songs 2004-2018 (Volume.3)倒影(Reflection)/B10 反射(2019 Live_洗心革面)(倒影_Reflection).mp3",
+          "src": "https://r2.1701701.xyz/mp3/Best%20Selection%20Songs%202004-2018%20(Volume.3)%E5%80%92%E5%BD%B1(Reflection)/B10%20%E5%8F%8D%E5%B0%84(2019%20Live_%E6%B4%97%E5%BF%83%E9%9D%A9%E9%9D%A2)(%E5%80%92%E5%BD%B1_Reflection).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4715,7 +4715,7 @@
           "id": "hongkong-morning-01",
           "trackNumber": 1,
           "name": "关于郑州的记忆+董卓瑶+春末的南方城市",
-          "src": "https://r1.1701701.xyz/香港早上好/关于郑州的记忆+董卓瑶+春末的南方城市 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86%2B%E8%91%A3%E5%8D%93%E7%91%B6%2B%E6%98%A5%E6%9C%AB%E7%9A%84%E5%8D%97%E6%96%B9%E5%9F%8E%E5%B8%82%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4724,7 +4724,7 @@
           "id": "hongkong-morning-02",
           "trackNumber": 2,
           "name": "和你在一起",
-          "src": "https://r1.1701701.xyz/香港早上好/和你在一起 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4733,7 +4733,7 @@
           "id": "hongkong-morning-03",
           "trackNumber": 3,
           "name": "天空之城",
-          "src": "https://r1.1701701.xyz/香港早上好/天空之城 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4742,7 +4742,7 @@
           "id": "hongkong-morning-04",
           "trackNumber": 4,
           "name": "定西&新年好 香港早上好",
-          "src": "https://r1.1701701.xyz/香港早上好/定西&新年好 香港早上好.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%AE%9A%E8%A5%BF%26%E6%96%B0%E5%B9%B4%E5%A5%BD%20%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4751,7 +4751,7 @@
           "id": "hongkong-morning-05",
           "trackNumber": 5,
           "name": "山阴路的夏天",
-          "src": "https://r1.1701701.xyz/香港早上好/山阴路的夏天 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4760,7 +4760,7 @@
           "id": "hongkong-morning-06",
           "trackNumber": 6,
           "name": "热河",
-          "src": "https://r1.1701701.xyz/香港早上好/热河 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E7%83%AD%E6%B2%B3%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4769,7 +4769,7 @@
           "id": "hongkong-morning-07",
           "trackNumber": 7,
           "name": "苍井空",
-          "src": "https://r1.1701701.xyz/香港早上好/苍井空 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E8%8B%8D%E4%BA%95%E7%A9%BA%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4778,7 +4778,7 @@
           "id": "hongkong-morning-08",
           "trackNumber": 8,
           "name": "被禁忌的游戏",
-          "src": "https://r1.1701701.xyz/香港早上好/被禁忌的游戏 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E9%A6%99%E6%B8%AF%E6%97%A9%E4%B8%8A%E5%A5%BD/%E8%A2%AB%E7%A6%81%E5%BF%8C%E7%9A%84%E6%B8%B8%E6%88%8F%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4797,7 +4797,7 @@
           "id": "taipei-morning-01",
           "trackNumber": 1,
           "name": "你好明天+不多+被禁忌的游戏",
-          "src": "https://r1.1701701.xyz/台北早上好/你好明天+不多+被禁忌的游戏 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E4%BD%A0%E5%A5%BD%E6%98%8E%E5%A4%A9%2B%E4%B8%8D%E5%A4%9A%2B%E8%A2%AB%E7%A6%81%E5%BF%8C%E7%9A%84%E6%B8%B8%E6%88%8F%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4806,7 +4806,7 @@
           "id": "taipei-morning-02",
           "trackNumber": 2,
           "name": "倒影",
-          "src": "https://r1.1701701.xyz/台北早上好/倒影 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%80%92%E5%BD%B1%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4815,7 +4815,7 @@
           "id": "taipei-morning-03",
           "trackNumber": 3,
           "name": "关于郑州的记忆+董卓瑶+春末的南方城市",
-          "src": "https://r1.1701701.xyz/台北早上好/关于郑州的记忆+董卓瑶+春末的南方城市 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86%2B%E8%91%A3%E5%8D%93%E7%91%B6%2B%E6%98%A5%E6%9C%AB%E7%9A%84%E5%8D%97%E6%96%B9%E5%9F%8E%E5%B8%82%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4824,7 +4824,7 @@
           "id": "taipei-morning-04",
           "trackNumber": 4,
           "name": "口琴与吉他",
-          "src": "https://r1.1701701.xyz/台北早上好/口琴与吉他 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%8F%A3%E7%90%B4%E4%B8%8E%E5%90%89%E4%BB%96%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4833,7 +4833,7 @@
           "id": "taipei-morning-05",
           "trackNumber": 5,
           "name": "和你在一起 (feat 李庭匡)",
-          "src": "https://r1.1701701.xyz/台北早上好/和你在一起 (feat 李庭匡) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7%20(feat%20%E6%9D%8E%E5%BA%AD%E5%8C%A1)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4842,7 +4842,7 @@
           "id": "taipei-morning-06",
           "trackNumber": 6,
           "name": "哦吼",
-          "src": "https://r1.1701701.xyz/台北早上好/哦吼 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%93%A6%E5%90%BC%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4851,7 +4851,7 @@
           "id": "taipei-morning-07",
           "trackNumber": 7,
           "name": "墙上的向日葵",
-          "src": "https://r1.1701701.xyz/台北早上好/墙上的向日葵 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%A2%99%E4%B8%8A%E7%9A%84%E5%90%91%E6%97%A5%E8%91%B5%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4860,7 +4860,7 @@
           "id": "taipei-morning-08",
           "trackNumber": 8,
           "name": "天空之城",
-          "src": "https://r1.1701701.xyz/台北早上好/天空之城 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4869,7 +4869,7 @@
           "id": "taipei-morning-09",
           "trackNumber": 9,
           "name": "安可出场+大象",
-          "src": "https://r1.1701701.xyz/台北早上好/安可出场+大象 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%AE%89%E5%8F%AF%E5%87%BA%E5%9C%BA%2B%E5%A4%A7%E8%B1%A1%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4878,7 +4878,7 @@
           "id": "taipei-morning-10",
           "trackNumber": 10,
           "name": "寻找+忽然+热河",
-          "src": "https://r1.1701701.xyz/台北早上好/寻找+忽然+热河 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%AF%BB%E6%89%BE%2B%E5%BF%BD%E7%84%B6%2B%E7%83%AD%E6%B2%B3%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4887,7 +4887,7 @@
           "id": "taipei-morning-11",
           "trackNumber": 11,
           "name": "尽头+来了",
-          "src": "https://r1.1701701.xyz/台北早上好/尽头+来了 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%B0%BD%E5%A4%B4%2B%E6%9D%A5%E4%BA%86%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4896,7 +4896,7 @@
           "id": "taipei-morning-12",
           "trackNumber": 12,
           "name": "山阴路的夏天",
-          "src": "https://r1.1701701.xyz/台北早上好/山阴路的夏天 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4905,7 +4905,7 @@
           "id": "taipei-morning-13",
           "trackNumber": 13,
           "name": "开场+鸵鸟",
-          "src": "https://r1.1701701.xyz/台北早上好/开场+鸵鸟 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E5%BC%80%E5%9C%BA%2B%E9%B8%B5%E9%B8%9F%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4914,7 +4914,7 @@
           "id": "taipei-morning-14",
           "trackNumber": 14,
           "name": "来了",
-          "src": "https://r1.1701701.xyz/台北早上好/来了 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E6%9D%A5%E4%BA%86%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4923,7 +4923,7 @@
           "id": "taipei-morning-15",
           "trackNumber": 15,
           "name": "苍井空",
-          "src": "https://r1.1701701.xyz/台北早上好/苍井空 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E8%8B%8D%E4%BA%95%E7%A9%BA%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4932,7 +4932,7 @@
           "id": "taipei-morning-16",
           "trackNumber": 16,
           "name": "这个世界会好吗+定西",
-          "src": "https://r1.1701701.xyz/台北早上好/这个世界会好吗+定西 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97%2B%E5%AE%9A%E8%A5%BF%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4941,7 +4941,7 @@
           "id": "taipei-morning-17",
           "trackNumber": 17,
           "name": "门",
-          "src": "https://r1.1701701.xyz/台北早上好/门 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E9%97%A8%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4950,7 +4950,7 @@
           "id": "taipei-morning-18",
           "trackNumber": 18,
           "name": "黑色信封",
-          "src": "https://r1.1701701.xyz/台北早上好/黑色信封 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4959,7 +4959,7 @@
           "id": "taipei-morning-19",
           "trackNumber": 19,
           "name": "鼠说",
-          "src": "https://r1.1701701.xyz/台北早上好/鼠说 - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/%E5%8F%B0%E5%8C%97%E6%97%A9%E4%B8%8A%E5%A5%BD/%E9%BC%A0%E8%AF%B4%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4978,7 +4978,7 @@
           "id": "chengdu-2020-01",
           "trackNumber": 1,
           "name": "关于成都的记忆",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/关于成都的记忆(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E5%85%B3%E4%BA%8E%E6%88%90%E9%83%BD%E7%9A%84%E8%AE%B0%E5%BF%86(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4987,7 +4987,7 @@
           "id": "chengdu-2020-02",
           "trackNumber": 2,
           "name": "和你在一起",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/和你在一起(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -4996,7 +4996,7 @@
           "id": "chengdu-2020-03",
           "trackNumber": 3,
           "name": "墙上的向日葵",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/墙上的向日葵(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E5%A2%99%E4%B8%8A%E7%9A%84%E5%90%91%E6%97%A5%E8%91%B5(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5005,7 +5005,7 @@
           "id": "chengdu-2020-04",
           "trackNumber": 4,
           "name": "天空之城",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/天空之城(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5014,7 +5014,7 @@
           "id": "chengdu-2020-05",
           "trackNumber": 5,
           "name": "定西",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/定西(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E5%AE%9A%E8%A5%BF(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5023,7 +5023,7 @@
           "id": "chengdu-2020-06",
           "trackNumber": 6,
           "name": "梵高先生",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/梵高先生(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5032,7 +5032,7 @@
           "id": "chengdu-2020-07",
           "trackNumber": 7,
           "name": "热河",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/热河(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E7%83%AD%E6%B2%B3(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5041,7 +5041,7 @@
           "id": "chengdu-2020-08",
           "trackNumber": 8,
           "name": "结婚",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/结婚(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E7%BB%93%E5%A9%9A(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5050,7 +5050,7 @@
           "id": "chengdu-2020-09",
           "trackNumber": 9,
           "name": "董卓瑶",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/董卓瑶(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E8%91%A3%E5%8D%93%E7%91%B6(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5059,7 +5059,7 @@
           "id": "chengdu-2020-10",
           "trackNumber": 10,
           "name": "这个世界会好吗",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/这个世界会好吗(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5068,7 +5068,7 @@
           "id": "chengdu-2020-11",
           "trackNumber": 11,
           "name": "鸵鸟",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/鸵鸟(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E9%B8%B5%E9%B8%9F(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5077,7 +5077,7 @@
           "id": "chengdu-2020-12",
           "trackNumber": 12,
           "name": "黑色信封",
-          "src": "https://r1.1701701.xyz/2020成都叁缺壹/黑色信封(2020成都叁缺壹) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9/%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5096,7 +5096,7 @@
           "id": "other-01",
           "trackNumber": 1,
           "name": "相互想念那就是很美好的事情",
-          "src": "https://r1.1701701.xyz/other/相互想念那就是很美好的事情.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%9B%B8%E4%BA%92%E6%83%B3%E5%BF%B5%E9%82%A3%E5%B0%B1%E6%98%AF%E5%BE%88%E7%BE%8E%E5%A5%BD%E7%9A%84%E4%BA%8B%E6%83%85.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5105,7 +5105,7 @@
           "id": "other-02",
           "trackNumber": 2,
           "name": "蒲公英和炊煙都在等妳",
-          "src": "https://r1.1701701.xyz/other/蒲公英和炊煙都在等妳.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%92%B2%E5%85%AC%E8%8B%B1%E5%92%8C%E7%82%8A%E7%85%99%E9%83%BD%E5%9C%A8%E7%AD%89%E5%A6%B3.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5114,7 +5114,7 @@
           "id": "other-03",
           "trackNumber": 3,
           "name": "你离开南京从此没有人和我说话",
-          "src": "https://r1.1701701.xyz/other/你离开南京从此没有人和我说话-董事长.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BD%A0%E7%A6%BB%E5%BC%80%E5%8D%97%E4%BA%AC%E4%BB%8E%E6%AD%A4%E6%B2%A1%E6%9C%89%E4%BA%BA%E5%92%8C%E6%88%91%E8%AF%B4%E8%AF%9D-%E8%91%A3%E4%BA%8B%E9%95%BF.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5123,7 +5123,7 @@
           "id": "other-04",
           "trackNumber": 4,
           "name": "radio南京",
-          "src": "https://r1.1701701.xyz/other/radio南京.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/radio%E5%8D%97%E4%BA%AC.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5132,7 +5132,7 @@
           "id": "other-05",
           "trackNumber": 5,
           "name": "酒吧叙事体 - 肖晨&陈小二",
-          "src": "https://r1.1701701.xyz/other/酒吧叙事体 - 肖晨&陈小二.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%85%92%E5%90%A7%E5%8F%99%E4%BA%8B%E4%BD%93%20-%20%E8%82%96%E6%99%A8%26%E9%99%88%E5%B0%8F%E4%BA%8C.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5141,7 +5141,7 @@
           "id": "other-06",
           "trackNumber": 6,
           "name": "情歌而已",
-          "src": "https://r1.1701701.xyz/other/情歌而已.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%83%85%E6%AD%8C%E8%80%8C%E5%B7%B2.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5150,7 +5150,7 @@
           "id": "other-07",
           "trackNumber": 7,
           "name": "忽然(i18版) - 李志",
-          "src": "https://r1.1701701.xyz/other/忽然(i18版) - 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%BD%E7%84%B6(i18%E7%89%88)%20-%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5159,7 +5159,7 @@
           "id": "other-08",
           "trackNumber": 8,
           "name": "想起了她(深情)李志",
-          "src": "https://r1.1701701.xyz/other/想起了她(深情)李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%83%B3%E8%B5%B7%E4%BA%86%E5%A5%B9(%E6%B7%B1%E6%83%85)%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5168,7 +5168,7 @@
           "id": "other-09",
           "trackNumber": 9,
           "name": "星星点灯20210102欧拉",
-          "src": "https://r1.1701701.xyz/other/星星点灯20210102欧拉.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%98%9F%E6%98%9F%E7%82%B9%E7%81%AF20210102%E6%AC%A7%E6%8B%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5177,7 +5177,7 @@
           "id": "other-10",
           "trackNumber": 10,
           "name": "在劫难逃 - 撒娇_卡拉OK_南京.我",
-          "src": "https://r1.1701701.xyz/other/在劫难逃 - 撒娇_卡拉OK_南京.我.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%9C%A8%E5%8A%AB%E9%9A%BE%E9%80%83%20-%20%E6%92%92%E5%A8%87_%E5%8D%A1%E6%8B%89OK_%E5%8D%97%E4%BA%AC.%E6%88%91.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5186,7 +5186,7 @@
           "id": "other-11",
           "trackNumber": 11,
           "name": "天空之城+明天会更好",
-          "src": "https://r1.1701701.xyz/other/天空之城+明天会更好.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%2B%E6%98%8E%E5%A4%A9%E4%BC%9A%E6%9B%B4%E5%A5%BD.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5195,7 +5195,7 @@
           "id": "other-12",
           "trackNumber": 12,
           "name": "虎口脱险-李志+爻-梁颖_HelloB_",
-          "src": "https://r1.1701701.xyz/other/虎口脱险-李志+爻-梁颖_HelloB_.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9-%E6%9D%8E%E5%BF%97%2B%E7%88%BB-%E6%A2%81%E9%A2%96_HelloB_.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5204,7 +5204,7 @@
           "id": "other-13",
           "trackNumber": 13,
           "name": "歌",
-          "src": "https://r1.1701701.xyz/other/歌.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%AD%8C.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5213,7 +5213,7 @@
           "id": "other-14",
           "trackNumber": 14,
           "name": "歌+沉默的表示+思念+和你在一起",
-          "src": "https://r1.1701701.xyz/other/歌+沉默的表示+思念+和你在一起.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%AD%8C%2B%E6%B2%89%E9%BB%98%E7%9A%84%E8%A1%A8%E7%A4%BA%2B%E6%80%9D%E5%BF%B5%2B%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5222,7 +5222,7 @@
           "id": "other-15",
           "trackNumber": 15,
           "name": "之乎者也 罗大佑 李志",
-          "src": "https://r1.1701701.xyz/other/之乎者也 罗大佑 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B9%8B%E4%B9%8E%E8%80%85%E4%B9%9F%20%E7%BD%97%E5%A4%A7%E4%BD%91%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5231,7 +5231,7 @@
           "id": "other-16",
           "trackNumber": 16,
           "name": "意味 _ IMAGINE",
-          "src": "https://r1.1701701.xyz/other/意味 _ IMAGINE.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%84%8F%E5%91%B3%20_%20IMAGINE.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5240,7 +5240,7 @@
           "id": "other-17",
           "trackNumber": 17,
           "name": "新年好-欧拉2020",
-          "src": "https://r1.1701701.xyz/other/新年好-欧拉2020.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%96%B0%E5%B9%B4%E5%A5%BD-%E6%AC%A7%E6%8B%892020.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5249,7 +5249,7 @@
           "id": "other-18",
           "trackNumber": 18,
           "name": "新年好live",
-          "src": "https://r1.1701701.xyz/other/新年好live.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%96%B0%E5%B9%B4%E5%A5%BDlive.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5258,7 +5258,7 @@
           "id": "other-19",
           "trackNumber": 19,
           "name": "新年好呀",
-          "src": "https://r1.1701701.xyz/other/新年好呀.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%96%B0%E5%B9%B4%E5%A5%BD%E5%91%80.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5267,7 +5267,7 @@
           "id": "other-20",
           "trackNumber": 20,
           "name": "明天会更好",
-          "src": "https://r1.1701701.xyz/other/明天会更好.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%98%8E%E5%A4%A9%E4%BC%9A%E6%9B%B4%E5%A5%BD.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5276,7 +5276,7 @@
           "id": "other-21",
           "trackNumber": 21,
           "name": "再回首",
-          "src": "https://r1.1701701.xyz/other/再回首.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%86%8D%E5%9B%9E%E9%A6%96.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5285,7 +5285,7 @@
           "id": "other-22",
           "trackNumber": 22,
           "name": "冬至 李志",
-          "src": "https://r1.1701701.xyz/other/冬至 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%86%AC%E8%87%B3%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5294,7 +5294,7 @@
           "id": "other-23",
           "trackNumber": 23,
           "name": "勇敢一点",
-          "src": "https://r1.1701701.xyz/other/勇敢一点.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%8B%87%E6%95%A2%E4%B8%80%E7%82%B9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5303,7 +5303,7 @@
           "id": "other-24",
           "trackNumber": 24,
           "name": "Radio南京-李志",
-          "src": "https://r1.1701701.xyz/other/Radio南京-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/Radio%E5%8D%97%E4%BA%AC-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5312,7 +5312,7 @@
           "id": "other-25",
           "trackNumber": 25,
           "name": "北京的冬天 李志",
-          "src": "https://r1.1701701.xyz/other/北京的冬天 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%8C%97%E4%BA%AC%E7%9A%84%E5%86%AC%E5%A4%A9%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5321,7 +5321,7 @@
           "id": "other-26",
           "trackNumber": 26,
           "name": "千年等一回",
-          "src": "https://r1.1701701.xyz/other/千年等一回.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%8D%83%E5%B9%B4%E7%AD%89%E4%B8%80%E5%9B%9E.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5330,7 +5330,7 @@
           "id": "other-27",
           "trackNumber": 27,
           "name": "小莉 李志",
-          "src": "https://r1.1701701.xyz/other/小莉 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B0%8F%E8%8E%89%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5339,7 +5339,7 @@
           "id": "other-28",
           "trackNumber": 28,
           "name": "离婚 [台中早上好]",
-          "src": "https://r1.1701701.xyz/other/离婚 [台中早上好].mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%A6%BB%E5%A9%9A%20%5B%E5%8F%B0%E4%B8%AD%E6%97%A9%E4%B8%8A%E5%A5%BD%5D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5348,7 +5348,7 @@
           "id": "other-29",
           "trackNumber": 29,
           "name": "突如其来的夏天-李志,卡列宁",
-          "src": "https://r1.1701701.xyz/other/突如其来的夏天-李志,卡列宁.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%AA%81%E5%A6%82%E5%85%B6%E6%9D%A5%E7%9A%84%E5%A4%8F%E5%A4%A9-%E6%9D%8E%E5%BF%97%2C%E5%8D%A1%E5%88%97%E5%AE%81.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5357,7 +5357,7 @@
           "id": "other-30",
           "trackNumber": 30,
           "name": "你怎么舍得我难过",
-          "src": "https://r1.1701701.xyz/other/你怎么舍得我难过.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BD%A0%E6%80%8E%E4%B9%88%E8%88%8D%E5%BE%97%E6%88%91%E9%9A%BE%E8%BF%87.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5366,7 +5366,7 @@
           "id": "other-31",
           "trackNumber": 31,
           "name": "你的早晨 天空之城 和你在一起",
-          "src": "https://r1.1701701.xyz/other/你的早晨 天空之城 和你在一起.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BD%A0%E7%9A%84%E6%97%A9%E6%99%A8%20%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%20%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5375,7 +5375,7 @@
           "id": "other-32",
           "trackNumber": 32,
           "name": "你的早晨-张怡然叁叁肆枣庄",
-          "src": "https://r1.1701701.xyz/other/你的早晨-张怡然叁叁肆枣庄.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BD%A0%E7%9A%84%E6%97%A9%E6%99%A8-%E5%BC%A0%E6%80%A1%E7%84%B6%E5%8F%81%E5%8F%81%E8%82%86%E6%9E%A3%E5%BA%84.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5384,7 +5384,7 @@
           "id": "other-33",
           "trackNumber": 33,
           "name": "你的早晨-张怡然叁缺壹",
-          "src": "https://r1.1701701.xyz/other/你的早晨-张怡然叁缺壹.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BD%A0%E7%9A%84%E6%97%A9%E6%99%A8-%E5%BC%A0%E6%80%A1%E7%84%B6%E5%8F%81%E7%BC%BA%E5%A3%B9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5393,7 +5393,7 @@
           "id": "other-34",
           "trackNumber": 34,
           "name": "你的生日",
-          "src": "https://r1.1701701.xyz/other/你的生日.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BD%A0%E7%9A%84%E7%94%9F%E6%97%A5.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5402,7 +5402,7 @@
           "id": "other-35",
           "trackNumber": 35,
           "name": "生日快乐-李志",
-          "src": "https://r1.1701701.xyz/other/生日快乐-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%94%9F%E6%97%A5%E5%BF%AB%E4%B9%90-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5411,7 +5411,7 @@
           "id": "other-36",
           "trackNumber": 36,
           "name": "三百万理发店",
-          "src": "https://r1.1701701.xyz/other/三百万理发店.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%89%E7%99%BE%E4%B8%87%E7%90%86%E5%8F%91%E5%BA%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5420,7 +5420,7 @@
           "id": "other-37",
           "trackNumber": 37,
           "name": "不再让你孤单",
-          "src": "https://r1.1701701.xyz/other/不再让你孤单.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%8D%E5%86%8D%E8%AE%A9%E4%BD%A0%E5%AD%A4%E5%8D%95.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5429,7 +5429,7 @@
           "id": "other-38",
           "trackNumber": 38,
           "name": "倾城之雨-李志",
-          "src": "https://r1.1701701.xyz/other/倾城之雨-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%80%BE%E5%9F%8E%E4%B9%8B%E9%9B%A8-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5438,7 +5438,7 @@
           "id": "other-39",
           "trackNumber": 39,
           "name": "我是一只小小鸟",
-          "src": "https://r1.1701701.xyz/other/我是一只小小鸟.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%88%91%E6%98%AF%E4%B8%80%E5%8F%AA%E5%B0%8F%E5%B0%8F%E9%B8%9F.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5447,7 +5447,7 @@
           "id": "other-40",
           "trackNumber": 40,
           "name": "我爱你-李志",
-          "src": "https://r1.1701701.xyz/other/我爱你-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%88%91%E7%88%B1%E4%BD%A0-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5456,7 +5456,7 @@
           "id": "other-41",
           "trackNumber": 41,
           "name": "好久不见-日照1701",
-          "src": "https://r1.1701701.xyz/other/好久不见-日照1701.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A5%BD%E4%B9%85%E4%B8%8D%E8%A7%81-%E6%97%A5%E7%85%A71701.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5465,7 +5465,7 @@
           "id": "other-42",
           "trackNumber": 42,
           "name": "好久不见-李志",
-          "src": "https://r1.1701701.xyz/other/好久不见-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A5%BD%E4%B9%85%E4%B8%8D%E8%A7%81-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5474,7 +5474,7 @@
           "id": "other-43",
           "trackNumber": 43,
           "name": "好久不见",
-          "src": "https://r1.1701701.xyz/other/好久不见.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A5%BD%E4%B9%85%E4%B8%8D%E8%A7%81.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5483,7 +5483,7 @@
           "id": "other-44",
           "trackNumber": 44,
           "name": "好久不见_李志",
-          "src": "https://r1.1701701.xyz/other/好久不见_李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A5%BD%E4%B9%85%E4%B8%8D%E8%A7%81_%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5492,7 +5492,7 @@
           "id": "other-45",
           "trackNumber": 45,
           "name": "好久不见cover陈奕迅",
-          "src": "https://r1.1701701.xyz/other/好久不见cover陈奕迅.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A5%BD%E4%B9%85%E4%B8%8D%E8%A7%81cover%E9%99%88%E5%A5%95%E8%BF%85.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5501,7 +5501,7 @@
           "id": "other-46",
           "trackNumber": 46,
           "name": "妈妈-李志（红色推土机）",
-          "src": "https://r1.1701701.xyz/other/妈妈-李志（红色推土机）.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A6%88%E5%A6%88-%E6%9D%8E%E5%BF%97%EF%BC%88%E7%BA%A2%E8%89%B2%E6%8E%A8%E5%9C%9F%E6%9C%BA%EF%BC%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5510,7 +5510,7 @@
           "id": "other-47",
           "trackNumber": 47,
           "name": "妈妈",
-          "src": "https://r1.1701701.xyz/other/妈妈.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A6%88%E5%A6%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5519,7 +5519,7 @@
           "id": "other-48",
           "trackNumber": 48,
           "name": "妈妈英文版",
-          "src": "https://r1.1701701.xyz/other/妈妈英文版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A6%88%E5%A6%88%E8%8B%B1%E6%96%87%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5528,7 +5528,7 @@
           "id": "other-49",
           "trackNumber": 49,
           "name": "我的秋天cover许巍",
-          "src": "https://r1.1701701.xyz/other/我的秋天cover许巍.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%88%91%E7%9A%84%E7%A7%8B%E5%A4%A9cover%E8%AE%B8%E5%B7%8D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5537,7 +5537,7 @@
           "id": "other-50",
           "trackNumber": 50,
           "name": "我终于失去了你+外面的世界",
-          "src": "https://r1.1701701.xyz/other/我终于失去了你+外面的世界.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%88%91%E7%BB%88%E4%BA%8E%E5%A4%B1%E5%8E%BB%E4%BA%86%E4%BD%A0%2B%E5%A4%96%E9%9D%A2%E7%9A%84%E4%B8%96%E7%95%8C.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5546,7 +5546,7 @@
           "id": "other-51",
           "trackNumber": 51,
           "name": "昨天的太阳 李志",
-          "src": "https://r1.1701701.xyz/other/昨天的太阳 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%98%A8%E5%A4%A9%E7%9A%84%E5%A4%AA%E9%98%B3%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5555,7 +5555,7 @@
           "id": "other-52",
           "trackNumber": 52,
           "name": "是否",
-          "src": "https://r1.1701701.xyz/other/是否.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%98%AF%E5%90%A6.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5564,7 +5564,7 @@
           "id": "other-53",
           "trackNumber": 53,
           "name": "谁他妈没织过毛衣",
-          "src": "https://r1.1701701.xyz/other/谁他妈没织过毛衣.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%B0%81%E4%BB%96%E5%A6%88%E6%B2%A1%E7%BB%87%E8%BF%87%E6%AF%9B%E8%A1%A3.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5573,7 +5573,7 @@
           "id": "other-54",
           "trackNumber": 54,
           "name": "忽然之间",
-          "src": "https://r1.1701701.xyz/other/忽然之间.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%BD%E7%84%B6%E4%B9%8B%E9%97%B4.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5582,7 +5582,7 @@
           "id": "other-55",
           "trackNumber": 55,
           "name": "忽然之间李志版",
-          "src": "https://r1.1701701.xyz/other/忽然之间李志版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%BD%E7%84%B6%E4%B9%8B%E9%97%B4%E6%9D%8E%E5%BF%97%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5591,7 +5591,7 @@
           "id": "other-56",
           "trackNumber": 56,
           "name": "花心",
-          "src": "https://r1.1701701.xyz/other/花心.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%8A%B1%E5%BF%83.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5600,7 +5600,7 @@
           "id": "other-57",
           "trackNumber": 57,
           "name": "一个夜晚-李志",
-          "src": "https://r1.1701701.xyz/other/一个夜晚-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%80%E4%B8%AA%E5%A4%9C%E6%99%9A-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5609,7 +5609,7 @@
           "id": "other-58",
           "trackNumber": 58,
           "name": "一场游戏一场梦 - live",
-          "src": "https://r1.1701701.xyz/other/一场游戏一场梦 - live.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%80%E5%9C%BA%E6%B8%B8%E6%88%8F%E4%B8%80%E5%9C%BA%E6%A2%A6%20-%20live.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5618,7 +5618,7 @@
           "id": "other-59",
           "trackNumber": 59,
           "name": "一场游戏一场梦20210102欧拉",
-          "src": "https://r1.1701701.xyz/other/一场游戏一场梦20210102欧拉.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%80%E5%9C%BA%E6%B8%B8%E6%88%8F%E4%B8%80%E5%9C%BA%E6%A2%A620210102%E6%AC%A7%E6%8B%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5627,7 +5627,7 @@
           "id": "other-60",
           "trackNumber": 60,
           "name": "难忘的一天（微博20220302）",
-          "src": "https://r1.1701701.xyz/other/难忘的一天（微博20220302）.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%9A%BE%E5%BF%98%E7%9A%84%E4%B8%80%E5%A4%A9%EF%BC%88%E5%BE%AE%E5%8D%9A20220302%EF%BC%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5636,7 +5636,7 @@
           "id": "other-61",
           "trackNumber": 61,
           "name": "痛并快乐着",
-          "src": "https://r1.1701701.xyz/other/痛并快乐着.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%97%9B%E5%B9%B6%E5%BF%AB%E4%B9%90%E7%9D%80.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5645,7 +5645,7 @@
           "id": "other-62",
           "trackNumber": 62,
           "name": "百分之百女孩",
-          "src": "https://r1.1701701.xyz/other/百分之百女孩.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%99%BE%E5%88%86%E4%B9%8B%E7%99%BE%E5%A5%B3%E5%AD%A9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5654,7 +5654,7 @@
           "id": "other-63",
           "trackNumber": 63,
           "name": "爱的箴言 李志",
-          "src": "https://r1.1701701.xyz/other/爱的箴言 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%88%B1%E7%9A%84%E7%AE%B4%E8%A8%80%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5663,7 +5663,7 @@
           "id": "other-64",
           "trackNumber": 64,
           "name": "三月米店，四月百女，五月快樂",
-          "src": "https://r1.1701701.xyz/other/三月米店，四月百女，五月快樂.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%89%E6%9C%88%E7%B1%B3%E5%BA%97%EF%BC%8C%E5%9B%9B%E6%9C%88%E7%99%BE%E5%A5%B3%EF%BC%8C%E4%BA%94%E6%9C%88%E5%BF%AB%E6%A8%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5672,7 +5672,7 @@
           "id": "other-65",
           "trackNumber": 65,
           "name": "五月是好的",
-          "src": "https://r1.1701701.xyz/other/五月是好的.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BA%94%E6%9C%88%E6%98%AF%E5%A5%BD%E7%9A%84.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5681,7 +5681,7 @@
           "id": "other-66",
           "trackNumber": 66,
           "name": "六月是好的",
-          "src": "https://r1.1701701.xyz/other/六月是好的.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%AD%E6%9C%88%E6%98%AF%E5%A5%BD%E7%9A%84.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5690,7 +5690,7 @@
           "id": "other-67",
           "trackNumber": 67,
           "name": "七月不錯",
-          "src": "https://r1.1701701.xyz/other/七月不錯.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%83%E6%9C%88%E4%B8%8D%E9%8C%AF.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5699,7 +5699,7 @@
           "id": "other-68",
           "trackNumber": 68,
           "name": "春風無限瀟湘意，欲採蘋花不自——柳宗元",
-          "src": "https://r1.1701701.xyz/other/春風無限瀟湘意，欲採蘋花不自——柳宗元.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%98%A5%E9%A2%A8%E7%84%A1%E9%99%90%E7%80%9F%E6%B9%98%E6%84%8F%EF%BC%8C%E6%AC%B2%E6%8E%A1%E8%98%8B%E8%8A%B1%E4%B8%8D%E8%87%AA%E2%80%94%E2%80%94%E6%9F%B3%E5%AE%97%E5%85%83.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5708,7 +5708,7 @@
           "id": "other-69",
           "trackNumber": 69,
           "name": "人類在歷史中學到的唯一教訓就是沒有學到教訓——黑格爾",
-          "src": "https://r1.1701701.xyz/other/人類在歷史中學到的唯一教訓就是沒有學到教訓——黑格爾.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BA%BA%E9%A1%9E%E5%9C%A8%E6%AD%B7%E5%8F%B2%E4%B8%AD%E5%AD%B8%E5%88%B0%E7%9A%84%E5%94%AF%E4%B8%80%E6%95%99%E8%A8%93%E5%B0%B1%E6%98%AF%E6%B2%92%E6%9C%89%E5%AD%B8%E5%88%B0%E6%95%99%E8%A8%93%E2%80%94%E2%80%94%E9%BB%91%E6%A0%BC%E7%88%BE.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5717,7 +5717,7 @@
           "id": "other-70",
           "trackNumber": 70,
           "name": "IO1990年的春天",
-          "src": "https://r1.1701701.xyz/other/IO1990年的春天.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO1990%E5%B9%B4%E7%9A%84%E6%98%A5%E5%A4%A9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5726,7 +5726,7 @@
           "id": "other-71",
           "trackNumber": 71,
           "name": "IO他们",
-          "src": "https://r1.1701701.xyz/other/IO他们.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E4%BB%96%E4%BB%AC.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5735,7 +5735,7 @@
           "id": "other-72",
           "trackNumber": 72,
           "name": "IO你的早晨",
-          "src": "https://r1.1701701.xyz/other/IO你的早晨.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E4%BD%A0%E7%9A%84%E6%97%A9%E6%99%A8.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5744,7 +5744,7 @@
           "id": "other-73",
           "trackNumber": 73,
           "name": "IO你离开南京",
-          "src": "https://r1.1701701.xyz/other/IO你离开南京.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E4%BD%A0%E7%A6%BB%E5%BC%80%E5%8D%97%E4%BA%AC.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5753,7 +5753,7 @@
           "id": "other-74",
           "trackNumber": 74,
           "name": "IO寻找",
-          "src": "https://r1.1701701.xyz/other/IO寻找.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E5%AF%BB%E6%89%BE.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5762,7 +5762,7 @@
           "id": "other-75",
           "trackNumber": 75,
           "name": "IO广场",
-          "src": "https://r1.1701701.xyz/other/IO广场.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E5%B9%BF%E5%9C%BA.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5771,7 +5771,7 @@
           "id": "other-76",
           "trackNumber": 76,
           "name": "IO意味",
-          "src": "https://r1.1701701.xyz/other/IO意味.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E6%84%8F%E5%91%B3.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5780,7 +5780,7 @@
           "id": "other-77",
           "trackNumber": 77,
           "name": "IO离婚",
-          "src": "https://r1.1701701.xyz/other/IO离婚.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E7%A6%BB%E5%A9%9A.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5789,7 +5789,7 @@
           "id": "other-78",
           "trackNumber": 78,
           "name": "IO秋天的老狼",
-          "src": "https://r1.1701701.xyz/other/IO秋天的老狼.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/IO%E7%A7%8B%E5%A4%A9%E7%9A%84%E8%80%81%E7%8B%BC.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5798,7 +5798,7 @@
           "id": "other-79",
           "trackNumber": 79,
           "name": "下雨",
-          "src": "https://r1.1701701.xyz/other/下雨.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%8B%E9%9B%A8.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5807,7 +5807,7 @@
           "id": "other-80",
           "trackNumber": 80,
           "name": "两只HipHop山羊织毛衣",
-          "src": "https://r1.1701701.xyz/other/两只HipHop山羊织毛衣.MP3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%A4%E5%8F%AAHipHop%E5%B1%B1%E7%BE%8A%E7%BB%87%E6%AF%9B%E8%A1%A3.MP3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5816,7 +5816,7 @@
           "id": "other-81",
           "trackNumber": 81,
           "name": "丽江即兴(摔琴)",
-          "src": "https://r1.1701701.xyz/other/丽江即兴(摔琴).mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%BD%E6%B1%9F%E5%8D%B3%E5%85%B4(%E6%91%94%E7%90%B4).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5825,7 +5825,7 @@
           "id": "other-82",
           "trackNumber": 82,
           "name": "人民不需要自由-欧拉",
-          "src": "https://r1.1701701.xyz/other/人民不需要自由-欧拉.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BA%BA%E6%B0%91%E4%B8%8D%E9%9C%80%E8%A6%81%E8%87%AA%E7%94%B1-%E6%AC%A7%E6%8B%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5834,7 +5834,7 @@
           "id": "other-83",
           "trackNumber": 83,
           "name": "人民不需要自由-酒吧",
-          "src": "https://r1.1701701.xyz/other/人民不需要自由-酒吧.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BA%BA%E6%B0%91%E4%B8%8D%E9%9C%80%E8%A6%81%E8%87%AA%E7%94%B1-%E9%85%92%E5%90%A7.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5843,7 +5843,7 @@
           "id": "other-84",
           "trackNumber": 84,
           "name": "人民不需要自由",
-          "src": "https://r1.1701701.xyz/other/人民不需要自由.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BA%BA%E6%B0%91%E4%B8%8D%E9%9C%80%E8%A6%81%E8%87%AA%E7%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5852,7 +5852,7 @@
           "id": "other-85",
           "trackNumber": 85,
           "name": "从头再来 李志",
-          "src": "https://r1.1701701.xyz/other/从头再来 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BB%8E%E5%A4%B4%E5%86%8D%E6%9D%A5%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5861,7 +5861,7 @@
           "id": "other-86",
           "trackNumber": 86,
           "name": "从头再来+那一年 李志",
-          "src": "https://r1.1701701.xyz/other/从头再来+那一年 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BB%8E%E5%A4%B4%E5%86%8D%E6%9D%A5%2B%E9%82%A3%E4%B8%80%E5%B9%B4%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5870,7 +5870,7 @@
           "id": "other-87",
           "trackNumber": 87,
           "name": "从头再来cover崔健1",
-          "src": "https://r1.1701701.xyz/other/从头再来cover崔健1.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BB%8E%E5%A4%B4%E5%86%8D%E6%9D%A5cover%E5%B4%94%E5%81%A51.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5879,7 +5879,7 @@
           "id": "other-88",
           "trackNumber": 88,
           "name": "他们 广场",
-          "src": "https://r1.1701701.xyz/other/他们 广场.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BB%96%E4%BB%AC%20%E5%B9%BF%E5%9C%BA.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5888,7 +5888,7 @@
           "id": "other-89",
           "trackNumber": 89,
           "name": "他们+广场-常州",
-          "src": "https://r1.1701701.xyz/other/他们+广场-常州.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%BB%96%E4%BB%AC%2B%E5%B9%BF%E5%9C%BA-%E5%B8%B8%E5%B7%9E.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5897,7 +5897,7 @@
           "id": "other-90",
           "trackNumber": 90,
           "name": "克兰河 张怡然",
-          "src": "https://r1.1701701.xyz/other/克兰河 张怡然.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%8B%E5%85%B0%E6%B2%B3%20%E5%BC%A0%E6%80%A1%E7%84%B6.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5906,7 +5906,7 @@
           "id": "other-91",
           "trackNumber": 91,
           "name": "克兰河 未发行版20160705南京欧拉Live",
-          "src": "https://r1.1701701.xyz/other/克兰河 未发行版20160705南京欧拉Live.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%8B%E5%85%B0%E6%B2%B3%20%E6%9C%AA%E5%8F%91%E8%A1%8C%E7%89%8820160705%E5%8D%97%E4%BA%AC%E6%AC%A7%E6%8B%89Live.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5915,7 +5915,7 @@
           "id": "other-92",
           "trackNumber": 92,
           "name": "公路之光-李志 （翻唱腰乐队）",
-          "src": "https://r1.1701701.xyz/other/公路之光-李志 （翻唱腰乐队）.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%AC%E8%B7%AF%E4%B9%8B%E5%85%89-%E6%9D%8E%E5%BF%97%20%EF%BC%88%E7%BF%BB%E5%94%B1%E8%85%B0%E4%B9%90%E9%98%9F%EF%BC%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5924,7 +5924,7 @@
           "id": "other-93",
           "trackNumber": 93,
           "name": "公路之光-李志",
-          "src": "https://r1.1701701.xyz/other/公路之光-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%AC%E8%B7%AF%E4%B9%8B%E5%85%89-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5933,7 +5933,7 @@
           "id": "other-94",
           "trackNumber": 94,
           "name": "关于南京的记忆2018南京森林音乐节",
-          "src": "https://r1.1701701.xyz/other/关于南京的记忆2018南京森林音乐节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%B3%E4%BA%8E%E5%8D%97%E4%BA%AC%E7%9A%84%E8%AE%B0%E5%BF%862018%E5%8D%97%E4%BA%AC%E6%A3%AE%E6%9E%97%E9%9F%B3%E4%B9%90%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5942,7 +5942,7 @@
           "id": "other-95",
           "trackNumber": 95,
           "name": "关于成都的记忆",
-          "src": "https://r1.1701701.xyz/other/关于成都的记忆.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%B3%E4%BA%8E%E6%88%90%E9%83%BD%E7%9A%84%E8%AE%B0%E5%BF%86.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5951,7 +5951,7 @@
           "id": "other-96",
           "trackNumber": 96,
           "name": "关于郑州的记忆-2018叁叁肆",
-          "src": "https://r1.1701701.xyz/other/关于郑州的记忆-2018叁叁肆.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86-2018%E5%8F%81%E5%8F%81%E8%82%86.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5960,7 +5960,7 @@
           "id": "other-97",
           "trackNumber": 97,
           "name": "关于郑州的记忆-看见2015经典大合唱",
-          "src": "https://r1.1701701.xyz/other/关于郑州的记忆-看见2015经典大合唱.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86-%E7%9C%8B%E8%A7%812015%E7%BB%8F%E5%85%B8%E5%A4%A7%E5%90%88%E5%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5969,7 +5969,7 @@
           "id": "other-98",
           "trackNumber": 98,
           "name": "关于郑州的记忆——逼哥",
-          "src": "https://r1.1701701.xyz/other/关于郑州的记忆——逼哥.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86%E2%80%94%E2%80%94%E9%80%BC%E5%93%A5.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5978,7 +5978,7 @@
           "id": "other-99",
           "trackNumber": 99,
           "name": "即兴摔琴-丽江39度8酒吧",
-          "src": "https://r1.1701701.xyz/other/即兴摔琴-丽江39度8酒吧.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%8D%B3%E5%85%B4%E6%91%94%E7%90%B4-%E4%B8%BD%E6%B1%9F39%E5%BA%A68%E9%85%92%E5%90%A7.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5987,7 +5987,7 @@
           "id": "other-100",
           "trackNumber": 100,
           "name": "君子爱财，取之有道-李志曰",
-          "src": "https://r1.1701701.xyz/other/君子爱财，取之有道-李志曰.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%90%9B%E5%AD%90%E7%88%B1%E8%B4%A2%EF%BC%8C%E5%8F%96%E4%B9%8B%E6%9C%89%E9%81%93-%E6%9D%8E%E5%BF%97%E6%9B%B0.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -5996,7 +5996,7 @@
           "id": "other-101",
           "trackNumber": 101,
           "name": "和你在一起(2020成都叁缺壹)",
-          "src": "https://r1.1701701.xyz/other/和你在一起(2020成都叁缺壹).mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7(2020%E6%88%90%E9%83%BD%E5%8F%81%E7%BC%BA%E5%A3%B9).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6005,7 +6005,7 @@
           "id": "other-102",
           "trackNumber": 102,
           "name": "和你在一起+带亲+方式+日",
-          "src": "https://r1.1701701.xyz/other/和你在一起+带亲+方式+日.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7%2B%E5%B8%A6%E4%BA%B2%2B%E6%96%B9%E5%BC%8F%2B%E6%97%A5.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6014,7 +6014,7 @@
           "id": "other-103",
           "trackNumber": 103,
           "name": "和你在一起+黑色信封",
-          "src": "https://r1.1701701.xyz/other/和你在一起+黑色信封.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7%2B%E9%BB%91%E8%89%B2%E4%BF%A1%E5%B0%81.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6023,7 +6023,7 @@
           "id": "other-104",
           "trackNumber": 104,
           "name": "和你在一起-J版",
-          "src": "https://r1.1701701.xyz/other/和你在一起-J版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7-J%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6032,7 +6032,7 @@
           "id": "other-105",
           "trackNumber": 105,
           "name": "和你在一起-北大演唱版",
-          "src": "https://r1.1701701.xyz/other/和你在一起-北大演唱版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7-%E5%8C%97%E5%A4%A7%E6%BC%94%E5%94%B1%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6041,7 +6041,7 @@
           "id": "other-106",
           "trackNumber": 106,
           "name": "和你在一起-口哨版",
-          "src": "https://r1.1701701.xyz/other/和你在一起-口哨版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7-%E5%8F%A3%E5%93%A8%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6050,7 +6050,7 @@
           "id": "other-107",
           "trackNumber": 107,
           "name": "和你在一起20180519成都草莓音乐节",
-          "src": "https://r1.1701701.xyz/other/和你在一起20180519成都草莓音乐节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B720180519%E6%88%90%E9%83%BD%E8%8D%89%E8%8E%93%E9%9F%B3%E4%B9%90%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6059,7 +6059,7 @@
           "id": "other-108",
           "trackNumber": 108,
           "name": "和你在一起走进新时代",
-          "src": "https://r1.1701701.xyz/other/和你在一起走进新时代.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7%E8%B5%B0%E8%BF%9B%E6%96%B0%E6%97%B6%E4%BB%A3.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6068,7 +6068,7 @@
           "id": "other-109",
           "trackNumber": 109,
           "name": "在劫难逃+时光 （ola2016）",
-          "src": "https://r1.1701701.xyz/other/在劫难逃+时光 （ola2016）.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%9C%A8%E5%8A%AB%E9%9A%BE%E9%80%83%2B%E6%97%B6%E5%85%89%20%EF%BC%88ola2016%EF%BC%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6077,7 +6077,7 @@
           "id": "other-110",
           "trackNumber": 110,
           "name": "在劫难逃-声音共和",
-          "src": "https://r1.1701701.xyz/other/在劫难逃-声音共和.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%9C%A8%E5%8A%AB%E9%9A%BE%E9%80%83-%E5%A3%B0%E9%9F%B3%E5%85%B1%E5%92%8C.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6086,7 +6086,7 @@
           "id": "other-111",
           "trackNumber": 111,
           "name": "在劫难逃现场版",
-          "src": "https://r1.1701701.xyz/other/在劫难逃现场版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%9C%A8%E5%8A%AB%E9%9A%BE%E9%80%83%E7%8E%B0%E5%9C%BA%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6095,7 +6095,7 @@
           "id": "other-112",
           "trackNumber": 112,
           "name": "天空之城 叁缺壹20200808",
-          "src": "https://r1.1701701.xyz/other/天空之城 叁缺壹20200808.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%20%E5%8F%81%E7%BC%BA%E5%A3%B920200808.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6104,7 +6104,7 @@
           "id": "other-113",
           "trackNumber": 113,
           "name": "天空之城+和你在一起-14年天津巡演版",
-          "src": "https://r1.1701701.xyz/other/天空之城+和你在一起-14年天津巡演版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%2B%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7-14%E5%B9%B4%E5%A4%A9%E6%B4%A5%E5%B7%A1%E6%BC%94%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6113,7 +6113,7 @@
           "id": "other-114",
           "trackNumber": 114,
           "name": "天空之城5月23日长春GOIN LIVE",
-          "src": "https://r1.1701701.xyz/other/天空之城5月23日长春GOIN LIVE.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E5%E6%9C%8823%E6%97%A5%E9%95%BF%E6%98%A5GOIN%20LIVE.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6122,7 +6122,7 @@
           "id": "other-115",
           "trackNumber": 115,
           "name": "天空之城弹唱",
-          "src": "https://r1.1701701.xyz/other/天空之城弹唱.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%E5%BC%B9%E5%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6131,7 +6131,7 @@
           "id": "other-116",
           "trackNumber": 116,
           "name": "天空之城简单生活节",
-          "src": "https://r1.1701701.xyz/other/天空之城简单生活节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A4%A9%E7%A9%BA%E4%B9%8B%E5%9F%8E%E7%AE%80%E5%8D%95%E7%94%9F%E6%B4%BB%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6140,7 +6140,7 @@
           "id": "other-117",
           "trackNumber": 117,
           "name": "她来听我的演唱会-李志",
-          "src": "https://r1.1701701.xyz/other/她来听我的演唱会-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%A5%B9%E6%9D%A5%E5%90%AC%E6%88%91%E7%9A%84%E6%BC%94%E5%94%B1%E4%BC%9A-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6149,7 +6149,7 @@
           "id": "other-118",
           "trackNumber": 118,
           "name": "定西&新年好 云南昭通",
-          "src": "https://r1.1701701.xyz/other/定西&新年好 云南昭通.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%AE%9A%E8%A5%BF%26%E6%96%B0%E5%B9%B4%E5%A5%BD%20%E4%BA%91%E5%8D%97%E6%98%AD%E9%80%9A.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6158,7 +6158,7 @@
           "id": "other-119",
           "trackNumber": 119,
           "name": "定西",
-          "src": "https://r1.1701701.xyz/other/定西.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%AE%9A%E8%A5%BF.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6167,7 +6167,7 @@
           "id": "other-120",
           "trackNumber": 120,
           "name": "将进酒 李志",
-          "src": "https://r1.1701701.xyz/other/将进酒 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B0%86%E8%BF%9B%E9%85%92%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6176,7 +6176,7 @@
           "id": "other-121",
           "trackNumber": 121,
           "name": "山阴路的夏天 2012巡演西安站 独白版",
-          "src": "https://r1.1701701.xyz/other/山阴路的夏天 2012巡演西安站 独白版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9%202012%E5%B7%A1%E6%BC%94%E8%A5%BF%E5%AE%89%E7%AB%99%20%E7%8B%AC%E7%99%BD%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6185,7 +6185,7 @@
           "id": "other-122",
           "trackNumber": 122,
           "name": "山阴路的夏天 2013巡演厦门站",
-          "src": "https://r1.1701701.xyz/other/山阴路的夏天 2013巡演厦门站.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9%202013%E5%B7%A1%E6%BC%94%E5%8E%A6%E9%97%A8%E7%AB%99.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6194,7 +6194,7 @@
           "id": "other-123",
           "trackNumber": 123,
           "name": "山阴路的夏天 2020叁缺壹第一场终曲",
-          "src": "https://r1.1701701.xyz/other/山阴路的夏天 2020叁缺壹第一场终曲.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9%202020%E5%8F%81%E7%BC%BA%E5%A3%B9%E7%AC%AC%E4%B8%80%E5%9C%BA%E7%BB%88%E6%9B%B2.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6203,7 +6203,7 @@
           "id": "other-124",
           "trackNumber": 124,
           "name": "山阴路的夏天-逼哥下跪-2018成都草莓",
-          "src": "https://r1.1701701.xyz/other/山阴路的夏天-逼哥下跪-2018成都草莓.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9-%E9%80%BC%E5%93%A5%E4%B8%8B%E8%B7%AA-2018%E6%88%90%E9%83%BD%E8%8D%89%E8%8E%93.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6212,7 +6212,7 @@
           "id": "other-125",
           "trackNumber": 125,
           "name": "山阴路的夏天",
-          "src": "https://r1.1701701.xyz/other/山阴路的夏天.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B1%B1%E9%98%B4%E8%B7%AF%E7%9A%84%E5%A4%8F%E5%A4%A9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6221,7 +6221,7 @@
           "id": "other-126",
           "trackNumber": 126,
           "name": "广场+人民不需要自由",
-          "src": "https://r1.1701701.xyz/other/广场+人民不需要自由.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%B9%BF%E5%9C%BA%2B%E4%BA%BA%E6%B0%91%E4%B8%8D%E9%9C%80%E8%A6%81%E8%87%AA%E7%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6230,7 +6230,7 @@
           "id": "other-127",
           "trackNumber": 127,
           "name": "忘記他",
-          "src": "https://r1.1701701.xyz/other/忘記他.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%98%E8%A8%98%E4%BB%96.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6239,7 +6239,7 @@
           "id": "other-128",
           "trackNumber": 128,
           "name": "忽然 余赣宁",
-          "src": "https://r1.1701701.xyz/other/忽然 余赣宁.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%BD%E7%84%B6%20%E4%BD%99%E8%B5%A3%E5%AE%81.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6248,7 +6248,7 @@
           "id": "other-129",
           "trackNumber": 129,
           "name": "忽然 长春 GOIN LIVE 叁缺贰 20210523",
-          "src": "https://r1.1701701.xyz/other/忽然 长春GOIN LIVE叁缺贰20210523.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%BD%E7%84%B6%20%E9%95%BF%E6%98%A5GOIN%20LIVE%E5%8F%81%E7%BC%BA%E8%B4%B020210523.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6257,7 +6257,7 @@
           "id": "other-130",
           "trackNumber": 130,
           "name": "忽然",
-          "src": "https://r1.1701701.xyz/other/忽然.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%BF%BD%E7%84%B6.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6266,7 +6266,7 @@
           "id": "other-131",
           "trackNumber": 131,
           "name": "恋恋风尘",
-          "src": "https://r1.1701701.xyz/other/恋恋风尘.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%81%8B%E6%81%8B%E9%A3%8E%E5%B0%98.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6275,7 +6275,7 @@
           "id": "other-132",
           "trackNumber": 132,
           "name": "恋曲1980",
-          "src": "https://r1.1701701.xyz/other/恋曲1980.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%81%8B%E6%9B%B21980.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6284,7 +6284,7 @@
           "id": "other-133",
           "trackNumber": 133,
           "name": "恋曲1980_",
-          "src": "https://r1.1701701.xyz/other/恋曲1980_.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%81%8B%E6%9B%B21980_.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6293,7 +6293,7 @@
           "id": "other-134",
           "trackNumber": 134,
           "name": "恋曲1980（20200919秦皇岛）",
-          "src": "https://r1.1701701.xyz/other/恋曲1980（20200919秦皇岛）.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%81%8B%E6%9B%B21980%EF%BC%8820200919%E7%A7%A6%E7%9A%87%E5%B2%9B%EF%BC%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6302,7 +6302,7 @@
           "id": "other-135",
           "trackNumber": 135,
           "name": "情人劫 山东泰安",
-          "src": "https://r1.1701701.xyz/other/情人劫 山东泰安.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%83%85%E4%BA%BA%E5%8A%AB%20%E5%B1%B1%E4%B8%9C%E6%B3%B0%E5%AE%89.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6311,7 +6311,7 @@
           "id": "other-136",
           "trackNumber": 136,
           "name": "愛的箴言",
-          "src": "https://r1.1701701.xyz/other/愛的箴言.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%84%9B%E7%9A%84%E7%AE%B4%E8%A8%80.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6320,7 +6320,7 @@
           "id": "other-137",
           "trackNumber": 137,
           "name": "我们不能失去信仰 1990年的春天",
-          "src": "https://r1.1701701.xyz/other/我们不能失去信仰 1990年的春天.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%88%91%E4%BB%AC%E4%B8%8D%E8%83%BD%E5%A4%B1%E5%8E%BB%E4%BF%A1%E4%BB%B0%201990%E5%B9%B4%E7%9A%84%E6%98%A5%E5%A4%A9.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6329,7 +6329,7 @@
           "id": "other-138",
           "trackNumber": 138,
           "name": "我失去了她cover木马",
-          "src": "https://r1.1701701.xyz/other/我失去了她cover木马.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%88%91%E5%A4%B1%E5%8E%BB%E4%BA%86%E5%A5%B9cover%E6%9C%A8%E9%A9%AC.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6338,7 +6338,7 @@
           "id": "other-139",
           "trackNumber": 139,
           "name": "普希金-阿玛尼  『叁缺壹20200808』",
-          "src": "https://r1.1701701.xyz/other/普希金-阿玛尼  『叁缺壹20200808』.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%99%AE%E5%B8%8C%E9%87%91-%E9%98%BF%E7%8E%9B%E5%B0%BC%20%20%E3%80%8E%E5%8F%81%E7%BC%BA%E5%A3%B920200808%E3%80%8F.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6347,7 +6347,7 @@
           "id": "other-140",
           "trackNumber": 140,
           "name": "普希金 2018年巡演 欧拉艺术中心",
-          "src": "https://r1.1701701.xyz/other/普希金 2018年巡演 欧拉艺术中心.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%99%AE%E5%B8%8C%E9%87%91%202018%E5%B9%B4%E5%B7%A1%E6%BC%94%20%E6%AC%A7%E6%8B%89%E8%89%BA%E6%9C%AF%E4%B8%AD%E5%BF%83.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6356,7 +6356,7 @@
           "id": "other-141",
           "trackNumber": 141,
           "name": "最爱你的人是我",
-          "src": "https://r1.1701701.xyz/other/最爱你的人是我.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%9C%80%E7%88%B1%E4%BD%A0%E7%9A%84%E4%BA%BA%E6%98%AF%E6%88%91.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6365,7 +6365,7 @@
           "id": "other-142",
           "trackNumber": 142,
           "name": "月亮代表我的心-逼言逼语版",
-          "src": "https://r1.1701701.xyz/other/月亮代表我的心-逼言逼语版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%9C%88%E4%BA%AE%E4%BB%A3%E8%A1%A8%E6%88%91%E7%9A%84%E5%BF%83-%E9%80%BC%E8%A8%80%E9%80%BC%E8%AF%AD%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6374,7 +6374,7 @@
           "id": "other-143",
           "trackNumber": 143,
           "name": "月亮代表我的心",
-          "src": "https://r1.1701701.xyz/other/月亮代表我的心.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%9C%88%E4%BA%AE%E4%BB%A3%E8%A1%A8%E6%88%91%E7%9A%84%E5%BF%83.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6383,7 +6383,7 @@
           "id": "other-144",
           "trackNumber": 144,
           "name": "梵高先生-合唱叁叁肆德庆",
-          "src": "https://r1.1701701.xyz/other/梵高先生-合唱叁叁肆德庆.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E5%90%88%E5%94%B1%E5%8F%81%E5%8F%81%E8%82%86%E5%BE%B7%E5%BA%86.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6392,7 +6392,7 @@
           "id": "other-145",
           "trackNumber": 145,
           "name": "梵高先生-李志_榕树下 民谣在路上",
-          "src": "https://r1.1701701.xyz/other/梵高先生-李志_榕树下 民谣在路上.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E6%9D%8E%E5%BF%97_%E6%A6%95%E6%A0%91%E4%B8%8B%20%E6%B0%91%E8%B0%A3%E5%9C%A8%E8%B7%AF%E4%B8%8A.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6401,7 +6401,7 @@
           "id": "other-146",
           "trackNumber": 146,
           "name": "梵高先生-李志弹和声唱",
-          "src": "https://r1.1701701.xyz/other/梵高先生-李志弹和声唱.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E6%9D%8E%E5%BF%97%E5%BC%B9%E5%92%8C%E5%A3%B0%E5%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6410,7 +6410,7 @@
           "id": "other-147",
           "trackNumber": 147,
           "name": "梵高先生-歌迷",
-          "src": "https://r1.1701701.xyz/other/梵高先生-歌迷.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E6%AD%8C%E8%BF%B7.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6419,7 +6419,7 @@
           "id": "other-148",
           "trackNumber": 148,
           "name": "梵高先生-清唱",
-          "src": "https://r1.1701701.xyz/other/梵高先生-清唱.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E6%B8%85%E5%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6428,7 +6428,7 @@
           "id": "other-149",
           "trackNumber": 149,
           "name": "梵高先生-老狼演唱会嘉宾",
-          "src": "https://r1.1701701.xyz/other/梵高先生-老狼演唱会嘉宾.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E8%80%81%E7%8B%BC%E6%BC%94%E5%94%B1%E4%BC%9A%E5%98%89%E5%AE%BE.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6437,7 +6437,7 @@
           "id": "other-150",
           "trackNumber": 150,
           "name": "梵高先生20200812成都",
-          "src": "https://r1.1701701.xyz/other/梵高先生20200812成都.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F20200812%E6%88%90%E9%83%BD.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6446,7 +6446,7 @@
           "id": "other-151",
           "trackNumber": 151,
           "name": "永隔一江水 李志",
-          "src": "https://r1.1701701.xyz/other/永隔一江水 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B0%B8%E9%9A%94%E4%B8%80%E6%B1%9F%E6%B0%B4%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6455,7 +6455,7 @@
           "id": "other-152",
           "trackNumber": 152,
           "name": "浪子心声 李志",
-          "src": "https://r1.1701701.xyz/other/浪子心声 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B5%AA%E5%AD%90%E5%BF%83%E5%A3%B0%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6464,7 +6464,7 @@
           "id": "other-153",
           "trackNumber": 153,
           "name": "海上花 李志",
-          "src": "https://r1.1701701.xyz/other/海上花 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B5%B7%E4%B8%8A%E8%8A%B1%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6473,7 +6473,7 @@
           "id": "other-154",
           "trackNumber": 154,
           "name": "海上花",
-          "src": "https://r1.1701701.xyz/other/海上花.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B5%B7%E4%B8%8A%E8%8A%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6482,7 +6482,7 @@
           "id": "other-155",
           "trackNumber": 155,
           "name": "温暖 李志",
-          "src": "https://r1.1701701.xyz/other/温暖 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B8%A9%E6%9A%96%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6491,7 +6491,7 @@
           "id": "other-156",
           "trackNumber": 156,
           "name": "温暖-李志",
-          "src": "https://r1.1701701.xyz/other/温暖-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B8%A9%E6%9A%96-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6500,7 +6500,7 @@
           "id": "other-157",
           "trackNumber": 157,
           "name": "热河-2018厦门简单生活音乐节",
-          "src": "https://r1.1701701.xyz/other/热河-2018厦门简单生活音乐节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%83%AD%E6%B2%B3-2018%E5%8E%A6%E9%97%A8%E7%AE%80%E5%8D%95%E7%94%9F%E6%B4%BB%E9%9F%B3%E4%B9%90%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6509,7 +6509,7 @@
           "id": "other-158",
           "trackNumber": 158,
           "name": "热河-朱格乐",
-          "src": "https://r1.1701701.xyz/other/热河-朱格乐.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%83%AD%E6%B2%B3-%E6%9C%B1%E6%A0%BC%E4%B9%90.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6518,7 +6518,7 @@
           "id": "other-159",
           "trackNumber": 159,
           "name": "爱拼才会赢  2013巡演厦门站",
-          "src": "https://r1.1701701.xyz/other/爱拼才会赢  2013巡演厦门站.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%88%B1%E6%8B%BC%E6%89%8D%E4%BC%9A%E8%B5%A2%20%202013%E5%B7%A1%E6%BC%94%E5%8E%A6%E9%97%A8%E7%AB%99.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6527,7 +6527,7 @@
           "id": "other-160",
           "trackNumber": 160,
           "name": "玛丽奥 李志",
-          "src": "https://r1.1701701.xyz/other/玛丽奥 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%8E%9B%E4%B8%BD%E5%A5%A5%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6536,7 +6536,7 @@
           "id": "other-161",
           "trackNumber": 161,
           "name": "玛丽奥&冬至_李志2013跨年",
-          "src": "https://r1.1701701.xyz/other/玛丽奥&冬至_李志2013跨年.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%8E%9B%E4%B8%BD%E5%A5%A5%26%E5%86%AC%E8%87%B3_%E6%9D%8E%E5%BF%972013%E8%B7%A8%E5%B9%B4.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6545,7 +6545,7 @@
           "id": "other-162",
           "trackNumber": 162,
           "name": "现象七十二变 live",
-          "src": "https://r1.1701701.xyz/other/现象七十二变 live.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%8E%B0%E8%B1%A1%E4%B8%83%E5%8D%81%E4%BA%8C%E5%8F%98%20live.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6554,7 +6554,7 @@
           "id": "other-163",
           "trackNumber": 163,
           "name": "现象七十二变 李志",
-          "src": "https://r1.1701701.xyz/other/现象七十二变 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%8E%B0%E8%B1%A1%E4%B8%83%E5%8D%81%E4%BA%8C%E5%8F%98%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6563,7 +6563,7 @@
           "id": "other-164",
           "trackNumber": 164,
           "name": "No Friend No Life",
-          "src": "https://r1.1701701.xyz/other/No Friend No Life.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/No%20Friend%20No%20Life.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6572,7 +6572,7 @@
           "id": "other-165",
           "trackNumber": 165,
           "name": "Wish You Where Here",
-          "src": "https://r1.1701701.xyz/other/Wish You Where Here.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/Wish%20You%20Where%20Here.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6581,7 +6581,7 @@
           "id": "other-166",
           "trackNumber": 166,
           "name": "Solo国歌",
-          "src": "https://r1.1701701.xyz/other/Solo国歌.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/Solo%E5%9B%BD%E6%AD%8C.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6590,7 +6590,7 @@
           "id": "other-167",
           "trackNumber": 167,
           "name": "米店-叁叁肆泰安特别场",
-          "src": "https://r1.1701701.xyz/other/米店-叁叁肆泰安特别场.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%B1%B3%E5%BA%97-%E5%8F%81%E5%8F%81%E8%82%86%E6%B3%B0%E5%AE%89%E7%89%B9%E5%88%AB%E5%9C%BA.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6599,7 +6599,7 @@
           "id": "other-168",
           "trackNumber": 168,
           "name": "米店-张怡然『叁缺壹20200808』",
-          "src": "https://r1.1701701.xyz/other/米店-张怡然『叁缺壹20200808』.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%B1%B3%E5%BA%97-%E5%BC%A0%E6%80%A1%E7%84%B6%E3%80%8E%E5%8F%81%E7%BC%BA%E5%A3%B920200808%E3%80%8F.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6608,7 +6608,7 @@
           "id": "other-169",
           "trackNumber": 169,
           "name": "米店-李 老狼 张玮玮昆明叁叁肆",
-          "src": "https://r1.1701701.xyz/other/米店-李 老狼 张玮玮昆明叁叁肆.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%B1%B3%E5%BA%97-%E6%9D%8E%20%E8%80%81%E7%8B%BC%20%E5%BC%A0%E7%8E%AE%E7%8E%AE%E6%98%86%E6%98%8E%E5%8F%81%E5%8F%81%E8%82%86.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6617,7 +6617,7 @@
           "id": "other-170",
           "trackNumber": 170,
           "name": "红色天空 李志",
-          "src": "https://r1.1701701.xyz/other/红色天空 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%BA%A2%E8%89%B2%E5%A4%A9%E7%A9%BA%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6626,7 +6626,7 @@
           "id": "other-171",
           "trackNumber": 171,
           "name": "红色气球 (2009现场版)",
-          "src": "https://r1.1701701.xyz/other/红色气球 (2009现场版).mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%BA%A2%E8%89%B2%E6%B0%94%E7%90%83%20(2009%E7%8E%B0%E5%9C%BA%E7%89%88).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6635,7 +6635,7 @@
           "id": "other-172",
           "trackNumber": 172,
           "name": "结婚-三美20208808成都",
-          "src": "https://r1.1701701.xyz/other/结婚-三美20208808成都.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%BB%93%E5%A9%9A-%E4%B8%89%E7%BE%8E20208808%E6%88%90%E9%83%BD.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6644,7 +6644,7 @@
           "id": "other-173",
           "trackNumber": 173,
           "name": "老钟 我和你在一起",
-          "src": "https://r1.1701701.xyz/other/老钟 我和你在一起.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%80%81%E9%92%9F%20%E6%88%91%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6653,7 +6653,7 @@
           "id": "other-174",
           "trackNumber": 174,
           "name": "耶稣的另一个名字 李志",
-          "src": "https://r1.1701701.xyz/other/耶稣的另一个名字 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%80%B6%E7%A8%A3%E7%9A%84%E5%8F%A6%E4%B8%80%E4%B8%AA%E5%90%8D%E5%AD%97%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6662,7 +6662,7 @@
           "id": "other-175",
           "trackNumber": 175,
           "name": "花房姑娘cover崔健",
-          "src": "https://r1.1701701.xyz/other/花房姑娘cover崔健.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%8A%B1%E6%88%BF%E5%A7%91%E5%A8%98cover%E5%B4%94%E5%81%A5.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6671,7 +6671,7 @@
           "id": "other-176",
           "trackNumber": 176,
           "name": "花祭",
-          "src": "https://r1.1701701.xyz/other/花祭.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%8A%B1%E7%A5%AD.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6680,7 +6680,7 @@
           "id": "other-177",
           "trackNumber": 177,
           "name": "蓝莲花cover许巍",
-          "src": "https://r1.1701701.xyz/other/蓝莲花cover许巍.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%93%9D%E8%8E%B2%E8%8A%B1cover%E8%AE%B8%E5%B7%8D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6689,7 +6689,7 @@
           "id": "other-178",
           "trackNumber": 178,
           "name": "虎口脱险 - 撒娇_卡拉OK_南京.我",
-          "src": "https://r1.1701701.xyz/other/虎口脱险 - 撒娇_卡拉OK_南京.我.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9%20-%20%E6%92%92%E5%A8%87_%E5%8D%A1%E6%8B%89OK_%E5%8D%97%E4%BA%AC.%E6%88%91.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6698,7 +6698,7 @@
           "id": "other-179",
           "trackNumber": 179,
           "name": "虎口脱险 李志",
-          "src": "https://r1.1701701.xyz/other/虎口脱险 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6707,7 +6707,7 @@
           "id": "other-180",
           "trackNumber": 180,
           "name": "虎口脱险 李志现场版",
-          "src": "https://r1.1701701.xyz/other/虎口脱险 李志现场版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9%20%E6%9D%8E%E5%BF%97%E7%8E%B0%E5%9C%BA%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6716,7 +6716,7 @@
           "id": "other-181",
           "trackNumber": 181,
           "name": "虎口脱险-2017",
-          "src": "https://r1.1701701.xyz/other/虎口脱险-2017.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9-2017.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6725,7 +6725,7 @@
           "id": "other-182",
           "trackNumber": 182,
           "name": "虎口脱险-李志",
-          "src": "https://r1.1701701.xyz/other/虎口脱险-李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9-%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6734,7 +6734,7 @@
           "id": "other-183",
           "trackNumber": 183,
           "name": "虎口脱险-疆进酒现场版",
-          "src": "https://r1.1701701.xyz/other/虎口脱险-疆进酒现场版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%99%8E%E5%8F%A3%E8%84%B1%E9%99%A9-%E7%96%86%E8%BF%9B%E9%85%92%E7%8E%B0%E5%9C%BA%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6743,7 +6743,7 @@
           "id": "other-184",
           "trackNumber": 184,
           "name": "贤良 ",
-          "src": "https://r1.1701701.xyz/other/贤良 .mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%B4%A4%E8%89%AF%20.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6752,7 +6752,7 @@
           "id": "other-185",
           "trackNumber": 185,
           "name": "走进新时代 + 和你在一起李志版",
-          "src": "https://r1.1701701.xyz/other/走进新时代 + 和你在一起李志版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%B5%B0%E8%BF%9B%E6%96%B0%E6%97%B6%E4%BB%A3%20%2B%20%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B7%E6%9D%8E%E5%BF%97%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6761,7 +6761,7 @@
           "id": "other-186",
           "trackNumber": 186,
           "name": "走进新时代 李志",
-          "src": "https://r1.1701701.xyz/other/走进新时代 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%B5%B0%E8%BF%9B%E6%96%B0%E6%97%B6%E4%BB%A3%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6770,7 +6770,7 @@
           "id": "other-187",
           "trackNumber": 187,
           "name": "走进新时代",
-          "src": "https://r1.1701701.xyz/other/走进新时代.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%B5%B0%E8%BF%9B%E6%96%B0%E6%97%B6%E4%BB%A3.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6779,7 +6779,7 @@
           "id": "other-188",
           "trackNumber": 188,
           "name": "社会主义好 李志",
-          "src": "https://r1.1701701.xyz/other/社会主义好 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E7%A4%BE%E4%BC%9A%E4%B8%BB%E4%B9%89%E5%A5%BD%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6788,7 +6788,7 @@
           "id": "other-189",
           "trackNumber": 189,
           "name": "这个世界会好吗",
-          "src": "https://r1.1701701.xyz/other/这个世界会好吗.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6797,7 +6797,7 @@
           "id": "other-190",
           "trackNumber": 190,
           "name": "这个世界会好吗2015",
-          "src": "https://r1.1701701.xyz/other/这个世界会好吗2015.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%972015.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6806,7 +6806,7 @@
           "id": "other-191",
           "trackNumber": 191,
           "name": "这个世界会好吗2020",
-          "src": "https://r1.1701701.xyz/other/这个世界会好吗2020.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%972020.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6815,7 +6815,7 @@
           "id": "other-192",
           "trackNumber": 192,
           "name": "这个世界会好吗20210102欧拉 ",
-          "src": "https://r1.1701701.xyz/other/这个世界会好吗20210102欧拉 .mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%9720210102%E6%AC%A7%E6%8B%89%20.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6824,7 +6824,7 @@
           "id": "other-193",
           "trackNumber": 193,
           "name": "这个世界会好吗5月23日长春「叁缺贰」",
-          "src": "https://r1.1701701.xyz/other/这个世界会好吗5月23日长春「叁缺贰」.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E8%BF%99%E4%B8%AA%E4%B8%96%E7%95%8C%E4%BC%9A%E5%A5%BD%E5%90%975%E6%9C%8823%E6%97%A5%E9%95%BF%E6%98%A5%E3%80%8C%E5%8F%81%E7%BC%BA%E8%B4%B0%E3%80%8D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6833,7 +6833,7 @@
           "id": "other-194",
           "trackNumber": 194,
           "name": "逼围子又",
-          "src": "https://r1.1701701.xyz/other/逼围子又.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%80%BC%E5%9B%B4%E5%AD%90%E5%8F%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6842,7 +6842,7 @@
           "id": "other-195",
           "trackNumber": 195,
           "name": "金城兰州-老狼李志张玮玮 ",
-          "src": "https://r1.1701701.xyz/other/金城兰州-老狼李志张玮玮 .mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%87%91%E5%9F%8E%E5%85%B0%E5%B7%9E-%E8%80%81%E7%8B%BC%E6%9D%8E%E5%BF%97%E5%BC%A0%E7%8E%AE%E7%8E%AE%20.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6851,7 +6851,7 @@
           "id": "other-196",
           "trackNumber": 196,
           "name": "长安县",
-          "src": "https://r1.1701701.xyz/other/长安县.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%95%BF%E5%AE%89%E5%8E%BF.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6860,7 +6860,7 @@
           "id": "other-197",
           "trackNumber": 197,
           "name": "长安县2",
-          "src": "https://r1.1701701.xyz/other/长安县2.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%95%BF%E5%AE%89%E5%8E%BF2.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6869,7 +6869,7 @@
           "id": "other-198",
           "trackNumber": 198,
           "name": "阿兰-北京学唱团",
-          "src": "https://r1.1701701.xyz/other/阿兰-北京学唱团.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%98%BF%E5%85%B0-%E5%8C%97%E4%BA%AC%E5%AD%A6%E5%94%B1%E5%9B%A2.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6878,7 +6878,7 @@
           "id": "other-199",
           "trackNumber": 199,
           "name": "鸵鸟-MAGINE",
-          "src": "https://r1.1701701.xyz/other/鸵鸟-MAGINE.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%B8%B5%E9%B8%9F-MAGINE.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6887,7 +6887,7 @@
           "id": "other-200",
           "trackNumber": 200,
           "name": "鸵鸟简单生活节",
-          "src": "https://r1.1701701.xyz/other/鸵鸟简单生活节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%B8%B5%E9%B8%9F%E7%AE%80%E5%8D%95%E7%94%9F%E6%B4%BB%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6896,7 +6896,7 @@
           "id": "other-201",
           "trackNumber": 201,
           "name": "鹿港小镇 (Live)",
-          "src": "https://r1.1701701.xyz/other/鹿港小镇 (Live).mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%B9%BF%E6%B8%AF%E5%B0%8F%E9%95%87%20(Live).mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6905,7 +6905,7 @@
           "id": "other-202",
           "trackNumber": 202,
           "name": "鹿港小镇",
-          "src": "https://r1.1701701.xyz/other/鹿港小镇.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%B9%BF%E6%B8%AF%E5%B0%8F%E9%95%87.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6914,7 +6914,7 @@
           "id": "other-203",
           "trackNumber": 203,
           "name": "一起摇摆-李志团队版",
-          "src": "https://r1.1701701.xyz/other/一起摇摆-李志团队版.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E4%B8%80%E8%B5%B7%E6%91%87%E6%91%86-%E6%9D%8E%E5%BF%97%E5%9B%A2%E9%98%9F%E7%89%88.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6923,7 +6923,7 @@
           "id": "other-204",
           "trackNumber": 204,
           "name": "关于郑州的记忆+董卓瑶+春末的南方城市李志2018南京森林音乐节",
-          "src": "https://r1.1701701.xyz/other/关于郑州的记忆+董卓瑶+春末的南方城市李志2018南京森林音乐节.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%85%B3%E4%BA%8E%E9%83%91%E5%B7%9E%E7%9A%84%E8%AE%B0%E5%BF%86%2B%E8%91%A3%E5%8D%93%E7%91%B6%2B%E6%98%A5%E6%9C%AB%E7%9A%84%E5%8D%97%E6%96%B9%E5%9F%8E%E5%B8%82%E6%9D%8E%E5%BF%972018%E5%8D%97%E4%BA%AC%E6%A3%AE%E6%9E%97%E9%9F%B3%E4%B9%90%E8%8A%82.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6932,7 +6932,7 @@
           "id": "other-205",
           "trackNumber": 205,
           "name": "和你在一起2015重庆仲夏音乐节歌迷合唱",
-          "src": "https://r1.1701701.xyz/other/和你在一起2015重庆仲夏音乐节歌迷合唱.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E5%92%8C%E4%BD%A0%E5%9C%A8%E4%B8%80%E8%B5%B72015%E9%87%8D%E5%BA%86%E4%BB%B2%E5%A4%8F%E9%9F%B3%E4%B9%90%E8%8A%82%E6%AD%8C%E8%BF%B7%E5%90%88%E5%94%B1.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6941,7 +6941,7 @@
           "id": "other-206",
           "trackNumber": 206,
           "name": "梵高先生-三美 朱格乐 阿玛妮 张怡然 20210523 长春",
-          "src": "https://r1.1701701.xyz/other/梵高先生-三美 朱格乐 阿玛妮 张怡然 20210523 长春.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%A2%B5%E9%AB%98%E5%85%88%E7%94%9F-%E4%B8%89%E7%BE%8E%20%E6%9C%B1%E6%A0%BC%E4%B9%90%20%E9%98%BF%E7%8E%9B%E5%A6%AE%20%E5%BC%A0%E6%80%A1%E7%84%B6%2020210523%20%E9%95%BF%E6%98%A5.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6950,7 +6950,7 @@
           "id": "other-207",
           "trackNumber": 207,
           "name": "流浪者 去年冬天 明天我要嫁给你 恋恋风尘",
-          "src": "https://r1.1701701.xyz/other/流浪者 去年冬天 明天我要嫁给你 恋恋风尘.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E6%B5%81%E6%B5%AA%E8%80%85%20%E5%8E%BB%E5%B9%B4%E5%86%AC%E5%A4%A9%20%E6%98%8E%E5%A4%A9%E6%88%91%E8%A6%81%E5%AB%81%E7%BB%99%E4%BD%A0%20%E6%81%8B%E6%81%8B%E9%A3%8E%E5%B0%98.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6959,7 +6959,7 @@
           "id": "other-208",
           "trackNumber": 208,
           "name": "黄昏-邵夷贝",
-          "src": "https://r1.1701701.xyz/other/黄昏-邵夷贝.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/%E9%BB%84%E6%98%8F-%E9%82%B5%E5%A4%B7%E8%B4%9D.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6968,7 +6968,7 @@
           "id": "other-209",
           "trackNumber": 209,
           "name": "Another BrickIn The Wall",
-          "src": "https://r1.1701701.xyz/other/Another BrickIn The Wall.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/Another%20BrickIn%20The%20Wall.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
@@ -6977,7 +6977,7 @@
           "id": "other-210",
           "trackNumber": 210,
           "name": "Feifei Run 李志",
-          "src": "https://r1.1701701.xyz/other/Feifei Run 李志.mp3",
+          "src": "https://r2.1701701.xyz/mp3/other/Feifei%20Run%20%E6%9D%8E%E5%BF%97.mp3",
           "lrc": "",
           "cover": "",
           "enabled": true
