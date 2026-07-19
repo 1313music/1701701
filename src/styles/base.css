@@ -1512,21 +1512,28 @@ body {
   scrollbar-width: thin;
   scrollbar-color:
     color-mix(in srgb, var(--text-secondary) 52%, transparent)
-    color-mix(in srgb, var(--text-secondary) 13%, transparent);
+    transparent;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .album-inline-panel .song-list-shell.is-long-list .song-list {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
 }
 
 .album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar {
-  width: 10px;
+  width: 5px;
 }
 
 .album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+  background: transparent;
   border-radius: 999px;
 }
 
 .album-inline-panel .song-list-shell.is-long-list .song-list::-webkit-scrollbar-thumb {
   min-height: 48px;
-  border: 3px solid transparent;
+  border: 1.5px solid transparent;
   border-radius: 999px;
   background: color-mix(in srgb, var(--text-secondary) 50%, transparent);
   background-clip: content-box;

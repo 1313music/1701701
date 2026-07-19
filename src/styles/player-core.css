@@ -2353,7 +2353,7 @@
     scrollbar-width: thin;
     scrollbar-color:
       color-mix(in srgb, var(--text-secondary) 52%, transparent)
-      color-mix(in srgb, var(--text-secondary) 13%, transparent);
+      transparent;
   }
 
   .album-inline-panel .song-list-shell.is-long-list .song-list {
@@ -2361,7 +2361,26 @@
   }
 
   .album-inline-panel .song-list::-webkit-scrollbar {
-    width: 8px;
+    width: 5px;
+  }
+
+  .album-inline-panel .song-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .album-inline-panel .song-list::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    border: 1.5px solid transparent;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+    background-clip: content-box;
+  }
+
+  @supports selector(::-webkit-scrollbar) {
+    .album-inline-panel .song-list {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
   }
 
   .album-inline-panel .song-item {
