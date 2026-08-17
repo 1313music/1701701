@@ -109,7 +109,7 @@ describe('NanjingLizhiArchivePage', () => {
     ]);
     expect(screen.getByRole('tab', { name: 'lizhizhuangbi.com' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'nanjinglizhi.cn' })).toHaveAttribute('aria-selected', 'false');
-    expect(screen.queryByRole('tab', { name: 'lizhizhuangbi.com/blog' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'blog' })).not.toBeInTheDocument();
     expect(screen.queryByText('指定快照')).not.toBeInTheDocument();
     expect(screen.getByTitle('lizhizhuangbi.com 2011-07-15 存档')).toHaveAttribute(
       'src',
@@ -154,11 +154,11 @@ describe('NanjingLizhiArchivePage', () => {
 
     render(<NanjingLizhiArchivePage />);
 
-    const blogTab = await screen.findByRole('tab', { name: 'lizhizhuangbi.com/blog' });
+    const blogTab = await screen.findByRole('tab', { name: 'blog' });
     fireEvent.click(blogTab);
 
     expect(await screen.findByLabelText('选择档案页面')).toBeInTheDocument();
-    expect(screen.getByTitle('lizhizhuangbi.com/blog 2012-02-26 存档')).toHaveAttribute(
+    expect(screen.getByTitle('blog 2012-02-26 存档')).toHaveAttribute(
       'src',
       '/archives/lizhizhuangbi-blog/pages/20120226030910-www-lizhizhuangbi-com-80-blog-p-321/index.html'
     );

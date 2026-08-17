@@ -22,7 +22,7 @@ const ALL_ARCHIVE_SOURCES = [
     },
     {
         id: 'lizhizhuangbi-blog',
-        label: 'lizhizhuangbi.com/blog',
+        label: 'blog',
         manifestUrl: '/archives/lizhizhuangbi-blog/manifest.json',
         requiresBlogArchiveFlag: true
     }
@@ -311,7 +311,7 @@ const NanjingLizhiArchivePage = () => {
         window.requestAnimationFrame(measureFrame);
         window.setTimeout(measureFrame, 120);
     };
-    const activeArchiveLabel = manifest?.target || activeArchive.label;
+    const activeArchiveLabel = activeArchive.label;
     const unitLabel = manifest?.unitLabel || '历史快照';
     const usesSnapshotPicker = isCompactViewport || manifest?.displayMode === 'catalog' || snapshots.length > 60;
 
