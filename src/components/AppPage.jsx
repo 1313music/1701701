@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Monitor, Laptop, Smartphone, Apple, Share2 } from 'lucide-react';
+import {
+  DEFAULT_APP_PACKAGE_BASE_URL,
+  DEFAULT_APP_PACKAGES,
+  loadAppPackages,
+  normalizeAppPackages
+} from '../data/appPackageManifest.js';
 import '../styles/app-download.css';
 
-const DOMAIN_DOWNLOAD_BASE_URL = 'https://app.1701701.xyz';
 const PACKAGE_STATUS = Object.freeze({
   CHECKING: 'checking',
   READY: 'ready',
@@ -10,32 +15,30 @@ const PACKAGE_STATUS = Object.freeze({
   UNVERIFIED: 'unverified'
 });
 
-const appPackages = [
-  {
-    key: 'mac',
-    title: 'macOS 版',
-    icon: Laptop,
-    detail: '无法验证:系统设置-隐私与安全性-安全性-仍要打开',
-    filename: '1701701.dmg',
-    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701.dmg`
-  },
-  {
-    key: 'win',
-    title: 'Windows 版',
-    icon: Monitor,
-    detail: '推荐 Windows 10/11 x64',
-    filename: '1701701-win-x64.exe',
-    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701-win-x64.exe`
-  },
-  {
-    key: 'android',
-    title: 'Android APK',
-    icon: Smartphone,
-    detail: '安装前需允许“未知来源安装”',
-    filename: '1701701-android-release.apk',
-    href: `${DOMAIN_DOWNLOAD_BASE_URL}/1701701-android-release.apk`
-  }
-];
+const PACKAGE_ICON_MAP = Object.freeze({
+  mac: Laptop,
+  macos: Laptop,
+  osx: Laptop,
+  dmg: Laptop,
+  win: Monitor,
+  windows: Monitor,
+  win32: Monitor,
+  exe: Monitor,
+  android: Smartphone,
+  apk: Smartphone,
+  ios: Apple,
+  ipa: Apple
+});
+
+const resolvePackageIcon = (icon) => {
+  const key = String(icon || '').trim().toLowerCase();
+  return PACKAGE_ICON_MAP[key] || Smartphone;
+};
+
+const buildFallbackPackages = () => normalizeAppPackages({
+  baseUrl: DEFAULT_APP_PACKAGE_BASE_URL,
+  packages: DEFAULT_APP_PACKAGES
+});
 
 const getPackageAnalyticsAttributes = (pkg, action) => ({
   'data-umami-event': 'app_download_click',
@@ -84,14 +87,30 @@ const iosSteps = [
 ];
 
 const AppPage = ({ onCopyPageLink }) => {
+  const [packages, setPackages] = useState(buildFallbackPackages);
   const [statusMap, setStatusMap] = useState({});
+
+  useEffect(() => {
+    let canceled = false;
+
+    const syncManifest = async () => {
+      const { packages: loaded } = await loadAppPackages();
+      if (canceled || !loaded.length) return;
+      setPackages(loaded);
+    };
+
+    void syncManifest();
+    return () => {
+      canceled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let canceled = false;
 
     const probeDownloads = async () => {
       const pairs = await Promise.all(
-        appPackages.map(async (pkg) => {
+        packages.map(async (pkg) => {
           const status = await probePackageStatus(pkg.href);
           return [pkg.key, status];
         })
@@ -105,11 +124,11 @@ const AppPage = ({ onCopyPageLink }) => {
     return () => {
       canceled = true;
     };
-  }, []);
+  }, [packages]);
 
   const allChecked = useMemo(
-    () => Object.keys(statusMap).length === appPackages.length,
-    [statusMap]
+    () => packages.length > 0 && Object.keys(statusMap).length === packages.length,
+    [packages.length, statusMap]
   );
 
   return (
@@ -137,8 +156,8 @@ const AppPage = ({ onCopyPageLink }) => {
       </section>
 
       <section className="app-download-grid" aria-label="客户端下载">
-        {appPackages.map((pkg) => {
-          const Icon = pkg.icon;
+        {packages.map((pkg) => {
+          const Icon = resolvePackageIcon(pkg.icon);
           const status = statusMap[pkg.key] || PACKAGE_STATUS.CHECKING;
           const isReady = status === PACKAGE_STATUS.READY;
           const isUnverified = status === PACKAGE_STATUS.UNVERIFIED;

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-15T12:55:00Z",
+  "baseUrl": "https://r2.1701701.xyz/app",
+  "packages": [
+    {
+      "key": "mac",
+      "title": "macOS 版",
+      "detail": "无法验证:系统设置-隐私与安全性-安全性-仍要打开",
+      "filename": "1701701.dmg",
+      "url": "1701701.dmg",
+      "icon": "mac",
+      "sortOrder": 10,
+      "enabled": true
+    },
+    {
+      "key": "win",
+      "title": "Windows 版",
+      "detail": "推荐 Windows 10/11 x64",
+      "filename": "1701701-win-x64.exe",
+      "url": "1701701-win-x64.exe",
+      "icon": "win",
+      "sortOrder": 20,
+      "enabled": true
+    },
+    {
+      "key": "android",
+      "title": "Android APK",
+      "detail": "安装前需允许“未知来源安装”，包名 xyz.w1701701.twa",
+      "filename": "1701701-android-twa.apk",
+      "url": "1701701-android-twa.apk",
+      "icon": "android",
+      "sortOrder": 30,
+      "enabled": true
+    }
+  ]
+}

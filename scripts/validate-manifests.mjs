@@ -24,6 +24,11 @@ const targets = [
     name: 'download-index',
     schema: 'docs/schemas/download-index.schema.json',
     data: 'public/download-index.json'
+  },
+  {
+    name: 'app-packages',
+    schema: 'docs/schemas/app-packages.schema.json',
+    data: 'public/app-packages.json'
   }
 ];
 
