@@ -1,0 +1,28 @@
+{
+  "packageId": "xyz.w1701701.twa",
+  "host": "1701701.xyz",
+  "name": "1701701",
+  "launcherName": "1701701",
+  "display": "standalone",
+  "themeColor": "#121214",
+  "navigationColor": "#121214",
+  "navigationColorDark": "#121214",
+  "backgroundColor": "#121214",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://1701701.xyz/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "/Users/w/Desktop/1701701/apps/android-shell/android/keystore/release-key.jks",
+    "alias": "1701701"
+  },
+  "appVersionCode": 1,
+  "appVersion": "1.0.0",
+  "webManifestUrl": "https://1701701.xyz/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "minSdkVersion": 21,
+  "orientation": "default"
+}

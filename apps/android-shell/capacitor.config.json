@@ -1,10 +1,5 @@
 {
   "appId": "xyz.w1701701.android",
   "appName": "1701701",
-  "webDir": "www",
-  "server": {
-    "url": "https://1701701.xyz",
-    "cleartext": false,
-    "androidScheme": "https"
-  }
+  "webDir": "../../dist"
 }

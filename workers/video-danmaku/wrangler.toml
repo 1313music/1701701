@@ -14,7 +14,7 @@ database_name = "1701701-video-danmaku"
 database_id = "9d9e2925-dfb6-41aa-abdd-8882ecde2c14"
 
 [vars]
-ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080"
+ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080,https://localhost,http://localhost,capacitor://localhost"
 DANMAKU_MAX_TEXT_LENGTH = "40"
 DANMAKU_MAX_PER_VIDEO = "1000"
 DANMAKU_RATE_LIMIT_SECONDS = "10"

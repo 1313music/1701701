@@ -21,6 +21,17 @@ artifacts
 apps/android-shell/node_modules/
 .npm-cache/
 
+# TWA (Bubblewrap) 构建产物：工程源码入库，产物不入库
+apps/twa-shell/build/
+apps/twa-shell/app/build/
+apps/twa-shell/.gradle/
+apps/twa-shell/*.apk
+apps/twa-shell/*.aab
+apps/twa-shell/*.idsig
+
+# 本地工作记录（不公开上传）
+.workbuddy/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

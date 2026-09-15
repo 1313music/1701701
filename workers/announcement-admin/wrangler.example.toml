@@ -34,7 +34,7 @@ bucket_name = "minyaoclub"
 preview_bucket_name = "minyaoclub"
 
 [vars]
-ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080"
+ALLOWED_ORIGIN = "https://1701701.xyz,https://www.1701701.xyz,https://1701701.pages.dev,https://*.1701701.pages.dev,http://localhost:8080,https://localhost,http://localhost,capacitor://localhost"
 PUBLIC_OBJECT_KEY = "announcement.json"
 PUBLIC_ANNOUNCEMENT_BASE_URL = "https://notice.1701701.xyz"
 

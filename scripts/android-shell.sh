@@ -32,6 +32,13 @@ ensure_node_modules() {
   fi
 }
 
+# Build the web app at repo root so the native shell bundles local assets
+# instead of loading the remote site. Output lands in <root>/dist.
+build_web() {
+  echo "Building web app (npm run build)..."
+  (cd "$ROOT_DIR" && npm run build)
+}
+
 ensure_android_platform() {
   if [[ ! -d "$APP_DIR/android" ]]; then
     echo "Creating Android project via Capacitor..."
@@ -39,8 +46,10 @@ ensure_android_platform() {
   fi
 }
 
-cap_sync() {
-  (cd "$APP_DIR" && npx cap sync android)
+# Build web, then copy the built assets into the native shell.
+cap_copy() {
+  build_web
+  (cd "$APP_DIR" && npx cap copy android)
 }
 
 run_gradle() {
@@ -102,25 +111,26 @@ case "$ACTION" in
   init)
     ensure_node_modules
     ensure_android_platform
+    cap_copy
     echo "Android shell initialized at: $APP_DIR"
     ;;
   sync)
     ensure_node_modules
     ensure_android_platform
-    cap_sync
-    echo "Android shell synced."
+    cap_copy
+    echo "Android shell synced with local web bundle."
     ;;
   open)
     ensure_node_modules
     ensure_android_platform
-    cap_sync
+    cap_copy
     (cd "$APP_DIR" && npx cap open android)
     ;;
   debug)
     ensure_node_modules
     ensure_android_platform
     ensure_java
-    cap_sync
+    cap_copy
     run_gradle assembleDebug
     echo "Debug APK: $APP_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
     ;;
@@ -129,7 +139,7 @@ case "$ACTION" in
     ensure_android_platform
     ensure_java
     ensure_release_signing
-    cap_sync
+    cap_copy
     run_gradle assembleRelease
     echo "Release APK: $APP_DIR/android/app/build/outputs/apk/release/app-release.apk"
     echo "Release APK build completed with signing."

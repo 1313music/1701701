@@ -23,7 +23,11 @@
     "android:sync": "./scripts/with-node22.sh ./scripts/android-shell.sh sync",
     "android:open": "./scripts/with-node22.sh ./scripts/android-shell.sh open",
     "android:apk:debug": "./scripts/with-node22.sh ./scripts/android-shell.sh debug",
-    "android:apk:release": "./scripts/with-node22.sh ./scripts/android-shell.sh release"
+    "android:apk:release": "./scripts/with-node22.sh ./scripts/android-shell.sh release",
+    "ios:init": "./scripts/with-node22.sh ./scripts/ios-shell.sh init",
+    "ios:sync": "./scripts/with-node22.sh ./scripts/ios-shell.sh sync",
+    "ios:open": "./scripts/with-node22.sh ./scripts/ios-shell.sh open",
+    "ios:build": "./scripts/with-node22.sh ./scripts/ios-shell.sh build"
   },
   "dependencies": {
     "@waline/api": "^1.1.0",
