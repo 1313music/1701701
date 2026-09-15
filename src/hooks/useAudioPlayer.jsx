@@ -20,6 +20,8 @@ const PLAYBACK_RECOVERY_RELOAD_MIN_STALL_MS = 4000;
 const PLAYBACK_RECOVERY_RELOAD_COOLDOWN_MS = 15000;
 const PLAYBACK_RECOVERY_MAX_RELOAD_ATTEMPTS = 2;
 const SLEEP_TIMER_MIN_MS = 1000;
+const BACKGROUND_PLAYBACK_WATCHDOG_MS = 5000;
+const BACKGROUND_RECOVERY_RETRY_DELAYS_MS = [800, 2500, 6000];
 
 const clampAudioVolume = (value) => {
   const numericValue = Number(value);
@@ -145,6 +147,7 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
 
   const trackNameRef = useRef(null);
   const audioRef = useRef(new Audio());
+  const preloadAudioRef = useRef(null);
   const lastAudibleVolumeRef = useRef(volume > 0 ? volume : DEFAULT_AUDIO_VOLUME);
   const lastTimelineRef = useRef({ time: 0, progress: 0 });
   const lastPersistedRef = useRef({ currentTime: -1, isPlaying: false, trackSrc: '' });
@@ -388,12 +391,12 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     audio.play().catch(() => { });
   }, [applyPendingRestore]);
 
-  const schedulePlaybackRecovery = useCallback(({ forceReload = false } = {}) => {
+  const schedulePlaybackRecovery = useCallback(({ forceReload = false, allowBackground = false } = {}) => {
     if (typeof window === 'undefined') return;
     const { currentTrackSrc: activeTrackSrc } = playbackStateRef.current;
     const intendedPlaying = playbackIntentRef.current;
     if (!activeTrackSrc || !intendedPlaying) return;
-    if (typeof document !== 'undefined' && document.hidden) return;
+    if (typeof document !== 'undefined' && document.hidden && !allowBackground) return;
 
     clearRecoveryTimer();
     const retryIndex = Math.min(recoveryAttemptRef.current, PLAYBACK_RECOVERY_DELAYS_MS.length - 1);
@@ -403,6 +406,22 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       attemptPlaybackRecovery({ forceReload, onlyWhenPaused: false });
     }, PLAYBACK_RECOVERY_DELAYS_MS[retryIndex]);
   }, [attemptPlaybackRecovery, clearRecoveryTimer]);
+
+  const playWithFallback = useCallback((audio) => {
+    if (!audio || typeof audio.play !== 'function') return;
+    let playPromise;
+    try {
+      playPromise = audio.play();
+    } catch {
+      schedulePlaybackRecovery({ allowBackground: true });
+      return;
+    }
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        schedulePlaybackRecovery({ allowBackground: true });
+      });
+    }
+  }, [schedulePlaybackRecovery]);
 
   const attemptForegroundRecovery = useCallback((source) => {
     const now = Date.now();
@@ -619,11 +638,11 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     if (isPlaying) {
       applyPendingRestore(audio);
       markPlaybackWaiting(audio.currentTime || 0);
-      audio.play().catch(() => { });
+      playWithFallback(audio);
       return;
     }
     audio.pause();
-  }, [applyPendingRestore, currentTrackSrc, isPlaying, markPlaybackWaiting]);
+  }, [applyPendingRestore, currentTrackSrc, isPlaying, markPlaybackWaiting, playWithFallback]);
 
   useEffect(() => {
     playbackContextRef.current = {
@@ -719,10 +738,11 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
     setIsTrackNameOverflowing(isOverflowing);
   }, [currentTrack, isPlaying]);
 
-  const handleNext = useCallback(() => {
+  const resolveAdjacentTrack = useCallback((offset) => {
     const { currentAlbum: activeAlbum, currentTrack: activeTrack, playMode: activePlayMode } = playbackContextRef.current;
-    if (!activeAlbum?.songs?.length || !activeTrack?.src) return;
+    if (!activeAlbum?.songs?.length || !activeTrack?.src) return null;
     const idx = activeAlbum.songs.findIndex((song) => song.src === activeTrack.src);
+    if (idx < 0) return null;
     let nextIdx;
 
     if (activePlayMode === 'shuffle') {
@@ -734,34 +754,25 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
         } while (nextIdx === idx);
       }
     } else {
-      nextIdx = (idx + 1) % activeAlbum.songs.length;
+      nextIdx = ((idx + offset) % activeAlbum.songs.length + activeAlbum.songs.length) % activeAlbum.songs.length;
     }
 
-    setCurrentTrack(activeAlbum.songs[nextIdx]);
+    return activeAlbum.songs[nextIdx];
+  }, []);
+
+  const handleNext = useCallback(() => {
+    const nextTrack = resolveAdjacentTrack(1);
+    if (!nextTrack) return;
+    setCurrentTrack(nextTrack);
     setIsPlaying(true);
-  }, [setCurrentTrack, setIsPlaying]);
+  }, [resolveAdjacentTrack, setCurrentTrack, setIsPlaying]);
 
   const handlePrev = useCallback(() => {
-    const { currentAlbum: activeAlbum, currentTrack: activeTrack, playMode: activePlayMode } = playbackContextRef.current;
-    if (!activeAlbum?.songs?.length || !activeTrack?.src) return;
-    const idx = activeAlbum.songs.findIndex((song) => song.src === activeTrack.src);
-    let prevIdx;
-
-    if (activePlayMode === 'shuffle') {
-      if (activeAlbum.songs.length <= 1) {
-        prevIdx = 0;
-      } else {
-        do {
-          prevIdx = Math.floor(Math.random() * activeAlbum.songs.length);
-        } while (prevIdx === idx);
-      }
-    } else {
-      prevIdx = (idx - 1 + activeAlbum.songs.length) % activeAlbum.songs.length;
-    }
-
-    setCurrentTrack(activeAlbum.songs[prevIdx]);
+    const prevTrack = resolveAdjacentTrack(-1);
+    if (!prevTrack) return;
+    setCurrentTrack(prevTrack);
     setIsPlaying(true);
-  }, [setCurrentTrack, setIsPlaying]);
+  }, [resolveAdjacentTrack, setCurrentTrack, setIsPlaying]);
 
   useAudioMediaSession({
     audioRef,
@@ -780,11 +791,21 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
   const handleSongEnd = useCallback(() => {
     if (playMode === 'single') {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => { });
-    } else {
-      handleNext();
+      playWithFallback(audioRef.current);
+      return;
     }
-  }, [handleNext, playMode]);
+    // 同步切源：不依赖 React state → effect 链（后台/锁屏时该链可能被节流延迟）
+    const nextTrack = resolveAdjacentTrack(1);
+    if (!nextTrack?.src) return;
+    const audio = audioRef.current;
+    const nextSrc = toAbsoluteUrl(nextTrack.src);
+    if (nextSrc && audio.src !== nextSrc) {
+      audio.src = nextSrc;
+    }
+    setCurrentTrack(nextTrack);
+    setIsPlaying(true);
+    playWithFallback(audio);
+  }, [playMode, resolveAdjacentTrack, setCurrentTrack, setIsPlaying, playWithFallback]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -794,6 +815,45 @@ export const useAudioPlayer = ({ musicAlbums, songIndex }) => {
       audio.removeEventListener('ended', onEnded);
     };
   }, [handleSongEnd]);
+
+  // 预加载下一首：切歌瞬间无需等待网络，后台/锁屏下也能快速续播。
+  // 仅在 loop 模式下有意义（下一首确定）；shuffle 下一首随机、single 重播当前曲，均跳过。
+  useEffect(() => {
+    if (typeof Audio === 'undefined') return;
+    if (playMode !== 'loop') return;
+    const nextTrack = resolveAdjacentTrack(1);
+    const nextSrc = nextTrack?.src ? toAbsoluteUrl(nextTrack.src) : '';
+    if (!nextSrc) return;
+    if (!preloadAudioRef.current) {
+      preloadAudioRef.current = new Audio();
+      preloadAudioRef.current.preload = 'auto';
+      preloadAudioRef.current.playsInline = true;
+    }
+    const preloadAudio = preloadAudioRef.current;
+    if (preloadAudio.src !== nextSrc) {
+      // 设置 src + preload='auto' 即会触发浏览器预取，无需显式 load()
+      preloadAudio.src = nextSrc;
+    }
+  }, [currentAlbum?.id, currentTrack?.src, playMode, resolveAdjacentTrack]);
+
+  // 后台/锁屏兜底 watchdog：该播未播时周期拉起（interval 可能被节流，但至少比彻底不播好）
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const intervalId = window.setInterval(() => {
+      const { currentTrackSrc: activeTrackSrc } = playbackStateRef.current;
+      const intendedPlaying = playbackIntentRef.current;
+      if (!activeTrackSrc || !intendedPlaying) return;
+      const audio = audioRef.current;
+      if (audio.ended) {
+        handleSongEnd();
+        return;
+      }
+      if (audio.paused) {
+        attemptPlaybackRecovery({ onlyWhenPaused: false });
+      }
+    }, BACKGROUND_PLAYBACK_WATCHDOG_MS);
+    return () => window.clearInterval(intervalId);
+  }, [attemptPlaybackRecovery, handleSongEnd]);
 
   const handlePlayPause = useCallback(() => {
     setIsPlaying((prev) => !prev);
