@@ -48,4 +48,35 @@ describe('resolveMusicShareTarget', () => {
       track: albums[0].songs[0]
     });
   });
+
+  // 页面里正在用的分享链接是短参数，卡片上的二维码直接承载它
+  describe('short share params', () => {
+    it('resolves a track from the short a/s form', () => {
+      const albums = createAlbums();
+
+      expect(resolveMusicShareTarget(albums, '?a=album-1&s=2')).toEqual({
+        album: albums[0],
+        track: albums[0].songs[1]
+      });
+    });
+
+    it('defaults to the first song when s is absent or out of range', () => {
+      const albums = createAlbums();
+
+      expect(resolveMusicShareTarget(albums, '?a=album-1').track).toBe(albums[0].songs[0]);
+      expect(resolveMusicShareTarget(albums, '?a=album-1&s=999').track).toBe(albums[0].songs[0]);
+    });
+
+    it('keeps resolving the legacy long form', () => {
+      const albums = createAlbums();
+
+      expect(resolveMusicShareTarget(albums, '?albumId=album-1&songId=song-b&song=1').track).toBe(
+        albums[0].songs[1]
+      );
+    });
+
+    it('returns null when the album is unknown', () => {
+      expect(resolveMusicShareTarget(createAlbums(), '?a=missing&s=1')).toBeNull();
+    });
+  });
 });

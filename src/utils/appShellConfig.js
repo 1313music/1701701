@@ -16,7 +16,8 @@ export const VIEW_PATHS = Object.freeze({
 });
 
 export const VIEW_QUERY_KEYS = Object.freeze({
-  library: ['albumId', 'songId', 'song'],
+  // a / s 是分享短链用的别名，必须留在白名单里，否则 canonical 重写会把它们丢掉
+  library: ['albumId', 'songId', 'song', 'a', 's'],
   video: ['videoId', 'videoCategory'],
   resources: [],
   archive: [],

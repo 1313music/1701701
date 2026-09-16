@@ -1,3 +1,5 @@
+import QRCode from 'qrcode';
+
 const isIOSDevice = () => {
   if (typeof navigator === 'undefined') return false;
   return /iP(hone|ad|od)/i.test(navigator.userAgent || '');
@@ -237,6 +239,88 @@ const drawBlurredCover = (ctx, image, x, y, width, height, options = {}) => {
   drawManuallyBlurredCover(ctx, image, x, y, width, height, manualIntensity);
 };
 
+// 二维码不用图片，直接按模块矩阵自绘：数据区是圆点，相邻圆点自然连成一体；
+// 三个定位角做成圆角方框，比默认的直角方块更贴合卡片本身圆润的玻璃材质。
+const drawShareQrCode = (ctx, text, x, y, size, color) => {
+  let matrix;
+  try {
+    matrix = QRCode.create(text, { errorCorrectionLevel: 'M' });
+  } catch {
+    return false;
+  }
+
+  const count = matrix.modules.size;
+  const { data } = matrix.modules;
+  const cell = size / count;
+  const get = (row, col) => (
+    row < 0 || col < 0 || row >= count || col >= count ? 0 : data[row * count + col]
+  );
+  const isFinder = (row, col) => (
+    (row < 7 && col < 7)
+    || (row < 7 && col >= count - 7)
+    || (row >= count - 7 && col < 7)
+  );
+
+  ctx.save();
+  ctx.fillStyle = color;
+
+  for (let row = 0; row < count; row += 1) {
+    for (let col = 0; col < count; col += 1) {
+      if (!get(row, col) || isFinder(row, col)) continue;
+      // 圆 + 圆角方叠加：相邻模块自然连成一体，比直角方块柔和
+      const cx = x + (col + 0.5) * cell;
+      const cy = y + (row + 0.5) * cell;
+      ctx.beginPath();
+      ctx.arc(cx, cy, cell / 2, 0, Math.PI * 2);
+      ctx.fill();
+      drawRoundedRectPath(ctx, cx - cell * 0.42, cy - cell * 0.42, cell * 0.84, cell * 0.84, cell * 0.34);
+      ctx.fill();
+    }
+  }
+
+  for (const [row, col] of [[0, 0], [0, count - 7], [count - 7, 0]]) {
+    const fx = x + col * cell;
+    const fy = y + row * cell;
+    const span = 7 * cell;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = cell;
+    drawRoundedRectPath(ctx, fx + cell / 2, fy + cell / 2, span - cell, span - cell, cell * 2.4);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    drawRoundedRectPath(ctx, fx + cell * 1.9, fy + cell * 1.9, cell * 3.2, cell * 3.2, cell * 1.2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+  return true;
+};
+
+// 采样画布上某块区域的平均亮度：二维码要据此决定用深码点还是亮码点
+const sampleRegionLuminance = (target, x, y, width, height) => {
+  try {
+    const box = {
+      x: Math.max(0, Math.round(x)),
+      y: Math.max(0, Math.round(y)),
+      width: Math.round(width),
+      height: Math.round(height)
+    };
+    const { data } = target.getImageData(box.x, box.y, box.width, box.height);
+    let total = 0;
+    let count = 0;
+
+    // 每 4 个像素取 1 个，代表平均亮度足够，且比逐像素快得多
+    for (let i = 0; i < data.length; i += 16) {
+      total += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      count += 1;
+    }
+
+    return count ? total / count / 255 : null;
+  } catch {
+    // 画布被跨域图片污染时读不到像素，交给调用方回退
+    return null;
+  }
+};
+
 const clampColorByte = (value) => Math.max(0, Math.min(255, Math.round(value)));
 
 const mixRgb = (from, to, ratio) => ({
@@ -313,8 +397,15 @@ export const createShareCardDataUrl = async ({
   const width = 1080;
   const coverImage = await loadCanvasImageWithFallback(cover);
   const cardBodyHeight = 1460;
-  const bottomBlankHeight = 112;
-  const cardHeight = cardBodyHeight + bottomBlankHeight;
+  // 页脚只有一个二维码，落在卡片中轴线上。
+  // 卡片本体是严格中轴对称的（歌名、专辑、进度条、播放键），页脚沿用同一套语言。
+  // 不设白色底板、不嵌中心封面、不加图注：底板会在柔玻璃卡面上贴出一块硬色，
+  // 中心封面会切碎码形，图注则是重复信息（卡片上已经有歌名和专辑名）。
+  const qrSize = 240;
+  const footerTopGap = 48;
+  const footerBottomGap = 48;
+  const footerHeight = footerTopGap + qrSize + footerBottomGap;
+  const cardHeight = cardBodyHeight + footerHeight;
   const height = cardHeight;
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -592,6 +683,19 @@ export const createShareCardDataUrl = async ({
     drawPauseIcon(pauseX, controlsY, pauseIconSize);
     drawSkipIcon(nextX, controlsY, skipIconSize, 'next');
   }
+
+  // 码点颜色跟着「它实际落在的背景」走，而不是跟着主题走：
+  // 浅色主题碰上深色封面时深码点会直接消失，采样后自动翻成亮码点——所以不需要底板兜底。
+  const qrX = (width - qrSize) / 2;
+  const qrY = cardBodyHeight + footerTopGap;
+  const qrBackdrop = sampleRegionLuminance(ctx, qrX, qrY, qrSize, qrSize);
+  // 主题提供基准，背景亮度只负责纠偏：实测深色卡片底部约 0.38、浅色约 0.47，
+  // 单一切点会把浅色主题误判成深色；真正需要翻色的只有「深色卡片配浅色封面」和
+  // 「浅色卡片配深色封面」这两种极端，所以两条线分开给。
+  const dotFlipLimit = isDark ? 0.46 : 0.26;
+  const useLightDots = qrBackdrop === null ? isDark : qrBackdrop < dotFlipLimit;
+
+  drawShareQrCode(ctx, url, qrX, qrY, qrSize, useLightDots ? '#ffffff' : '#0d131b');
 
   return canvas.toDataURL('image/png');
 };

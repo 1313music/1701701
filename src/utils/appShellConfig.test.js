@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AVAILABLE_VIEWS,
+  getCanonicalSearchForView,
   getDownloadPreviewPath,
   getPathForView,
   getResourcePreviewPath,
@@ -58,5 +59,18 @@ describe('appShellConfig', () => {
       pathname: '/myadmin',
       search: ''
     })).toBe('admin');
+  });
+
+  // canonical 重写只保留白名单里的键。分享短链用的是 a/s，
+  // 一旦漏了它俩，分享链接打开后会被改写成裸链接、歌曲丢失。
+  it('keeps both the short and the legacy share params when canonicalising', () => {
+    expect(getCanonicalSearchForView('library', '?a=album-1&s=2')).toBe('?a=album-1&s=2');
+    expect(getCanonicalSearchForView('library', '?a=album-1&s=2&junk=1')).toBe('?a=album-1&s=2');
+    expect(getCanonicalSearchForView('library', '?albumId=album-1&songId=song-1&song=2')).toBe(
+      '?albumId=album-1&songId=song-1&song=2'
+    );
+    expect(getCanonicalSearchForView('library', '?albumId=album-1&a=album-1&song=2&s=2')).toBe(
+      '?albumId=album-1&song=2&a=album-1&s=2'
+    );
   });
 });

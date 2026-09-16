@@ -309,7 +309,7 @@ const App = () => {
     const sharedTarget = sharedTargetRef.current;
     if (!sharedTarget) return;
     if (!currentTrack?.src || !currentAlbum?.id) return;
-    const hasShareParams = Boolean(locationSearch && locationSearch.includes('albumId='));
+    const hasShareParams = Boolean(locationSearch && /[?&](?:albumId|a)=/.test(locationSearch));
     if (!hasShareParams) {
       sharedTargetRef.current = null;
       return;
@@ -368,10 +368,11 @@ const App = () => {
     if (matchedIndex === -1) matchedIndex = 0;
     const shareTrack = resolvedAlbum.songs[matchedIndex] || currentTrack;
     const miniProgram = getAlbumMiniProgram(resolvedAlbum.id);
+    // 分享链接走短参数：卡片上的二维码要承载它，短 24 个字符能让码从 37×37 降到 29×29。
+    // 旧的 albumId / songId / song 参数仍然解析（见 resolveMusicShareTarget），老链接不会失效。
     const url = new URL(getPathForView('library'), window.location.origin);
-    url.searchParams.set('albumId', String(resolvedAlbum.id));
-    url.searchParams.set('songId', String(shareTrack.id || ''));
-    url.searchParams.set('song', String(matchedIndex + 1));
+    url.searchParams.set('a', String(resolvedAlbum.id));
+    url.searchParams.set('s', String(matchedIndex + 1));
     return {
       type: 'music',
       panelTitle: '分享歌曲',

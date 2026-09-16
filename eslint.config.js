@@ -5,7 +5,15 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'vendor/dplayer/dist']),
+  // apps/*/android 下的 assets 是壳工程拷贝进去的前端构建产物、build 是 Gradle 中间产物，
+  // 与 dist 同类，不该被 lint（否则 1000+ 条压缩代码告警会把真实问题淹掉）。
+  globalIgnores([
+    'dist',
+    'coverage',
+    'vendor/dplayer/dist',
+    'apps/*/android/app/src/main/assets',
+    'apps/*/android/**/build'
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
