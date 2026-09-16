@@ -291,6 +291,7 @@ const App = () => {
       setCurrentAlbum(resolvedShareTarget.album);
       setCurrentTrack(resolvedShareTarget.track);
       setIsPlaying(false);
+      setLyricsOverlayOpen(true);
     }, 0);
     return () => window.clearTimeout(timerId);
   }, [
@@ -301,6 +302,7 @@ const App = () => {
     setCurrentAlbum,
     setCurrentTrack,
     setIsPlaying,
+    setLyricsOverlayOpen,
     setSelectedAlbum
   ]);
 
