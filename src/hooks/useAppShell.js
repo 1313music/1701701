@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { isWeChatBrowser } from '../utils/appDomUtils.js';
 import {
   AVAILABLE_VIEWS,
   getCanonicalSearchForView,
@@ -37,9 +36,6 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [hasLyricsOverlayLoaded, setHasLyricsOverlayLoaded] = useState(false);
   const [hasAlbumListOverlayLoaded, setHasAlbumListOverlayLoaded] = useState(false);
-  const [isWeChatBrowserHintOpen, setIsWeChatBrowserHintOpen] = useState(() => (
-    typeof window !== 'undefined' && isWeChatBrowser()
-  ));
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [lyricsCommentRequest, setLyricsCommentRequest] = useState(createInitialLyricsCommentRequest);
 
@@ -177,10 +173,6 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
     trackChangeId
   ]);
 
-  const closeWeChatBrowserHint = useCallback(() => {
-    setIsWeChatBrowserHintOpen(false);
-  }, []);
-
   useEffect(() => {
     if (typeof window === 'undefined' || !shouldRedirectDisabledDownloadResourcePath(window.location)) return;
     window.history.replaceState(null, '', getPathForView('library'));
@@ -247,8 +239,6 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
     setAlbumListOverlayOpen,
     lyricsCommentRequest,
     openCurrentTrackComments,
-    isWeChatBrowserHintOpen,
-    closeWeChatBrowserHint,
     showBackToTop,
     handleBackToTop
   };

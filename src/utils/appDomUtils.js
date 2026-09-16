@@ -173,11 +173,6 @@ export const isIOSDevice = () => {
   return /iP(hone|ad|od)/i.test(navigator.userAgent || '');
 };
 
-export const isWeChatBrowser = () => {
-  if (typeof navigator === 'undefined') return false;
-  return /MicroMessenger/i.test(navigator.userAgent || '');
-};
-
 export const isMacDesktopWebViewLike = () => {
   if (typeof navigator === 'undefined') return false;
 

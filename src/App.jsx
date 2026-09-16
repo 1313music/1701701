@@ -19,7 +19,6 @@ import { useTheme } from './hooks/useTheme.js';
 import { useToast } from './hooks/useToast.js';
 import { useVideoAccess } from './hooks/useVideoAccess.js';
 import { getAlbumMiniProgram } from './data/miniProgramAlbums.js';
-import { copyTextToClipboard } from './utils/appDomUtils.js';
 import { resolveMusicShareTarget } from './utils/musicShareUtils.js';
 import {
   FAVORITES_ALBUM_ID,
@@ -248,8 +247,6 @@ const App = () => {
     setAlbumListOverlayOpen,
     lyricsCommentRequest,
     openCurrentTrackComments,
-    isWeChatBrowserHintOpen,
-    closeWeChatBrowserHint,
     showBackToTop,
     handleBackToTop
   } = useAppShell({
@@ -403,19 +400,6 @@ const App = () => {
     getCurrentTrackSharePayload: buildCurrentSharePayload,
     showToast
   });
-
-  const handleCopyCurrentPageUrl = useCallback(async () => {
-    if (typeof window === 'undefined') return;
-    const copied = await copyTextToClipboard(window.location.href);
-    showToast(
-      copied ? '链接已复制，请在默认浏览器中打开' : '复制失败，请手动复制当前链接',
-      copied ? 'tone-add' : 'tone-remove',
-      { placement: 'bottom' }
-    );
-    if (copied) {
-      closeWeChatBrowserHint();
-    }
-  }, [closeWeChatBrowserHint, showToast]);
 
   const handleSelectAlbum = useCallback((album) => {
     setPanelVirtualAlbum(null);
@@ -866,46 +850,6 @@ const App = () => {
           open={isAnnouncementOpen || isEmptyAnnouncementOpen}
           onConfirm={handleConfirmAnnouncement}
         />
-
-        {isWeChatBrowserHintOpen && (
-          <div className="wechat-browser-modal" onClick={closeWeChatBrowserHint}>
-            <div
-              className="wechat-browser-card"
-              onClick={(event) => event.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="wechat-browser-title"
-            >
-              <div className="wechat-browser-title" id="wechat-browser-title">
-                建议使用默认浏览器打开
-              </div>
-              <p className="wechat-browser-desc">
-                当前检测到你正在微信内置浏览器访问，部分功能可能受限。
-              </p>
-              <ol className="wechat-browser-steps">
-                <li>点击右上角“···”菜单。</li>
-                <li>选择“用默认浏览器打开”。</li>
-                <li>或者复制当前链接到您常用浏览器粘贴打开。</li>
-              </ol>
-              <div className="wechat-browser-actions">
-                <button
-                  type="button"
-                  className="wechat-browser-btn ghost"
-                  onClick={closeWeChatBrowserHint}
-                >
-                  我知道了
-                </button>
-                <button
-                  type="button"
-                  className="wechat-browser-btn primary"
-                  onClick={handleCopyCurrentPageUrl}
-                >
-                  复制当前链接
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
       </div>
 

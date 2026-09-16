@@ -192,8 +192,6 @@ vi.mock('./hooks/useAppShell.js', async () => {
           mode: 'overlay'
         },
         openCurrentTrackComments: vi.fn(),
-        isWeChatBrowserHintOpen: false,
-        closeWeChatBrowserHint: vi.fn(),
         showBackToTop: false,
         handleBackToTop: vi.fn()
       };
