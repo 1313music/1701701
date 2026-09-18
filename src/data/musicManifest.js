@@ -17,9 +17,9 @@ const BUNDLED_SNAPSHOT_PATH = '/music-index.json';
 const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const ALBUM_SORT_ORDER_OVERRIDES = Object.freeze({
+  'tokyo-live': 9,
   'forbidden-games': 10,
-  'san-que-yi-kl': 1000000,
-  'tokyo-live': 1000010
+  'san-que-yi-kl': 1000000
 });
 let cachedAlbums = null;
 let cachedAt = 0;
