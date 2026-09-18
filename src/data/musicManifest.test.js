@@ -59,7 +59,7 @@ describe('musicManifest asset normalization', () => {
     expect(albums[0].songs[0].cover).toBe('https://r2.1701701.xyz/covers/song.jpg');
   });
 
-  it('orders albums by sort overrides (tokyo-live before forbidden-games, 吉隆坡 tour album last)', async () => {
+  it('orders albums by sort overrides (tokyo-live then 吉隆坡 before forbidden-games)', async () => {
     const createAlbum = (id, name, sortOrder) => ({
       id,
       name,
@@ -93,10 +93,10 @@ describe('musicManifest asset normalization', () => {
 
     expect(albums.map((album) => album.id)).toEqual([
       'tokyo-live',
+      'san-que-yi-kl',
       'forbidden-games',
       'van-gogh',
-      'other',
-      'san-que-yi-kl'
+      'other'
     ]);
   });
 
