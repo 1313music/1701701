@@ -25,8 +25,16 @@ import {
   buildAllSiteSequentialAlbum,
   buildAllSiteShuffleAlbum,
   buildFavoritesAlbum,
-  buildRandomMixAlbum
+  buildRandomMixAlbum,
+  buildRecentlyPlayedAlbum
 } from './utils/randomMixUtils.js';
+import {
+  addRecentlyPlayedId,
+  clearRecentlyPlayedIds,
+  loadRecentlyPlayedIds,
+  saveRecentlyPlayedIds
+} from './utils/recentlyPlayedUtils.js';
+import { isVirtualAlbumQueryMatch } from './utils/virtualAlbumsConfig.js';
 import {
   APP_READY_EVENT,
   getPathForView,
@@ -173,24 +181,53 @@ const App = () => {
     [tempPlaylistItems]
   );
 
+  const [recentlyPlayedIds, setRecentlyPlayedIds] = useState(() => loadRecentlyPlayedIds());
+  const recentlyPlayedItems = useMemo(
+    () => recentlyPlayedIds.map((id) => songIndex.get(id)).filter(Boolean),
+    [songIndex, recentlyPlayedIds]
+  );
+  const recentlyPlayedAlbum = useMemo(
+    () => buildRecentlyPlayedAlbum(recentlyPlayedItems),
+    [recentlyPlayedItems]
+  );
+
+  const clearRecentlyPlayed = useCallback(() => {
+    setRecentlyPlayedIds((prev) => clearRecentlyPlayedIds(prev).nextIds);
+  }, []);
+
+  useEffect(() => {
+    const src = currentTrack?.src;
+    if (!src) return;
+    // 等当前渲染提交后再写入，避免“在 effect 里同步 setState”被规则拦截；
+    // 记录最近播放本质是“currentTrack 变化”的副作用，不适合放到渲染期计算。
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setRecentlyPlayedIds((prev) => addRecentlyPlayedId(prev, src).nextIds);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [currentTrack?.src]);
+
+  useEffect(() => {
+    saveRecentlyPlayedIds(recentlyPlayedIds);
+  }, [recentlyPlayedIds]);
+
   const displayedAlbums = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
-    const shouldShowRandomMix = !normalizedQuery
-      || '随便听'.includes(normalizedQuery)
-      || '随机歌单'.includes(normalizedQuery)
-      || normalizedQuery.includes('随便听')
-      || normalizedQuery.includes('随机')
-      || normalizedQuery.includes('random');
-    const shouldShowFavoriteAlbum = !normalizedQuery
-      || '我的收藏'.includes(normalizedQuery)
-      || '收藏歌单'.includes(normalizedQuery)
-      || normalizedQuery.includes('收藏')
-      || normalizedQuery.includes('喜欢')
-      || normalizedQuery.includes('favorite')
-      || favoriteAlbum.songs.some((song) => (
+    const shouldShowRandomMix = isVirtualAlbumQueryMatch('randomMix', normalizedQuery);
+    const shouldShowFavoriteAlbum = isVirtualAlbumQueryMatch('favorites', normalizedQuery, {
+      songNameMatch: favoriteAlbum.songs.some((song) => (
         song.name?.toLowerCase().includes(normalizedQuery)
         || song.sourceAlbumName?.toLowerCase().includes(normalizedQuery)
-      ));
+      ))
+    });
+    const shouldShowRecentlyPlayed = isVirtualAlbumQueryMatch('recentlyPlayed', normalizedQuery, {
+      songNameMatch: recentlyPlayedAlbum?.songs?.some((song) => (
+        song.name?.toLowerCase().includes(normalizedQuery)
+        || song.sourceAlbumName?.toLowerCase().includes(normalizedQuery)
+      ))
+    });
     const virtualAlbums = [];
     if (randomMixAlbum?.songs?.length && shouldShowRandomMix) {
       virtualAlbums.push(randomMixAlbum);
@@ -198,8 +235,11 @@ const App = () => {
     if (favoriteAlbum && shouldShowFavoriteAlbum) {
       virtualAlbums.push(favoriteAlbum);
     }
+    if (recentlyPlayedAlbum?.songs?.length && shouldShowRecentlyPlayed) {
+      virtualAlbums.push(recentlyPlayedAlbum);
+    }
     return [...virtualAlbums, ...filteredAlbums];
-  }, [favoriteAlbum, filteredAlbums, randomMixAlbum, searchQuery]);
+  }, [favoriteAlbum, filteredAlbums, randomMixAlbum, recentlyPlayedAlbum, searchQuery]);
   const panelAlbumOverride = selectedAlbum?.id === randomMixAlbum?.id
     ? panelVirtualAlbum
     : null;
@@ -545,6 +585,7 @@ const App = () => {
                         onToggleTempSong={toggleTempSong}
                         onToggleAlbumFavorites={toggleAlbumFavorites}
                         onClearTempPlaylist={clearTempPlaylist}
+                        onClearRecentlyPlayed={clearRecentlyPlayed}
                         onRefreshRandomMix={refreshRandomMix}
                         onPlayAllSiteShuffle={playAllSiteShuffle}
                         onPlayAllSiteSequential={playAllSiteSequential}

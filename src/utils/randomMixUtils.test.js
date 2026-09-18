@@ -81,8 +81,8 @@ describe('randomMixUtils', () => {
 
     expect(album).toMatchObject({
       id: RANDOM_MIX_ALBUM_ID,
-      name: '随便听',
-      artist: '随机歌单',
+      name: '随机精选',
+      artist: '随机精选',
       isVirtual: true,
       sourceAlbumCount: 4,
       virtualType: 'random-mix'

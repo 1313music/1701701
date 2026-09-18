@@ -39,8 +39,8 @@ const createBaseProps = (overrides = {}) => {
 
 const createRandomMixAlbum = () => ({
   id: 'random-mix',
-  name: '随便听',
-  artist: '随机歌单',
+  name: '随机精选',
+  artist: '随机精选',
   cover: '/img/random-cover.jpg',
   coverGrid: [
     '/img/source-cover-1.jpg',
@@ -523,12 +523,12 @@ describe('AlbumGrid inline album panel', () => {
       expect(screen.getByText('来自 2 张专辑 · 2 首')).toBeInTheDocument();
     });
 
-    expect(screen.getAllByRole('img', { name: '随便听' })).toHaveLength(2);
+    expect(screen.getAllByRole('img', { name: '随机精选' })).toHaveLength(2);
     expect(document.body.querySelectorAll('.album-inline-panel .song-source-cover')).toHaveLength(2);
     expect(screen.getByText('来源专辑一')).toBeInTheDocument();
     expect(screen.getByText('来源专辑二')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: '播放这批' }));
+    fireEvent.click(screen.getByRole('button', { name: '播放精选' }));
     expect(playSongFromAlbum).toHaveBeenCalledWith(randomAlbum, randomAlbum.songs[0]);
 
     fireEvent.click(screen.getByRole('button', { name: '换一批' }));

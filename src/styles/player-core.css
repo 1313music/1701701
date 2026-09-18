@@ -2117,6 +2117,11 @@
     grid-row: 1;
   }
 
+  .album-inline-hero-actions.is-recently-played .album-inline-clear-favorites-btn {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .album-inline-qr-action .album-inline-qr-btn {
     width: 100%;
   }

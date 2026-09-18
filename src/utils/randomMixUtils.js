@@ -1,5 +1,6 @@
 export const RANDOM_MIX_ALBUM_ID = 'random-mix';
 export const FAVORITES_ALBUM_ID = 'favorites';
+export const RECENTLY_PLAYED_ALBUM_ID = 'recently-played';
 export const ALL_SITE_SHUFFLE_ALBUM_ID = 'all-site-shuffle';
 export const ALL_SITE_SEQUENTIAL_ALBUM_ID = 'all-site-sequential';
 export const DEFAULT_RANDOM_MIX_SIZE = 25;
@@ -138,13 +139,31 @@ export const buildFavoritesAlbum = (entries, { fallbackCover = '' } = {}) => {
   };
 };
 
+export const buildRecentlyPlayedAlbum = (entries, { fallbackCover = '' } = {}) => {
+  const safeEntries = Array.isArray(entries)
+    ? entries.filter((entry) => entry?.album && entry?.song?.src)
+    : [];
+  const songs = safeEntries.map(toVirtualSong);
+  return {
+    id: RECENTLY_PLAYED_ALBUM_ID,
+    name: '最近播放',
+    artist: '最近播放',
+    cover: songs[0]?.cover || fallbackCover || '',
+    coverGrid: buildCoverGrid(safeEntries),
+    isVirtual: true,
+    sourceAlbumCount: countSourceAlbums(safeEntries),
+    virtualType: 'recently-played',
+    songs
+  };
+};
+
 export const buildRandomMixAlbum = (albums, options = {}) => {
   const entries = flattenLibrarySongs(albums);
   const randomEntries = pickRandomMixEntries(entries, options);
   return buildVirtualAlbum({
     id: RANDOM_MIX_ALBUM_ID,
-    name: '随便听',
-    artist: '随机歌单',
+    name: '随机精选',
+    artist: '随机精选',
     virtualType: 'random-mix',
     entries: randomEntries
   });

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Heart, ListMusic, Play, QrCode, RefreshCw, ShoppingBag, Shuffle, Trash2, X } from 'lucide-react';
+import { ChevronDown, Clock, Heart, ListMusic, Play, QrCode, RefreshCw, ShoppingBag, Shuffle, Trash2, X } from 'lucide-react';
 import { ChevronUpIcon } from './icons/AppIcons';
 import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { formatAlbumReleaseDate, getAlbumProfile } from '../data/albumProfiles.js';
@@ -215,11 +215,13 @@ const AlbumCoverArt = ({ album, className = '', alt }) => {
         ? album.coverGrid.filter(Boolean).slice(0, 4)
         : [];
     const isFavoritesCover = album?.virtualType === 'favorites';
+    const isRecentlyPlayedCover = album?.virtualType === 'recently-played';
     const favoritesCoverGrid = isFavoritesCover && coverGrid.length === 0 && album?.cover
         ? [album.cover]
         : coverGrid;
     const collageCovers = isFavoritesCover ? favoritesCoverGrid : coverGrid;
     const isEmptyFavoritesCover = isFavoritesCover && collageCovers.length === 0;
+    const isEmptyRecentlyPlayedCover = isRecentlyPlayedCover && collageCovers.length === 0;
 
     if (isEmptyFavoritesCover) {
         return (
@@ -230,6 +232,19 @@ const AlbumCoverArt = ({ album, className = '', alt }) => {
             >
                 <Heart size={42} strokeWidth={2.1} aria-hidden="true" />
                 <span>我的收藏</span>
+            </div>
+        );
+    }
+
+    if (isEmptyRecentlyPlayedCover) {
+        return (
+            <div
+                className={`album-cover-recently-played-placeholder ${className}`}
+                role="img"
+                aria-label={alt || '最近播放'}
+            >
+                <Clock size={42} strokeWidth={2.1} aria-hidden="true" />
+                <span>最近播放</span>
             </div>
         );
     }
@@ -282,6 +297,7 @@ const AlbumGrid = ({
     onToggleTempSong,
     onToggleAlbumFavorites,
     onClearTempPlaylist,
+    onClearRecentlyPlayed,
     onRefreshRandomMix,
     onPlayAllSiteShuffle,
     onPlayAllSiteSequential
@@ -552,6 +568,7 @@ const AlbumGrid = ({
     const isPanelVirtualAlbum = Boolean(panelAlbum?.isVirtual);
     const isPanelRandomMix = panelAlbum?.virtualType === 'random-mix';
     const isPanelFavorites = panelAlbum?.virtualType === 'favorites';
+    const isPanelRecentlyPlayed = panelAlbum?.virtualType === 'recently-played';
     const shouldConstrainPanelSongList = panelSongs.length > INLINE_SONG_SCROLL_THRESHOLD;
     const isPanelRandomFeature = isPanelVirtualAlbum && (
         panelAlbum?.virtualType === 'random-mix'
@@ -559,13 +576,17 @@ const AlbumGrid = ({
         || panelAlbum?.virtualType === 'all-site-sequential'
     );
     const panelSourceAlbumCount = Number(panelAlbum?.sourceAlbumCount) || 0;
-    const panelMetadata = isPanelFavorites
+    const panelMetadata = isPanelRecentlyPlayed
+        ? `最近播放 · ${panelSongs.length} 首 · 来自 ${panelSourceAlbumCount} 张专辑`
+        : isPanelFavorites
         ? `${panelAlbum?.artist || '我的收藏'} • ${panelSongs.length} 首歌`
         : isPanelVirtualAlbum && panelSourceAlbumCount > 0
         ? `来自 ${panelSourceAlbumCount} 张专辑 · ${panelSongs.length} 首`
         : `${panelAlbum?.artist || ''} • ${panelSongs.length} 首歌`;
     const favoritesStorageNote = '收藏仅保存在当前设备。';
+    const recentlyPlayedStorageNote = '最近播放仅保存在当前设备。';
     const shouldShowClearFavorites = isPanelFavorites && panelSongs.length > 0;
+    const shouldShowClearRecentlyPlayed = isPanelRecentlyPlayed && panelSongs.length > 0;
     const isPanelAlbumFullyFavorited = Boolean(panelAlbum?.songs?.length) && panelAlbum.songs.every(
         (song) => song?.src && tempPlaylistSet?.has(song.src)
     );
@@ -727,6 +748,9 @@ const AlbumGrid = ({
                             {isPanelFavorites && (
                                 <p className="album-local-storage-note">{favoritesStorageNote}</p>
                             )}
+                            {isPanelRecentlyPlayed && (
+                                <p className="album-local-storage-note">{recentlyPlayedStorageNote}</p>
+                            )}
                             {panelAlbumProfile && (
                                 <section
                                     className="album-inline-profile"
@@ -763,7 +787,7 @@ const AlbumGrid = ({
                                     )}
                                 </section>
                             )}
-                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${panelAlbumPurchaseUrl ? 'has-purchase' : ''} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''}`}>
+                            <div className={`album-inline-hero-actions ${panelAlbumMiniProgram ? 'has-qr' : 'no-qr'} ${panelAlbumPurchaseUrl ? 'has-purchase' : ''} ${isPanelRandomFeature ? 'is-random-mix' : ''} ${isPanelFavorites ? 'is-favorites' : ''} ${isPanelRecentlyPlayed ? 'is-recently-played' : ''} ${shouldShowClearFavorites ? 'has-clear-favorites' : ''} ${shouldShowClearRecentlyPlayed ? 'has-clear-favorites' : ''}`}>
                                 <button
                                     type="button"
                                     onClick={() => playSongFromAlbum(panelAlbum, panelAlbum.songs[0])}
@@ -771,7 +795,7 @@ const AlbumGrid = ({
                                     disabled={!panelAlbum.songs.length}
                                 >
                                     <Play size={17} fill="currentColor" strokeWidth={2.2} aria-hidden="true" />
-                                    {isPanelRandomMix ? '播放这批' : isPanelFavorites ? '播放收藏' : '播放全部'}
+                                    {isPanelRecentlyPlayed ? '播放最近' : isPanelRandomMix ? '播放精选' : isPanelFavorites ? '播放收藏' : '播放全部'}
                                 </button>
                                 {shouldShowClearFavorites && (
                                     <button
@@ -788,6 +812,23 @@ const AlbumGrid = ({
                                     >
                                         <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
                                         清空收藏
+                                    </button>
+                                )}
+                                {shouldShowClearRecentlyPlayed && (
+                                    <button
+                                        type="button"
+                                        className="album-inline-clear-favorites-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (typeof window !== 'undefined') {
+                                                const shouldClear = window.confirm('确定要清空最近播放记录吗？');
+                                                if (!shouldClear) return;
+                                            }
+                                            onClearRecentlyPlayed?.(e);
+                                        }}
+                                    >
+                                        <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
+                                        清空记录
                                     </button>
                                 )}
                                 {isPanelRandomFeature && (

@@ -1144,6 +1144,34 @@ body {
   color: var(--text-main);
 }
 
+.album-cover-recently-played-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--main-color);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--main-color) 18%, transparent),
+      color-mix(in srgb, var(--accent-color, var(--main-color)) 12%, transparent)
+    ),
+    color-mix(in srgb, var(--glass-bg) 82%, var(--bg-color));
+}
+
+.album-cover-recently-played-placeholder svg {
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--main-color) 18%, transparent));
+}
+
+.album-cover-recently-played-placeholder span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
 .album-inline-header .album-info-text {
   width: 100%;
   min-width: 0;
