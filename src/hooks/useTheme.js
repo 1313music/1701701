@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 
+import { runThemeWipe } from '../utils/themeTransition.js';
 import {
   useAndroidViewportVars,
   useDisplayModeTheme,
@@ -66,9 +68,36 @@ export const useTheme = ({ showToast } = {}) => {
   const handleThemeToggle = useCallback((event) => {
     const nextPreference = resolvedTheme === 'dark' ? 'light' : 'dark';
     const message = nextPreference === 'dark' ? '深色模式' : '浅色模式';
-    setThemePreference(nextPreference);
     const anchorEvent = event?.currentTarget ? { currentTarget: event.currentTarget } : null;
-    showToast?.(message, 'tone-add', { placement: 'side', anchorEvent });
+
+    // React 在事件回调结束后会清空 currentTarget，按钮位置必须在这里同步取到
+    const rect = event?.currentTarget?.getBoundingClientRect?.();
+
+    const notify = () => showToast?.(message, 'tone-add', { placement: 'side', anchorEvent });
+
+    const applyTheme = () => {
+      // flushSync 让 React 同步把新主题渲染出来，快照才能拍到切换后的样子
+      flushSync(() => setThemePreference(nextPreference));
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-theme', nextPreference);
+        document.body.setAttribute('data-theme', nextPreference);
+      }
+    };
+
+    const transition = runThemeWipe({
+      originX: rect ? rect.left + rect.width / 2 : undefined,
+      originY: rect ? rect.top + rect.height / 2 : undefined,
+      applyTheme
+    });
+
+    if (!transition) {
+      notify();
+      return;
+    }
+
+    // 扫掠期间整页被快照盖住，这时候弹提示是看不见的，等扫完再弹
+    // 用 then(ok, fail) 而不是 then().catch()，避免 notify 自己抛错时被调用两次
+    transition.finished.then(notify, notify);
   }, [resolvedTheme, showToast]);
 
   useEffect(() => {

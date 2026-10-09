@@ -35,6 +35,17 @@
   --mobile-fullscreen-cover-size: min(80vw, 360px);
   --mobile-main-bottom-padding: calc(98px + var(--mobile-browser-bottom-gap));
   --mobile-main-bottom-padding-no-player: calc(18px + var(--mobile-browser-bottom-gap));
+
+  --page-max-width: 1240px;
+  --page-max-width-wide: 1440px;
+  --page-title-size: clamp(26px, 3.2vw, 34px);
+  --page-subtitle-size: 14px;
+  --page-kicker-size: 12px;
+  --page-card-radius: 16px;
+  --page-section-gap: 20px;
+  --page-hero-padding-block: 18px;
+  --page-hero-padding-inline: 20px;
+  --page-hero-tint: linear-gradient(140deg, rgba(250, 45, 72, 0.12), rgba(0, 0, 0, 0.03));
 }
 
 @supports (height: 100dvh) {
@@ -78,6 +89,8 @@
     --sidebar-bg: rgba(20, 20, 22, 0.95);
     --player-bg: rgba(25, 25, 27, 0.98);
     --hover-bg: rgba(255, 255, 255, 0.1);
+    /* 深色底上要把红调浓、暗端换成白，否则页头卡几乎看不出底色 */
+    --page-hero-tint: linear-gradient(140deg, rgba(250, 45, 72, 0.2), rgba(255, 255, 255, 0.03));
   }
 }
 
@@ -107,10 +120,80 @@
   --sidebar-bg: rgba(20, 20, 22, 0.95);
   --player-bg: rgba(25, 25, 27, 0.98);
   --hover-bg: rgba(255, 255, 255, 0.1);
+  /* 深色底上要把红调浓、暗端换成白，否则页头卡几乎看不出底色 */
+  --page-hero-tint: linear-gradient(140deg, rgba(250, 45, 72, 0.2), rgba(255, 255, 255, 0.03));
 }
 
 [data-theme='dark'] .play-all-btn {
   color: #000000 !important;
+}
+
+/* ---------------------------------------------------------------
+   主题切换过渡
+   1) 页面：View Transitions 快照 + JS 驱动的 clip-path 斜向扫掠
+      （关键帧在 utils/themeTransition.js 里生成）
+   2) 图标：太阳/月亮叠放，切换时整个图标盘转 180° 并交叉淡入淡出
+   --------------------------------------------------------------- */
+
+/* 关掉浏览器默认的整页交叉淡入，只保留"新快照"，让 JS 用 clip-path 揭开它 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.theme-icon-stack {
+  position: relative;
+  display: inline-flex;
+  width: var(--theme-icon-size, 22px);
+  height: var(--theme-icon-size, 22px);
+  flex: 0 0 auto;
+}
+
+/* 两个图标各自绕自己的中心转：太阳转到 180° 转出去，月亮从 -180° 转回 0°。
+   注意不能改成"整个外壳转 180°"——那样月亮落位时是倒的，
+   跟 MoonIcon 本来的画法对不上。 */
+.theme-icon-stack .theme-icon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition:
+    transform 0.72s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.34s ease;
+}
+
+.theme-icon-stack .theme-icon-sun {
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+.theme-icon-stack .theme-icon-moon {
+  opacity: 0;
+  transform: rotate(-180deg);
+}
+
+.theme-icon-stack.is-dark .theme-icon-sun {
+  opacity: 0;
+  transform: rotate(180deg);
+}
+
+.theme-icon-stack.is-dark .theme-icon-moon {
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+/* 侧边栏折叠时 .nav-item span 会被整条隐藏（本来是为了藏掉文字标签），
+   这里把图标外壳救回来，否则折叠状态下主题按钮会变成空白 */
+.sidebar.is-collapsed .nav-item span.theme-icon-stack {
+  display: inline-flex;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon-stack,
+  .theme-icon-stack .theme-icon {
+    transition: none !important;
+  }
 }
 
 * {
@@ -621,6 +704,15 @@ body {
   animation: view-panel-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
   transform-origin: center top;
   will-change: opacity, transform, filter;
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin-inline: auto;
+}
+
+.view-panel-library,
+.view-panel-gallery,
+.view-panel-archive {
+  max-width: var(--page-max-width-wide);
 }
 
 @keyframes view-panel-enter {

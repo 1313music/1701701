@@ -37,6 +37,30 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
     </button>
 );
 
+// 太阳/月亮叠在一起，切换主题时太阳转 180° 转出去、月亮从 -180° 转回来，
+// 同时互相淡入淡出（旋转角度见 styles/base.css 的 .theme-icon-stack）。
+// 用 CSS 过渡实现，所以首屏加载不会播动画，只有点击切换时才动。
+const ThemeIconStack = ({ theme, size, strokeWidth = 2.4 }) => (
+    <span
+        className={`theme-icon-stack ${theme === 'dark' ? 'is-dark' : ''}`}
+        aria-hidden="true"
+        style={{ '--theme-icon-size': `${size}px` }}
+    >
+        <SunIcon
+            className="theme-icon theme-icon-sun"
+            size={size}
+            strokeWidth={strokeWidth}
+            absoluteStrokeWidth
+        />
+        <MoonIcon
+            className="theme-icon theme-icon-moon"
+            size={size}
+            strokeWidth={strokeWidth}
+            absoluteStrokeWidth
+        />
+    </span>
+);
+
 const Sidebar = ({
     view,
     setView,
@@ -60,7 +84,6 @@ const Sidebar = ({
     const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
     const currentLabel = currentTheme === 'dark' ? '深色' : '浅色';
     const nextLabel = currentTheme === 'dark' ? '浅色' : '深色';
-    const ThemeIcon = currentTheme === 'dark' ? MoonIcon : SunIcon;
     const themeToggleLabel = `主题：${currentLabel}，点击切换为${nextLabel}`;
     const sidebarToggleLabel = isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏';
     const handleMobileThemeToggle = (event) => {
@@ -195,7 +218,7 @@ const Sidebar = ({
                             onClick={handleMobileThemeToggle}
                         >
                             <span className="mobile-theme-switch-main">
-                                <ThemeIcon size={20} strokeWidth={2.4} absoluteStrokeWidth />
+                                <ThemeIconStack theme={currentTheme} size={20} />
                                 <span>外观</span>
                             </span>
                             <span className="mobile-theme-switch-track" aria-hidden="true">
@@ -312,7 +335,7 @@ const Sidebar = ({
                             data-tooltip="外观"
                             onClick={onThemeToggle}
                         >
-                            <ThemeIcon size={22} strokeWidth={2.4} absoluteStrokeWidth />
+                            <ThemeIconStack theme={currentTheme} size={22} />
                             <span>外观</span>
                         </button>
                     )}
