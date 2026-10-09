@@ -8,6 +8,7 @@ import {
     loadArchiveFeatureConfig
 } from '../data/archiveFeatureConfig.js';
 import '../styles/archive.css';
+import PageHeader from './PageHeader.jsx';
 
 const ALL_ARCHIVE_SOURCES = [
     {
@@ -86,7 +87,7 @@ const formatSnapshotOption = (snapshot) => (
     ].filter(Boolean))).join(' · ')
 );
 
-const NanjingLizhiArchivePage = () => {
+const NanjingLizhiArchivePage = ({ onCopyPageLink }) => {
     const frameShellRef = useRef(null);
     const iframeRef = useRef(null);
     const [archiveConfig, setArchiveConfig] = useState(DEFAULT_ARCHIVE_FEATURE_CONFIG);
@@ -317,29 +318,31 @@ const NanjingLizhiArchivePage = () => {
 
     return (
         <div className="archive-page">
-            <section className="archive-header" aria-labelledby="archive-title">
-                <div className="archive-header-copy">
-                    <h1 id="archive-title">旧官网档案馆</h1>
-                    <p>{activeArchiveLabel} · {snapshots.length || '-'} 个{unitLabel}</p>
-                </div>
-                <div className="archive-source-switch" role="tablist" aria-label="档案域名">
-                    {archiveSources.map((source) => {
-                        const isActive = source.id === activeArchive.id;
-                        return (
-                            <button
-                                type="button"
-                                key={source.id}
-                                role="tab"
-                                aria-selected={isActive}
-                                className={`archive-source-button ${isActive ? 'is-active' : ''}`}
-                                onClick={() => setActiveArchiveId(source.id)}
-                            >
-                                {source.label}
-                            </button>
-                        );
-                    })}
-                </div>
-            </section>
+            <PageHeader
+                title="旧官网档案馆"
+                subtitle={`${activeArchiveLabel} · ${snapshots.length || '-'} 个${unitLabel}`}
+                titleId="archive-title"
+                onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
+                actions={
+                    <div className="archive-source-switch" role="tablist" aria-label="档案域名">
+                        {archiveSources.map((source) => {
+                            const isActive = source.id === activeArchive.id;
+                            return (
+                                <button
+                                    type="button"
+                                    key={source.id}
+                                    role="tab"
+                                    aria-selected={isActive}
+                                    className={`archive-source-button ${isActive ? 'is-active' : ''}`}
+                                    onClick={() => setActiveArchiveId(source.id)}
+                                >
+                                    {source.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                }
+            />
 
             {isManifestLoading && (
                 <div className="page-loading page-loading-spinner" role="status" aria-live="polite">

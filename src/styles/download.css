@@ -1,10 +1,8 @@
 .download-page {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: var(--page-section-gap);
   width: 100%;
-  max-width: 1040px;
-  margin: 0 auto;
 }
 
 .download-hero {
@@ -420,72 +418,7 @@
 }
 
 .resources-page {
-  gap: 18px;
-  max-width: 980px;
-}
-
-.resources-page .resources-hero {
-  padding: 18px;
-  border-radius: 16px;
-  border: 1px solid var(--glass-border);
-  background: linear-gradient(140deg, rgba(250, 45, 72, 0.12), rgba(0, 0, 0, 0.03));
-}
-
-[data-theme='dark'] .resources-page .resources-hero {
-  background: linear-gradient(140deg, rgba(250, 45, 72, 0.2), rgba(255, 255, 255, 0.03));
-}
-
-.resources-page .resources-hero-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.resources-page .resources-hero-copy {
-  min-width: 0;
-}
-
-.resources-page .resources-hero h1 {
-  margin: 0;
-  color: var(--text-main);
-  font-size: clamp(22px, 3vw, 30px);
-  line-height: 1.08;
-}
-
-.resources-page .resources-hero p {
-  margin: 10px 0 0;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.resources-page .resources-header-actions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.resources-page .resources-share {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.resources-page .resources-share:hover {
-  transform: translateY(-1px);
-  color: var(--main-color);
+  gap: var(--page-section-gap);
 }
 
 .download-page.download-v2.resources-page .resources-section-block {
@@ -634,10 +567,6 @@
 .download-page.download-v2 .download-action.loading {
   background: transparent;
   color: var(--text-secondary);
-}
-
-.download-page.download-v2.download-preview-route {
-  max-width: 1280px;
 }
 
 .download-preview-page-shell {
@@ -871,16 +800,6 @@
 }
 
 @media (max-width: 640px) {
-  .resources-page .resources-hero-header {
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .resources-page .resources-header-actions {
-    width: auto;
-    justify-content: flex-end;
-  }
-
   .download-page.download-v2 .download-intro {
     padding: 16px;
   }

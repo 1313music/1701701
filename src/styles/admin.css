@@ -1,15 +1,9 @@
 .admin-page {
-  max-width: 960px;
-  margin: 0 auto;
   padding: 8px 0 28px;
   color: var(--text-main);
 }
 
-.admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+.admin-page .page-hero {
   margin-bottom: 20px;
 }
 
@@ -17,21 +11,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.admin-kicker {
-  margin: 0 0 6px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.admin-header h1 {
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.2;
 }
 
 .admin-icon-btn {
@@ -565,10 +544,6 @@
 @media (max-width: 720px) {
   .admin-page {
     padding: 0 0 24px;
-  }
-
-  .admin-header h1 {
-    font-size: 24px;
   }
 
   .admin-panel {

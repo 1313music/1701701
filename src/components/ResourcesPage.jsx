@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Share2 } from 'lucide-react';
 import '../styles/download.css';
 import {
     loadDownloadSections,
@@ -21,6 +20,7 @@ import {
 import {
     findPreviewItemBySlug
 } from '../utils/downloadPreviewUtils.js';
+import PageHeader from './PageHeader.jsx';
 
 const getResourceSectionTitle = (section) => (
     section.title === '其他资源' ? '文档' : section.title
@@ -117,14 +117,6 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
     const handleRetrySections = () => {
         setSectionsRetryKey((value) => value + 1);
     };
-    const handleCopyPageLink = (event) => {
-        if (typeof onCopyPageLink !== 'function') return;
-        onCopyPageLink({
-            placement: 'bottom',
-            anchorEvent: { currentTarget: event.currentTarget }
-        });
-    };
-
     if (previewSlug) {
         return (
             <div className="download-page download-v2 resources-page download-preview-route">
@@ -195,26 +187,12 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
 
     return (
         <div className="download-page download-v2 resources-page">
-            <section className="resources-hero" aria-label="文档">
-                <div className="resources-hero-header">
-                    <div className="resources-hero-copy">
-                        <h1>文档</h1>
-                        <p>文字、乐谱与 PDF 文档集中整理。</p>
-                    </div>
-                    <div className="resources-header-actions">
-                        {typeof onCopyPageLink === 'function' && (
-                            <button
-                                type="button"
-                                className="resources-share"
-                                onClick={handleCopyPageLink}
-                                aria-label="分享文档页"
-                            >
-                                <Share2 size={18} strokeWidth={2.2} absoluteStrokeWidth />
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </section>
+            <PageHeader
+                title="文档"
+                subtitle="文字、乐谱与 PDF 文档集中整理。"
+                tint
+                onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
+            />
 
             {isSectionsLoading && (
                 <div className="page-loading page-loading-spinner" role="status" aria-live="polite">

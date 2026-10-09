@@ -93,7 +93,7 @@
   top: 0;
   z-index: 12;
   padding: 2px 0 12px;
-  margin-bottom: 12px;
+  margin: 18px 0 12px;
   background:
     linear-gradient(
       180deg,
@@ -103,26 +103,6 @@
     );
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-}
-
-.gallery-list-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.gallery-title-row {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.gallery-list-header h2 {
-  font-size: 20px;
 }
 
 .gallery-category-bar {
@@ -613,10 +593,6 @@
     top: 0;
     margin-inline: -14px;
     padding: 2px 14px 10px;
-  }
-
-  .gallery-list-header {
-    align-items: flex-start;
   }
 
   .gallery-category-bar {

@@ -508,10 +508,8 @@
 .about-page.about-v3 {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--page-section-gap);
   width: 100%;
-  max-width: 1040px;
-  margin: 0 auto;
 }
 
 .about-v3-hero {

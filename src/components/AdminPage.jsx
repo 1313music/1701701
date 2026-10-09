@@ -17,6 +17,7 @@ import {
   UploadCloud
 } from 'lucide-react';
 import '../styles/admin.css';
+import PageHeader from './PageHeader.jsx';
 
 import AnnouncementModal from './AnnouncementModal.jsx';
 import DanmakuAdminPanel from './DanmakuAdminPanel.jsx';
@@ -274,7 +275,7 @@ const countNonEmptyLines = (value) => String(value || '')
 
 const toAdminIconName = (value) => String(value || 'video').replace(/^#?icon-/, '') || 'video';
 
-const AdminPage = () => {
+const AdminPage = ({ onCopyPageLink }) => {
   const announcementApiConfigured = useMemo(() => isAnnouncementAdminApiConfigured(), []);
   const galleryApiConfigured = useMemo(() => isGalleryAdminApiConfigured(), []);
   const musicApiConfigured = useMemo(() => isMusicAdminApiConfigured(), []);
@@ -1072,12 +1073,11 @@ const AdminPage = () => {
 
   return (
     <div className="admin-page">
-      <header className="admin-header">
-        <div>
-          <p className="admin-kicker">Admin Console</p>
-          <h1>后台管理</h1>
-        </div>
-        {isAuthenticated && (
+      <PageHeader
+        kicker="Admin Console"
+        title="后台管理"
+        onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
+        actions={isAuthenticated ? (
           <div className="admin-header-actions">
             {announcementApiConfigured && (
               <button
@@ -1101,8 +1101,8 @@ const AdminPage = () => {
               <LogOut size={18} />
             </button>
           </div>
-        )}
-      </header>
+        ) : null}
+      />
 
       <div className="admin-panel">
         <div className={`admin-status ${panelStatus.tone}`}>

@@ -641,14 +641,26 @@ const App = () => {
               {view === 'archive' && (
                 <div className="view-panel view-panel-archive">
                   <Suspense fallback={pageLoadingFallback}>
-                    <NanjingLizhiArchivePage />
+                    <NanjingLizhiArchivePage
+                    onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                      new URL(getPathForView('archive'), SITE_URL).toString(),
+                      '档案馆链接已复制',
+                      anchorOrOptions
+                    )}
+                  />
                   </Suspense>
                 </div>
               )}
               {view === 'gallery' && (
                 <div className="view-panel view-panel-gallery">
                   <Suspense fallback={pageLoadingFallback}>
-                    <GalleryDisplayPage />
+                    <GalleryDisplayPage
+                    onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                      new URL(getPathForView('gallery'), SITE_URL).toString(),
+                      '影像集链接已复制',
+                      anchorOrOptions
+                    )}
+                  />
                   </Suspense>
                 </div>
               )}
@@ -662,7 +674,13 @@ const App = () => {
               {view === 'support' && (
                 <div className="view-panel view-panel-support">
                   <Suspense fallback={pageLoadingFallback}>
-                    <SupportPage />
+                    <SupportPage
+                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                        new URL(getPathForView('support'), SITE_URL).toString(),
+                        '支持页链接已复制',
+                        anchorOrOptions
+                      )}
+                    />
                   </Suspense>
                 </div>
               )}
@@ -689,7 +707,13 @@ const App = () => {
               {view === 'admin' && (
                 <div className="view-panel view-panel-admin">
                   <Suspense fallback={pageLoadingFallback}>
-                    <AdminPage />
+                    <AdminPage
+                    onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                      new URL(getPathForView('admin'), SITE_URL).toString(),
+                      '后台链接已复制',
+                      anchorOrOptions
+                    )}
+                  />
                   </Suspense>
                 </div>
               )}

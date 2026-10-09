@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Monitor, Laptop, Smartphone, Apple, Share2 } from 'lucide-react';
+import { Monitor, Laptop, Smartphone, Apple } from 'lucide-react';
 import {
   DEFAULT_APP_PACKAGE_BASE_URL,
   DEFAULT_APP_PACKAGES,
@@ -7,6 +7,7 @@ import {
   normalizeAppPackages
 } from '../data/appPackageManifest.js';
 import '../styles/app-download.css';
+import PageHeader from './PageHeader.jsx';
 
 const PACKAGE_STATUS = Object.freeze({
   CHECKING: 'checking',
@@ -133,27 +134,12 @@ const AppPage = ({ onCopyPageLink }) => {
 
   return (
     <div className="app-download-page">
-      <section className="app-download-hero">
-        <div className="app-download-hero-header">
-          <h1>客户端下载</h1>
-          {typeof onCopyPageLink === 'function' && (
-            <button
-              type="button"
-              className="app-download-hero-share"
-              onClick={(event) => onCopyPageLink({
-                placement: 'bottom',
-                anchorEvent: { currentTarget: event.currentTarget }
-              })}
-              aria-label="分享 APP 页"
-            >
-              <Share2 size={18} strokeWidth={2.2} absoluteStrokeWidth />
-            </button>
-          )}
-        </div>
-        <p>
-          可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。
-        </p>
-      </section>
+      <PageHeader
+        title="客户端下载"
+        subtitle="可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。"
+        tint
+        onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
+      />
 
       <section className="app-download-grid" aria-label="客户端下载">
         {packages.map((pkg) => {

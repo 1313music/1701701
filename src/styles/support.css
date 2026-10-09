@@ -13,11 +13,18 @@
 }
 
 .support-intro {
+  position: relative;
   max-width: 620px;
   margin: 0 auto;
   display: grid;
   gap: 10px;
   text-align: center;
+}
+
+.support-share {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .support-kicker {
@@ -27,7 +34,7 @@
   align-items: center;
   gap: 10px;
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: var(--page-kicker-size);
   font-weight: 700;
 }
 
@@ -38,7 +45,7 @@
   justify-content: center;
   gap: 0.22em;
   flex-wrap: wrap;
-  font-size: clamp(1.75rem, 2.7vw, 2.55rem);
+  font-size: var(--page-title-size);
   line-height: 1.22;
   letter-spacing: 0;
 }

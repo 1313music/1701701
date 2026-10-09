@@ -1,6 +1,10 @@
 import React from 'react';
-import { ThumbsUp } from 'lucide-react';
+import { Share2, ThumbsUp } from 'lucide-react';
 import '../styles/support.css';
+// 支持页没有用 PageHeader 组件（要保持居中布局），但复用了它的 .page-hero-share 按钮样式。
+// page-hero.css 只被 PageHeader.jsx 引入，而页面是懒加载的 —— 不在这里显式引入的话，
+// 直接打开 /support（或刷新）时这个按钮会丢掉 36×36 热区、hover 变色和指针样式。
+import '../styles/page-hero.css';
 
 const supportOptions = [
     {
@@ -33,12 +37,23 @@ const supportNotes = [
     '行路有光'
 ];
 
-const SupportPage = () => (
+const SupportPage = ({ onCopyPageLink }) => (
     <div className="support-page">
         <section className="support-shell" aria-labelledby="support-title">
             <header className="support-intro">
+                {typeof onCopyPageLink === 'function' && (
+                    <button
+                        type="button"
+                        className="page-hero-share support-share"
+                        onClick={(event) => onCopyPageLink({ anchorEvent: { currentTarget: event.currentTarget } })}
+                        aria-label="分享支持页"
+                        title="分享支持页"
+                    >
+                        <Share2 size={18} strokeWidth={2.2} absoluteStrokeWidth />
+                    </button>
+                )}
                 <div className="support-kicker">
-                    <ThumbsUp size={22} strokeWidth={2.5} absoluteStrokeWidth />
+                    <ThumbsUp size={16} strokeWidth={2.5} absoluteStrokeWidth />
                     <span>支持本站</span>
                 </div>
                 <h1 id="support-title">1701701.xyz</h1>
