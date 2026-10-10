@@ -42,19 +42,22 @@ import {
   WALINE_SERVER_URL
 } from './utils/appShellConfig.js';
 import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './utils/featureFlags.js';
+import { createViewComponent } from './utils/viewChunks.js';
 
 const LyricsOverlay = lazy(() => import('./components/LyricsOverlay.jsx'));
 const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'));
-const VideoPage = lazy(() => import('./components/VideoPage.jsx'));
-const DownloadPage = lazy(() => import('./components/DownloadPage.jsx'));
-const ResourcesPage = lazy(() => import('./components/ResourcesPage.jsx'));
-const NanjingLizhiArchivePage = lazy(() => import('./components/NanjingLizhiArchivePage.jsx'));
-const GalleryDisplayPage = lazy(() => import('./components/GalleryDisplayPage.jsx'));
-const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
-const AppPage = lazy(() => import('./components/AppPage.jsx'));
-const SupportPage = lazy(() => import('./components/SupportPage.jsx'));
-const AdminPage = lazy(() => import('./components/AdminPage.jsx'));
-const CommentPage = lazy(() => import('./components/CommentPage.jsx'));
+// 各页面的代码统一由 viewChunks 管理：切视图前会先预取，
+// 预取好了这里就能同步渲染，扫掠揭开的是真页面而不是「加载中」占位
+const VideoPage = createViewComponent('video');
+const DownloadPage = createViewComponent('download');
+const ResourcesPage = createViewComponent('resources');
+const NanjingLizhiArchivePage = createViewComponent('archive');
+const GalleryDisplayPage = createViewComponent('gallery');
+const AboutPage = createViewComponent('about');
+const AppPage = createViewComponent('app');
+const SupportPage = createViewComponent('support');
+const AdminPage = createViewComponent('admin');
+const CommentPage = createViewComponent('comment');
 
 const EMPTY_ANNOUNCEMENT = {
   id: 'empty-announcement',

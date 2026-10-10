@@ -76,9 +76,11 @@ const Sidebar = ({
     isAnnouncementUnread = false,
     onOpenAnnouncement
 }) => {
-    const handleNavClick = (newView) => {
+    // 把被点按钮的位置一并传出去，作为页面切换扫掠的起点
+    const handleNavClick = (event, newView) => {
         setIsSidebarOpen(false);
-        setView(newView);
+        const rect = event?.currentTarget?.getBoundingClientRect?.();
+        setView(newView, rect ? { originRect: rect } : undefined);
     };
     const isGalleryActive = view === 'gallery';
     const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
@@ -94,7 +96,7 @@ const Sidebar = ({
         if (event.target !== event.currentTarget) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        handleNavClick('library');
+        handleNavClick(event, 'library');
     };
 
     return (
@@ -120,7 +122,7 @@ const Sidebar = ({
                 <button
                     type="button"
                     className="mobile-brand"
-                    onClick={() => handleNavClick('library')}
+                    onClick={(event) => handleNavClick(event, 'library')}
                 >
                     1701701.xyz
                 </button>
@@ -145,67 +147,67 @@ const Sidebar = ({
                         icon={<Library size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="音乐"
                         active={view === 'library'}
-                        onClick={() => handleNavClick('library')}
+                        onClick={(event) => handleNavClick(event, 'library')}
                     />
                     <NavItem
                         icon={<Video size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="视频"
                         active={view === 'video'}
-                        onClick={() => handleNavClick('video')}
+                        onClick={(event) => handleNavClick(event, 'video')}
                     />
                     <NavItem
                         icon={<Images size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="图库"
                         active={isGalleryActive}
-                        onClick={() => handleNavClick('gallery')}
+                        onClick={(event) => handleNavClick(event, 'gallery')}
                     />
                     {SHOW_RESOURCES_PAGE && (
                         <NavItem
                             icon={<FileText size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                             label="文档"
                             active={view === 'resources'}
-                            onClick={() => handleNavClick('resources')}
+                            onClick={(event) => handleNavClick(event, 'resources')}
                         />
                     )}
                     <NavItem
                         icon={<Archive size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="旧站"
                         active={view === 'archive'}
-                        onClick={() => handleNavClick('archive')}
+                        onClick={(event) => handleNavClick(event, 'archive')}
                     />
                     {SHOW_DOWNLOAD_PAGE && (
                         <NavItem
                             icon={<Download size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                             label="下载"
                             active={view === 'download'}
-                            onClick={() => handleNavClick('download')}
+                            onClick={(event) => handleNavClick(event, 'download')}
                         />
                     )}
                     <NavItem
                         icon={<Smartphone size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="APP"
                         active={view === 'app'}
-                        onClick={() => handleNavClick('app')}
+                        onClick={(event) => handleNavClick(event, 'app')}
                     />
                     {SHOW_COMMENT_NAV && (
                         <NavItem
                             icon={<MessageSquareMore size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                             label="留言"
                             active={view === 'comment'}
-                            onClick={() => handleNavClick('comment')}
+                            onClick={(event) => handleNavClick(event, 'comment')}
                         />
                     )}
                     <NavItem
                         icon={<Info size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
                         active={view === 'about'}
-                        onClick={() => handleNavClick('about')}
+                        onClick={(event) => handleNavClick(event, 'about')}
                     />
                     <NavItem
                         icon={<ThumbsUp size={20} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="支持"
                         active={view === 'support'}
-                        onClick={() => handleNavClick('support')}
+                        onClick={(event) => handleNavClick(event, 'support')}
                     />
                     {onThemeToggle && (
                         <button
@@ -233,7 +235,7 @@ const Sidebar = ({
                 <div className="sidebar-header">
                     <div
                         className="logo"
-                        onClick={() => handleNavClick('library')}
+                        onClick={(event) => handleNavClick(event, 'library')}
                         onKeyDown={handleLogoKeyDown}
                         role="button"
                         tabIndex={0}
@@ -262,67 +264,67 @@ const Sidebar = ({
                         icon={<Library size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="音乐"
                         active={view === 'library'}
-                        onClick={() => handleNavClick('library')}
+                        onClick={(event) => handleNavClick(event, 'library')}
                     />
                     <NavItem
                         icon={<Video size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="视频"
                         active={view === 'video'}
-                        onClick={() => handleNavClick('video')}
+                        onClick={(event) => handleNavClick(event, 'video')}
                     />
                     <NavItem
                         icon={<Images size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="图库"
                         active={isGalleryActive}
-                        onClick={() => handleNavClick('gallery')}
+                        onClick={(event) => handleNavClick(event, 'gallery')}
                     />
                     {SHOW_RESOURCES_PAGE && (
                         <NavItem
                             icon={<FileText size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                             label="文档"
                             active={view === 'resources'}
-                            onClick={() => handleNavClick('resources')}
+                            onClick={(event) => handleNavClick(event, 'resources')}
                         />
                     )}
                     <NavItem
                         icon={<Archive size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="旧站"
                         active={view === 'archive'}
-                        onClick={() => handleNavClick('archive')}
+                        onClick={(event) => handleNavClick(event, 'archive')}
                     />
                     {SHOW_DOWNLOAD_PAGE && (
                         <NavItem
                             icon={<Download size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                             label="下载"
                             active={view === 'download'}
-                            onClick={() => handleNavClick('download')}
+                            onClick={(event) => handleNavClick(event, 'download')}
                         />
                     )}
                     <NavItem
                         icon={<Smartphone size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="APP"
                         active={view === 'app'}
-                        onClick={() => handleNavClick('app')}
+                        onClick={(event) => handleNavClick(event, 'app')}
                     />
                     {SHOW_COMMENT_NAV && (
                         <NavItem
                             icon={<MessageSquareMore size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                             label="留言"
                             active={view === 'comment'}
-                            onClick={() => handleNavClick('comment')}
+                            onClick={(event) => handleNavClick(event, 'comment')}
                         />
                     )}
                     <NavItem
                         icon={<Info size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="关于"
                         active={view === 'about'}
-                        onClick={() => handleNavClick('about')}
+                        onClick={(event) => handleNavClick(event, 'about')}
                     />
                     <NavItem
                         icon={<ThumbsUp size={22} strokeWidth={2.4} absoluteStrokeWidth />}
                         label="支持"
                         active={view === 'support'}
-                        onClick={() => handleNavClick('support')}
+                        onClick={(event) => handleNavClick(event, 'support')}
                     />
                     {onThemeToggle && (
                         <button

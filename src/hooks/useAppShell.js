@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 
+import { runLaneWipe } from '../utils/laneWipe.js';
+import { VIEW_CHUNK_LOADERS, loadViewComponent } from '../utils/viewChunks.js';
 import {
   AVAILABLE_VIEWS,
   getCanonicalSearchForView,
@@ -7,6 +10,9 @@ import {
   resolveViewFromLocation,
   shouldRedirectDisabledDownloadResourcePath
 } from '../utils/appShellConfig.js';
+
+/** 切页时最多等目标页面代码多久（毫秒）。超时就照常扫掠，不再干等。 */
+const VIEW_CHUNK_WAIT_LIMIT = 250;
 
 const createInitialLyricsCommentRequest = () => ({
   id: 0,
@@ -121,22 +127,57 @@ export const useAppShell = ({ currentTrackSrc, pausePlayback, trackChangeId }) =
     const historyMode = options.historyMode || 'push';
     const isViewChanging = view !== resolvedView;
 
-    if (resolvedView === 'video') {
-      stopPlaybackForVideo();
+    const commitView = () => {
+      if (resolvedView === 'video') {
+        stopPlaybackForVideo();
+      }
+      if (isViewChanging) {
+        setPlayerOverlayContextId((prev) => prev + 1);
+        setLyricsCommentRequest((prev) => ({
+          ...prev,
+          trackSrc: '',
+          overlaySessionId: 0,
+          trackChangeId: -1,
+          viewContextId: -1,
+          mode: 'overlay'
+        }));
+      }
+      setView((prev) => (prev === resolvedView ? prev : resolvedView));
+      syncUrlForView(resolvedView, historyMode);
+    };
+
+    if (!isViewChanging) {
+      commitView();
+      return;
     }
-    if (isViewChanging) {
-      setPlayerOverlayContextId((prev) => prev + 1);
-      setLyricsCommentRequest((prev) => ({
-        ...prev,
-        trackSrc: '',
-        overlaySessionId: 0,
-        trackChangeId: -1,
-        viewContextId: -1,
-        mode: 'overlay'
-      }));
+
+    // 扫掠起点用被点的那颗导航按钮；拿不到位置（比如浏览器前进/后退）就用默认点
+    const rect = options.originRect;
+    const hasOrigin = Boolean(rect) && (rect.width > 0 || rect.height > 0);
+    const startWipe = () => runLaneWipe({
+      originX: hasOrigin ? rect.left + rect.width / 2 : undefined,
+      originY: hasOrigin ? rect.top + rect.height / 2 : undefined,
+      // flushSync：让 React 同步把新页面渲染出来，快照才拍得到切换后的样子
+      applyChange: () => flushSync(commitView)
+    });
+
+    if (!VIEW_CHUNK_LOADERS[resolvedView]) {
+      startWipe();
+      return;
     }
-    setView((prev) => (prev === resolvedView ? prev : resolvedView));
-    syncUrlForView(resolvedView, historyMode);
+
+    // 先把目标页面的代码取回来再扫，否则扫掠揭开的是 Suspense 的「加载中」占位。
+    // 但不能无限等：慢网下宁可照常扫（那时会看到占位，跟没做动画时一样）。
+    let started = false;
+    const startOnce = () => {
+      if (started) return;
+      started = true;
+      startWipe();
+    };
+    loadViewComponent(resolvedView).then(startOnce, startOnce);
+    if (typeof window !== 'undefined') {
+      window.setTimeout(startOnce, VIEW_CHUNK_WAIT_LIMIT);
+    }
   }, [stopPlaybackForVideo, syncUrlForView, view]);
 
   const openCurrentTrackComments = useCallback(() => {

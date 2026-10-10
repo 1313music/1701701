@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-import { runThemeWipe } from '../utils/themeTransition.js';
+import { runLaneWipe } from '../utils/laneWipe.js';
 import {
   useAndroidViewportVars,
   useDisplayModeTheme,
@@ -84,10 +84,10 @@ export const useTheme = ({ showToast } = {}) => {
       }
     };
 
-    const transition = runThemeWipe({
+    const transition = runLaneWipe({
       originX: rect ? rect.left + rect.width / 2 : undefined,
       originY: rect ? rect.top + rect.height / 2 : undefined,
-      applyTheme
+      applyChange: applyTheme
     });
 
     if (!transition) {

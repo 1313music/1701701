@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  buildThemeWipeFrames,
+  buildLaneWipeFrames,
+  LANE_WIPE_DURATION,
   prefersReducedMotion,
-  runThemeWipe,
-  shouldAnimateThemeWipe,
-  supportsViewTransition,
-  THEME_WIPE_DURATION
-} from './themeTransition.js';
+  runLaneWipe,
+  shouldAnimateWipe,
+  supportsViewTransition
+} from './laneWipe.js';
 
 const parsePolygon = (frame) =>
   frame
@@ -52,9 +52,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('buildThemeWipeFrames', () => {
+describe('buildLaneWipeFrames', () => {
   it('produces a polygon keyframe per step', () => {
-    const frames = buildThemeWipeFrames(1200, 30, 1280, 800);
+    const frames = buildLaneWipeFrames(1200, 30, 1280, 800);
 
     expect(frames).toHaveLength(17);
     frames.forEach((frame) => {
@@ -66,7 +66,7 @@ describe('buildThemeWipeFrames', () => {
   it('starts with nothing revealed and ends covering the whole viewport', () => {
     const width = 1280;
     const height = 800;
-    const frames = buildThemeWipeFrames(1200, 30, width, height);
+    const frames = buildLaneWipeFrames(1200, 30, width, height);
 
     // 第一帧只是一堆退化成线的多边形，面积应为 0（坐标取整会留下几平方像素的噪声）
     expect(areaOf(parsePolygon(frames[0]))).toBeLessThan(width * height * 0.001);
@@ -79,7 +79,7 @@ describe('buildThemeWipeFrames', () => {
   });
 
   it('reveals more area as the wipe progresses', () => {
-    const frames = buildThemeWipeFrames(1200, 30, 1280, 800);
+    const frames = buildLaneWipeFrames(1200, 30, 1280, 800);
     const areas = frames.map((frame) => areaOf(parsePolygon(frame)));
 
     areas.forEach((area, index) => {
@@ -93,7 +93,7 @@ describe('buildThemeWipeFrames', () => {
 describe('environment checks', () => {
   it('reports no view transition support in a bare jsdom document', () => {
     expect(supportsViewTransition()).toBe(false);
-    expect(shouldAnimateThemeWipe()).toBe(false);
+    expect(shouldAnimateWipe()).toBe(false);
   });
 
   it('treats a missing matchMedia as motion allowed', () => {
@@ -103,34 +103,47 @@ describe('environment checks', () => {
   it('detects the reduced motion preference', () => {
     installMatchMedia(true);
     expect(prefersReducedMotion()).toBe(true);
-    expect(shouldAnimateThemeWipe()).toBe(false);
+    expect(shouldAnimateWipe()).toBe(false);
   });
 });
 
-describe('runThemeWipe', () => {
-  it('applies the theme directly when view transitions are unavailable', () => {
-    const applyTheme = vi.fn();
+describe('runLaneWipe', () => {
+  const installTransition = (animate) => {
+    document.documentElement.animate = animate;
+    document.startViewTransition = vi.fn((callback) => {
+      callback();
+      return { ready: Promise.resolve(), finished: Promise.resolve() };
+    });
+  };
 
-    const transition = runThemeWipe({ originX: 10, originY: 10, applyTheme });
+  const flushReady = async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  };
+
+  it('applies the change directly when view transitions are unavailable', () => {
+    const applyChange = vi.fn();
+
+    const transition = runLaneWipe({ originX: 10, originY: 10, applyChange });
 
     expect(transition).toBeNull();
-    expect(applyTheme).toHaveBeenCalledTimes(1);
+    expect(applyChange).toHaveBeenCalledTimes(1);
   });
 
-  it('applies the theme directly when the user prefers reduced motion', () => {
+  it('applies the change directly when the user prefers reduced motion', () => {
     installMatchMedia(true);
     document.startViewTransition = vi.fn();
-    const applyTheme = vi.fn();
+    const applyChange = vi.fn();
 
-    const transition = runThemeWipe({ originX: 10, originY: 10, applyTheme });
+    const transition = runLaneWipe({ originX: 10, originY: 10, applyChange });
 
     expect(transition).toBeNull();
     expect(document.startViewTransition).not.toHaveBeenCalled();
-    expect(applyTheme).toHaveBeenCalledTimes(1);
+    expect(applyChange).toHaveBeenCalledTimes(1);
   });
 
   it('drives the clip-path wipe on the incoming snapshot', async () => {
-    const applyTheme = vi.fn();
+    const applyChange = vi.fn();
     const animate = vi.fn();
     const transition = { ready: Promise.resolve(), finished: Promise.resolve() };
 
@@ -140,27 +153,52 @@ describe('runThemeWipe', () => {
       return transition;
     });
 
-    const result = runThemeWipe({ originX: 1200, originY: 30, applyTheme });
+    const result = runLaneWipe({ originX: 1200, originY: 30, applyChange });
 
     expect(result).toBe(transition);
-    expect(applyTheme).toHaveBeenCalledTimes(1);
+    expect(applyChange).toHaveBeenCalledTimes(1);
 
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushReady();
 
     expect(animate).toHaveBeenCalledTimes(1);
     const [keyframes, options] = animate.mock.calls[0];
     expect(Array.isArray(keyframes.clipPath)).toBe(true);
     expect(keyframes.clipPath[0].startsWith('polygon(')).toBe(true);
     expect(options).toMatchObject({
-      duration: THEME_WIPE_DURATION,
+      duration: LANE_WIPE_DURATION,
       easing: 'linear',
       pseudoElement: '::view-transition-new(root)'
     });
   });
 
+  it('lets the caller override the duration', async () => {
+    const animate = vi.fn();
+    installTransition(animate);
+
+    runLaneWipe({ originX: 40, originY: 300, duration: 300, applyChange: vi.fn() });
+    await flushReady();
+
+    expect(animate.mock.calls[0][1].duration).toBe(300);
+  });
+
+  it('falls back to the viewport centre when no origin is given', async () => {
+    const animate = vi.fn();
+    installTransition(animate);
+
+    runLaneWipe({ applyChange: vi.fn() });
+    await flushReady();
+
+    const expected = buildLaneWipeFrames(
+      window.innerWidth / 2,
+      0,
+      window.innerWidth,
+      window.innerHeight
+    );
+    expect(animate.mock.calls[0][0].clipPath).toEqual(expected);
+  });
+
   it('does not throw when the browser skips the transition', async () => {
-    const applyTheme = vi.fn();
+    const applyChange = vi.fn();
     const rejected = Promise.reject(new Error('skipped'));
     rejected.catch(() => {});
 
@@ -169,8 +207,7 @@ describe('runThemeWipe', () => {
       return { ready: rejected, finished: Promise.resolve() };
     });
 
-    expect(() => runThemeWipe({ originX: 5, originY: 5, applyTheme })).not.toThrow();
-    await Promise.resolve();
-    await Promise.resolve();
+    expect(() => runLaneWipe({ originX: 5, originY: 5, applyChange })).not.toThrow();
+    await flushReady();
   });
 });

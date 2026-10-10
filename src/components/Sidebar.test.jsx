@@ -17,7 +17,8 @@ describe('Sidebar', () => {
     );
 
     fireEvent.click(screen.getAllByRole('button', { name: '视频' })[0]);
-    expect(setView).toHaveBeenCalledWith('video');
+    // 第二个参数是扫掠起点（被点按钮的位置），这里只关心切到了哪个视图
+    expect(setView).toHaveBeenCalledWith('video', expect.anything());
   });
 
   it('does not render announcement controls in navigation', () => {
@@ -75,7 +76,7 @@ describe('Sidebar', () => {
     expect(archiveButtons).toHaveLength(2);
 
     fireEvent.click(archiveButtons[0]);
-    expect(setView).toHaveBeenCalledWith('archive');
+    expect(setView).toHaveBeenCalledWith('archive', expect.anything());
   });
 
   it('routes support navigation clicks', () => {
@@ -93,7 +94,7 @@ describe('Sidebar', () => {
     expect(supportButtons).toHaveLength(2);
 
     fireEvent.click(supportButtons[0]);
-    expect(setView).toHaveBeenCalledWith('support');
+    expect(setView).toHaveBeenCalledWith('support', expect.anything());
   });
 
   it('places support after about in both navigation layouts', () => {

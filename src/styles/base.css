@@ -142,6 +142,10 @@
   mix-blend-mode: normal;
 }
 
+/* 注意：扫掠期间覆盖层会挡住所有点击，点多久就锁多久，而且没法绕过 ——
+   ::view-transition 上写 pointer-events: none（整棵伪元素树都试过）Chrome 不认。
+   所以扫掠时长 = 输入锁死时长，调时长时要考虑这一点。 */
+
 .theme-icon-stack {
   position: relative;
   display: inline-flex;
