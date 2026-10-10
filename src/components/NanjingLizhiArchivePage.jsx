@@ -323,26 +323,27 @@ const NanjingLizhiArchivePage = ({ onCopyPageLink }) => {
                 subtitle={`${activeArchiveLabel} · ${snapshots.length || '-'} 个${unitLabel}`}
                 titleId="archive-title"
                 onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
-                actions={
-                    <div className="archive-source-switch" role="tablist" aria-label="档案域名">
-                        {archiveSources.map((source) => {
-                            const isActive = source.id === activeArchive.id;
-                            return (
-                                <button
-                                    type="button"
-                                    key={source.id}
-                                    role="tab"
-                                    aria-selected={isActive}
-                                    className={`archive-source-button ${isActive ? 'is-active' : ''}`}
-                                    onClick={() => setActiveArchiveId(source.id)}
-                                >
-                                    {source.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-                }
             />
+
+            {/* 域名切换控制的是下方整块内容，所以它属于页面导航，不属于页头的动作区。
+                放在页头卡片外面，它就不用再自带一层边框 —— 否则就是卡片套小框。 */}
+            <div className="archive-source-switch" role="tablist" aria-label="档案域名">
+                {archiveSources.map((source) => {
+                    const isActive = source.id === activeArchive.id;
+                    return (
+                        <button
+                            type="button"
+                            key={source.id}
+                            role="tab"
+                            aria-selected={isActive}
+                            className={`archive-source-button ${isActive ? 'is-active' : ''}`}
+                            onClick={() => setActiveArchiveId(source.id)}
+                        >
+                            {source.label}
+                        </button>
+                    );
+                })}
+            </div>
 
             {isManifestLoading && (
                 <div className="page-loading page-loading-spinner" role="status" aria-live="polite">

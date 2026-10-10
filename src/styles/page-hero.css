@@ -59,10 +59,16 @@
 }
 
 @media (max-width: 900px) {
+  /* 手机上不再把动作区单独排一行 —— 那样只为一个分享图标就要多占 36px 空白，
+     页头会凭空高出一截。改成与标题同行、贴右上角。 */
   .page-hero {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-hero-copy {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .page-hero-actions {
