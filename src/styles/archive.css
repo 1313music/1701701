@@ -298,8 +298,15 @@
     gap: 10px;
   }
 
+  /* 页头统一成 PageHeader 后，动作区里除了域名切换还多了「分享本页」按钮。
+     这里不能再让切换组独占整行：动作区是 nowrap + 右对齐，
+     100% + 分享按钮会撑破一行，多出来的 46px 从左侧溢出，
+     把整组挤到卡片外（左侧圆角被屏幕边缘切掉）。
+     改成「占满剩余宽度、可让位给分享按钮」。 */
   .archive-source-switch {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
     display: flex;
     flex-wrap: wrap;
     justify-content: stretch;
