@@ -36,6 +36,8 @@ const profileOverlayState = {
   form: null,
   fields: {},
   submitButton: null,
+  avatarPreviewImage: null,
+  avatarPreviewPlaceholder: null,
   serverURL: '',
   lang: 'zh-CN',
   userInfo: null,
@@ -457,9 +459,33 @@ const handleRegisterSubmit = async (event) => {
   }
 };
 
-const isValidHomepage = (value) => {
-  const homepage = String(value || '').trim();
-  return !homepage || /^https?:\/\//i.test(homepage);
+const isValidHttpUrl = (value) => {
+  const url = String(value || '').trim();
+  return !url || /^https?:\/\//i.test(url);
+};
+
+// 头像预览：输入框里填了合法的 http(s) 地址就展示那张图，否则回退到占位文字。
+const renderProfileAvatarPreview = (value) => {
+  const image = profileOverlayState.avatarPreviewImage;
+  const placeholder = profileOverlayState.avatarPreviewPlaceholder;
+
+  if (!image || !placeholder) return;
+
+  const url = String(value || '').trim();
+
+  if (!isValidHttpUrl(url) || !url) {
+    image.hidden = true;
+    image.removeAttribute('src');
+    placeholder.hidden = false;
+    return;
+  }
+
+  image.hidden = false;
+  placeholder.hidden = true;
+
+  if (image.getAttribute('src') !== url) {
+    image.setAttribute('src', url);
+  }
 };
 
 const handleProfileSubmit = async (event) => {
@@ -468,6 +494,7 @@ const handleProfileSubmit = async (event) => {
   const currentUserInfo = profileOverlayState.userInfo || readStoredWalineUser();
   const displayName = profileOverlayState.fields.profileNick?.value?.trim() || '';
   const homepage = profileOverlayState.fields.profileUrl?.value?.trim() || '';
+  const avatar = profileOverlayState.fields.profileAvatar?.value?.trim() || '';
 
   if (!currentUserInfo?.token) {
     showProfileStatus('请先登录后再更新资料');
@@ -479,8 +506,13 @@ const handleProfileSubmit = async (event) => {
     return;
   }
 
-  if (!isValidHomepage(homepage)) {
+  if (!isValidHttpUrl(homepage)) {
     showProfileStatus('个人主页需以 http:// 或 https:// 开头，或者留空');
+    return;
+  }
+
+  if (!isValidHttpUrl(avatar)) {
+    showProfileStatus('头像图片地址需以 http:// 或 https:// 开头，或者留空');
     return;
   }
 
@@ -496,14 +528,17 @@ const handleProfileSubmit = async (event) => {
       token: currentUserInfo.token,
       body: {
         display_name: displayName,
-        url: homepage
+        url: homepage,
+        // 服务端只有拿到非空字符串才会写入 avatar，留空即保持当前头像不变。
+        ...(avatar ? { avatar } : {})
       }
     });
 
     const nextUserInfo = {
       ...currentUserInfo,
       display_name: displayName,
-      url: homepage
+      url: homepage,
+      ...(avatar ? { avatar } : {})
     };
 
     profileOverlayState.userInfo = nextUserInfo;
@@ -681,6 +716,17 @@ const ensureWalineProfileOverlay = () => {
       <div class="waline-auth-body">
         <p class="waline-auth-status" hidden></p>
         <form class="waline-auth-form waline-profile-form" novalidate>
+          <div class="waline-profile-avatar">
+            <span class="waline-profile-avatar-preview" aria-hidden="true">
+              <img alt="" data-role="avatar-preview-image" hidden />
+              <span class="waline-profile-avatar-placeholder" data-role="avatar-preview-placeholder">暂无</span>
+            </span>
+            <label class="waline-auth-field waline-profile-avatar-field">
+              <span>头像图片地址</span>
+              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
+            </label>
+          </div>
+          <p class="waline-auth-help">填入一张图片的网址即可更换头像，左边会即时预览；留空则保持当前头像不变。</p>
           <label class="waline-auth-field">
             <span>昵称</span>
             <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
@@ -704,6 +750,9 @@ const ensureWalineProfileOverlay = () => {
   const closeButton = overlay.querySelector('.waline-auth-close');
   const status = overlay.querySelector('.waline-auth-status');
   const form = overlay.querySelector('.waline-profile-form');
+  const avatarInput = form?.querySelector('input[name="avatar"]');
+  const avatarPreviewImage = overlay.querySelector('[data-role="avatar-preview-image"]');
+  const avatarPreviewPlaceholder = overlay.querySelector('[data-role="avatar-preview-placeholder"]');
 
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) {
@@ -721,6 +770,23 @@ const ensureWalineProfileOverlay = () => {
 
   form?.addEventListener('submit', handleProfileSubmit);
 
+  const handleAvatarPreviewInput = (event) => {
+    renderProfileAvatarPreview(event.target.value);
+  };
+
+  // 'input' 覆盖手动输入/粘贴，'change' 覆盖自动填充与失焦提交，处理函数本身是幂等的。
+  avatarInput?.addEventListener('input', handleAvatarPreviewInput);
+  avatarInput?.addEventListener('change', handleAvatarPreviewInput);
+
+  // 地址填错（图挂了/不是图片）时不要把破图留在预览里。
+  avatarPreviewImage?.addEventListener('error', () => {
+    avatarPreviewImage.hidden = true;
+    avatarPreviewImage.removeAttribute('src');
+    if (avatarPreviewPlaceholder) {
+      avatarPreviewPlaceholder.hidden = false;
+    }
+  });
+
   document.body.appendChild(overlay);
   window.addEventListener('keydown', handleWalineProfileKeydown);
 
@@ -730,8 +796,11 @@ const ensureWalineProfileOverlay = () => {
   profileOverlayState.fields = {
     profileNick: form?.querySelector('input[name="nick"]'),
     profileEmail: form?.querySelector('input[name="email"]'),
-    profileUrl: form?.querySelector('input[name="url"]')
+    profileUrl: form?.querySelector('input[name="url"]'),
+    profileAvatar: avatarInput
   };
+  profileOverlayState.avatarPreviewImage = avatarPreviewImage;
+  profileOverlayState.avatarPreviewPlaceholder = avatarPreviewPlaceholder;
   profileOverlayState.submitButton = form?.querySelector('.waline-auth-submit');
 };
 
@@ -782,6 +851,13 @@ export const openWalineProfileOverlay = ({ serverURL, lang = 'zh-CN' }) => {
   if (profileOverlayState.fields.profileUrl) {
     profileOverlayState.fields.profileUrl.value = userInfo.url || '';
   }
+  if (profileOverlayState.fields.profileAvatar) {
+    profileOverlayState.fields.profileAvatar.value = '';
+  }
+
+  // userInfo.avatar 是服务端算好的「当前头像」（可能是用户自定义的，也可能是按邮箱生成的），
+  // 只拿来预览，不回填输入框 —— 回填会让用户误以为那个地址是必须保留的值。
+  renderProfileAvatarPreview(userInfo.avatar || '');
 
   document.body.style.overflow = 'hidden';
   profileOverlayState.overlay.hidden = false;
