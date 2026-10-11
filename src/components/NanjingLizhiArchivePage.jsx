@@ -8,7 +8,6 @@ import {
     loadArchiveFeatureConfig
 } from '../data/archiveFeatureConfig.js';
 import '../styles/archive.css';
-import PageHeader from './PageHeader.jsx';
 import StatePanel from './StatePanel.jsx';
 
 const ALL_ARCHIVE_SOURCES = [
@@ -88,7 +87,7 @@ const formatSnapshotOption = (snapshot) => (
     ].filter(Boolean))).join(' · ')
 );
 
-const NanjingLizhiArchivePage = ({ onCopyPageLink }) => {
+const NanjingLizhiArchivePage = () => {
     const frameShellRef = useRef(null);
     const iframeRef = useRef(null);
     const [archiveConfig, setArchiveConfig] = useState(DEFAULT_ARCHIVE_FEATURE_CONFIG);
@@ -319,12 +318,12 @@ const NanjingLizhiArchivePage = ({ onCopyPageLink }) => {
 
     return (
         <div className="archive-page">
-            <PageHeader
-                title="旧官网档案馆"
-                subtitle={`${activeArchiveLabel} · ${snapshots.length || '-'} 个${unitLabel}`}
-                titleId="archive-title"
-                onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
-            />
+            <section className="archive-header" aria-labelledby="archive-title">
+                <div className="archive-header-copy">
+                    <h1 id="archive-title">旧官网档案馆</h1>
+                    <p>{activeArchiveLabel} · {snapshots.length || '-'} 个{unitLabel}</p>
+                </div>
+            </section>
 
             {/* 域名切换控制的是下方整块内容，所以它属于页面导航，不属于页头的动作区。
                 放在页头卡片外面，它就不用再自带一层边框 —— 否则就是卡片套小框。 */}

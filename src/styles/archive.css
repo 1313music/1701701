@@ -16,6 +16,29 @@
   --archive-cyan: #72b5b3;
 }
 
+.archive-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.archive-header-copy {
+  min-width: 0;
+}
+
+.archive-header h1 {
+  margin: 0;
+  font-size: var(--page-title-size);
+  line-height: 1.15;
+}
+
+.archive-header p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 /* 域名切换：页头下方的一条标签栏。
    刻意不给它外框 —— 页头本身就是带边框的卡片，再套一层框就是「框套框」。
    容器与按钮的写法**逐项照搬影像集页的 .gallery-category-bar / .gallery-category-btn**

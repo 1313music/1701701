@@ -20,7 +20,6 @@ import {
 import {
     findPreviewItemBySlug
 } from '../utils/downloadPreviewUtils.js';
-import PageHeader from './PageHeader.jsx';
 import StatePanel from './StatePanel.jsx';
 
 const getResourceSectionTitle = (section) => (
@@ -52,7 +51,7 @@ const ResourceCard = ({ group }) => (
     </article>
 );
 
-const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
+const ResourcesPage = ({ onInitialReady }) => {
     const [allSections, setAllSections] = useState([]);
     const [isSectionsLoading, setIsSectionsLoading] = useState(true);
     const [sectionsLoadError, setSectionsLoadError] = useState('');
@@ -173,11 +172,14 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
 
     return (
         <div className="download-page download-v2 resources-page">
-            <PageHeader
-                title="文档"
-                subtitle="文字、乐谱与 PDF 文档集中整理。"
-                onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
-            />
+            <section className="resources-hero" aria-label="文档">
+                <div className="resources-hero-header">
+                    <div className="resources-hero-copy">
+                        <h1>文档</h1>
+                        <p>文字、乐谱与 PDF 文档集中整理。</p>
+                    </div>
+                </div>
+            </section>
 
             {isSectionsLoading && (
                 <StatePanel variant="loading" title="加载中…" />

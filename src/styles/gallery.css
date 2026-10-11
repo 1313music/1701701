@@ -4,6 +4,28 @@
   gap: 18px;
 }
 
+.gallery-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.gallery-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gallery-title-row h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
 .gallery-list-card,
 .gallery-readonly-card {
   border: 1px solid var(--glass-border);

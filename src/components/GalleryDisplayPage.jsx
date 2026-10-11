@@ -14,7 +14,6 @@ import {
   refreshGalleryItems,
   subscribeToGalleryItems
 } from '../data/galleryManifest';
-import PageHeader from './PageHeader.jsx';
 import StatePanel from './StatePanel.jsx';
 
 const shuffleItems = (input) => {
@@ -197,7 +196,7 @@ const isNearScrollEnd = ({ scrollTop, viewportHeight, scrollHeight }) => {
   return scrollHeight - (scrollTop + viewportHeight) <= threshold;
 };
 
-const GalleryDisplayPage = ({ onCopyPageLink }) => {
+const GalleryDisplayPage = () => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -674,14 +673,14 @@ const GalleryDisplayPage = ({ onCopyPageLink }) => {
         )}
 
         <section ref={gallerySectionRef} className="gallery-list-card" aria-label="瀑布流图库">
-          <PageHeader
-            title="影像集"
-            subtitle="图片与影像的瀑布流归档，支持按分类筛选浏览。"
-            onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
-          />
+          <div className="gallery-toolbar">
+            <div className="gallery-list-header">
+              <div className="gallery-title-row">
+                <h2>影像集</h2>
+              </div>
+            </div>
 
-          {!isLoading && categoryStats.length > 0 && (
-            <div className="gallery-toolbar">
+            {!isLoading && categoryStats.length > 0 && (
               <div className="gallery-category-bar" aria-label="分类筛选">
                 {categoryStats.map((category) => (
                   <button
@@ -703,8 +702,8 @@ const GalleryDisplayPage = ({ onCopyPageLink }) => {
                   <span>{items.length}</span>
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {isLoading ? (
             <div className="gallery-loading-state">

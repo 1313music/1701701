@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Share2, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import '../styles/download.css';
 import {
     loadDownloadSections,
@@ -23,7 +23,7 @@ import {
 } from '../utils/downloadResourceUtils.js';
 import StatePanel from './StatePanel.jsx';
 
-const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
+const DownloadPage = ({ onInitialReady }) => {
     const [downloadSections, setDownloadSections] = useState([]);
     const [isSectionsLoading, setIsSectionsLoading] = useState(true);
     const [sectionsLoadError, setSectionsLoadError] = useState('');
@@ -94,13 +94,6 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
 
     const handleRetrySections = () => {
         setSectionsRetryKey((value) => value + 1);
-    };
-    const handleCopyPageLink = (event) => {
-        if (typeof onCopyPageLink !== 'function') return;
-        onCopyPageLink({
-            placement: 'bottom',
-            anchorEvent: { currentTarget: event.currentTarget }
-        });
     };
     const shouldDefaultOpenGroup = (sectionTitle, groupTitle) => (
         sectionTitle === '其他资源' && groupTitle === '资源下载'
@@ -195,17 +188,6 @@ const DownloadPage = ({ onCopyPageLink, onInitialReady }) => {
                             <BookOpen size={15} strokeWidth={2.2} absoluteStrokeWidth />
                             使用指南
                         </a>
-                        {typeof onCopyPageLink === 'function' && (
-                            <button
-                                type="button"
-                                className="download-intro-link download-intro-page-share"
-                                onClick={handleCopyPageLink}
-                                aria-label="分享下载页"
-                            >
-                                <Share2 size={15} strokeWidth={2.2} absoluteStrokeWidth />
-                                分享本页
-                            </button>
-                        )}
                     </div>
                 </div>
             </section>

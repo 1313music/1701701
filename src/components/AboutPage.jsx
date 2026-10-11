@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Share2 } from 'lucide-react';
 import '../styles/about.css';
-// 分享按钮复用 PageHeader 的 .page-hero-share 样式；
-// page-hero.css 只被 PageHeader.jsx 引入，而页面是懒加载的 ——
-// 不在这里显式引入的话，直接打开 /about（或刷新）时按钮会丢掉热区、hover 反馈和指针样式。
-import '../styles/page-hero.css';
 import { copyTextToClipboard } from '../utils/appDomUtils.js';
 import { SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
 import ExternalJumpDialog from './ExternalJumpDialog.jsx';
@@ -24,7 +19,7 @@ const officialAccounts = [
     }
 ];
 
-const AboutPage = ({ onCopyPageLink }) => {
+const AboutPage = () => {
     const [isJumpOpen, setIsJumpOpen] = useState(false);
     const [copyFeedback, setCopyFeedback] = useState({ name: '', status: 'idle' });
     const copyFeedbackTimerRef = useRef(null);
@@ -62,17 +57,6 @@ const AboutPage = ({ onCopyPageLink }) => {
         <section className="about-v3-hero">
             <div className="about-v3-image">
                 <img loading="lazy" src="https://p1.music.126.net/9zu8MA2HIIbkwpR5WbeiHg==/109951172851439998.jpg" alt="李志" />
-                {typeof onCopyPageLink === 'function' && (
-                    <button
-                        type="button"
-                        className="page-hero-share about-v3-share"
-                        onClick={(event) => onCopyPageLink({ anchorEvent: { currentTarget: event.currentTarget } })}
-                        aria-label="分享关于页"
-                        title="分享关于页"
-                    >
-                        <Share2 size={18} strokeWidth={2.2} absoluteStrokeWidth />
-                    </button>
-                )}
                 <div className="about-v3-overlay">
                     <p>一个分享李志音乐&视频的网站 | 1701701.xyz</p>
                 </div>

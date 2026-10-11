@@ -7,7 +7,6 @@ import {
   normalizeAppPackages
 } from '../data/appPackageManifest.js';
 import '../styles/app-download.css';
-import PageHeader from './PageHeader.jsx';
 
 const PACKAGE_STATUS = Object.freeze({
   CHECKING: 'checking',
@@ -87,7 +86,7 @@ const iosSteps = [
   '点击右上角“添加”即可放到主屏幕。'
 ];
 
-const AppPage = ({ onCopyPageLink }) => {
+const AppPage = () => {
   const [packages, setPackages] = useState(buildFallbackPackages);
   const [statusMap, setStatusMap] = useState({});
 
@@ -134,11 +133,12 @@ const AppPage = ({ onCopyPageLink }) => {
 
   return (
     <div className="app-download-page">
-      <PageHeader
-        title="客户端下载"
-        subtitle="可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。"
-        onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
-      />
+      <section className="app-download-hero">
+        <div className="app-download-hero-header">
+          <h1>客户端下载</h1>
+        </div>
+        <p>可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。</p>
+      </section>
 
       <section className="app-download-grid" aria-label="客户端下载">
         {packages.map((pkg) => {

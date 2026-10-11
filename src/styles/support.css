@@ -53,7 +53,6 @@
 .support-intro p {
   margin: 0;
   color: var(--text-secondary);
-  /* 与 PageHeader 的副标题共用同一个 token，避免两套页头字号不一致 */
   font-size: var(--page-subtitle-size);
   line-height: 1.75;
 }

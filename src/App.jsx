@@ -436,7 +436,6 @@ const App = () => {
     isShareCardGenerating,
     closeSharePanel,
     handleCopyShareLink,
-    handleCopySpecificPageUrl,
     handleShareCardImage,
     handleShareCurrentTrack,
     handleShareVideo
@@ -614,11 +613,6 @@ const App = () => {
                   <Suspense fallback={pageLoadingFallback}>
                     <DownloadPage
                       onInitialReady={signalBootReady}
-                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                        new URL(getPathForView('download'), SITE_URL).toString(),
-                        '下载页链接已复制',
-                        anchorOrOptions
-                      )}
                     />
                   </Suspense>
                 </div>
@@ -628,11 +622,6 @@ const App = () => {
                   <Suspense fallback={pageLoadingFallback}>
                     <ResourcesPage
                       onInitialReady={signalBootReady}
-                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                        new URL(getPathForView('resources'), SITE_URL).toString(),
-                        '文档页链接已复制',
-                        anchorOrOptions
-                      )}
                     />
                   </Suspense>
                 </div>
@@ -641,11 +630,6 @@ const App = () => {
                 <div className="view-panel view-panel-archive">
                   <Suspense fallback={pageLoadingFallback}>
                     <NanjingLizhiArchivePage
-                    onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                      new URL(getPathForView('archive'), SITE_URL).toString(),
-                      '档案馆链接已复制',
-                      anchorOrOptions
-                    )}
                   />
                   </Suspense>
                 </div>
@@ -654,11 +638,6 @@ const App = () => {
                 <div className="view-panel view-panel-gallery">
                   <Suspense fallback={pageLoadingFallback}>
                     <GalleryDisplayPage
-                    onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                      new URL(getPathForView('gallery'), SITE_URL).toString(),
-                      '影像集链接已复制',
-                      anchorOrOptions
-                    )}
                   />
                   </Suspense>
                 </div>
@@ -667,11 +646,6 @@ const App = () => {
                 <div className="view-panel view-panel-about">
                   <Suspense fallback={pageLoadingFallback}>
                     <AboutPage
-                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                        new URL(getPathForView('about'), SITE_URL).toString(),
-                        '关于页链接已复制',
-                        anchorOrOptions
-                      )}
                     />
                   </Suspense>
                 </div>
@@ -680,11 +654,6 @@ const App = () => {
                 <div className="view-panel view-panel-support">
                   <Suspense fallback={pageLoadingFallback}>
                     <SupportPage
-                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                        new URL(getPathForView('support'), SITE_URL).toString(),
-                        '支持页链接已复制',
-                        anchorOrOptions
-                      )}
                     />
                   </Suspense>
                 </div>
@@ -693,11 +662,6 @@ const App = () => {
                 <div className="view-panel view-panel-about">
                   <Suspense fallback={pageLoadingFallback}>
                     <AppPage
-                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                        new URL(getPathForView('app'), SITE_URL).toString(),
-                        'APP 页链接已复制',
-                        anchorOrOptions
-                      )}
                     />
                   </Suspense>
                 </div>
@@ -713,11 +677,6 @@ const App = () => {
                 <div className="view-panel view-panel-admin">
                   <Suspense fallback={pageLoadingFallback}>
                     <AdminPage
-                    onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
-                      new URL(getPathForView('admin'), SITE_URL).toString(),
-                      '后台链接已复制',
-                      anchorOrOptions
-                    )}
                   />
                   </Suspense>
                 </div>

@@ -17,7 +17,6 @@ import {
   UploadCloud
 } from 'lucide-react';
 import '../styles/admin.css';
-import PageHeader from './PageHeader.jsx';
 import StatePanel from './StatePanel.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 
@@ -277,7 +276,7 @@ const countNonEmptyLines = (value) => String(value || '')
 
 const toAdminIconName = (value) => String(value || 'video').replace(/^#?icon-/, '') || 'video';
 
-const AdminPage = ({ onCopyPageLink }) => {
+const AdminPage = () => {
   const announcementApiConfigured = useMemo(() => isAnnouncementAdminApiConfigured(), []);
   const galleryApiConfigured = useMemo(() => isGalleryAdminApiConfigured(), []);
   const musicApiConfigured = useMemo(() => isMusicAdminApiConfigured(), []);
@@ -1082,11 +1081,12 @@ const AdminPage = ({ onCopyPageLink }) => {
 
   return (
     <div className="admin-page">
-      <PageHeader
-        kicker="Admin Console"
-        title="后台管理"
-        onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
-        actions={isAuthenticated ? (
+      <header className="admin-header">
+        <div>
+          <p className="admin-kicker">Admin Console</p>
+          <h1>后台管理</h1>
+        </div>
+        {isAuthenticated && (
           <div className="admin-header-actions">
             {announcementApiConfigured && (
               <button
@@ -1110,8 +1110,8 @@ const AdminPage = ({ onCopyPageLink }) => {
               <LogOut size={18} />
             </button>
           </div>
-        ) : null}
-      />
+        )}
+      </header>
 
       <div className="admin-panel">
         <div className={`admin-status ${panelStatus.tone}`}>
