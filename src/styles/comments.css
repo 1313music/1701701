@@ -358,16 +358,6 @@
   min-width: 0;
 }
 
-.waline-auth-eyebrow {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .waline-auth-heading h3 {
   margin: 0;
   color: var(--text-main);
@@ -424,6 +414,106 @@
   transform: translateY(-1px);
   background: var(--hover-bg);
   color: var(--text-main);
+}
+
+.waline-register-avatar {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--hover-bg);
+}
+
+.waline-register-avatar-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.waline-register-avatar-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waline-register-avatar-title-row > span {
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.waline-register-avatar-hint {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.waline-register-avatar-preview {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: var(--sidebar-bg);
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.waline-register-avatar-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.waline-register-avatar-preview img[hidden] {
+  display: none;
+}
+
+.waline-register-avatar-presets {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.waline-register-avatar-preset {
+  appearance: none;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: var(--sidebar-bg);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.waline-register-avatar-preset img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.waline-register-avatar-preset:hover:not(:disabled) {
+  transform: scale(1.05);
+  border-color: color-mix(in srgb, var(--main-color) 55%, var(--glass-border));
+}
+
+.waline-register-avatar-preset.is-active {
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 55%, transparent);
+}
+
+.waline-register-avatar-preset:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--main-color) 35%, transparent);
 }
 
 .waline-profile-modal {
@@ -938,12 +1028,8 @@
   }
 
   .waline-profile-avatar-presets {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
-  }
-
-  .waline-profile-avatar-preset:nth-child(19) {
-    grid-column-start: 2;
   }
 
   .waline-profile-details-fields {
@@ -954,14 +1040,7 @@
 
 @media (max-width: 360px) {
   .waline-profile-avatar-presets {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
-  .waline-profile-avatar-preset:nth-child(19) {
-    grid-column-start: auto;
-  }
-
-  .waline-profile-avatar-preset:last-child {
-    grid-column-start: 3;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
   }
 }

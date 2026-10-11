@@ -407,6 +407,7 @@ const handleRegisterSubmit = async (event) => {
   const email = authOverlayState.fields.registerEmail?.value?.trim() || '';
   const password = authOverlayState.fields.registerPassword?.value || '';
   const confirmPassword = authOverlayState.fields.registerConfirm?.value || '';
+  const avatar = authOverlayState.fields.registerAvatar?.value?.trim() || '';
 
   if (!displayName || displayName.length < 2) {
     showAuthStatus('请输入正确的昵称');
@@ -428,6 +429,11 @@ const handleRegisterSubmit = async (event) => {
     return;
   }
 
+  if (!isValidHttpUrl(avatar)) {
+    showAuthStatus('头像地址需以 http:// 或 https:// 开头，或者留空');
+    return;
+  }
+
   setBusy('register', true);
   showAuthStatus('');
 
@@ -440,7 +446,8 @@ const handleRegisterSubmit = async (event) => {
       body: {
         display_name: displayName,
         email,
-        password
+        password,
+        ...(avatar ? { avatar } : {})
       }
     });
 
@@ -618,6 +625,9 @@ const handleWalineProfileKeydown = (event) => {
 const ensureWalineAuthOverlay = () => {
   if (typeof document === 'undefined' || authOverlayState.overlay) return;
 
+  const registerPresetAvatarsMarkup = PRESET_AVATARS
+    .map((preset, index) => `<button type="button" class="waline-register-avatar-preset" data-avatar-url="${preset.url}" aria-label="注册预设头像 ${index + 1}" aria-pressed="false"><img src="${preset.url}" alt="" loading="lazy" decoding="async" /></button>`)
+    .join('\n            ');
   const overlay = document.createElement('div');
   overlay.className = 'waline-auth-overlay';
   overlay.hidden = true;
@@ -625,7 +635,6 @@ const ensureWalineAuthOverlay = () => {
     <div class="waline-auth-modal" role="dialog" aria-modal="true" aria-labelledby="waline-auth-title">
       <div class="waline-auth-header">
         <div class="waline-auth-heading">
-          <span class="waline-auth-eyebrow">Waline 账号</span>
           <h3 id="waline-auth-title">评论登录</h3>
         </div>
         <div class="waline-auth-controls">
@@ -662,6 +671,25 @@ const ensureWalineAuthOverlay = () => {
             <span>昵称</span>
             <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
           </label>
+          <section class="waline-register-avatar" aria-labelledby="waline-register-avatar-title">
+            <div class="waline-register-avatar-heading">
+              <div class="waline-register-avatar-title-row">
+                <span id="waline-register-avatar-title">头像（选填）</span>
+                <div class="waline-register-avatar-preview" aria-hidden="true">
+                  <img data-role="register-avatar-preview-image" alt="" hidden />
+                  <span data-role="register-avatar-preview-placeholder">未选择</span>
+                </div>
+              </div>
+              <span class="waline-register-avatar-hint">现在选一张，之后也可以在个人设置里更换</span>
+            </div>
+            <div class="waline-register-avatar-presets" role="group" aria-label="注册时选择预设头像">
+              ${registerPresetAvatarsMarkup}
+            </div>
+            <label class="waline-auth-field">
+              <span>自定义图片地址（选填）</span>
+              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
+            </label>
+          </section>
           <label class="waline-auth-field">
             <span>邮箱</span>
             <input type="email" name="email" autocomplete="email" placeholder="注册后用于登录和找回密码" />
@@ -687,6 +715,59 @@ const ensureWalineAuthOverlay = () => {
   const status = overlay.querySelector('.waline-auth-status');
   const loginForm = overlay.querySelector('.waline-auth-form[data-mode="login"]');
   const registerForm = overlay.querySelector('.waline-auth-form[data-mode="register"]');
+  const registerAvatarInput = registerForm?.querySelector('input[name="avatar"]');
+  const registerAvatarPreviewImage = registerForm?.querySelector('[data-role="register-avatar-preview-image"]');
+  const registerAvatarPreviewPlaceholder = registerForm?.querySelector('[data-role="register-avatar-preview-placeholder"]');
+  const registerAvatarPresetButtons = Array.from(
+    registerForm?.querySelectorAll('.waline-register-avatar-preset') || []
+  ).map((button) => ({
+    button,
+    preset: PRESET_AVATARS.find((preset) => preset.url === button.dataset.avatarUrl)
+  })).filter(({ preset }) => preset);
+
+  const renderRegisterAvatarPreview = (value) => {
+    const url = String(value || '').trim();
+    const isValid = /^https?:\/\//i.test(url);
+
+    if (registerAvatarPreviewImage) {
+      if (isValid) {
+        registerAvatarPreviewImage.src = url;
+        registerAvatarPreviewImage.hidden = false;
+      } else {
+        registerAvatarPreviewImage.hidden = true;
+        registerAvatarPreviewImage.removeAttribute('src');
+      }
+    }
+
+    if (registerAvatarPreviewPlaceholder) {
+      registerAvatarPreviewPlaceholder.hidden = isValid;
+    }
+
+    registerAvatarPresetButtons.forEach(({ button, preset }) => {
+      const isActive = preset.url === url;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  };
+
+  registerAvatarInput?.addEventListener('input', () => {
+    renderRegisterAvatarPreview(registerAvatarInput.value);
+  });
+  registerAvatarInput?.addEventListener('change', () => {
+    renderRegisterAvatarPreview(registerAvatarInput.value);
+  });
+  registerAvatarPreviewImage?.addEventListener('error', () => {
+    registerAvatarPreviewImage.hidden = true;
+    registerAvatarPreviewImage.removeAttribute('src');
+    if (registerAvatarPreviewPlaceholder) registerAvatarPreviewPlaceholder.hidden = false;
+  });
+  registerAvatarPresetButtons.forEach(({ button, preset }) => {
+    button.addEventListener('click', () => {
+      if (!registerAvatarInput) return;
+      registerAvatarInput.value = preset.url;
+      renderRegisterAvatarPreview(preset.url);
+    });
+  });
 
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) {
@@ -736,6 +817,7 @@ const ensureWalineAuthOverlay = () => {
     loginRemember: loginForm?.querySelector('input[name="remember"]'),
     registerNick: registerForm?.querySelector('input[name="nick"]'),
     registerEmail: registerForm?.querySelector('input[name="email"]'),
+    registerAvatar: registerAvatarInput,
     registerPassword: registerForm?.querySelector('input[name="password"]'),
     registerConfirm: registerForm?.querySelector('input[name="confirm-password"]')
   };
@@ -764,7 +846,6 @@ const ensureWalineProfileOverlay = () => {
     <div class="waline-auth-modal waline-profile-modal" role="dialog" aria-modal="true" aria-labelledby="waline-profile-title">
       <div class="waline-auth-header waline-profile-header">
         <div class="waline-auth-heading">
-          <span class="waline-auth-eyebrow">Waline 账号</span>
           <div class="waline-profile-title-row">
             <h3 id="waline-profile-title">个人设置</h3>
             <button type="button" class="waline-auth-close" aria-label="关闭账号设置">

@@ -74,6 +74,95 @@ describe('waline-api profile overlay', () => {
     window.sessionStorage.clear();
   });
 
+  it('removes the Waline eyebrow from login/register and shows optional avatar selection on register', async () => {
+    const { openWalineAuthOverlay } = await loadWalineApi();
+    void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });
+
+    expect(screen.queryByText('Waline 账号')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '注册' }));
+
+    expect(screen.getByRole('heading', { name: '评论注册' })).toBeTruthy();
+    expect(screen.getByText('头像（选填）')).toBeTruthy();
+    expect(screen.getByLabelText('自定义图片地址（选填）')).not.toBeRequired();
+    expect(screen.getAllByRole('button', { name: /^注册预设头像 \d+$/ })).toHaveLength(PRESET_AVATARS.length);
+  });
+
+  it('saves a selected preset avatar during registration', async () => {
+    const { openWalineAuthOverlay } = await loadWalineApi();
+    void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });
+    fireEvent.click(screen.getByRole('button', { name: '注册' }));
+
+    const registerForm = document.querySelector('.waline-auth-form[data-mode="register"]');
+    fireEvent.change(registerForm.querySelector('input[name="nick"]'), { target: { value: '新用户' } });
+    fireEvent.change(registerForm.querySelector('input[name="email"]'), { target: { value: 'new-user@example.com' } });
+    fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
+    const selectedPreset = PRESET_AVATARS[4];
+    fireEvent.click(screen.getByRole('button', { name: selectedPreset.label.replace('预设头像', '注册预设头像') }));
+    fireEvent.submit(registerForm);
+
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://comments.example.com/user?lang=zh-CN',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          display_name: '新用户',
+          email: 'new-user@example.com',
+          password: 'secure-password',
+          avatar: selectedPreset.url
+        })
+      })
+    );
+  });
+
+  it('rejects an invalid custom avatar URL before sending registration', async () => {
+    const { openWalineAuthOverlay } = await loadWalineApi();
+    void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });
+    fireEvent.click(screen.getByRole('button', { name: '注册' }));
+
+    const registerForm = document.querySelector('.waline-auth-form[data-mode="register"]');
+    fireEvent.change(registerForm.querySelector('input[name="nick"]'), { target: { value: '新用户' } });
+    fireEvent.change(registerForm.querySelector('input[name="email"]'), { target: { value: 'new-user@example.com' } });
+    fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="avatar"]'), { target: { value: 'javascript:alert(1)' } });
+    fireEvent.submit(registerForm);
+
+    expect(await screen.findByText('头像地址需以 http:// 或 https:// 开头，或者留空')).toBeTruthy();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('allows registration without choosing an avatar', async () => {
+    const { openWalineAuthOverlay } = await loadWalineApi();
+    void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });
+    fireEvent.click(screen.getByRole('button', { name: '注册' }));
+
+    const registerForm = document.querySelector('.waline-auth-form[data-mode="register"]');
+    fireEvent.change(registerForm.querySelector('input[name="nick"]'), { target: { value: '新用户' } });
+    fireEvent.change(registerForm.querySelector('input[name="email"]'), { target: { value: 'new-user@example.com' } });
+    fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
+    fireEvent.submit(registerForm);
+
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://comments.example.com/user?lang=zh-CN',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          display_name: '新用户',
+          email: 'new-user@example.com',
+          password: 'secure-password'
+        })
+      })
+    );
+  });
+
   it('updates the nickname without touching the homepage field', async () => {
     const { openWalineProfileOverlay, WALINE_AUTH_SUCCESS_EVENT } = await loadWalineApi();
     const authListener = vi.fn();
@@ -86,8 +175,9 @@ describe('waline-api profile overlay', () => {
       lang: 'zh-CN'
     })).toBe(true);
 
-    // 界面上已经没有这个输入框了
+    // 界面上已经没有这个输入框了，顶部也不再显示多余的产品眉题
     expect(screen.queryByLabelText('个人主页地址')).toBeNull();
+    expect(screen.queryByText('Waline 账号')).toBeNull();
 
     const nickInput = screen.getByLabelText('昵称');
     expect(nickInput).toHaveValue('谢尔比');
