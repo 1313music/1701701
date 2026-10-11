@@ -11,6 +11,8 @@ import {
   updateComment,
   updatePageview
 } from '@waline/api-original';
+import { PRESET_AVATARS, isPresetAvatarUrl } from '../data/avatarPresets.js';
+import { buildDefaultAvatarUrl } from '../utils/defaultAvatar.js';
 
 const WALINE_USER_STORAGE_KEY = 'WALINE_USER';
 export const WALINE_AUTH_SUCCESS_EVENT = 'waline-auth-success';
@@ -38,6 +40,9 @@ const profileOverlayState = {
   submitButton: null,
   avatarPreviewImage: null,
   avatarPreviewPlaceholder: null,
+  avatarPresetButtons: [],
+  avatarResetButton: null,
+  defaultAvatarUrl: '',
   serverURL: '',
   lang: 'zh-CN',
   userInfo: null,
@@ -464,14 +469,27 @@ const isValidHttpUrl = (value) => {
   return !url || /^https?:\/\//i.test(url);
 };
 
+// 预设头像按钮的高亮状态跟着输入框走：值正好等于某个预设地址才算选中。
+const syncProfileAvatarPresetSelection = (value) => {
+  const url = String(value || '').trim();
+
+  profileOverlayState.avatarPresetButtons.forEach(({ button, preset }) => {
+    const isActive = preset.url === url;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+};
+
 // 头像预览：输入框里填了合法的 http(s) 地址就展示那张图，否则回退到占位文字。
 const renderProfileAvatarPreview = (value) => {
+  const url = String(value || '').trim();
+
+  syncProfileAvatarPresetSelection(url);
+
   const image = profileOverlayState.avatarPreviewImage;
   const placeholder = profileOverlayState.avatarPreviewPlaceholder;
 
   if (!image || !placeholder) return;
-
-  const url = String(value || '').trim();
 
   if (!isValidHttpUrl(url) || !url) {
     image.hidden = true;
@@ -486,6 +504,48 @@ const renderProfileAvatarPreview = (value) => {
   if (image.getAttribute('src') !== url) {
     image.setAttribute('src', url);
   }
+};
+
+// 「恢复默认头像」的探针：算出来的地址先真的加载一次，加载不出来就不给用户用。
+// 目的是万一以后改了服务器上的头像配置（模板变了），算出来的地址会是错的，别写进用户资料。
+const avatarProbeCache = new Map();
+
+const probeAvatarUrl = (url) => {
+  if (!url) return Promise.resolve(false);
+  if (avatarProbeCache.has(url)) return Promise.resolve(avatarProbeCache.get(url));
+
+  return new Promise((resolve) => {
+    const image = new Image();
+
+    const finish = (ok) => {
+      avatarProbeCache.set(url, ok);
+      resolve(ok);
+    };
+
+    image.onload = () => finish(true);
+    image.onerror = () => finish(false);
+    image.src = url;
+  });
+};
+
+const refreshProfileAvatarReset = (userInfo) => {
+  const button = profileOverlayState.avatarResetButton;
+  if (!button) return;
+
+  const defaultUrl = buildDefaultAvatarUrl(userInfo?.email);
+  const currentUrl = String(userInfo?.avatar || '').trim();
+
+  profileOverlayState.defaultAvatarUrl = defaultUrl;
+  button.hidden = true;
+
+  // 没有邮箱、或当前头像本来就是默认的 —— 没什么可恢复的。
+  if (!defaultUrl || defaultUrl === currentUrl) return;
+
+  void probeAvatarUrl(defaultUrl).then((ok) => {
+    // 探针是异步的：这期间可能已经关掉弹窗或换了账号，别乱显示。
+    if (!ok || profileOverlayState.userInfo !== userInfo) return;
+    button.hidden = false;
+  });
 };
 
 const handleProfileSubmit = async (event) => {
@@ -702,6 +762,11 @@ const ensureWalineProfileOverlay = () => {
   const overlay = document.createElement('div');
   overlay.className = 'waline-auth-overlay waline-profile-overlay';
   overlay.hidden = true;
+
+  const presetAvatarsMarkup = PRESET_AVATARS
+    .map((preset) => `<button type="button" class="waline-profile-avatar-preset" data-avatar-url="${preset.url}" aria-label="${preset.label}" aria-pressed="false"><img src="${preset.url}" alt="" loading="lazy" decoding="async" /></button>`)
+    .join('\n            ');
+
   overlay.innerHTML = `
     <div class="waline-auth-modal waline-profile-modal" role="dialog" aria-modal="true" aria-labelledby="waline-profile-title">
       <div class="waline-auth-header">
@@ -726,7 +791,11 @@ const ensureWalineProfileOverlay = () => {
               <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
             </label>
           </div>
-          <p class="waline-auth-help">填入一张图片的网址即可更换头像，左边会即时预览；留空则保持当前头像不变。</p>
+          <div class="waline-profile-avatar-presets" role="group" aria-label="预设头像">
+            ${presetAvatarsMarkup}
+          </div>
+          <button type="button" class="waline-profile-avatar-reset" hidden>恢复默认头像</button>
+          <p class="waline-auth-help">点上面的图直接换头像，或者在右边填自己的图片网址；留空则保持当前头像不变。</p>
           <label class="waline-auth-field">
             <span>昵称</span>
             <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
@@ -778,6 +847,32 @@ const ensureWalineProfileOverlay = () => {
   avatarInput?.addEventListener('input', handleAvatarPreviewInput);
   avatarInput?.addEventListener('change', handleAvatarPreviewInput);
 
+  // 预设头像：点一下就把它填进输入框（不直接提交，用户还能看到预览再保存）。
+  const avatarPresetButtons = Array.from(overlay.querySelectorAll('.waline-profile-avatar-preset'))
+    .map((button) => ({
+      button,
+      preset: PRESET_AVATARS.find((preset) => preset.url === button.dataset.avatarUrl)
+    }))
+    .filter(({ preset }) => Boolean(preset));
+
+  avatarPresetButtons.forEach(({ button, preset }) => {
+    button.addEventListener('click', () => {
+      if (!avatarInput) return;
+      avatarInput.value = preset.url;
+      renderProfileAvatarPreview(preset.url);
+    });
+  });
+
+  // 恢复默认头像：把算出来的地址填进输入框（同样不直接提交，用户能先看预览）。
+  const avatarResetButton = overlay.querySelector('.waline-profile-avatar-reset');
+  avatarResetButton?.addEventListener('click', () => {
+    const defaultUrl = profileOverlayState.defaultAvatarUrl;
+    if (!defaultUrl || !avatarInput) return;
+    avatarInput.value = defaultUrl;
+    renderProfileAvatarPreview(defaultUrl);
+    showProfileStatus('已填入默认头像地址，点「更新我的档案」保存后生效。', 'info');
+  });
+
   // 地址填错（图挂了/不是图片）时不要把破图留在预览里。
   avatarPreviewImage?.addEventListener('error', () => {
     avatarPreviewImage.hidden = true;
@@ -801,6 +896,8 @@ const ensureWalineProfileOverlay = () => {
   };
   profileOverlayState.avatarPreviewImage = avatarPreviewImage;
   profileOverlayState.avatarPreviewPlaceholder = avatarPreviewPlaceholder;
+  profileOverlayState.avatarPresetButtons = avatarPresetButtons;
+  profileOverlayState.avatarResetButton = avatarResetButton;
   profileOverlayState.submitButton = form?.querySelector('.waline-auth-submit');
 };
 
@@ -852,12 +949,19 @@ export const openWalineProfileOverlay = ({ serverURL, lang = 'zh-CN' }) => {
     profileOverlayState.fields.profileUrl.value = userInfo.url || '';
   }
   if (profileOverlayState.fields.profileAvatar) {
-    profileOverlayState.fields.profileAvatar.value = '';
+    // 只有「当前头像正好是我们提供的预设」时才回填，这样用户能看出上次选的是哪张；
+    // 其余情况（按邮箱生成的默认头像、或用户自己填的网址）一律留空，
+    // 否则用户会以为那串地址是必须保留的值。
+    profileOverlayState.fields.profileAvatar.value = isPresetAvatarUrl(userInfo.avatar)
+      ? userInfo.avatar
+      : '';
   }
 
-  // userInfo.avatar 是服务端算好的「当前头像」（可能是用户自定义的，也可能是按邮箱生成的），
-  // 只拿来预览，不回填输入框 —— 回填会让用户误以为那个地址是必须保留的值。
+  // userInfo.avatar 是服务端算好的「当前头像」，只拿来预览。
   renderProfileAvatarPreview(userInfo.avatar || '');
+
+  // 「恢复默认头像」按钮要等探针确认地址可用才显示，所以是异步的。
+  refreshProfileAvatarReset(userInfo);
 
   document.body.style.overflow = 'hidden';
   profileOverlayState.overlay.hidden = false;

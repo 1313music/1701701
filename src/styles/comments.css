@@ -576,6 +576,89 @@
   min-width: 0;
 }
 
+.waline-profile-avatar-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.waline-profile-avatar-preset {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: var(--hover-bg);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.waline-profile-avatar-preset img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.waline-profile-avatar-preset:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--main-color) 40%, var(--glass-border));
+}
+
+.waline-profile-avatar-preset:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 40%, transparent);
+}
+
+.waline-profile-avatar-preset.is-active {
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 45%, transparent);
+}
+
+.waline-profile-avatar-preset:disabled {
+  opacity: 0.56;
+  cursor: wait;
+}
+
+.waline-profile-avatar-reset {
+  appearance: none;
+  justify-self: start;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.waline-profile-avatar-reset[hidden] {
+  display: none;
+}
+
+.waline-profile-avatar-reset:hover:not(:disabled) {
+  color: var(--text-main);
+  border-color: color-mix(in srgb, var(--main-color) 40%, var(--glass-border));
+  background: var(--hover-bg);
+}
+
+.waline-profile-avatar-reset:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 40%, transparent);
+}
+
+.waline-profile-avatar-reset:disabled {
+  opacity: 0.56;
+  cursor: wait;
+}
+
 .waline-auth-check {
   display: inline-flex;
   align-items: center;
