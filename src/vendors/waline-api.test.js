@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PRESET_AVATARS } from '../data/avatarPresets.js';
 
 const PROFILE_SUBMIT_LABEL = '更新我的档案';
-const AVATAR_FIELD_LABEL = '头像图片地址';
+const AVATAR_FIELD_LABEL = '图片地址';
 const RESET_AVATAR_LABEL = '恢复默认头像';
 
 // seedStoredUser 用的邮箱，服务端会返回这个默认头像地址（md5 由 Python hashlib 核对过）
@@ -74,10 +74,11 @@ describe('waline-api profile overlay', () => {
     window.sessionStorage.clear();
   });
 
-  it('updates profile with an optional homepage field', async () => {
+  it('updates the nickname without touching the homepage field', async () => {
     const { openWalineProfileOverlay, WALINE_AUTH_SUCCESS_EVENT } = await loadWalineApi();
     const authListener = vi.fn();
-    seedStoredUser();
+    // 个人主页已从界面移除，但用户库里原有的值必须原样保留、且不能被提交覆盖
+    seedStoredUser({ url: 'https://example.com/me' });
     window.addEventListener(WALINE_AUTH_SUCCESS_EVENT, authListener);
 
     expect(openWalineProfileOverlay({
@@ -85,11 +86,12 @@ describe('waline-api profile overlay', () => {
       lang: 'zh-CN'
     })).toBe(true);
 
-    const homepageInput = screen.getByLabelText('个人主页地址');
-    expect(homepageInput).not.toBeRequired();
-    expect(homepageInput).toHaveValue('');
+    // 界面上已经没有这个输入框了
+    expect(screen.queryByLabelText('个人主页地址')).toBeNull();
 
-    fireEvent.change(homepageInput, { target: { value: '' } });
+    const nickInput = screen.getByLabelText('昵称');
+    expect(nickInput).toHaveValue('谢尔比');
+    fireEvent.change(nickInput, { target: { value: '谢尔比2' } });
     fireEvent.click(screen.getByRole('button', { name: PROFILE_SUBMIT_LABEL }));
 
     await waitFor(() => {
@@ -105,17 +107,20 @@ describe('waline-api profile overlay', () => {
           Authorization: 'Bearer test-token'
         },
         body: JSON.stringify({
-          display_name: '谢尔比',
-          url: ''
+          display_name: '谢尔比2'
         })
       })
     );
+    // 本地存储里原有的主页地址没被动过
     expect(JSON.parse(window.localStorage.getItem('WALINE_USER'))).toMatchObject({
-      display_name: '谢尔比',
-      url: ''
+      display_name: '谢尔比2',
+      url: 'https://example.com/me'
     });
     expect(authListener).toHaveBeenCalledWith(expect.objectContaining({
-      detail: expect.objectContaining({ url: '' })
+      detail: expect.objectContaining({
+        display_name: '谢尔比2',
+        url: 'https://example.com/me'
+      })
     }));
 
     window.removeEventListener(WALINE_AUTH_SUCCESS_EVENT, authListener);
@@ -181,7 +186,6 @@ describe('waline-api profile overlay', () => {
         method: 'PUT',
         body: JSON.stringify({
           display_name: '谢尔比',
-          url: '',
           avatar: 'https://cdn.example.com/a.png'
         })
       })
@@ -208,7 +212,7 @@ describe('waline-api profile overlay', () => {
     fireEvent.click(screen.getByRole('button', { name: PROFILE_SUBMIT_LABEL }));
 
     await waitFor(() => {
-      expect(screen.getByText('头像图片地址需以 http:// 或 https:// 开头，或者留空')).toBeTruthy();
+      expect(screen.getByText('图片地址需以 http:// 或 https:// 开头，或者留空')).toBeTruthy();
     });
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
@@ -266,7 +270,6 @@ describe('waline-api profile overlay', () => {
         method: 'PUT',
         body: JSON.stringify({
           display_name: '谢尔比',
-          url: '',
           avatar: target.url
         })
       })
@@ -358,7 +361,6 @@ describe('waline-api profile overlay', () => {
         method: 'PUT',
         body: JSON.stringify({
           display_name: '谢尔比',
-          url: '',
           avatar: SEEDED_DEFAULT_AVATAR
         })
       })

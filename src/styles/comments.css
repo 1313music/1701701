@@ -426,6 +426,18 @@
   color: var(--text-main);
 }
 
+/* 资料浮层没有 tab，关闭按钮脱离 flex 流、固定到右上角，避免移动端竖排时被挤到标题下方 */
+.waline-profile-modal .waline-auth-header {
+  position: relative;
+}
+
+.waline-profile-modal .waline-auth-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+}
+
 .waline-auth-tab.active:hover {
   filter: saturate(1.02);
 }
@@ -542,8 +554,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
   border-radius: 50%;
@@ -571,22 +583,37 @@
   display: none;
 }
 
-.waline-profile-avatar-field {
-  flex: 1 1 auto;
+.waline-profile-avatar-heading {
+  display: grid;
+  gap: 4px;
   min-width: 0;
 }
 
+.waline-profile-avatar-title {
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.waline-profile-avatar-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* 21 张预设正好排满 7 列 × 3 行，不会出现最后一行只剩一个的尴尬 */
 .waline-profile-avatar-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .waline-profile-avatar-preset {
   appearance: none;
-  flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--glass-border);
@@ -623,9 +650,19 @@
   cursor: wait;
 }
 
+/* 「自己填地址」+「恢复默认」自成一组，和上面的预设网格拉开层次 */
+.waline-profile-avatar-custom {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.waline-profile-avatar-custom .waline-auth-field {
+  width: 100%;
+}
+
 .waline-profile-avatar-reset {
   appearance: none;
-  justify-self: start;
   min-height: 34px;
   padding: 0 14px;
   border: 1px solid var(--glass-border);

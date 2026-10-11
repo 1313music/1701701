@@ -553,7 +553,6 @@ const handleProfileSubmit = async (event) => {
 
   const currentUserInfo = profileOverlayState.userInfo || readStoredWalineUser();
   const displayName = profileOverlayState.fields.profileNick?.value?.trim() || '';
-  const homepage = profileOverlayState.fields.profileUrl?.value?.trim() || '';
   const avatar = profileOverlayState.fields.profileAvatar?.value?.trim() || '';
 
   if (!currentUserInfo?.token) {
@@ -566,13 +565,8 @@ const handleProfileSubmit = async (event) => {
     return;
   }
 
-  if (!isValidHttpUrl(homepage)) {
-    showProfileStatus('个人主页需以 http:// 或 https:// 开头，或者留空');
-    return;
-  }
-
   if (!isValidHttpUrl(avatar)) {
-    showProfileStatus('头像图片地址需以 http:// 或 https:// 开头，或者留空');
+    showProfileStatus('图片地址需以 http:// 或 https:// 开头，或者留空');
     return;
   }
 
@@ -588,16 +582,15 @@ const handleProfileSubmit = async (event) => {
       token: currentUserInfo.token,
       body: {
         display_name: displayName,
-        url: homepage,
         // 服务端只有拿到非空字符串才会写入 avatar，留空即保持当前头像不变。
         ...(avatar ? { avatar } : {})
       }
     });
 
+    // 不再提交 url：个人主页已从界面移除，服务端保留用户原有的值，不主动清空。
     const nextUserInfo = {
       ...currentUserInfo,
       display_name: displayName,
-      url: homepage,
       ...(avatar ? { avatar } : {})
     };
 
@@ -774,9 +767,7 @@ const ensureWalineProfileOverlay = () => {
           <span class="waline-auth-eyebrow">Waline 账号</span>
           <h3 id="waline-profile-title">个人设置</h3>
         </div>
-        <div class="waline-auth-controls">
-          <button type="button" class="waline-auth-close" aria-label="关闭账号设置">关闭</button>
-        </div>
+        <button type="button" class="waline-auth-close" aria-label="关闭账号设置">关闭</button>
       </div>
       <div class="waline-auth-body">
         <p class="waline-auth-status" hidden></p>
@@ -786,16 +777,21 @@ const ensureWalineProfileOverlay = () => {
               <img alt="" data-role="avatar-preview-image" hidden />
               <span class="waline-profile-avatar-placeholder" data-role="avatar-preview-placeholder">暂无</span>
             </span>
-            <label class="waline-auth-field waline-profile-avatar-field">
-              <span>头像图片地址</span>
-              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
-            </label>
+            <div class="waline-profile-avatar-heading">
+              <span class="waline-profile-avatar-title">头像</span>
+              <p class="waline-profile-avatar-hint">选一张预设，或粘贴自己的图片地址。</p>
+            </div>
           </div>
           <div class="waline-profile-avatar-presets" role="group" aria-label="预设头像">
             ${presetAvatarsMarkup}
           </div>
-          <button type="button" class="waline-profile-avatar-reset" hidden>恢复默认头像</button>
-          <p class="waline-auth-help">点上面的图直接换头像，或者在右边填自己的图片网址；留空则保持当前头像不变。</p>
+          <div class="waline-profile-avatar-custom">
+            <label class="waline-auth-field">
+              <span>图片地址</span>
+              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
+            </label>
+            <button type="button" class="waline-profile-avatar-reset" hidden>恢复默认头像</button>
+          </div>
           <label class="waline-auth-field">
             <span>昵称</span>
             <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
@@ -804,11 +800,6 @@ const ensureWalineProfileOverlay = () => {
             <span>邮箱</span>
             <input type="email" name="email" autocomplete="email" readonly />
           </label>
-          <label class="waline-auth-field">
-            <span>个人主页地址</span>
-            <input type="url" name="url" autocomplete="url" placeholder="可留空，填写时需以 http:// 或 https:// 开头" />
-          </label>
-          <p class="waline-auth-help">个人主页不是必填项，留空也可以保存。</p>
           <button type="submit" class="waline-auth-submit">更新我的档案</button>
         </form>
       </div>
@@ -891,7 +882,6 @@ const ensureWalineProfileOverlay = () => {
   profileOverlayState.fields = {
     profileNick: form?.querySelector('input[name="nick"]'),
     profileEmail: form?.querySelector('input[name="email"]'),
-    profileUrl: form?.querySelector('input[name="url"]'),
     profileAvatar: avatarInput
   };
   profileOverlayState.avatarPreviewImage = avatarPreviewImage;
@@ -944,9 +934,6 @@ export const openWalineProfileOverlay = ({ serverURL, lang = 'zh-CN' }) => {
   }
   if (profileOverlayState.fields.profileEmail) {
     profileOverlayState.fields.profileEmail.value = userInfo.email || '';
-  }
-  if (profileOverlayState.fields.profileUrl) {
-    profileOverlayState.fields.profileUrl.value = userInfo.url || '';
   }
   if (profileOverlayState.fields.profileAvatar) {
     // 只有「当前头像正好是我们提供的预设」时才回填，这样用户能看出上次选的是哪张；
