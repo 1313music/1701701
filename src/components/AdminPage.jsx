@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import '../styles/admin.css';
 import PageHeader from './PageHeader.jsx';
+import StatePanel from './StatePanel.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
 
 import AnnouncementModal from './AnnouncementModal.jsx';
 import DanmakuAdminPanel from './DanmakuAdminPanel.jsx';
@@ -342,6 +344,8 @@ const AdminPage = ({ onCopyPageLink }) => {
   const [videoPublishResult, setVideoPublishResult] = useState(null);
   const [videoAccessPublishResult, setVideoAccessPublishResult] = useState(null);
   const [downloadPublishResult, setDownloadPublishResult] = useState(null);
+  // 待确认删除的历史公告（用站内弹窗替代 window.confirm）
+  const [pendingHistoryDelete, setPendingHistoryDelete] = useState(null);
   const [token, setToken] = useState(() => {
     try {
       return window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || '';
@@ -810,10 +814,15 @@ const AdminPage = ({ onCopyPageLink }) => {
     }
   };
 
-  const handleDeleteHistoryItem = async (historyItem) => {
+  const handleDeleteHistoryItem = (historyItem) => {
     if (!historyItem?.id || deletingHistoryId) return;
-    const confirmed = window.confirm(`确定删除历史公告「${historyItem.title || historyItem.id}」吗？`);
-    if (!confirmed) return;
+    setPendingHistoryDelete(historyItem);
+  };
+
+  const confirmDeleteHistoryItem = async () => {
+    const historyItem = pendingHistoryDelete;
+    setPendingHistoryDelete(null);
+    if (!historyItem?.id) return;
 
     setDeletingHistoryId(historyItem.id);
     try {
@@ -1456,7 +1465,7 @@ const AdminPage = ({ onCopyPageLink }) => {
                   ))}
                 </div>
               ) : (
-                <div className="admin-empty">暂无历史公告</div>
+                <StatePanel variant="empty" title="暂无历史公告" compact />
               )}
             </section>
 
@@ -2351,6 +2360,16 @@ const AdminPage = ({ onCopyPageLink }) => {
           onConfirm={() => setIsPreviewOpen(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingHistoryDelete)}
+        title={`确定删除历史公告「${pendingHistoryDelete?.title || pendingHistoryDelete?.id || ''}」吗？`}
+        description="删除后无法恢复。"
+        confirmText="删除"
+        danger
+        onCancel={() => setPendingHistoryDelete(null)}
+        onConfirm={confirmDeleteHistoryItem}
+      />
     </div>
   );
 };

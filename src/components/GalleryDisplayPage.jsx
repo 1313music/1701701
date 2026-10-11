@@ -15,6 +15,7 @@ import {
   subscribeToGalleryItems
 } from '../data/galleryManifest';
 import PageHeader from './PageHeader.jsx';
+import StatePanel from './StatePanel.jsx';
 
 const shuffleItems = (input) => {
   const list = Array.isArray(input) ? [...input] : [];
@@ -718,12 +719,13 @@ const GalleryDisplayPage = ({ onCopyPageLink }) => {
               </div>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="gallery-empty-state">
-              <ImagePlus size={22} />
-              {items.length === 0
+            <StatePanel
+              variant="empty"
+              icon={ImagePlus}
+              title={items.length === 0
                 ? '暂无图片，请先更新并发布图片索引。'
                 : `分类「${selectedCategory}」暂无图片。`}
-            </div>
+            />
           ) : (
             <div
               ref={galleryWaterfallRef}

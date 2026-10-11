@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import AdminPage from './AdminPage.jsx';
@@ -395,10 +395,16 @@ describe('AdminPage', () => {
 
   it('deletes announcement history items from the admin list', async () => {
     const { deleteAnnouncementHistoryItem } = await import('../data/announcementAdminApi.js');
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     await loginToAdmin();
     fireEvent.click(screen.getByRole('button', { name: '删除历史公告：后台历史公告' }));
+
+    // 先弹站内确认框，不能直接删
+    expect(deleteAnnouncementHistoryItem).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/确定删除历史公告/)).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '删除' }));
 
     await waitFor(() => {
       expect(deleteAnnouncementHistoryItem).toHaveBeenCalledWith({
@@ -408,8 +414,6 @@ describe('AdminPage', () => {
     });
     expect(await screen.findByText('历史公告已删除')).toBeInTheDocument();
     expect(screen.getByText('暂无历史公告')).toBeInTheDocument();
-
-    confirmSpy.mockRestore();
   });
 
   it('publishes gallery images with the shared admin token', async () => {
@@ -634,7 +638,6 @@ describe('AdminPage', () => {
       deleteDanmakuItem,
       loadDanmakuItems
     } = await import('../data/danmakuAdminApi.js');
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     await loginToAdmin();
     fireEvent.click(screen.getByRole('tab', { name: '弹幕' }));
@@ -651,6 +654,14 @@ describe('AdminPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '删除弹幕：现场真好' }));
 
+    // 先弹站内确认框，不能直接删
+    expect(deleteDanmakuItem).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('确定永久删除这条弹幕吗？')).toBeInTheDocument();
+    expect(within(dialog).getByText('现场真好')).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '永久删除' }));
+
     await waitFor(() => {
       expect(deleteDanmakuItem).toHaveBeenCalledWith(expect.objectContaining({
         id: 'danmaku-1',
@@ -658,8 +669,6 @@ describe('AdminPage', () => {
       }));
     });
     expect(await screen.findByText('弹幕已删除')).toBeInTheDocument();
-
-    confirmSpy.mockRestore();
   });
 
   it('keeps the new video folder option selected so the title can be filled', async () => {

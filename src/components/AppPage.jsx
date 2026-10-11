@@ -137,7 +137,6 @@ const AppPage = ({ onCopyPageLink }) => {
       <PageHeader
         title="客户端下载"
         subtitle="可按需下载对应平台客户端，iOS 可通过添加主屏方式使用。"
-        tint
         onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
       />
 

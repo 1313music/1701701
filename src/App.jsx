@@ -8,6 +8,7 @@ import SearchHeader from './components/SearchHeader';
 import AnnouncementTrigger from './components/AnnouncementTrigger.jsx';
 import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
+import StatePanel from './components/StatePanel.jsx';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAnnouncement } from './hooks/useAnnouncement.js';
 import { useAudioPlaybackShortcuts } from './hooks/useAudioPlaybackShortcuts.js';
@@ -450,12 +451,7 @@ const App = () => {
     setIsSidebarOpen(false);
   }, [setSelectedAlbum, setIsSidebarOpen]);
 
-  const pageLoadingFallback = (
-    <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
-      <span className="page-loading-ring" aria-hidden="true" />
-      <span>加载中...</span>
-    </div>
-  );
+  const pageLoadingFallback = <StatePanel variant="loading" title="加载中…" />;
 
   const isLibraryReady = Boolean(currentTrack && currentAlbum && musicAlbums.length > 0);
   const showLibraryLoading = isMusicLoading || (!musicLoadError && musicAlbums.length > 0 && !isLibraryReady);
@@ -560,7 +556,7 @@ const App = () => {
                 <div className="view-panel view-panel-library">
                   {showLibraryLoading && pageLoadingFallback}
                   {!showLibraryLoading && musicLoadError && (
-                    <div className="page-loading">{musicLoadError}</div>
+                    <StatePanel variant="error" title={musicLoadError} />
                   )}
                   {!showLibraryLoading && !musicLoadError && isLibraryReady && (
                     <>
@@ -596,7 +592,7 @@ const App = () => {
                     </>
                   )}
                   {!showLibraryLoading && !musicLoadError && !isLibraryReady && (
-                    <div className="page-loading">暂无曲库</div>
+                    <StatePanel variant="empty" title="暂无曲库" />
                   )}
                 </div>
               )}
@@ -670,7 +666,13 @@ const App = () => {
               {view === 'about' && (
                 <div className="view-panel view-panel-about">
                   <Suspense fallback={pageLoadingFallback}>
-                    <AboutPage />
+                    <AboutPage
+                      onCopyPageLink={(anchorOrOptions) => handleCopySpecificPageUrl(
+                        new URL(getPathForView('about'), SITE_URL).toString(),
+                        '关于页链接已复制',
+                        anchorOrOptions
+                      )}
+                    />
                   </Suspense>
                 </div>
               )}

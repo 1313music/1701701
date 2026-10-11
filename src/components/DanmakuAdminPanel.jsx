@@ -10,6 +10,8 @@ import {
   loadDanmakuItems
 } from '../data/danmakuAdminApi.js';
 import { buildVideoDanmakuId } from '../data/videoDanmakuConfig.js';
+import StatePanel from './StatePanel.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: '全部' },
@@ -120,6 +122,8 @@ const DanmakuAdminPanel = ({
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [actionId, setActionId] = useState('');
+  // 待确认删除的弹幕（用站内弹窗替代 window.confirm）
+  const [pendingDelete, setPendingDelete] = useState(null);
   const videoOptions = useMemo(() => buildVideoOptions(videoCatalog), [videoCatalog]);
   const videoOptionByKey = useMemo(() => new Map(
     videoOptions.map((option) => [option.videoKey, option])
@@ -203,10 +207,15 @@ const DanmakuAdminPanel = ({
     void loadItems();
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = (item) => {
     if (!item?.id || actionId) return;
-    const confirmed = window.confirm(`确定永久删除这条弹幕吗？\n${item.text || item.id}`);
-    if (!confirmed) return;
+    setPendingDelete(item);
+  };
+
+  const confirmDelete = async () => {
+    const item = pendingDelete;
+    setPendingDelete(null);
+    if (!item?.id) return;
 
     setActionId(item.id);
     try {
@@ -352,11 +361,23 @@ const DanmakuAdminPanel = ({
             })}
           </div>
         ) : (
-          <div className="admin-empty">
-            {isLoading ? '正在读取弹幕...' : '当前筛选下没有弹幕'}
-          </div>
+          <StatePanel
+            variant={isLoading ? 'loading' : 'empty'}
+            title={isLoading ? '正在读取弹幕…' : '当前筛选下没有弹幕'}
+            compact
+          />
         )}
       </section>
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="确定永久删除这条弹幕吗？"
+        description={pendingDelete?.text || pendingDelete?.id || ''}
+        confirmText="永久删除"
+        danger
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

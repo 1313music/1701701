@@ -53,7 +53,8 @@
 .support-intro p {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 0.94rem;
+  /* 与 PageHeader 的副标题共用同一个 token，避免两套页头字号不一致 */
+  font-size: var(--page-subtitle-size);
   line-height: 1.75;
 }
 
@@ -73,7 +74,8 @@
   border-radius: 999px;
   background: var(--hover-bg);
   color: var(--text-secondary);
-  font-size: 0.82rem;
+  /* 归入全站辅助小字档（12px），与 kicker 同级 */
+  font-size: 12px;
   line-height: 1.2;
 }
 
@@ -211,19 +213,17 @@
 
   .support-intro h1 {
     justify-content: flex-start;
-    font-size: clamp(1.82rem, 9vw, 2.2rem);
+    /* 字号沿用全站 token，不再单独写 clamp —— 原来手机上会比其他页大 1.2px */
     line-height: 1.16;
   }
 
   .support-intro p {
-    font-size: 0.9rem;
     line-height: 1.68;
   }
 
   .support-kicker {
     margin: 0;
     gap: 8px;
-    font-size: 0.9rem;
   }
 
   .support-notes {
@@ -234,7 +234,6 @@
 
   .support-notes li {
     padding: 5px 9px;
-    font-size: 0.78rem;
   }
 
   .support-qr-list {
@@ -289,10 +288,6 @@
 @media (max-width: 420px) {
   .support-page {
     padding-inline: 12px;
-  }
-
-  .support-intro h1 {
-    font-size: 1.7rem;
   }
 
   .support-qr-frame {

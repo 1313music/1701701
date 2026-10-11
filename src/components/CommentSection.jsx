@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { init } from '@waline/client';
 import '@waline/client/style';
+import StatePanel from './StatePanel.jsx';
 import {
   WALINE_AUTH_SUCCESS_EVENT,
   getComment,
@@ -302,7 +303,7 @@ const CommentSection = ({
         </div>
       ) : null}
       {!serverURL ? (
-        <div className="comment-section-empty">未配置评论服务地址</div>
+        <StatePanel variant="error" title="未配置评论服务地址" compact />
       ) : (
         <div ref={containerRef} className="comment-section-body" />
       )}

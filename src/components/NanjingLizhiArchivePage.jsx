@@ -9,6 +9,7 @@ import {
 } from '../data/archiveFeatureConfig.js';
 import '../styles/archive.css';
 import PageHeader from './PageHeader.jsx';
+import StatePanel from './StatePanel.jsx';
 
 const ALL_ARCHIVE_SOURCES = [
     {
@@ -346,26 +347,26 @@ const NanjingLizhiArchivePage = ({ onCopyPageLink }) => {
             </div>
 
             {isManifestLoading && (
-                <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
-                    <span className="page-loading-ring" aria-hidden="true" />
-                    <span>加载中...</span>
-                </div>
+                <StatePanel variant="loading" title="加载中…" />
             )}
 
             {!isManifestLoading && manifestError && (
-                <section className="archive-empty" aria-label="加载失败">
-                    <Archive size={34} strokeWidth={2.1} absoluteStrokeWidth />
-                    <h2>档案清单加载失败</h2>
-                    <p>{manifestError}</p>
-                    <button
-                        type="button"
-                        className="archive-retry"
-                        onClick={() => setRetryKey((value) => value + 1)}
-                    >
-                        <RefreshCcw size={16} strokeWidth={2.2} absoluteStrokeWidth />
-                        <span>重新加载</span>
-                    </button>
-                </section>
+                <StatePanel
+                    variant="error"
+                    icon={Archive}
+                    title="档案清单加载失败"
+                    description={manifestError}
+                    action={(
+                        <button
+                            type="button"
+                            className="state-panel-btn"
+                            onClick={() => setRetryKey((value) => value + 1)}
+                        >
+                            <RefreshCcw size={16} strokeWidth={2.2} absoluteStrokeWidth />
+                            <span>重新加载</span>
+                        </button>
+                    )}
+                />
             )}
 
             {!isManifestLoading && !manifestError && selectedSnapshot && (

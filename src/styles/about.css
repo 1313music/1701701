@@ -525,6 +525,30 @@
   overflow: hidden;
 }
 
+/* 关于页的 hero 是一张深色大图，分享按钮压在图右上角，
+   所以用半透明深底 + 白图标保证可见（位置语言与其余页头的右上角一致）。
+   选择器刻意写两个类，用来压过 page-hero.css 里 .page-hero-share:hover 的站点色。 */
+.page-hero-share.about-v3-share {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.38);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.page-hero-share.about-v3-share:hover {
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.56);
+}
+
+.page-hero-share.about-v3-share:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 .about-v3-image img {
   width: 100%;
   height: 300px;

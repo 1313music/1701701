@@ -1,0 +1,129 @@
+/* ---------------------------------------------------------------
+   全站统一的状态面板（加载 / 空 / 出错）
+   由 components/StatePanel.jsx 使用。所有尺寸都取站内既有高频值：
+   圆角 16px = --page-card-radius，按钮圆角 12px / 14px / 600 与
+   .gallery-category-btn 完全一致，不新造一套视觉。
+   --------------------------------------------------------------- */
+
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 220px;
+  padding: 48px 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--page-card-radius);
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* 紧凑模式：嵌在已有卡片/区块里用，不重复画边框和底 */
+.state-panel.is-compact {
+  min-height: 0;
+  padding: 24px 18px;
+}
+
+.state-panel-icon {
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.state-panel-title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.state-panel-desc {
+  margin: 0;
+  max-width: 460px;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.state-panel-action {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 面板内的按钮：尺寸与 .gallery-category-btn 对齐 */
+.state-panel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 8px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.state-panel-btn:hover {
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+
+.state-panel-btn:active {
+  transform: scale(0.98);
+}
+
+.state-panel-btn:focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 2px;
+}
+
+/* 加载环：与 .page-loading-ring 同一套画法 */
+.state-panel-ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--text-main);
+  animation: state-panel-spin 0.9s linear infinite;
+}
+
+@keyframes state-panel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .state-panel-ring {
+    animation: none;
+  }
+
+  .state-panel-btn:hover,
+  .state-panel-btn:active {
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .state-panel {
+    min-height: 180px;
+    padding: 36px 18px;
+  }
+
+  .state-panel.is-compact {
+    padding: 20px 14px;
+  }
+}

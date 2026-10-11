@@ -6,6 +6,7 @@ import { getAlbumMiniProgram } from '../data/miniProgramAlbums.js';
 import { formatAlbumReleaseDate, getAlbumProfile } from '../data/albumProfiles.js';
 import { buildCoverAtmosphereAssets } from '../utils/coverAtmosphere.js';
 import ExternalJumpDialog from './ExternalJumpDialog.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
 
 const PANEL_EXIT_MS = 280;
 const PANEL_MAX_WIDTH = 1180;
@@ -323,6 +324,8 @@ const AlbumGrid = ({
     const [isIntroActive, setIsIntroActive] = useState(true);
     const [mobileQrPanel, setMobileQrPanel] = useState(null);
     const [purchasePrompt, setPurchasePrompt] = useState(null);
+    // 'favorites' | 'recent' | null —— 用站内确认弹窗替代 window.confirm
+    const [clearConfirm, setClearConfirm] = useState(null);
     const [panelCoverAtmosphere, setPanelCoverAtmosphere] = useState({ coverSrc: '', palette: null });
     const panelExitTimerRef = useRef(null);
     const panelStateTimerRef = useRef(null);
@@ -803,11 +806,7 @@ const AlbumGrid = ({
                                         className="album-inline-clear-favorites-btn"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            if (typeof window !== 'undefined') {
-                                                const shouldClear = window.confirm('确定要清空收藏吗？');
-                                                if (!shouldClear) return;
-                                            }
-                                            onClearTempPlaylist?.(e);
+                                            setClearConfirm('favorites');
                                         }}
                                     >
                                         <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
@@ -820,11 +819,7 @@ const AlbumGrid = ({
                                         className="album-inline-clear-favorites-btn"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            if (typeof window !== 'undefined') {
-                                                const shouldClear = window.confirm('确定要清空最近播放记录吗？');
-                                                if (!shouldClear) return;
-                                            }
-                                            onClearRecentlyPlayed?.(e);
+                                            setClearConfirm('recent');
                                         }}
                                     >
                                         <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
@@ -1064,6 +1059,25 @@ const AlbumGrid = ({
                 href={purchasePrompt?.url || ''}
                 host="tower.jp"
                 onClose={() => setPurchasePrompt(null)}
+            />
+            <ConfirmDialog
+                open={Boolean(clearConfirm)}
+                title={clearConfirm === 'recent' ? '确定要清空最近播放记录吗？' : '确定要清空收藏吗？'}
+                description={clearConfirm === 'recent'
+                    ? '清空后「最近播放」会从空白开始重新记录。'
+                    : '清空后收藏的歌曲需要重新添加。'}
+                confirmText="清空"
+                danger
+                onCancel={() => setClearConfirm(null)}
+                onConfirm={() => {
+                    const target = clearConfirm;
+                    setClearConfirm(null);
+                    if (target === 'recent') {
+                        onClearRecentlyPlayed?.();
+                    } else {
+                        onClearTempPlaylist?.();
+                    }
+                }}
             />
         </>
     );

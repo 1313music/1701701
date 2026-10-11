@@ -8,6 +8,7 @@ import { useVideoCatalog } from '../hooks/useVideoCatalog.js';
 import { useVideoPlayback } from '../hooks/useVideoPlayback.js';
 import { buildVideoKey } from '../utils/videoPageUtils.js';
 import SearchHeader from './SearchHeader';
+import StatePanel from './StatePanel.jsx';
 
 const VideoCard = ({ item, onClick, meta, active = false }) => {
   const [thumbError, setThumbError] = useState(false);
@@ -320,7 +321,7 @@ const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialRe
         })}
       </div>
     ) : (
-      <div className="video-empty">暂无视频内容</div>
+      <StatePanel variant="empty" title="暂无视频内容" />
     )
   );
 
@@ -382,23 +383,24 @@ const VideoPage = ({ requestVideoView, onShareVideo, locationSearch, onInitialRe
       />
 
       {!isSearching && isCatalogLoading && (
-        <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
-          <span className="page-loading-ring" aria-hidden="true" />
-          <span>加载中...</span>
-        </div>
+        <StatePanel variant="loading" title="加载中…" />
       )}
 
       {!isSearching && !isCatalogLoading && catalogLoadError && (
-        <div className="video-empty">
-          <div>{catalogLoadError}</div>
-          <button
-            type="button"
-            className="video-unsupported-action"
-            onClick={handleRetryCatalog}
-          >
-            重试加载
-          </button>
-        </div>
+        <StatePanel
+          variant="error"
+          title="视频列表加载失败"
+          description={catalogLoadError}
+          action={(
+            <button
+              type="button"
+              className="state-panel-btn"
+              onClick={handleRetryCatalog}
+            >
+              重试
+            </button>
+          )}
+        />
       )}
 
       {!isSearching && hasCatalogContent && !isWatching && renderVideoToolbar()}

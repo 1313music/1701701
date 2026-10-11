@@ -1,0 +1,128 @@
+/* ---------------------------------------------------------------
+   全站统一的确认弹窗（替代 window.confirm）
+   尺寸与站内其他控件对齐：卡片圆角 16px = --page-card-radius，
+   按钮 12px 圆角 / 14px / 600（与 .gallery-category-btn、.state-panel-btn 一致）。
+   --------------------------------------------------------------- */
+
+.confirm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  /* 高于站内所有弹层，保证确认框一定在最上面 */
+  z-index: 61000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: confirm-dialog-fade 0.18s ease;
+}
+
+.confirm-dialog {
+  width: min(100%, 400px);
+  padding: 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--page-card-radius);
+  background: var(--bg-color);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+  animation: confirm-dialog-pop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.confirm-dialog-title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.confirm-dialog-desc {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  /* 弹幕那条确认文案自带换行 */
+  white-space: pre-line;
+}
+
+.confirm-dialog-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-dialog-btn {
+  min-height: 34px;
+  padding: 8px 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.confirm-dialog-btn:hover {
+  background: var(--hover-bg);
+}
+
+.confirm-dialog-btn:active {
+  transform: scale(0.98);
+}
+
+.confirm-dialog-btn:focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 2px;
+}
+
+/* 主按钮：浅色下黑底白字、深色下白底黑字，跟随 --main-color 自动适配 */
+.confirm-dialog-btn.is-primary {
+  border-color: transparent;
+  background: var(--main-color);
+  color: var(--bg-color);
+}
+
+.confirm-dialog-btn.is-primary:hover {
+  background: var(--main-color);
+  opacity: 0.88;
+}
+
+/* 危险操作（不可逆的删除）才用红 —— 用的是站内已有的 --favorite-active-color */
+.confirm-dialog-btn.is-primary.is-danger {
+  background: var(--favorite-active-color);
+  color: #ffffff;
+}
+
+.confirm-dialog-btn.is-primary.is-danger:hover {
+  background: var(--favorite-active-color);
+  opacity: 0.88;
+}
+
+@keyframes confirm-dialog-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes confirm-dialog-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-dialog-backdrop,
+  .confirm-dialog {
+    animation: none;
+  }
+
+  .confirm-dialog-btn:hover,
+  .confirm-dialog-btn:active {
+    transform: none;
+  }
+}

@@ -21,6 +21,7 @@ import {
     findPreviewItemBySlug
 } from '../utils/downloadPreviewUtils.js';
 import PageHeader from './PageHeader.jsx';
+import StatePanel from './StatePanel.jsx';
 
 const getResourceSectionTitle = (section) => (
     section.title === '其他资源' ? '文档' : section.title
@@ -121,37 +122,29 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
         return (
             <div className="download-page download-v2 resources-page download-preview-route">
                 {isSectionsLoading && (
-                    <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
-                        <span className="page-loading-ring" aria-hidden="true" />
-                        <span>加载中...</span>
-                    </div>
+                    <StatePanel variant="loading" title="加载中…" />
                 )}
 
                 {!isSectionsLoading && sectionsLoadError && (
-                    <section className="download-section-block">
-                        <div className="download-section-header">
-                            <h3>加载失败</h3>
-                        </div>
-                        <div className="download-groups">
-                            <div className="download-group open">
-                                <div className="download-group-body">
-                                    <p>{sectionsLoadError}</p>
-                                    <div className="download-preview-error-actions">
-                                        <a className="download-preview-back" href={getPathForView('resources')}>
-                                            返回文档页
-                                        </a>
-                                        <button
-                                            type="button"
-                                            className="download-action"
-                                            onClick={handleRetrySections}
-                                        >
-                                            重试加载
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    <StatePanel
+                        variant="error"
+                        title="文档清单加载失败"
+                        description={sectionsLoadError}
+                        action={(
+                            <>
+                                <a className="state-panel-btn" href={getPathForView('resources')}>
+                                    返回文档页
+                                </a>
+                                <button
+                                    type="button"
+                                    className="state-panel-btn"
+                                    onClick={handleRetrySections}
+                                >
+                                    重试
+                                </button>
+                            </>
+                        )}
+                    />
                 )}
 
                 {!isSectionsLoading && !sectionsLoadError && previewEntry && (
@@ -163,23 +156,16 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
                 )}
 
                 {!isSectionsLoading && !sectionsLoadError && !previewEntry && (
-                    <section className="download-section-block">
-                        <div className="download-section-header">
-                            <h3>未找到该预览</h3>
-                        </div>
-                        <div className="download-groups">
-                            <div className="download-group open">
-                                <div className="download-group-body">
-                                    <p>当前链接对应的文档不存在，或暂不支持站内预览。</p>
-                                    <div className="download-preview-error-actions">
-                                        <a className="download-preview-back" href={getPathForView('resources')}>
-                                            返回文档页
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    <StatePanel
+                        variant="empty"
+                        title="未找到该预览"
+                        description="当前链接对应的文档不存在，或暂不支持站内预览。"
+                        action={(
+                            <a className="state-panel-btn" href={getPathForView('resources')}>
+                                返回文档页
+                            </a>
+                        )}
+                    />
                 )}
             </div>
         );
@@ -190,45 +176,32 @@ const ResourcesPage = ({ onCopyPageLink, onInitialReady }) => {
             <PageHeader
                 title="文档"
                 subtitle="文字、乐谱与 PDF 文档集中整理。"
-                tint
                 onShare={typeof onCopyPageLink === 'function' ? onCopyPageLink : undefined}
             />
 
             {isSectionsLoading && (
-                <div className="page-loading page-loading-spinner" role="status" aria-live="polite">
-                    <span className="page-loading-ring" aria-hidden="true" />
-                    <span>加载中...</span>
-                </div>
+                <StatePanel variant="loading" title="加载中…" />
             )}
 
             {!isSectionsLoading && sectionsLoadError && (
-                <section className="download-section-block">
-                    <div className="download-section-header">
-                        <h3>加载失败</h3>
-                    </div>
-                    <div className="download-groups">
-                        <div className="download-group">
-                            <div className="download-group-body">
-                                <p>{sectionsLoadError}</p>
-                                <button
-                                    type="button"
-                                    className="download-action"
-                                    onClick={handleRetrySections}
-                                >
-                                    重试加载
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                <StatePanel
+                    variant="error"
+                    title="文档清单加载失败"
+                    description={sectionsLoadError}
+                    action={(
+                        <button
+                            type="button"
+                            className="state-panel-btn"
+                            onClick={handleRetrySections}
+                        >
+                            重试
+                        </button>
+                    )}
+                />
             )}
 
             {!isSectionsLoading && !sectionsLoadError && resourceSections.length === 0 && (
-                <section className="download-section-block">
-                    <div className="download-section-header">
-                        <h3>暂无文档</h3>
-                    </div>
-                </section>
+                <StatePanel variant="empty" title="暂无文档" />
             )}
 
             {!isSectionsLoading && !sectionsLoadError && resourceSections.map((section) => (

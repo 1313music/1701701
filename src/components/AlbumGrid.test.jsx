@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AlbumGrid from './AlbumGrid.jsx';
@@ -622,7 +622,6 @@ describe('AlbumGrid inline album panel', () => {
       ]
     });
     const onClearTempPlaylist = vi.fn();
-    const confirmSpy = vi.spyOn(window, 'confirm');
     render(
       <AlbumGrid
         {...createBaseProps({
@@ -642,12 +641,24 @@ describe('AlbumGrid inline album panel', () => {
     expect(document.body.querySelectorAll('.album-cover-collage.is-favorites-cover.is-count-4')).toHaveLength(2);
     expect(document.body.querySelectorAll('.album-cover-favorites-tile')).toHaveLength(2);
 
-    confirmSpy.mockReturnValueOnce(false);
+    // 点「清空收藏」先弹站内确认框，不直接清空
     fireEvent.click(screen.getByRole('button', { name: '清空收藏' }));
     expect(onClearTempPlaylist).not.toHaveBeenCalled();
 
-    confirmSpy.mockReturnValueOnce(true);
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('确定要清空收藏吗？')).toBeInTheDocument();
+
+    // 取消 → 不清空
+    fireEvent.click(within(dialog).getByRole('button', { name: '取消' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    expect(onClearTempPlaylist).not.toHaveBeenCalled();
+
+    // 再打开并确认 → 清空一次
     fireEvent.click(screen.getByRole('button', { name: '清空收藏' }));
+    const confirmDialog = await screen.findByRole('dialog');
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: '清空' }));
     expect(onClearTempPlaylist).toHaveBeenCalledTimes(1);
   });
 });

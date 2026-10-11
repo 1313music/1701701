@@ -53,7 +53,7 @@ const SupportPage = ({ onCopyPageLink }) => (
                     </button>
                 )}
                 <div className="support-kicker">
-                    <ThumbsUp size={16} strokeWidth={2.5} absoluteStrokeWidth />
+                    <ThumbsUp size={16} strokeWidth={2.4} absoluteStrokeWidth />
                     <span>支持本站</span>
                 </div>
                 <h1 id="support-title">1701701.xyz</h1>
