@@ -426,16 +426,51 @@
   color: var(--text-main);
 }
 
-/* 资料浮层没有 tab，关闭按钮脱离 flex 流、固定到右上角，避免移动端竖排时被挤到标题下方 */
-.waline-profile-modal .waline-auth-header {
-  position: relative;
+.waline-profile-modal {
+  width: min(560px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
 }
 
-.waline-profile-modal .waline-auth-close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 2;
+.waline-profile-modal .waline-profile-header {
+  display: block;
+  padding: 20px 24px 17px;
+}
+
+.waline-profile-modal .waline-auth-heading {
+  display: grid;
+  gap: 8px;
+}
+
+.waline-profile-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.waline-profile-title-row h3 {
+  min-width: 0;
+}
+
+.waline-profile-modal .waline-profile-title-row .waline-auth-close {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.waline-profile-close-icon {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 0.8;
 }
 
 .waline-auth-tab.active:hover {
@@ -543,10 +578,23 @@
   line-height: 1.55;
 }
 
+.waline-profile-modal .waline-profile-body {
+  padding: 20px 24px 24px;
+}
+
+.waline-profile-form {
+  gap: 22px;
+}
+
+.waline-profile-avatar-section {
+  display: grid;
+  gap: 16px;
+}
+
 .waline-profile-avatar {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .waline-profile-avatar-preview {
@@ -554,12 +602,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
   border-radius: 50%;
   background: var(--hover-bg);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--hover-bg) 70%, transparent);
 }
 
 .waline-profile-avatar-preview img {
@@ -585,29 +634,47 @@
 
 .waline-profile-avatar-heading {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
-.waline-profile-avatar-title {
-  color: var(--text-main);
-  font-size: 14px;
-  font-weight: 650;
+.waline-profile-avatar-heading-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.waline-profile-avatar-hint {
+.waline-profile-avatar-title,
+.waline-profile-details-title {
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.waline-profile-avatar-count {
+  padding: 3px 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.waline-profile-avatar-hint,
+.waline-profile-details-hint {
   margin: 0;
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.5;
 }
 
-/* 21 张预设正好排满 7 列 × 3 行，不会出现最后一行只剩一个的尴尬 */
 .waline-profile-avatar-presets {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
+  gap: 9px;
 }
 
 .waline-profile-avatar-preset {
@@ -631,18 +698,18 @@
 }
 
 .waline-profile-avatar-preset:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--main-color) 40%, var(--glass-border));
+  transform: scale(1.05);
+  border-color: color-mix(in srgb, var(--main-color) 55%, var(--glass-border));
 }
 
 .waline-profile-avatar-preset:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 40%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--main-color) 35%, transparent);
 }
 
 .waline-profile-avatar-preset.is-active {
   border-color: var(--main-color);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 45%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 55%, transparent);
 }
 
 .waline-profile-avatar-preset:disabled {
@@ -650,11 +717,11 @@
   cursor: wait;
 }
 
-/* 「自己填地址」+「恢复默认」自成一组，和上面的预设网格拉开层次 */
 .waline-profile-avatar-custom {
   display: grid;
-  gap: 10px;
-  justify-items: start;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
 }
 
 .waline-profile-avatar-custom .waline-auth-field {
@@ -663,17 +730,17 @@
 
 .waline-profile-avatar-reset {
   appearance: none;
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
+  justify-self: start;
+  min-height: 30px;
+  padding: 0 2px;
+  border: 0;
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 650;
   cursor: pointer;
-  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition: color 0.18s ease;
 }
 
 .waline-profile-avatar-reset[hidden] {
@@ -682,18 +749,53 @@
 
 .waline-profile-avatar-reset:hover:not(:disabled) {
   color: var(--text-main);
-  border-color: color-mix(in srgb, var(--main-color) 40%, var(--glass-border));
-  background: var(--hover-bg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .waline-profile-avatar-reset:focus-visible {
   outline: none;
+  border-radius: 4px;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color) 40%, transparent);
 }
 
 .waline-profile-avatar-reset:disabled {
   opacity: 0.56;
   cursor: wait;
+}
+
+.waline-profile-details {
+  display: grid;
+  gap: 12px;
+  padding-top: 17px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.waline-profile-details-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waline-profile-details-title {
+  font-size: 13px;
+}
+
+.waline-profile-details-hint {
+  font-size: 11px;
+}
+
+.waline-profile-details-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.waline-profile-modal .waline-auth-submit {
+  min-height: 46px;
+  margin-top: 0;
+  border-radius: 12px;
 }
 
 .waline-auth-check {
@@ -812,5 +914,54 @@
 
   .waline-auth-heading h3 {
     font-size: 20px;
+  }
+
+  .waline-profile-modal {
+    max-height: calc(var(--mobile-fullscreen-height) - 12px);
+  }
+
+  .waline-profile-modal .waline-profile-header {
+    padding: 16px 18px 14px;
+  }
+
+  .waline-profile-modal .waline-profile-body {
+    padding: 16px 18px calc(16px + var(--mobile-fullscreen-safe-bottom));
+  }
+
+  .waline-profile-form {
+    gap: 18px;
+  }
+
+  .waline-profile-avatar-preview {
+    width: 60px;
+    height: 60px;
+  }
+
+  .waline-profile-avatar-presets {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .waline-profile-avatar-preset:nth-child(19) {
+    grid-column-start: 2;
+  }
+
+  .waline-profile-details-fields {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .waline-profile-avatar-presets {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .waline-profile-avatar-preset:nth-child(19) {
+    grid-column-start: auto;
+  }
+
+  .waline-profile-avatar-preset:last-child {
+    grid-column-start: 3;
   }
 }

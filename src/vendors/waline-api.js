@@ -762,44 +762,62 @@ const ensureWalineProfileOverlay = () => {
 
   overlay.innerHTML = `
     <div class="waline-auth-modal waline-profile-modal" role="dialog" aria-modal="true" aria-labelledby="waline-profile-title">
-      <div class="waline-auth-header">
+      <div class="waline-auth-header waline-profile-header">
         <div class="waline-auth-heading">
           <span class="waline-auth-eyebrow">Waline 账号</span>
-          <h3 id="waline-profile-title">个人设置</h3>
+          <div class="waline-profile-title-row">
+            <h3 id="waline-profile-title">个人设置</h3>
+            <button type="button" class="waline-auth-close" aria-label="关闭账号设置">
+              <span class="waline-profile-close-icon" aria-hidden="true">×</span>
+              <span>关闭</span>
+            </button>
+          </div>
         </div>
-        <button type="button" class="waline-auth-close" aria-label="关闭账号设置">关闭</button>
       </div>
-      <div class="waline-auth-body">
+      <div class="waline-auth-body waline-profile-body">
         <p class="waline-auth-status" hidden></p>
         <form class="waline-auth-form waline-profile-form" novalidate>
-          <div class="waline-profile-avatar">
-            <span class="waline-profile-avatar-preview" aria-hidden="true">
-              <img alt="" data-role="avatar-preview-image" hidden />
-              <span class="waline-profile-avatar-placeholder" data-role="avatar-preview-placeholder">暂无</span>
-            </span>
-            <div class="waline-profile-avatar-heading">
-              <span class="waline-profile-avatar-title">头像</span>
-              <p class="waline-profile-avatar-hint">选一张预设，或粘贴自己的图片地址。</p>
+          <section class="waline-profile-avatar-section" aria-labelledby="waline-profile-avatar-title">
+            <div class="waline-profile-avatar">
+              <span class="waline-profile-avatar-preview" aria-hidden="true">
+                <img alt="" data-role="avatar-preview-image" hidden />
+                <span class="waline-profile-avatar-placeholder" data-role="avatar-preview-placeholder">暂无</span>
+              </span>
+              <div class="waline-profile-avatar-heading">
+                <div class="waline-profile-avatar-heading-row">
+                  <span class="waline-profile-avatar-title" id="waline-profile-avatar-title">选择头像</span>
+                  <span class="waline-profile-avatar-count">21 张 · XKK</span>
+                </div>
+                <p class="waline-profile-avatar-hint">点选预设查看效果，也可以粘贴自己的图片地址。</p>
+              </div>
             </div>
-          </div>
-          <div class="waline-profile-avatar-presets" role="group" aria-label="预设头像">
-            ${presetAvatarsMarkup}
-          </div>
-          <div class="waline-profile-avatar-custom">
-            <label class="waline-auth-field">
-              <span>图片地址</span>
-              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
-            </label>
-            <button type="button" class="waline-profile-avatar-reset" hidden>恢复默认头像</button>
-          </div>
-          <label class="waline-auth-field">
-            <span>昵称</span>
-            <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
-          </label>
-          <label class="waline-auth-field">
-            <span>邮箱</span>
-            <input type="email" name="email" autocomplete="email" readonly />
-          </label>
+            <div class="waline-profile-avatar-presets" role="group" aria-label="XKK 预设头像">
+              ${presetAvatarsMarkup}
+            </div>
+            <div class="waline-profile-avatar-custom">
+              <label class="waline-auth-field">
+                <span>图片地址</span>
+                <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
+              </label>
+              <button type="button" class="waline-profile-avatar-reset" hidden>恢复默认头像</button>
+            </div>
+          </section>
+          <section class="waline-profile-details" aria-labelledby="waline-profile-details-title">
+            <div class="waline-profile-details-heading">
+              <span class="waline-profile-details-title" id="waline-profile-details-title">账号资料</span>
+              <span class="waline-profile-details-hint">昵称会显示在评论中</span>
+            </div>
+            <div class="waline-profile-details-fields">
+              <label class="waline-auth-field">
+                <span>昵称</span>
+                <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
+              </label>
+              <label class="waline-auth-field">
+                <span>邮箱</span>
+                <input type="email" name="email" autocomplete="email" readonly />
+              </label>
+            </div>
+          </section>
           <button type="submit" class="waline-auth-submit">更新我的档案</button>
         </form>
       </div>
