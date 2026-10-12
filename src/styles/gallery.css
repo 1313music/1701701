@@ -1,7 +1,7 @@
 .gallery-page {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--page-section-gap);
 }
 
 .gallery-list-header {
@@ -22,8 +22,10 @@
 
 .gallery-title-row h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--page-title-size);
   font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .gallery-list-card,
@@ -114,8 +116,8 @@
   position: sticky;
   top: 0;
   z-index: 12;
-  padding: 2px 0 12px;
-  margin: 18px 0 12px;
+  padding: 0 0 12px;
+  margin: 0 0 12px;
   background:
     linear-gradient(
       180deg,

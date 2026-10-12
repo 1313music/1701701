@@ -446,6 +446,10 @@
   gap: var(--page-section-gap);
 }
 
+.download-page.download-v2.resources-page {
+  gap: var(--page-section-gap);
+}
+
 .download-page.download-v2.resources-page .resources-section-block {
   border-top: none;
   padding-top: 0;
@@ -458,7 +462,7 @@
 }
 
 .resources-page .resources-card {
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   overflow: hidden;
