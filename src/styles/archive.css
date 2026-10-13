@@ -270,10 +270,12 @@
   transform: translateY(-1px);
 }
 
+/* 预览面板与空状态属「内容列表页」的卡片层，圆角统一到站内 12px 档
+   （与文档页、客户端页一致），不再单用 8px。 */
 .archive-frame-shell {
   position: relative;
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   background: #ffffff;
   padding: 12px;
@@ -313,7 +315,7 @@
 .archive-empty {
   min-height: 360px;
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--glass-bg);
   color: var(--text-secondary);
   display: flex;
@@ -367,10 +369,10 @@
 
   .archive-frame-shell {
     padding: 4px;
-    border-radius: 7px;
+    border-radius: 12px;
   }
 
   .archive-frame-viewport {
-    border-radius: 5px;
+    border-radius: 8px;
   }
 }
