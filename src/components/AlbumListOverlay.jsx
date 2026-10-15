@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Heart, Play, X } from 'lucide-react';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -200,7 +200,9 @@ const AlbumListOverlay = ({
         };
     }, [isOpen]);
 
-    useEffect(() => {
+    // 必须用 useLayoutEffect：滚动锁要在弹层首帧绘制前生效，
+    // 否则滚动条消失导致整页宽度突变（重新居中），透过遮罩看到"闪一下"。
+    useLayoutEffect(() => {
         if (!isOpen || typeof document === 'undefined') return undefined;
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
