@@ -38,7 +38,7 @@
 
   --page-max-width: 1240px;
   --page-max-width-wide: 1440px;
-  --page-title-size: clamp(26px, 3.2vw, 34px);
+  --page-title-size: clamp(22px, 2.2vw, 26px);
   --page-subtitle-size: 14px;
   --page-kicker-size: 12px;
   --page-card-radius: 16px;
