@@ -75,7 +75,7 @@ describe('downloadManifest asset normalization', () => {
         ]
       }
     ];
-    window.localStorage.setItem('manifest-cache:download:v1', JSON.stringify({
+    window.localStorage.setItem('manifest-cache:download:v2', JSON.stringify({
       savedAt: Date.now() - 7 * 60 * 60 * 1000,
       data: cachedSections
     }));

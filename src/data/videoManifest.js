@@ -12,13 +12,17 @@ import {
 } from './manifestSourceUtils.js';
 import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
-const PERSISTENT_CACHE_KEY = 'manifest-cache:video:v1';
+const PERSISTENT_CACHE_KEY = 'manifest-cache:video:v2';
+// v1 的清单会存 7 天且期间不发请求，新视频老用户看不到；升版本让存量用户重拉一次。
+const LEGACY_PERSISTENT_CACHE_KEYS = ['manifest-cache:video:v1'];
 const BUNDLED_SNAPSHOT_PATH = '/video-index.json';
-const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// 缓存照用，但每次进站后台校验一次；同一标签页内 5 分钟内不重复请求。
+const BACKGROUND_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 let cachedCatalog = null;
-let cachedAt = 0;
 let inflightCatalogPromise = null;
+let lastRevalidateAt = 0;
+let legacyCacheCleaned = false;
 const videoManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
@@ -139,13 +143,21 @@ const loadRemoteCatalog = async () => {
 
 export const __resetVideoManifestCacheForTests = () => {
   cachedCatalog = null;
-  cachedAt = 0;
   inflightCatalogPromise = null;
+  lastRevalidateAt = 0;
+  legacyCacheCleaned = false;
   videoManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
 };
 
 export const subscribeToVideoCatalog = videoManifestRefreshNotifier.subscribe;
+
+const clearLegacyCachesOnce = () => {
+  if (legacyCacheCleaned) return;
+  legacyCacheCleaned = true;
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
+};
 
 const loadAndPersistCatalog = async () => {
   if (inflightCatalogPromise) {
@@ -155,7 +167,6 @@ const loadAndPersistCatalog = async () => {
   inflightCatalogPromise = loadRemoteCatalog()
     .then((catalog) => {
       cachedCatalog = catalog;
-      cachedAt = Date.now();
       writePersistentManifestCache(PERSISTENT_CACHE_KEY, catalog);
       return catalog;
     })
@@ -166,25 +177,38 @@ const loadAndPersistCatalog = async () => {
   return await inflightCatalogPromise;
 };
 
+const revalidateInBackground = (now) => {
+  if (now - lastRevalidateAt < BACKGROUND_REVALIDATE_INTERVAL_MS) return;
+  if (inflightCatalogPromise) return;
+  lastRevalidateAt = now;
+  videoManifestRefreshNotifier.refreshInBackground(loadAndPersistCatalog());
+};
+
+/** 手动刷新视频清单：丢缓存强制重拉并推给订阅者。 */
+export const refreshVideoCatalog = () => {
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  cachedCatalog = null;
+  lastRevalidateAt = Date.now();
+  const refreshPromise = loadAndPersistCatalog();
+  videoManifestRefreshNotifier.refreshInBackground(refreshPromise);
+  return refreshPromise;
+};
+
 export const loadVideoCatalog = async () => {
+  clearLegacyCachesOnce();
   const now = Date.now();
-  if (cachedCatalog && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedCatalog;
-  }
+
   if (cachedCatalog) {
-    videoManifestRefreshNotifier.refreshInBackground(loadAndPersistCatalog());
+    revalidateInBackground(now);
     return cachedCatalog;
   }
 
   const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
   if (persistedCache?.data) {
     cachedCatalog = persistedCache.data;
-    cachedAt = persistedCache.savedAt;
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
-      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        videoManifestRefreshNotifier.refreshInBackground(loadAndPersistCatalog());
-      }
+      revalidateInBackground(now);
       return cachedCatalog;
     }
   }

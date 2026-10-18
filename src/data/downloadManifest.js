@@ -12,13 +12,17 @@ import {
 } from './manifestSourceUtils.js';
 import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
-const PERSISTENT_CACHE_KEY = 'manifest-cache:download:v1';
+const PERSISTENT_CACHE_KEY = 'manifest-cache:download:v2';
+// v1 的清单会存 7 天且期间不发请求，新资源老用户看不到；升版本让存量用户重拉一次。
+const LEGACY_PERSISTENT_CACHE_KEYS = ['manifest-cache:download:v1'];
 const BUNDLED_SNAPSHOT_PATH = '/download-index.json';
-const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// 缓存照用，但每次进站后台校验一次；同一标签页内 5 分钟内不重复请求。
+const BACKGROUND_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 let cachedSections = null;
-let cachedAt = 0;
 let inflightSectionsPromise = null;
+let lastRevalidateAt = 0;
+let legacyCacheCleaned = false;
 const downloadManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
@@ -124,13 +128,21 @@ const loadRemoteSections = async () => {
 
 export const __resetDownloadManifestCacheForTests = () => {
   cachedSections = null;
-  cachedAt = 0;
   inflightSectionsPromise = null;
+  lastRevalidateAt = 0;
+  legacyCacheCleaned = false;
   downloadManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
 };
 
 export const subscribeToDownloadSections = downloadManifestRefreshNotifier.subscribe;
+
+const clearLegacyCachesOnce = () => {
+  if (legacyCacheCleaned) return;
+  legacyCacheCleaned = true;
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
+};
 
 const loadAndPersistSections = async () => {
   if (inflightSectionsPromise) {
@@ -140,7 +152,6 @@ const loadAndPersistSections = async () => {
   inflightSectionsPromise = loadRemoteSections()
     .then((sections) => {
       cachedSections = sections;
-      cachedAt = Date.now();
       writePersistentManifestCache(PERSISTENT_CACHE_KEY, sections);
       return sections;
     })
@@ -151,25 +162,38 @@ const loadAndPersistSections = async () => {
   return await inflightSectionsPromise;
 };
 
+const revalidateInBackground = (now) => {
+  if (now - lastRevalidateAt < BACKGROUND_REVALIDATE_INTERVAL_MS) return;
+  if (inflightSectionsPromise) return;
+  lastRevalidateAt = now;
+  downloadManifestRefreshNotifier.refreshInBackground(loadAndPersistSections());
+};
+
+/** 手动刷新下载清单：丢缓存强制重拉并推给订阅者。 */
+export const refreshDownloadSections = () => {
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  cachedSections = null;
+  lastRevalidateAt = Date.now();
+  const refreshPromise = loadAndPersistSections();
+  downloadManifestRefreshNotifier.refreshInBackground(refreshPromise);
+  return refreshPromise;
+};
+
 export const loadDownloadSections = async () => {
+  clearLegacyCachesOnce();
   const now = Date.now();
-  if (cachedSections && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedSections;
-  }
+
   if (cachedSections) {
-    downloadManifestRefreshNotifier.refreshInBackground(loadAndPersistSections());
+    revalidateInBackground(now);
     return cachedSections;
   }
 
   const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
   if (persistedCache?.data) {
     cachedSections = persistedCache.data;
-    cachedAt = persistedCache.savedAt;
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
-      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        downloadManifestRefreshNotifier.refreshInBackground(loadAndPersistSections());
-      }
+      revalidateInBackground(now);
       return cachedSections;
     }
   }

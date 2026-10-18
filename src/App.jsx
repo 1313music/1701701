@@ -10,6 +10,7 @@ import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
 import StatePanel from './components/StatePanel.jsx';
 import { RefreshIcon } from './components/icons/AppIcons';
+import { refreshVideoCatalog } from './data/videoManifest.js';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAnnouncement } from './hooks/useAnnouncement.js';
 import { useAudioPlaybackShortcuts } from './hooks/useAudioPlaybackShortcuts.js';
@@ -505,15 +506,29 @@ const App = () => {
     }
   }, [isMusicRefreshing, refreshMusicAlbums, showToast]);
 
-  const announcementToolbarActions = (
+  const [isVideoRefreshing, setIsVideoRefreshing] = useState(false);
+  const handleRefreshVideoCatalog = useCallback(async () => {
+    if (isVideoRefreshing) return;
+    setIsVideoRefreshing(true);
+    try {
+      await refreshVideoCatalog();
+      showToast('视频列表已更新');
+    } catch {
+      showToast('刷新失败，请检查网络后重试');
+    } finally {
+      setIsVideoRefreshing(false);
+    }
+  }, [isVideoRefreshing, showToast]);
+
+  const buildToolbarActions = useCallback(({ onClick, refreshing, label, hint }) => (
     <>
       <button
         type="button"
-        className={`library-refresh-btn${isMusicRefreshing ? ' is-loading' : ''}`}
-        onClick={handleRefreshLibrary}
-        disabled={isMusicRefreshing}
-        aria-label="刷新曲库"
-        title="刷新曲库（重新载入专辑列表，不影响收藏）"
+        className={`library-refresh-btn${refreshing ? ' is-loading' : ''}`}
+        onClick={onClick}
+        disabled={refreshing}
+        aria-label={label}
+        title={hint}
       >
         <RefreshIcon size={18} />
       </button>
@@ -527,7 +542,26 @@ const App = () => {
         />
       )}
     </>
-  );
+  ), [
+    announcement,
+    handleOpenAnnouncementTrigger,
+    isAnnouncementUnread,
+    shouldShowAnnouncementTrigger
+  ]);
+
+  const libraryToolbarActions = buildToolbarActions({
+    onClick: handleRefreshLibrary,
+    refreshing: isMusicRefreshing,
+    label: '刷新曲库',
+    hint: '刷新曲库（重新载入专辑列表，不影响收藏）'
+  });
+
+  const videoToolbarActions = buildToolbarActions({
+    onClick: handleRefreshVideoCatalog,
+    refreshing: isVideoRefreshing,
+    label: '刷新视频',
+    hint: '刷新视频（重新载入视频列表）'
+  });
   const shouldShowFloatingAnnouncementTrigger = (
     shouldShowAnnouncementTrigger
     && view !== 'library'
@@ -597,7 +631,7 @@ const App = () => {
                           playSongFromAlbum(item.album, item.song);
                           setSearchQuery(item.song.name);
                         }}
-                        actions={announcementToolbarActions}
+                        actions={libraryToolbarActions}
                       />
                       <AlbumGrid
                         musicAlbums={displayedAlbums}
@@ -631,7 +665,7 @@ const App = () => {
                       onShareVideo={handleShareVideo}
                       locationSearch={locationSearch}
                       onInitialReady={signalBootReady}
-                      toolbarActions={announcementToolbarActions}
+                      toolbarActions={videoToolbarActions}
                     />
                   </Suspense>
                 </div>

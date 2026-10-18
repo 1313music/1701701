@@ -65,7 +65,7 @@ describe('videoManifest asset normalization', () => {
       videoCategories: [{ id: 'old', name: '旧分类', icon: '#icon-video' }],
       videoData: { old: [] }
     };
-    window.localStorage.setItem('manifest-cache:video:v1', JSON.stringify({
+    window.localStorage.setItem('manifest-cache:video:v2', JSON.stringify({
       savedAt: Date.now() - 7 * 60 * 60 * 1000,
       data: cachedCatalog
     }));

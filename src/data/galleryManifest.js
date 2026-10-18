@@ -8,12 +8,16 @@ import {
 } from './persistentManifestCache.js';
 import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
-const PERSISTENT_CACHE_KEY = 'manifest-cache:gallery:v1';
-const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const PERSISTENT_CACHE_KEY = 'manifest-cache:gallery:v2';
+// v1 的清单会存 7 天且期间不发请求，新图集老用户看不到；升版本让存量用户重拉一次。
+const LEGACY_PERSISTENT_CACHE_KEYS = ['manifest-cache:gallery:v1'];
 const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// 缓存照用，但每次进站后台校验一次；同一标签页内 5 分钟内不重复请求。
+const BACKGROUND_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 let cachedItems = null;
-let cachedAt = 0;
 let inflightItemsPromise = null;
+let lastRevalidateAt = 0;
+let legacyCacheCleaned = false;
 const galleryManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const toAbsoluteUrl = (value, fallbackBase = '') => {
@@ -168,41 +172,59 @@ const loadRemoteItems = async () => {
 
 export const __resetGalleryManifestCacheForTests = () => {
   cachedItems = null;
-  cachedAt = 0;
   inflightItemsPromise = null;
+  lastRevalidateAt = 0;
+  legacyCacheCleaned = false;
   galleryManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
 };
 
 export const subscribeToGalleryItems = galleryManifestRefreshNotifier.subscribe;
 
+const clearLegacyCachesOnce = () => {
+  if (legacyCacheCleaned) return;
+  legacyCacheCleaned = true;
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
+};
+
 const fetchAndCacheItems = async () => {
   const items = await loadRemoteItems();
   cachedItems = items;
-  cachedAt = Date.now();
   writePersistentManifestCache(PERSISTENT_CACHE_KEY, items);
   return items;
 };
 
+const runFetch = () => {
+  if (inflightItemsPromise) return inflightItemsPromise;
+  inflightItemsPromise = fetchAndCacheItems().finally(() => {
+    inflightItemsPromise = null;
+  });
+  return inflightItemsPromise;
+};
+
+const revalidateInBackground = (now) => {
+  if (now - lastRevalidateAt < BACKGROUND_REVALIDATE_INTERVAL_MS) return;
+  if (inflightItemsPromise) return;
+  lastRevalidateAt = now;
+  galleryManifestRefreshNotifier.refreshInBackground(runFetch());
+};
+
 export const loadGalleryItems = async () => {
+  clearLegacyCachesOnce();
   const now = Date.now();
-  if (cachedItems && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedItems;
-  }
+
   if (cachedItems) {
-    galleryManifestRefreshNotifier.refreshInBackground(refreshGalleryItems());
+    revalidateInBackground(now);
     return cachedItems;
   }
 
   const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
   if (persistedCache?.data) {
     cachedItems = persistedCache.data;
-    cachedAt = persistedCache.savedAt;
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
-      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        galleryManifestRefreshNotifier.refreshInBackground(refreshGalleryItems());
-      }
+      revalidateInBackground(now);
       return cachedItems;
     }
   }
@@ -222,14 +244,14 @@ export const loadGalleryItems = async () => {
   }
 };
 
+/** 手动刷新图集：丢缓存强制重拉并推给订阅者。 */
 export const refreshGalleryItems = async () => {
-  if (inflightItemsPromise) {
-    return await inflightItemsPromise;
-  }
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  cachedItems = null;
+  lastRevalidateAt = Date.now();
 
-  inflightItemsPromise = fetchAndCacheItems().finally(() => {
-    inflightItemsPromise = null;
-  });
+  const refreshPromise = runFetch();
+  galleryManifestRefreshNotifier.refreshInBackground(refreshPromise);
 
-  return await inflightItemsPromise;
+  return await refreshPromise;
 };

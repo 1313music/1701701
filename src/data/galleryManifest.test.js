@@ -58,7 +58,7 @@ describe('galleryManifest image index', () => {
         previewUrl: 'https://example.com/old.jpg'
       }
     ];
-    window.localStorage.setItem('manifest-cache:gallery:v1', JSON.stringify({
+    window.localStorage.setItem('manifest-cache:gallery:v2', JSON.stringify({
       savedAt: Date.now() - 7 * 60 * 60 * 1000,
       data: cachedItems
     }));
