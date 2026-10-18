@@ -22,6 +22,10 @@ const SOURCES = Object.freeze({
   trackMetadata: Object.freeze({
     name: '曲目文件信息',
     url: ''
+  }),
+  linerNotes: Object.freeze({
+    name: '唱片內頁',
+    url: ''
   })
 });
 
@@ -45,6 +49,14 @@ const wikipediaVerbatimProfile = (releaseDate, description = '') => createProfil
 });
 
 const ALBUM_PROFILES = Object.freeze({
+  'san-que-yi-kl-selection': createProfile({
+    description: [
+      '2025年11月，李志帶領全新樂隊編制開啟叁缺壹巡演吉隆坡站。此次演出以重新建構的現場編制呈現作品，並集結國內最頂尖的樂手共同登臺，在熟悉的歌曲中加入更豐富、更具現場張力的音樂表達。',
+      '本張CD收錄2025叁缺壹巡演吉隆坡站演出中的精選曲目。精選11首曲目全部重新編曲演繹，當日現場的呼吸、情緒與互動，都跟隨音樂被保留下來。',
+      '這組精選曲目，是完整演出中的一部分，也是屬於吉隆坡那一晚的聲音切片。無論你是否曾經站在叁缺壹的現場，都可以透過這張CD，再次回到2025的那個夜晚。'
+    ].join('\n'),
+    source: SOURCES.linerNotes
+  }),
   'san-que-yi-kl': wikipediaProfile(
     '',
     '2025年 11月11日至13日，李志携全新编制的乐队及新编曲目，在马来西亚吉隆坡连续举办了三场演出。'

@@ -1,13 +1,104 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-13T15:12:44.382Z",
+  "updatedAt": "2026-10-18T12:39:57.221Z",
   "albums": [
+    {
+      "id": "san-que-yi-kl-selection",
+      "name": "2025李志叁缺壹巡演吉隆坡站｜現場演出精選集",
+      "artist": "李志",
+      "cover": "https://p1.music.126.net/KL5ik8BOXIWLqHQXgcmmHw==/109951174131014261.jpg",
+      "sortOrder": 7,
+      "enabled": true,
+      "songs": [
+        {
+          "id": "san-que-yi-kl-selection-01",
+          "trackNumber": 1,
+          "name": "Intro+黑色信封+定西",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/01.Intro+黑色信封+定西.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/01.Intro+黑色信封+定西.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-02",
+          "trackNumber": 2,
+          "name": "春末的南方城市",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/02.春末的南方城市.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/02.春末的南方城市.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-03",
+          "trackNumber": 3,
+          "name": "秋天的老狼",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/03.秋天的老狼.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/03.秋天的老狼.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-04",
+          "trackNumber": 4,
+          "name": "铅笔",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/04.铅笔.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/04.铅笔.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-05",
+          "trackNumber": 5,
+          "name": "鼠说",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/05.鼠说.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/05.鼠说.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-06",
+          "trackNumber": 6,
+          "name": "翁庆年的六英镑",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/06.翁庆年的六英镑.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/06.翁庆年的六英镑.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-07",
+          "trackNumber": 7,
+          "name": "梵高先生",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/07.梵高先生.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/07.梵高先生.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-08",
+          "trackNumber": 8,
+          "name": "倒影",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/08.倒影.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/08.倒影.lrc",
+          "cover": "",
+          "enabled": true
+        },
+        {
+          "id": "san-que-yi-kl-selection-09",
+          "trackNumber": 9,
+          "name": "下雨",
+          "src": "https://r2.1701701.xyz/mp3/叁缺壹吉隆坡站2025精选/09.下雨.mp3",
+          "lrc": "https://r2.1701701.xyz/lrc/叁缺壹吉隆坡站2025精选/09.下雨.lrc",
+          "cover": "",
+          "enabled": true
+        }
+      ]
+    },
     {
       "id": "san-que-yi-kl",
       "name": "叁缺壹吉隆坡站",
       "artist": "李志",
       "cover": "https://p2.music.126.net/VRQtcwQGGkNwiGcMLgo-Ng==/109951172265350030.jpg",
-      "sortOrder": 350,
+      "sortOrder": 10,
       "enabled": true,
       "songs": [
         {
@@ -566,7 +657,7 @@
       "name": "THREE MISSING ONE JAPAN Tour 2024 in Tokyo",
       "artist": "李志",
       "cover": "https://p1.music.126.net/s0pY2nxYPcmQ8Z9vkZGilg==/109951172703721399.jpg",
-      "sortOrder": 360,
+      "sortOrder": 20,
       "enabled": true,
       "songs": [
         {
@@ -702,7 +793,7 @@
       "name": "被禁忌的游戏",
       "artist": "李志",
       "cover": "https://p1.music.126.net/YPNEygiht3aCVwTtIeU5Rw==/109951167318516217.jpg",
-      "sortOrder": 10,
+      "sortOrder": 30,
       "enabled": true,
       "songs": [
         {

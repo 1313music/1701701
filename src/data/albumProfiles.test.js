@@ -7,13 +7,16 @@ import {
 } from './albumProfiles.js';
 
 describe('albumProfiles', () => {
+  // 有 URL 的来源必须成对出现；无 URL 的只允许是本地资料（曲目文件信息 / 唱片内页）。
+  const LOCAL_SOURCE_NAMES = ['曲目文件信息', '唱片內頁'];
+
   it('keeps external profiles linked and identifies the local collection metadata', () => {
     const profiles = Object.entries(__albumProfilesForTests);
 
-    expect(profiles).toHaveLength(33);
-    expect(profiles.every(([id, profile]) => (
-      (id === 'other' && profile.sourceName === '曲目文件信息' && !profile.sourceUrl)
-      || (profile.sourceName && profile.sourceUrl)
+    expect(profiles).toHaveLength(34);
+    expect(profiles.every(([, profile]) => (
+      (profile.sourceName && profile.sourceUrl)
+      || (LOCAL_SOURCE_NAMES.includes(profile.sourceName) && !profile.sourceUrl)
     ))).toBe(true);
     expect(getAlbumProfile({ id: 'other' })).toMatchObject({
       description: '收录不同场合留下的现场与弹唱录音，包括“1701”演出、巡演和音乐节现场，作为嘉宾参与的演唱、微博弹唱、小酒馆演出，以及部分翻唱与即兴片段。',
