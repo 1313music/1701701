@@ -511,7 +511,7 @@ const App = () => {
       showToast(
         failedCount === 0 ? '整站已更新' : '部分内容刷新失败，请稍后重试',
         'tone-add',
-        { placement: 'bottom', duration: 1800 }
+        { placement: 'center', duration: 2200 }
       );
     } finally {
       setIsDataRefreshing(false);

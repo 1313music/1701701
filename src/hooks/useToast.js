@@ -70,6 +70,12 @@ export const useToast = () => {
         const y = Math.max(window.innerHeight - 96, padding);
         document.documentElement.style.setProperty('--toast-x', `${x}px`);
         document.documentElement.style.setProperty('--toast-y', `${y}px`);
+      } else if (placement === 'center') {
+        // 屏幕正中（略偏上），用于整站刷新这类必须被看到的提示
+        const x = window.innerWidth / 2;
+        const y = window.innerHeight * 0.45;
+        document.documentElement.style.setProperty('--toast-x', `${x}px`);
+        document.documentElement.style.setProperty('--toast-y', `${y}px`);
       } else if (placement === 'top') {
         const x = window.innerWidth / 2;
         const y = window.innerWidth <= 1024 ? 88 : 16;
