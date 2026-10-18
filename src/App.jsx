@@ -9,9 +9,9 @@ import AnnouncementTrigger from './components/AnnouncementTrigger.jsx';
 import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
 import StatePanel from './components/StatePanel.jsx';
-import { RefreshIcon } from './components/icons/AppIcons';
 import { refreshVideoCatalog } from './data/videoManifest.js';
 import { refreshGalleryItems } from './data/galleryManifest.js';
+import { refreshDownloadSections } from './data/downloadManifest.js';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAnnouncement } from './hooks/useAnnouncement.js';
 import { useAudioPlaybackShortcuts } from './hooks/useAudioPlaybackShortcuts.js';
@@ -120,7 +120,6 @@ const App = () => {
   const {
     musicAlbums,
     isMusicLoading,
-    isMusicRefreshing,
     refreshMusicAlbums,
     musicLoadError,
     selectedAlbum,
@@ -496,98 +495,38 @@ const App = () => {
     setIsEmptyAnnouncementOpen(false);
     dismissAnnouncement();
   }, [dismissAnnouncement, hasActiveAnnouncement, isEmptyAnnouncementOpen]);
-  const handleRefreshLibrary = useCallback(async () => {
-    if (isMusicRefreshing) return;
+
+  const [isDataRefreshing, setIsDataRefreshing] = useState(false);
+  const handleRefreshAllData = useCallback(async () => {
+    if (isDataRefreshing) return;
+    setIsDataRefreshing(true);
     try {
-      const albums = await refreshMusicAlbums();
-      const count = Array.isArray(albums) ? albums.length : 0;
+      const results = await Promise.allSettled([
+        refreshMusicAlbums(),
+        refreshVideoCatalog(),
+        refreshGalleryItems(),
+        refreshDownloadSections()
+      ]);
+      const failedCount = results.filter((result) => result.status === 'rejected').length;
       showToast(
-        count > 0 ? `曲库已更新 · ${count} 张专辑` : '曲库已更新',
+        failedCount === 0 ? '整站已更新' : '部分内容刷新失败，请稍后重试',
         'tone-add',
-        { placement: 'bottom' }
+        { placement: 'bottom', duration: 1800 }
       );
-    } catch {
-      showToast('刷新失败，请检查网络后重试', 'tone-add', { placement: 'bottom' });
-    }
-  }, [isMusicRefreshing, refreshMusicAlbums, showToast]);
-
-  const [isVideoRefreshing, setIsVideoRefreshing] = useState(false);
-  const handleRefreshVideoCatalog = useCallback(async () => {
-    if (isVideoRefreshing) return;
-    setIsVideoRefreshing(true);
-    try {
-      await refreshVideoCatalog();
-      showToast('视频列表已更新', 'tone-add', { placement: 'bottom' });
-    } catch {
-      showToast('刷新失败，请检查网络后重试', 'tone-add', { placement: 'bottom' });
     } finally {
-      setIsVideoRefreshing(false);
+      setIsDataRefreshing(false);
     }
-  }, [isVideoRefreshing, showToast]);
+  }, [isDataRefreshing, refreshMusicAlbums, showToast]);
 
-  const [isViewDataRefreshing, setIsViewDataRefreshing] = useState(false);
-  const handleRefreshCurrentViewData = useCallback(async () => {
-    if (isViewDataRefreshing) return;
-    setIsViewDataRefreshing(true);
-    try {
-      if (view === 'video') {
-        await refreshVideoCatalog();
-        showToast('视频列表已更新', 'tone-add', { placement: 'bottom' });
-      } else if (view === 'gallery') {
-        await refreshGalleryItems();
-        showToast('图集已更新', 'tone-add', { placement: 'bottom' });
-      } else {
-        await handleRefreshLibrary();
-      }
-    } catch {
-      showToast('刷新失败，请检查网络后重试', 'tone-add', { placement: 'bottom' });
-    } finally {
-      setIsViewDataRefreshing(false);
-    }
-  }, [view, isViewDataRefreshing, handleRefreshLibrary, showToast]);
-
-  const buildToolbarActions = useCallback(({ onClick, refreshing, label, hint }) => (
-    <>
-      <button
-        type="button"
-        className={`library-refresh-btn${refreshing ? ' is-loading' : ''}`}
-        onClick={onClick}
-        disabled={refreshing}
-        aria-label={label}
-        title={hint}
-      >
-        <RefreshIcon size={18} />
-      </button>
-      {shouldShowAnnouncementTrigger && (
-        <AnnouncementTrigger
-          announcement={announcement}
-          visible={shouldShowAnnouncementTrigger}
-          unread={isAnnouncementUnread}
-          onOpen={handleOpenAnnouncementTrigger}
-          className="desktop-announcement-trigger"
-        />
-      )}
-    </>
-  ), [
-    announcement,
-    handleOpenAnnouncementTrigger,
-    isAnnouncementUnread,
-    shouldShowAnnouncementTrigger
-  ]);
-
-  const libraryToolbarActions = buildToolbarActions({
-    onClick: handleRefreshLibrary,
-    refreshing: isMusicRefreshing,
-    label: '刷新曲库',
-    hint: '刷新曲库（重新载入专辑列表，不影响收藏）'
-  });
-
-  const videoToolbarActions = buildToolbarActions({
-    onClick: handleRefreshVideoCatalog,
-    refreshing: isVideoRefreshing,
-    label: '刷新视频',
-    hint: '刷新视频（重新载入视频列表）'
-  });
+  const announcementToolbarActions = shouldShowAnnouncementTrigger ? (
+    <AnnouncementTrigger
+      announcement={announcement}
+      visible={shouldShowAnnouncementTrigger}
+      unread={isAnnouncementUnread}
+      onOpen={handleOpenAnnouncementTrigger}
+      className="desktop-announcement-trigger"
+    />
+  ) : null;
   const shouldShowFloatingAnnouncementTrigger = (
     shouldShowAnnouncementTrigger
     && view !== 'library'
@@ -636,8 +575,8 @@ const App = () => {
               showAnnouncementTrigger={shouldShowAnnouncementTrigger}
               isAnnouncementUnread={isAnnouncementUnread}
               onOpenAnnouncement={handleOpenAnnouncementTrigger}
-              onRefreshData={handleRefreshCurrentViewData}
-              isRefreshingData={isViewDataRefreshing}
+              onRefreshData={handleRefreshAllData}
+              isRefreshingData={isDataRefreshing}
             />
 
             <main className="main-view">
@@ -659,7 +598,7 @@ const App = () => {
                           playSongFromAlbum(item.album, item.song);
                           setSearchQuery(item.song.name);
                         }}
-                        actions={libraryToolbarActions}
+                        actions={announcementToolbarActions}
                       />
                       <AlbumGrid
                         musicAlbums={displayedAlbums}
@@ -693,7 +632,7 @@ const App = () => {
                       onShareVideo={handleShareVideo}
                       locationSearch={locationSearch}
                       onInitialReady={signalBootReady}
-                      toolbarActions={videoToolbarActions}
+                      toolbarActions={announcementToolbarActions}
                     />
                   </Suspense>
                 </div>

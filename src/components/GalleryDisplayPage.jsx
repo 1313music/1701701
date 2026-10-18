@@ -199,7 +199,6 @@ const isNearScrollEnd = ({ scrollTop, viewportHeight, scrollHeight }) => {
 const GalleryDisplayPage = () => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [previewItemId, setPreviewItemId] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
@@ -281,20 +280,6 @@ const GalleryDisplayPage = () => {
       setIsLoading(false);
     }
   }, [applyGalleryItems]);
-
-  const handleRefreshGallery = useCallback(async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    try {
-      const parsedItems = await refreshGalleryItems();
-      applyGalleryItems(parsedItems, { resetCategory: false });
-      setError('');
-    } catch {
-      // 刷新失败时保留当前列表，不打断浏览
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [applyGalleryItems, isRefreshing]);
 
   useEffect(() => {
     void loadImages();
@@ -692,18 +677,6 @@ const GalleryDisplayPage = () => {
             <div className="gallery-list-header">
               <div className="gallery-title-row">
                 <h2>影像集</h2>
-                <button
-                  type="button"
-                  className={`gallery-refresh-btn${isRefreshing ? ' is-loading' : ''}`}
-                  onClick={() => {
-                    void handleRefreshGallery();
-                  }}
-                  disabled={isRefreshing}
-                  aria-label="刷新图集"
-                  title="刷新图集（重新载入图片列表）"
-                >
-                  <RefreshCw size={16} />
-                </button>
               </div>
             </div>
 

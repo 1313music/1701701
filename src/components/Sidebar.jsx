@@ -44,11 +44,11 @@ const RefreshNavItem = ({ size, isRefreshing, onRefresh }) => (
         className={`nav-item nav-refresh-item${isRefreshing ? ' is-loading' : ''}`}
         onClick={onRefresh}
         disabled={isRefreshing}
-        aria-label={isRefreshing ? '正在刷新' : '刷新数据'}
-        data-tooltip={isRefreshing ? '正在刷新' : '刷新数据'}
+        aria-label={isRefreshing ? '正在刷新' : '刷新'}
+        data-tooltip={isRefreshing ? '正在刷新' : '刷新'}
     >
         <RefreshCw size={size} strokeWidth={2.4} absoluteStrokeWidth />
-        <span>{isRefreshing ? '刷新中…' : '刷新数据'}</span>
+        <span>{isRefreshing ? '刷新中…' : '刷新'}</span>
     </button>
 );
 
