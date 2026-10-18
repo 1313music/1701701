@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   __resetMusicManifestCacheForTests,
   loadMusicManifestAlbums,
+  refreshMusicManifestAlbums,
   subscribeToMusicManifestAlbums
 } from './musicManifest.js';
 
@@ -100,7 +101,7 @@ describe('musicManifest asset normalization', () => {
     ]);
   });
 
-  it('reuses persisted cache after module memory is reset', async () => {
+  it('reuses persisted cache immediately and still revalidates in the background', async () => {
     const cachedAlbums = [
       {
         id: 'album-cache',
@@ -120,16 +121,33 @@ describe('musicManifest asset normalization', () => {
       }
     ];
 
-    window.localStorage.setItem('manifest-cache:music:v1', JSON.stringify({
+    window.localStorage.setItem('manifest-cache:music:v2', JSON.stringify({
       savedAt: Date.now(),
       data: cachedAlbums
     }));
-    globalThis.fetch = vi.fn();
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        albums: [
+          {
+            id: 'album-fresh',
+            name: 'Fresh Album',
+            artist: '李志',
+            cover: '',
+            songs: [
+              { id: 'song-fresh', trackNumber: 1, name: 'Fresh Song', src: 'https://example.com/fresh.mp3' }
+            ]
+          }
+        ]
+      })
+    });
 
     const albums = await loadMusicManifestAlbums();
 
-    expect(globalThis.fetch).not.toHaveBeenCalled();
+    // 缓存先照用，页面不等网络
     expect(albums).toEqual(cachedAlbums);
+    // 但必须发起一次后台校验，新增专辑才能在下一次打开时出现
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('returns stale persisted albums while notifying subscribers after a background refresh', async () => {
@@ -151,7 +169,7 @@ describe('musicManifest asset normalization', () => {
         ]
       }
     ];
-    window.localStorage.setItem('manifest-cache:music:v1', JSON.stringify({
+    window.localStorage.setItem('manifest-cache:music:v2', JSON.stringify({
       savedAt: Date.now() - 7 * 60 * 60 * 1000,
       data: cachedAlbums
     }));
@@ -232,5 +250,70 @@ describe('musicManifest asset normalization', () => {
       { cache: 'default' }
     );
     expect(albums[0].songs[0].src).toBe('http://localhost:3000/song.mp3');
+  });
+
+  it('drops the legacy v1 cache so stale clients reload the catalog', async () => {
+    window.localStorage.setItem('manifest-cache:music:v1', JSON.stringify({
+      savedAt: Date.now(),
+      data: [
+        {
+          id: 'legacy-album',
+          name: 'Legacy Album',
+          artist: '李志',
+          cover: '',
+          songs: [
+            { id: 'legacy-song', trackNumber: 1, name: 'Legacy Song', src: 'https://example.com/legacy.mp3' }
+          ]
+        }
+      ]
+    }));
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        albums: [
+          {
+            id: 'album-live',
+            name: 'Live Album',
+            artist: '李志',
+            cover: '',
+            songs: [
+              { id: 'song-live', trackNumber: 1, name: 'Live Song', src: 'https://example.com/live.mp3' }
+            ]
+          }
+        ]
+      })
+    });
+
+    await loadMusicManifestAlbums();
+
+    expect(window.localStorage.getItem('manifest-cache:music:v1')).toBeNull();
+  });
+
+  it('forces a network reload and notifies subscribers on manual refresh', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        albums: [
+          {
+            id: 'album-fresh',
+            name: 'Fresh Album',
+            artist: '李志',
+            cover: '',
+            songs: [
+              { id: 'song-fresh', trackNumber: 1, name: 'Fresh Song', src: 'https://example.com/fresh.mp3' }
+            ]
+          }
+        ]
+      })
+    });
+    const received = [];
+    subscribeToMusicManifestAlbums((albums) => received.push(albums));
+
+    await refreshMusicManifestAlbums();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(globalThis.fetch).toHaveBeenCalled();
+    expect(received.length).toBeGreaterThan(0);
+    expect(received[received.length - 1][0].id).toBe('album-fresh');
   });
 });

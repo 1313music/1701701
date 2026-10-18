@@ -9,6 +9,7 @@ import AnnouncementTrigger from './components/AnnouncementTrigger.jsx';
 import AnnouncementModal from './components/AnnouncementModal.jsx';
 import VideoAccessModal from './components/VideoAccessModal.jsx';
 import StatePanel from './components/StatePanel.jsx';
+import { RefreshIcon } from './components/icons/AppIcons';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAnnouncement } from './hooks/useAnnouncement.js';
 import { useAudioPlaybackShortcuts } from './hooks/useAudioPlaybackShortcuts.js';
@@ -117,6 +118,8 @@ const App = () => {
   const {
     musicAlbums,
     isMusicLoading,
+    isMusicRefreshing,
+    refreshMusicAlbums,
     musicLoadError,
     selectedAlbum,
     setSelectedAlbum,
@@ -491,15 +494,40 @@ const App = () => {
     setIsEmptyAnnouncementOpen(false);
     dismissAnnouncement();
   }, [dismissAnnouncement, hasActiveAnnouncement, isEmptyAnnouncementOpen]);
-  const announcementToolbarActions = shouldShowAnnouncementTrigger ? (
-    <AnnouncementTrigger
-      announcement={announcement}
-      visible={shouldShowAnnouncementTrigger}
-      unread={isAnnouncementUnread}
-      onOpen={handleOpenAnnouncementTrigger}
-      className="desktop-announcement-trigger"
-    />
-  ) : null;
+  const handleRefreshLibrary = useCallback(async () => {
+    if (isMusicRefreshing) return;
+    try {
+      const albums = await refreshMusicAlbums();
+      const count = Array.isArray(albums) ? albums.length : 0;
+      showToast(count > 0 ? `曲库已更新 · ${count} 张专辑` : '曲库已更新');
+    } catch {
+      showToast('刷新失败，请检查网络后重试');
+    }
+  }, [isMusicRefreshing, refreshMusicAlbums, showToast]);
+
+  const announcementToolbarActions = (
+    <>
+      <button
+        type="button"
+        className={`library-refresh-btn${isMusicRefreshing ? ' is-loading' : ''}`}
+        onClick={handleRefreshLibrary}
+        disabled={isMusicRefreshing}
+        aria-label="刷新曲库"
+        title="刷新曲库（重新载入专辑列表，不影响收藏）"
+      >
+        <RefreshIcon size={18} />
+      </button>
+      {shouldShowAnnouncementTrigger && (
+        <AnnouncementTrigger
+          announcement={announcement}
+          visible={shouldShowAnnouncementTrigger}
+          unread={isAnnouncementUnread}
+          onOpen={handleOpenAnnouncementTrigger}
+          className="desktop-announcement-trigger"
+        />
+      )}
+    </>
+  );
   const shouldShowFloatingAnnouncementTrigger = (
     shouldShowAnnouncementTrigger
     && view !== 'library'

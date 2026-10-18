@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   loadMusicManifestAlbums,
+  refreshMusicManifestAlbums,
   subscribeToMusicManifestAlbums
 } from '../data/musicManifest.js';
 import {
@@ -39,6 +40,7 @@ const buildSongIndex = (albums) => {
 export const useLibraryState = ({ showToast }) => {
   const [musicAlbums, setMusicAlbums] = useState([]);
   const [isMusicLoading, setIsMusicLoading] = useState(true);
+  const [isMusicRefreshing, setIsMusicRefreshing] = useState(false);
   const [musicLoadError, setMusicLoadError] = useState('');
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,6 +97,16 @@ export const useLibraryState = ({ showToast }) => {
   useEffect(() => {
     tempPlaylistIdsRef.current = tempPlaylistIds;
   }, [tempPlaylistIds]);
+
+  const refreshMusicAlbums = useCallback(async () => {
+    setIsMusicRefreshing(true);
+    try {
+      return await refreshMusicManifestAlbums();
+    } finally {
+      setIsMusicRefreshing(false);
+      setIsMusicLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (allSongSrcs.size === 0) return;
@@ -205,6 +217,8 @@ export const useLibraryState = ({ showToast }) => {
   return {
     musicAlbums,
     isMusicLoading,
+    isMusicRefreshing,
+    refreshMusicAlbums,
     musicLoadError,
     selectedAlbum,
     setSelectedAlbum,

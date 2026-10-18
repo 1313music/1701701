@@ -12,18 +12,23 @@ import {
 } from './manifestSourceUtils.js';
 import { createManifestRefreshNotifier } from './manifestRefreshNotifier.js';
 
-const PERSISTENT_CACHE_KEY = 'manifest-cache:music:v1';
+const PERSISTENT_CACHE_KEY = 'manifest-cache:music:v2';
+// v1 时代清单一存 7 天、且缓存没过期时一个请求都不发，导致新增专辑老用户永远看不到。
+// 升到 v2 后旧 key 一律丢弃，让存量用户下次打开就重新拉一次。
+const LEGACY_PERSISTENT_CACHE_KEYS = ['manifest-cache:music:v1'];
 const BUNDLED_SNAPSHOT_PATH = '/music-index.json';
-const MEMORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PERSISTENT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// 缓存照用，但每次进站都在后台校验一次；同一标签页内 5 分钟内不重复请求。
+const BACKGROUND_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 const ALBUM_SORT_ORDER_OVERRIDES = Object.freeze({
   'tokyo-live': 8,
   'san-que-yi-kl': 9,
   'forbidden-games': 10
 });
 let cachedAlbums = null;
-let cachedAt = 0;
 let inflightAlbumsPromise = null;
+let lastRevalidateAt = 0;
+let legacyCacheCleaned = false;
 const musicManifestRefreshNotifier = createManifestRefreshNotifier();
 
 const resolveAssetUrl = (value, fallbackBase = '') => {
@@ -132,13 +137,21 @@ const loadRemoteAlbums = async () => {
 
 export const __resetMusicManifestCacheForTests = () => {
   cachedAlbums = null;
-  cachedAt = 0;
   inflightAlbumsPromise = null;
+  lastRevalidateAt = 0;
+  legacyCacheCleaned = false;
   musicManifestRefreshNotifier.clear();
   clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
 };
 
 export const subscribeToMusicManifestAlbums = musicManifestRefreshNotifier.subscribe;
+
+const clearLegacyCachesOnce = () => {
+  if (legacyCacheCleaned) return;
+  legacyCacheCleaned = true;
+  LEGACY_PERSISTENT_CACHE_KEYS.forEach((key) => clearPersistentManifestCache(key));
+};
 
 const loadAndPersistAlbums = async () => {
   if (inflightAlbumsPromise) {
@@ -148,7 +161,6 @@ const loadAndPersistAlbums = async () => {
   inflightAlbumsPromise = loadRemoteAlbums()
     .then((albums) => {
       cachedAlbums = albums;
-      cachedAt = Date.now();
       writePersistentManifestCache(PERSISTENT_CACHE_KEY, albums);
       return albums;
     })
@@ -159,25 +171,43 @@ const loadAndPersistAlbums = async () => {
   return await inflightAlbumsPromise;
 };
 
+// 缓存照常先渲染，同时后台拉一次最新清单；拉到后 notify 订阅者，列表就地热更新。
+const revalidateInBackground = (now) => {
+  if (now - lastRevalidateAt < BACKGROUND_REVALIDATE_INTERVAL_MS) return;
+  if (inflightAlbumsPromise) return;
+  lastRevalidateAt = now;
+  musicManifestRefreshNotifier.refreshInBackground(loadAndPersistAlbums());
+};
+
+/**
+ * 手动刷新曲库：丢掉本地缓存强制重拉，并把结果推给订阅者。
+ * 只清 music 清单缓存，不碰收藏（tempPlaylistIds）、最近播放、音量等其它 key。
+ */
+export const refreshMusicManifestAlbums = () => {
+  clearPersistentManifestCache(PERSISTENT_CACHE_KEY);
+  cachedAlbums = null;
+  lastRevalidateAt = Date.now();
+  const refreshPromise = loadAndPersistAlbums();
+  musicManifestRefreshNotifier.refreshInBackground(refreshPromise);
+  return refreshPromise;
+};
+
 export const loadMusicManifestAlbums = async () => {
+  clearLegacyCachesOnce();
   const now = Date.now();
-  if (cachedAlbums && now - cachedAt < MEMORY_CACHE_TTL_MS) {
-    return cachedAlbums;
-  }
+
   if (cachedAlbums) {
-    musicManifestRefreshNotifier.refreshInBackground(loadAndPersistAlbums());
+    revalidateInBackground(now);
     return cachedAlbums;
   }
 
   const persistedCache = readPersistentManifestCache(PERSISTENT_CACHE_KEY);
   if (persistedCache?.data) {
     cachedAlbums = persistedCache.data;
-    cachedAt = persistedCache.savedAt;
 
     if (now - persistedCache.savedAt < PERSISTENT_CACHE_TTL_MS) {
-      if (now - persistedCache.savedAt >= MEMORY_CACHE_TTL_MS) {
-        musicManifestRefreshNotifier.refreshInBackground(loadAndPersistAlbums());
-      }
+      // 关键改动：以前这里只在缓存超过 6 小时才后台校验，等于新增专辑要等一周。
+      revalidateInBackground(now);
       return cachedAlbums;
     }
   }
