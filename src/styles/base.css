@@ -854,6 +854,15 @@ body {
   outline-offset: 2px;
 }
 
+.nav-item.is-loading svg {
+  animation: library-refresh-spin 0.9s linear infinite;
+}
+
+.nav-refresh-item:disabled {
+  cursor: progress;
+  opacity: 0.65;
+}
+
 .library-refresh-btn:disabled {
   cursor: progress;
   opacity: 0.65;

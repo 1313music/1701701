@@ -2611,6 +2611,11 @@
 }
 
 .app-toast.placement-bottom {
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
   transform: translate(-50%, 0) translateY(4px);
 }
 

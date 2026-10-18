@@ -11,6 +11,7 @@ import VideoAccessModal from './components/VideoAccessModal.jsx';
 import StatePanel from './components/StatePanel.jsx';
 import { RefreshIcon } from './components/icons/AppIcons';
 import { refreshVideoCatalog } from './data/videoManifest.js';
+import { refreshGalleryItems } from './data/galleryManifest.js';
 import { useAudioPlayer } from './hooks/useAudioPlayer.jsx';
 import { useAnnouncement } from './hooks/useAnnouncement.js';
 import { useAudioPlaybackShortcuts } from './hooks/useAudioPlaybackShortcuts.js';
@@ -500,9 +501,13 @@ const App = () => {
     try {
       const albums = await refreshMusicAlbums();
       const count = Array.isArray(albums) ? albums.length : 0;
-      showToast(count > 0 ? `曲库已更新 · ${count} 张专辑` : '曲库已更新');
+      showToast(
+        count > 0 ? `曲库已更新 · ${count} 张专辑` : '曲库已更新',
+        'tone-add',
+        { placement: 'bottom' }
+      );
     } catch {
-      showToast('刷新失败，请检查网络后重试');
+      showToast('刷新失败，请检查网络后重试', 'tone-add', { placement: 'bottom' });
     }
   }, [isMusicRefreshing, refreshMusicAlbums, showToast]);
 
@@ -512,13 +517,34 @@ const App = () => {
     setIsVideoRefreshing(true);
     try {
       await refreshVideoCatalog();
-      showToast('视频列表已更新');
+      showToast('视频列表已更新', 'tone-add', { placement: 'bottom' });
     } catch {
-      showToast('刷新失败，请检查网络后重试');
+      showToast('刷新失败，请检查网络后重试', 'tone-add', { placement: 'bottom' });
     } finally {
       setIsVideoRefreshing(false);
     }
   }, [isVideoRefreshing, showToast]);
+
+  const [isViewDataRefreshing, setIsViewDataRefreshing] = useState(false);
+  const handleRefreshCurrentViewData = useCallback(async () => {
+    if (isViewDataRefreshing) return;
+    setIsViewDataRefreshing(true);
+    try {
+      if (view === 'video') {
+        await refreshVideoCatalog();
+        showToast('视频列表已更新', 'tone-add', { placement: 'bottom' });
+      } else if (view === 'gallery') {
+        await refreshGalleryItems();
+        showToast('图集已更新', 'tone-add', { placement: 'bottom' });
+      } else {
+        await handleRefreshLibrary();
+      }
+    } catch {
+      showToast('刷新失败，请检查网络后重试', 'tone-add', { placement: 'bottom' });
+    } finally {
+      setIsViewDataRefreshing(false);
+    }
+  }, [view, isViewDataRefreshing, handleRefreshLibrary, showToast]);
 
   const buildToolbarActions = useCallback(({ onClick, refreshing, label, hint }) => (
     <>
@@ -610,6 +636,8 @@ const App = () => {
               showAnnouncementTrigger={shouldShowAnnouncementTrigger}
               isAnnouncementUnread={isAnnouncementUnread}
               onOpenAnnouncement={handleOpenAnnouncementTrigger}
+              onRefreshData={handleRefreshCurrentViewData}
+              isRefreshingData={isViewDataRefreshing}
             />
 
             <main className="main-view">

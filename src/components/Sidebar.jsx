@@ -14,7 +14,8 @@ import {
     Info,
     ThumbsUp,
     MessageSquareMore,
-    Archive
+    Archive,
+    RefreshCw
 } from 'lucide-react';
 import AnnouncementTrigger from './AnnouncementTrigger.jsx';
 import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
@@ -34,6 +35,20 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
     >
         {icon}
         <span>{label}</span>
+    </button>
+);
+
+const RefreshNavItem = ({ size, isRefreshing, onRefresh }) => (
+    <button
+        type="button"
+        className={`nav-item nav-refresh-item${isRefreshing ? ' is-loading' : ''}`}
+        onClick={onRefresh}
+        disabled={isRefreshing}
+        aria-label={isRefreshing ? '正在刷新' : '刷新数据'}
+        data-tooltip={isRefreshing ? '正在刷新' : '刷新数据'}
+    >
+        <RefreshCw size={size} strokeWidth={2.4} absoluteStrokeWidth />
+        <span>{isRefreshing ? '刷新中…' : '刷新数据'}</span>
     </button>
 );
 
@@ -74,7 +89,9 @@ const Sidebar = ({
     announcement,
     showAnnouncementTrigger = false,
     isAnnouncementUnread = false,
-    onOpenAnnouncement
+    onOpenAnnouncement,
+    onRefreshData,
+    isRefreshingData = false
 }) => {
     // 把被点按钮的位置一并传出去，作为页面切换扫掠的起点
     const handleNavClick = (event, newView) => {
@@ -209,6 +226,13 @@ const Sidebar = ({
                         active={view === 'support'}
                         onClick={(event) => handleNavClick(event, 'support')}
                     />
+                    {onRefreshData && (
+                        <RefreshNavItem
+                            size={20}
+                            isRefreshing={isRefreshingData}
+                            onRefresh={onRefreshData}
+                        />
+                    )}
                     {onThemeToggle && (
                         <button
                             type="button"
@@ -326,6 +350,13 @@ const Sidebar = ({
                         active={view === 'support'}
                         onClick={(event) => handleNavClick(event, 'support')}
                     />
+                    {onRefreshData && (
+                        <RefreshNavItem
+                            size={22}
+                            isRefreshing={isRefreshingData}
+                            onRefresh={onRefreshData}
+                        />
+                    )}
                     {onThemeToggle && (
                         <button
                             type="button"
