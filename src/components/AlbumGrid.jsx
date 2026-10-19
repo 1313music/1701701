@@ -917,7 +917,7 @@ const AlbumGrid = ({
                                             }}
                                         >
                                             <QrCode size={16} strokeWidth={2.2} aria-hidden="true" />
-                                            扫码保存
+                                            {panelAlbumMiniProgram.label || '扫码保存'}
                                         </button>
                                         <div className="album-inline-qr-popover" role="tooltip" aria-label={panelAlbumMiniProgram.title}>
                                             <img

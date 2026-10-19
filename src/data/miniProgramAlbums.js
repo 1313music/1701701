@@ -22,13 +22,23 @@ const MINI_PROGRAM_ALBUM_IDS = [
   'forbidden-games',
   'jazz-unplugged',
   'electric-orchestra-2',
-  'i-love-nanjing'
+  'i-love-nanjing',
+  'san-que-yi-kl-selection'
 ];
+
+// 个别专辑的小程序用途不同，可覆盖默认文案（按钮 label / 提示 hint）。
+const MINI_PROGRAM_ALBUM_OVERRIDES = Object.freeze({
+  'san-que-yi-kl-selection': Object.freeze({
+    label: '上传云盘',
+    hint: '微信扫码，上传现场音频到云盘'
+  })
+});
 
 const createMiniProgramAlbum = (albumId) => Object.freeze({
   codeUrl: `/img/mini-program/${albumId}.webp`,
   title: MINI_PROGRAM_TITLE,
-  hint: MINI_PROGRAM_HINT
+  hint: MINI_PROGRAM_HINT,
+  ...MINI_PROGRAM_ALBUM_OVERRIDES[albumId]
 });
 
 const MINI_PROGRAM_ALBUMS = Object.freeze(
