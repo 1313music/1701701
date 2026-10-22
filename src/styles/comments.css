@@ -888,6 +888,37 @@
   border-radius: 12px;
 }
 
+.waline-auth-code-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.waline-auth-send-code {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--hover-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.18s ease, opacity 0.18s ease;
+}
+
+.waline-auth-send-code:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--main-color) 45%, var(--glass-border));
+}
+
+.waline-auth-send-code:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .waline-auth-check {
   display: inline-flex;
   align-items: center;

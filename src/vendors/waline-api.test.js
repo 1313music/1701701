@@ -99,7 +99,7 @@ describe('waline-api profile overlay', () => {
     fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
     const selectedPreset = PRESET_AVATARS[4];
     fireEvent.click(screen.getByRole('button', { name: selectedPreset.label.replace('预设头像', '注册预设头像') }));
-    fireEvent.submit(registerForm);
+    fireEvent.click(screen.getByRole('button', { name: '获取验证码' }));
 
     await waitFor(() => {
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
@@ -129,7 +129,7 @@ describe('waline-api profile overlay', () => {
     fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
     fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
     fireEvent.change(registerForm.querySelector('input[name="avatar"]'), { target: { value: 'javascript:alert(1)' } });
-    fireEvent.submit(registerForm);
+    fireEvent.click(screen.getByRole('button', { name: '获取验证码' }));
 
     expect(await screen.findByText('头像地址需以 http:// 或 https:// 开头，或者留空')).toBeTruthy();
     expect(globalThis.fetch).not.toHaveBeenCalled();
@@ -145,7 +145,7 @@ describe('waline-api profile overlay', () => {
     fireEvent.change(registerForm.querySelector('input[name="email"]'), { target: { value: 'new-user@example.com' } });
     fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
     fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
-    fireEvent.submit(registerForm);
+    fireEvent.click(screen.getByRole('button', { name: '获取验证码' }));
 
     await waitFor(() => {
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
