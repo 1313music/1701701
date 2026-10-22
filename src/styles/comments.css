@@ -905,6 +905,19 @@
   accent-color: var(--main-color);
 }
 
+.waline-auth-verify-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.waline-auth-verify-hint strong {
+  color: var(--text-main);
+  font-weight: 650;
+  word-break: break-all;
+}
+
 .waline-auth-forgot {
   justify-self: end;
   margin-top: -6px;

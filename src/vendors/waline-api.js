@@ -29,6 +29,7 @@ const authOverlayState = {
   serverURL: '',
   lang: 'zh-CN',
   mode: 'login',
+  pendingVerification: null,
   previousOverflow: ''
 };
 
@@ -123,15 +124,20 @@ const showProfileStatus = (message = '', type = 'error') => {
   showStatus(profileOverlayState.status, message, type);
 };
 
+const BUSY_LABELS = {
+  login: { busy: '登录中...', idle: '登录' },
+  register: { busy: '注册中...', idle: '注册' },
+  verify: { busy: '验证中...', idle: '验证并登录' }
+};
+
 const setBusy = (mode, busy) => {
   const submitButton = authOverlayState.submitButtons[mode];
   const form = authOverlayState.forms[mode];
+  const labels = BUSY_LABELS[mode] || BUSY_LABELS.login;
 
   if (submitButton) {
     submitButton.disabled = busy;
-    submitButton.textContent = busy
-      ? mode === 'register' ? '注册中...' : '登录中...'
-      : mode === 'register' ? '注册' : '登录';
+    submitButton.textContent = busy ? labels.busy : labels.idle;
   }
 
   if (!form) return;
@@ -238,7 +244,9 @@ const emitWalineAuthSuccess = (userInfo) => {
 const focusCurrentMode = () => {
   const field = authOverlayState.mode === 'register'
     ? authOverlayState.fields.registerNick
-    : authOverlayState.fields.loginEmail;
+    : authOverlayState.mode === 'verify'
+      ? authOverlayState.fields.verifyCode
+      : authOverlayState.fields.loginEmail;
 
   if (!field) return;
 
@@ -294,11 +302,13 @@ const finalizeWalineLogin = (userInfo) => {
 };
 
 const applyAuthMode = (mode, { preserveStatus = false } = {}) => {
-  const normalizedMode = mode === 'register' ? 'register' : 'login';
+  const normalizedMode = ['register', 'verify'].includes(mode) ? mode : 'login';
   authOverlayState.mode = normalizedMode;
 
   if (authOverlayState.title) {
-    authOverlayState.title.textContent = normalizedMode === 'register' ? '评论注册' : '评论登录';
+    authOverlayState.title.textContent = normalizedMode === 'register'
+      ? '评论注册'
+      : normalizedMode === 'verify' ? '验证邮箱' : '评论登录';
   }
 
   Object.entries(authOverlayState.forms).forEach(([formMode, form]) => {
@@ -483,23 +493,85 @@ const handleRegisterSubmit = async (event) => {
       }
     });
 
-    authOverlayState.fields.loginEmail.value = email;
-    authOverlayState.fields.loginPassword.value = '';
-    authOverlayState.fields.loginCode.value = '';
+    // 清空注册表单里的密码，避免明文留在 DOM 里
     authOverlayState.fields.registerPassword.value = '';
     authOverlayState.fields.registerConfirm.value = '';
 
+    if (response?.verify) {
+      // 需要邮箱验证：进入验证码步骤，验证通过后自动登录
+      authOverlayState.pendingVerification = { email, password };
+      if (authOverlayState.fields.verifyCode) {
+        authOverlayState.fields.verifyCode.value = '';
+      }
+      if (authOverlayState.fields.verifyEmail) {
+        authOverlayState.fields.verifyEmail.textContent = email;
+      }
+      applyAuthMode('verify', { preserveStatus: true });
+      showAuthStatus(`验证码已发到 ${email}，请填入邮件里的 4 位验证码。`, 'success');
+      return;
+    }
+
+    // 没有开启邮箱验证时，保持原来的「切到登录」行为
+    authOverlayState.fields.loginEmail.value = email;
+    authOverlayState.fields.loginPassword.value = '';
+    authOverlayState.fields.loginCode.value = '';
     applyAuthMode('login', { preserveStatus: true });
-    showAuthStatus(
-      response?.verify
-        ? '注册成功，请先去邮箱完成验证，再回来登录。'
-        : '注册成功，请直接登录。',
-      'success'
-    );
+    showAuthStatus('注册成功，请直接登录。', 'success');
   } catch (error) {
     showAuthStatus(error instanceof Error ? error.message : '注册失败，请稍后重试');
   } finally {
     setBusy('register', false);
+  }
+};
+
+// 注册验证码：先拿验证码换「已验证」状态，再用注册时填的邮箱密码自动登录。
+const handleVerifySubmit = async (event) => {
+  event.preventDefault();
+
+  const pending = authOverlayState.pendingVerification;
+  const code = authOverlayState.fields.verifyCode?.value?.trim() || '';
+
+  if (!pending?.email || !pending?.password) {
+    showAuthStatus('验证信息已失效，请返回重新注册。');
+    applyAuthMode('register', { preserveStatus: true });
+    return;
+  }
+
+  if (!/^\d{4}$/u.test(code)) {
+    showAuthStatus('请输入邮件里的 4 位验证码');
+    return;
+  }
+
+  setBusy('verify', true);
+  showAuthStatus('');
+
+  try {
+    await verifyWalineEmail({
+      serverURL: authOverlayState.serverURL,
+      email: pending.email,
+      code
+    });
+
+    const response = await requestWaline({
+      serverURL: authOverlayState.serverURL,
+      lang: authOverlayState.lang,
+      path: 'token',
+      method: 'POST',
+      body: { email: pending.email, password: pending.password }
+    });
+
+    const { token, ...user } = response || {};
+
+    if (!token) {
+      throw new Error('验证成功，但自动登录失败，请返回登录。');
+    }
+
+    authOverlayState.pendingVerification = null;
+    finalizeWalineLogin({ ...user, token, remember: true });
+  } catch (error) {
+    showAuthStatus(error instanceof Error ? error.message : '验证失败，请检查验证码。');
+  } finally {
+    setBusy('verify', false);
   }
 };
 
@@ -770,6 +842,15 @@ const ensureWalineAuthOverlay = () => {
           </label>
           <button type="submit" class="waline-auth-submit">注册</button>
         </form>
+        <form class="waline-auth-form" data-mode="verify" novalidate hidden>
+          <p class="waline-auth-verify-hint">验证码已发送到 <strong data-role="verify-email"></strong></p>
+          <label class="waline-auth-field">
+            <span>邮箱验证码</span>
+            <input type="text" name="verify-code" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="请输入邮件里的 4 位验证码" />
+          </label>
+          <button type="submit" class="waline-auth-submit">验证并登录</button>
+          <button type="button" class="waline-auth-forgot" data-role="verify-back">返回登录</button>
+        </form>
       </div>
     </div>
   `;
@@ -781,6 +862,7 @@ const ensureWalineAuthOverlay = () => {
   const status = overlay.querySelector('.waline-auth-status');
   const loginForm = overlay.querySelector('.waline-auth-form[data-mode="login"]');
   const registerForm = overlay.querySelector('.waline-auth-form[data-mode="register"]');
+  const verifyForm = overlay.querySelector('.waline-auth-form[data-mode="verify"]');
   const registerAvatarInput = registerForm?.querySelector('input[name="avatar"]');
   const registerAvatarPreviewImage = registerForm?.querySelector('[data-role="register-avatar-preview-image"]');
   const registerAvatarPreviewPlaceholder = registerForm?.querySelector('[data-role="register-avatar-preview-placeholder"]');
@@ -859,6 +941,10 @@ const ensureWalineAuthOverlay = () => {
 
   loginForm?.addEventListener('submit', handleLoginSubmit);
   registerForm?.addEventListener('submit', handleRegisterSubmit);
+  verifyForm?.addEventListener('submit', handleVerifySubmit);
+  verifyForm?.querySelector('[data-role="verify-back"]')?.addEventListener('click', () => {
+    applyAuthMode('login');
+  });
 
   const loginEmail = loginForm?.querySelector('input[name="email"]');
   loginEmail?.addEventListener('blur', (event) => {
@@ -876,7 +962,8 @@ const ensureWalineAuthOverlay = () => {
   authOverlayState.status = status;
   authOverlayState.forms = {
     login: loginForm,
-    register: registerForm
+    register: registerForm,
+    verify: verifyForm
   };
   authOverlayState.fields = {
     loginEmail,
@@ -889,7 +976,9 @@ const ensureWalineAuthOverlay = () => {
     registerEmail: registerForm?.querySelector('input[name="email"]'),
     registerAvatar: registerAvatarInput,
     registerPassword: registerForm?.querySelector('input[name="password"]'),
-    registerConfirm: registerForm?.querySelector('input[name="confirm-password"]')
+    registerConfirm: registerForm?.querySelector('input[name="confirm-password"]'),
+    verifyCode: verifyForm?.querySelector('input[name="verify-code"]'),
+    verifyEmail: verifyForm?.querySelector('[data-role="verify-email"]')
   };
   authOverlayState.modeButtons = {
     login: loginButton,
@@ -897,7 +986,8 @@ const ensureWalineAuthOverlay = () => {
   };
   authOverlayState.submitButtons = {
     login: loginForm?.querySelector('.waline-auth-submit'),
-    register: registerForm?.querySelector('.waline-auth-submit')
+    register: registerForm?.querySelector('.waline-auth-submit'),
+    verify: verifyForm?.querySelector('.waline-auth-submit')
   };
 };
 
@@ -1160,6 +1250,14 @@ export const updateWalineUserProfile = ({ serverURL, token, data }) => requestWa
   method: 'PUT',
   token,
   body: data
+});
+
+// 注册验证码：format=json 让服务端返回 JSON 而不是跳转。
+export const verifyWalineEmail = ({ serverURL, email, code }) => requestWaline({
+  serverURL,
+  lang: 'zh-CN',
+  path: 'verification',
+  params: { token: code, email, format: 'json' }
 });
 
 export {
