@@ -324,6 +324,9 @@
   background: rgba(8, 8, 10, 0.52);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  /* Waline 客户端样式在 :root 上把 --waline-avatar-radius 定义成 50%（圆形头像），
+     弹层挂在 body 下会继承到它。这里强制回与留言区一致的方圆角。 */
+  --waline-avatar-radius: 12px;
 }
 
 .waline-auth-overlay[hidden] {
@@ -417,36 +420,13 @@
 }
 
 .waline-register-avatar {
-  display: grid;
+  display: flex;
   gap: 10px;
-  padding: 12px 14px;
+  align-items: center;
+  padding: 10px;
   border: 1px solid var(--glass-border);
   border-radius: 14px;
   background: var(--hover-bg);
-}
-
-.waline-register-avatar-heading {
-  display: grid;
-  gap: 4px;
-}
-
-.waline-register-avatar-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.waline-register-avatar-title-row > span {
-  color: var(--text-main);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.waline-register-avatar-hint {
-  color: var(--text-secondary);
-  font-size: 11px;
-  line-height: 1.4;
 }
 
 .waline-register-avatar-preview {
@@ -454,8 +434,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
   border-radius: var(--waline-avatar-radius, 12px);
@@ -476,9 +456,10 @@
 }
 
 .waline-register-avatar-presets {
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 7px;
+  gap: 6px;
 }
 
 .waline-register-avatar-preset {
@@ -612,6 +593,13 @@
 
 .waline-auth-form[hidden] {
   display: none;
+}
+
+/* 并排的短字段（如 密码/确认密码），压缩注册表单高度 */
+.waline-auth-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .waline-auth-field {
@@ -1031,7 +1019,7 @@
 
   .waline-auth-overlay {
     align-items: flex-end;
-    padding: 12px;
+    padding: 10px;
     background: rgba(7, 10, 15, 0.7);
   }
 
@@ -1044,8 +1032,12 @@
   .waline-auth-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
-    padding: 16px 16px 14px;
+    gap: 10px;
+    padding: 12px 14px 10px;
+  }
+
+  .waline-auth-heading h3 {
+    font-size: 18px;
   }
 
   .waline-auth-controls {
@@ -1056,21 +1048,51 @@
     flex: 1 1 auto;
   }
 
+  .waline-auth-tab,
+  .waline-auth-close {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+  }
+
   .waline-auth-tab {
     flex: 1 1 0;
     min-width: 0;
   }
 
-  .waline-auth-close {
-    padding: 7px 12px;
-  }
-
   .waline-auth-body {
-    padding: 16px 16px calc(16px + var(--mobile-fullscreen-safe-bottom));
+    padding: 12px 14px calc(14px + var(--mobile-fullscreen-safe-bottom));
   }
 
-  .waline-auth-heading h3 {
-    font-size: 20px;
+  .waline-auth-form {
+    gap: 11px;
+  }
+
+  .waline-auth-status {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+  }
+
+  /* 16px 起步可避免 iOS 在聚焦输入框时自动放大页面（PWA 下尤其明显） */
+  .waline-auth-field input {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 16px;
+  }
+
+  .waline-auth-send-code {
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .waline-auth-submit {
+    min-height: 46px;
+  }
+
+  .waline-register-avatar {
+    padding: 9px;
+    gap: 8px;
   }
 
   .waline-profile-modal {

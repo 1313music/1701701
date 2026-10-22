@@ -573,7 +573,7 @@ const handleSendCode = async () => {
         authOverlayState.fields.registerCode.disabled = false;
         authOverlayState.fields.registerCode.focus();
       }
-      showAuthStatus(`验证码已发到 ${values.email}，请填入邮件里的 4 位验证码。`, 'success');
+      showAuthStatus(`验证码已发到 ${values.email}，请填入邮件里的验证码。`, 'success');
       startSendCodeCountdown();
       return;
     }
@@ -603,7 +603,7 @@ const handleRegisterSubmit = async (event) => {
   }
 
   if (!/^\d{4}$/u.test(code)) {
-    showAuthStatus('请输入邮件里的 4 位验证码');
+    showAuthStatus('请输入邮件里的验证码');
     return;
   }
 
@@ -878,41 +878,34 @@ const ensureWalineAuthOverlay = () => {
             <span>昵称</span>
             <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
           </label>
-          <section class="waline-register-avatar" aria-labelledby="waline-register-avatar-title">
-            <div class="waline-register-avatar-heading">
-              <div class="waline-register-avatar-title-row">
-                <span id="waline-register-avatar-title">头像（选填）</span>
-                <div class="waline-register-avatar-preview" aria-hidden="true">
-                  <img data-role="register-avatar-preview-image" alt="" hidden />
-                  <span data-role="register-avatar-preview-placeholder">未选择</span>
-                </div>
-              </div>
-              <span class="waline-register-avatar-hint">现在选一张，之后也可以在个人设置里更换</span>
+          <section class="waline-register-avatar" aria-label="头像（选填，之后可在个人设置里更换）">
+            <div class="waline-register-avatar-preview" aria-hidden="true">
+              <img data-role="register-avatar-preview-image" alt="" hidden />
+              <span data-role="register-avatar-preview-placeholder">未选</span>
             </div>
-            <div class="waline-register-avatar-presets" role="group" aria-label="注册时选择预设头像">
+            <div class="waline-register-avatar-presets" role="group" aria-label="选择预设头像">
               ${registerPresetAvatarsMarkup}
             </div>
-            <label class="waline-auth-field">
-              <span>自定义图片地址（选填）</span>
-              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
-            </label>
+            <input type="hidden" name="avatar" />
           </section>
           <label class="waline-auth-field">
             <span>邮箱</span>
             <input type="email" name="email" autocomplete="email" placeholder="注册后用于登录和找回密码" />
           </label>
-          <label class="waline-auth-field">
-            <span>密码</span>
-            <input type="password" name="password" autocomplete="new-password" placeholder="设置评论账号密码" />
-          </label>
-          <label class="waline-auth-field">
-            <span>确认密码</span>
-            <input type="password" name="confirm-password" autocomplete="new-password" placeholder="再次输入密码" />
-          </label>
+          <div class="waline-auth-pair">
+            <label class="waline-auth-field">
+              <span>密码</span>
+              <input type="password" name="password" autocomplete="new-password" placeholder="设置密码" />
+            </label>
+            <label class="waline-auth-field">
+              <span>确认密码</span>
+              <input type="password" name="confirm-password" autocomplete="new-password" placeholder="再输一次" />
+            </label>
+          </div>
           <div class="waline-auth-code-row">
             <label class="waline-auth-field">
               <span>邮箱验证码</span>
-              <input type="text" name="register-code" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="请输入 4 位验证码" />
+              <input type="text" name="register-code" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="请输入验证码" />
             </label>
             <button type="button" class="waline-auth-send-code" data-role="send-code">获取验证码</button>
           </div>
