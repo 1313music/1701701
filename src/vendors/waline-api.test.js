@@ -118,6 +118,52 @@ describe('waline-api profile overlay', () => {
     );
   });
 
+  it('rejects an invalid custom avatar URL before sending registration', async () => {
+    const { openWalineAuthOverlay } = await loadWalineApi();
+    void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });
+    fireEvent.click(screen.getByRole('button', { name: '注册' }));
+
+    const registerForm = document.querySelector('.waline-auth-form[data-mode="register"]');
+    fireEvent.change(registerForm.querySelector('input[name="nick"]'), { target: { value: '新用户' } });
+    fireEvent.change(registerForm.querySelector('input[name="email"]'), { target: { value: 'new-user@example.com' } });
+    fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="avatar"]'), { target: { value: 'javascript:alert(1)' } });
+    fireEvent.click(screen.getByRole('button', { name: '获取验证码' }));
+
+    expect(await screen.findByText('头像地址需以 http:// 或 https:// 开头，或者留空')).toBeTruthy();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('defaults to the QQ avatar when a QQ email registers without choosing one', async () => {
+    const { openWalineAuthOverlay } = await loadWalineApi();
+    void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });
+    fireEvent.click(screen.getByRole('button', { name: '注册' }));
+
+    const registerForm = document.querySelector('.waline-auth-form[data-mode="register"]');
+    fireEvent.change(registerForm.querySelector('input[name="nick"]'), { target: { value: '新用户' } });
+    fireEvent.change(registerForm.querySelector('input[name="email"]'), { target: { value: '123456789@qq.com' } });
+    fireEvent.change(registerForm.querySelector('input[name="password"]'), { target: { value: 'secure-password' } });
+    fireEvent.change(registerForm.querySelector('input[name="confirm-password"]'), { target: { value: 'secure-password' } });
+    fireEvent.click(screen.getByRole('button', { name: '获取验证码' }));
+
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://comments.example.com/user?lang=zh-CN',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          display_name: '新用户',
+          email: '123456789@qq.com',
+          password: 'secure-password',
+          avatar: 'https://q1.qlogo.cn/g?b=qq&nk=123456789&s=100'
+        })
+      })
+    );
+  });
+
   it('allows registration without choosing an avatar', async () => {
     const { openWalineAuthOverlay } = await loadWalineApi();
     void openWalineAuthOverlay({ serverURL: 'https://comments.example.com', lang: 'zh-CN' });

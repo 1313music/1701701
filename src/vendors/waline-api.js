@@ -548,6 +548,9 @@ const handleSendCode = async () => {
   if (sendButton) sendButton.disabled = true;
   showAuthStatus('');
 
+  // 用户没选头像时，QQ 邮箱默认带上 QQ 头像，其他邮箱留空走服务端默认头像。
+  const avatar = values.avatar || defaultAvatarForEmail(values.email);
+
   try {
     const response = await requestWaline({
       serverURL: authOverlayState.serverURL,
@@ -558,7 +561,7 @@ const handleSendCode = async () => {
         display_name: values.displayName,
         email: values.email,
         password: values.password,
-        ...(values.avatar ? { avatar: values.avatar } : {})
+        ...(avatar ? { avatar } : {})
       }
     });
 
@@ -647,6 +650,12 @@ const handleRegisterSubmit = async (event) => {
 const isValidHttpUrl = (value) => {
   const url = String(value || '').trim();
   return !url || /^https?:\/\//i.test(url);
+};
+
+// QQ 邮箱没选头像时，默认用腾讯官方头像接口的 QQ 头像（本地部分是 5~11 位 QQ 号）。
+const defaultAvatarForEmail = (email) => {
+  const match = /^(\d{5,11})@qq\.com$/i.exec(String(email || '').trim());
+  return match ? `https://q1.qlogo.cn/g?b=qq&nk=${match[1]}&s=100` : '';
 };
 
 // 预设头像按钮的高亮状态跟着输入框走：值正好等于某个预设地址才算选中。
@@ -879,14 +888,20 @@ const ensureWalineAuthOverlay = () => {
             <input type="text" name="nick" autocomplete="nickname" placeholder="至少 2 个字符" />
           </label>
           <section class="waline-register-avatar" aria-label="头像（选填，之后可在个人设置里更换）">
-            <div class="waline-register-avatar-preview" aria-hidden="true">
-              <img data-role="register-avatar-preview-image" alt="" hidden />
-              <span data-role="register-avatar-preview-placeholder">未选</span>
+            <div class="waline-register-avatar-row">
+              <div class="waline-register-avatar-preview" aria-hidden="true">
+                <img data-role="register-avatar-preview-image" alt="" hidden />
+                <span data-role="register-avatar-preview-placeholder">未选</span>
+              </div>
+              <div class="waline-register-avatar-presets" role="group" aria-label="选择预设头像">
+                ${registerPresetAvatarsMarkup}
+              </div>
             </div>
-            <div class="waline-register-avatar-presets" role="group" aria-label="选择预设头像">
-              ${registerPresetAvatarsMarkup}
-            </div>
-            <input type="hidden" name="avatar" />
+            <p class="waline-register-avatar-hint">头像选填：不选也没关系，用 QQ 邮箱注册会自动用你的 QQ 头像，其他邮箱显示默认头像；以后随时能在「个人设置」里更换。</p>
+            <label class="waline-auth-field">
+              <span>自定义图片地址（选填）</span>
+              <input type="url" name="avatar" autocomplete="off" placeholder="https://example.com/avatar.png" />
+            </label>
           </section>
           <label class="waline-auth-field">
             <span>邮箱</span>
@@ -962,6 +977,13 @@ const ensureWalineAuthOverlay = () => {
   });
   registerAvatarInput?.addEventListener('change', () => {
     renderRegisterAvatarPreview(registerAvatarInput.value);
+  });
+  const registerEmailInput = registerForm?.querySelector('input[name="email"]');
+  registerEmailInput?.addEventListener('input', () => {
+    // 还没选头像时，输入 QQ 邮箱即时预览默认 QQ 头像
+    if (registerAvatarInput && !registerAvatarInput.value.trim()) {
+      renderRegisterAvatarPreview(defaultAvatarForEmail(registerEmailInput.value));
+    }
   });
   registerAvatarPreviewImage?.addEventListener('error', () => {
     registerAvatarPreviewImage.hidden = true;
