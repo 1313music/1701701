@@ -24,3 +24,6 @@ export const readBooleanEnvSwitch = (key, defaultValue = false) => {
 export const SHOW_DOWNLOAD_PAGE = readBooleanEnvSwitch('VITE_SHOW_DOWNLOAD_PAGE', false);
 export const SHOW_RESOURCES_PAGE = readBooleanEnvSwitch('VITE_SHOW_RESOURCES_PAGE', true);
 export const SHOW_MINI_PROGRAM_QR = readBooleanEnvSwitch('VITE_SHOW_MINI_PROGRAM_QR', true);
+// App 下载页（mac/win/android 安装包）。安卓版残废重做中，默认下架整页；
+// 重新上线时改成 VITE_SHOW_APP_PAGE=1 或把默认值改回 true 即可。
+export const SHOW_APP_PAGE = readBooleanEnvSwitch('VITE_SHOW_APP_PAGE', false);

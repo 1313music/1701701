@@ -1,5 +1,5 @@
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from './seoConfig.js';
-import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './featureFlags.js';
+import { SHOW_APP_PAGE, SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './featureFlags.js';
 
 export const VIEW_PATHS = Object.freeze({
   library: '/',
@@ -17,8 +17,9 @@ export const VIEW_PATHS = Object.freeze({
 });
 
 export const VIEW_QUERY_KEYS = Object.freeze({
-  // a / s 是分享短链用的别名，必须留在白名单里，否则 canonical 重写会把它们丢掉
-  library: ['albumId', 'songId', 'song', 'a', 's'],
+  // a / s / t 是分享短链用的参数，必须留在白名单里，否则 canonical 重写会把它们丢掉
+  // t=album 表示整张专辑分享（只展开专辑详情面板，不带歌曲序号）
+  library: ['albumId', 'songId', 'song', 'a', 's', 't'],
   video: ['videoId', 'videoCategory'],
   resources: [],
   archive: [],
@@ -37,6 +38,7 @@ export const AVAILABLE_VIEWS = new Set(
   Object.keys(VIEW_PATHS).filter((view) => (
     (view !== 'download' || SHOW_DOWNLOAD_PAGE)
     && (view !== 'resources' || SHOW_RESOURCES_PAGE)
+    && (view !== 'app' || SHOW_APP_PAGE)
   ))
 );
 

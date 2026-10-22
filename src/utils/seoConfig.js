@@ -1,4 +1,4 @@
-import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './featureFlags.js';
+import { SHOW_APP_PAGE, SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from './featureFlags.js';
 
 export const SITE_URL = 'https://1701701.xyz';
 export const SITE_NAME = '1701701.xyz';
@@ -29,6 +29,7 @@ export const PUBLIC_SEO_VIEWS = Object.freeze([
 ].filter((view) => (
   (view !== 'download' || SHOW_DOWNLOAD_PAGE)
   && (view !== 'resources' || SHOW_RESOURCES_PAGE)
+  && (view !== 'app' || SHOW_APP_PAGE)
 )));
 
 export const LI_ZHI_ENTITY_LINKS = Object.freeze([

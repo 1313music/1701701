@@ -2,6 +2,8 @@
 /resources /resources/ 301
 /download /download/ 301
 /gallery /gallery/ 301
-/app /app/ 301
+# App 下载页已下架（安卓版重做中），/app 全部导回首页；重新上线时删掉这两行
+/app / 301
+/app/ / 301
 /about /about/ 301
 /* /index.html 200

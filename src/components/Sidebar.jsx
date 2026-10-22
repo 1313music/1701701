@@ -18,7 +18,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import AnnouncementTrigger from './AnnouncementTrigger.jsx';
-import { SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
+import { SHOW_APP_PAGE, SHOW_DOWNLOAD_PAGE, SHOW_RESOURCES_PAGE } from '../utils/featureFlags.js';
 
 const SHOW_COMMENT_NAV = ['1', 'true', 'yes', 'on'].includes(
     String(import.meta.env.VITE_SHOW_COMMENT_NAV || '').trim().toLowerCase()
@@ -200,12 +200,14 @@ const Sidebar = ({
                             onClick={(event) => handleNavClick(event, 'download')}
                         />
                     )}
-                    <NavItem
-                        icon={<Smartphone size={20} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="APP"
-                        active={view === 'app'}
-                        onClick={(event) => handleNavClick(event, 'app')}
-                    />
+                    {SHOW_APP_PAGE && (
+                        <NavItem
+                            icon={<Smartphone size={20} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="APP"
+                            active={view === 'app'}
+                            onClick={(event) => handleNavClick(event, 'app')}
+                        />
+                    )}
                     {SHOW_COMMENT_NAV && (
                         <NavItem
                             icon={<MessageSquareMore size={20} strokeWidth={2.4} absoluteStrokeWidth />}
@@ -324,12 +326,14 @@ const Sidebar = ({
                             onClick={(event) => handleNavClick(event, 'download')}
                         />
                     )}
-                    <NavItem
-                        icon={<Smartphone size={22} strokeWidth={2.4} absoluteStrokeWidth />}
-                        label="APP"
-                        active={view === 'app'}
-                        onClick={(event) => handleNavClick(event, 'app')}
-                    />
+                    {SHOW_APP_PAGE && (
+                        <NavItem
+                            icon={<Smartphone size={22} strokeWidth={2.4} absoluteStrokeWidth />}
+                            label="APP"
+                            active={view === 'app'}
+                            onClick={(event) => handleNavClick(event, 'app')}
+                        />
+                    )}
                     {SHOW_COMMENT_NAV && (
                         <NavItem
                             icon={<MessageSquareMore size={22} strokeWidth={2.4} absoluteStrokeWidth />}
