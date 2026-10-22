@@ -33,6 +33,10 @@
   <link rel="dns-prefetch" href="//gh-proxy.org" />
   <link rel="preconnect" href="https://mozilla.github.io" crossorigin />
   <link rel="preconnect" href="https://gh-proxy.org" crossorigin />
+  <!-- 留言板(Waline)服务：提前建链，省掉首次打开时的 DNS/TLS 握手等待 -->
+  <link rel="preconnect" href="https://hello.1701701.xyz" crossorigin />
+  <!-- 表情包来自 unpkg，打开表情面板前先预热域名 -->
+  <link rel="dns-prefetch" href="//unpkg.com" />
   <style>
     #app-boot-splash {
       position: fixed;

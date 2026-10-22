@@ -79,6 +79,8 @@ const App = () => {
   const [isEmptyAnnouncementOpen, setIsEmptyAnnouncementOpen] = useState(false);
   const [randomMixVersion, setRandomMixVersion] = useState(0);
   const [panelVirtualAlbum, setPanelVirtualAlbum] = useState(null);
+  // 留言板第一次打开后就常驻，切走只隐藏、不卸载，切回来不会重新请求
+  const [hasVisitedComment, setHasVisitedComment] = useState(false);
 
   const {
     toastMessage,
@@ -304,6 +306,12 @@ const App = () => {
   });
 
   useSeoMeta({ view, musicAlbums });
+
+  // 留言板一旦打开过就记住，之后切到别的页面只隐藏不卸载，
+  // 这样切回来是原样的 DOM（Waline 实例还在），不会再走一次请求。
+  useEffect(() => {
+    if (view === 'comment') setHasVisitedComment(true);
+  }, [view]);
 
   useEffect(() => {
     if (musicAlbums.length === 0) return;
@@ -695,8 +703,10 @@ const App = () => {
                   </Suspense>
                 </div>
               )}
-              {view === 'comment' && (
-                <div className="view-panel view-panel-comment">
+              {(view === 'comment' || hasVisitedComment) && (
+                <div
+                  className={`view-panel view-panel-comment${view === 'comment' ? '' : ' is-hidden'}`}
+                >
                   <Suspense fallback={pageLoadingFallback}>
                     <CommentPage serverURL={WALINE_SERVER_URL} />
                   </Suspense>

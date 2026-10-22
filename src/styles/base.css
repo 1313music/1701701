@@ -713,6 +713,11 @@ body {
   margin-inline: auto;
 }
 
+/* 留言板第一次打开后常驻：切到别的页面只隐藏、不卸载，切回来不用重新加载 */
+.view-panel.is-hidden {
+  display: none;
+}
+
 .view-panel-library,
 .view-panel-gallery,
 .view-panel-archive {
