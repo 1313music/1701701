@@ -12,7 +12,8 @@ export const VIEW_PATHS = Object.freeze({
   support: '/support',
   about: '/about',
   admin: '/myadmin',
-  comment: '/comment'
+  comment: '/comment',
+  reset: '/reset-password'
 });
 
 export const VIEW_QUERY_KEYS = Object.freeze({
@@ -27,7 +28,9 @@ export const VIEW_QUERY_KEYS = Object.freeze({
   support: [],
   about: [],
   admin: [],
-  comment: []
+  comment: [],
+  // 重置密码链接带的 token，必须保留，否则会被 canonical 重写丢掉
+  reset: ['token']
 });
 
 export const AVAILABLE_VIEWS = new Set(

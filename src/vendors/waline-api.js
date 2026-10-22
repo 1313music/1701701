@@ -1152,6 +1152,16 @@ export const login = ({ serverURL, lang }) => openWalineAuthOverlay({
   mode: 'login'
 });
 
+// 重置密码页用：凭邮件里的 token 直接更新用户资料（密码/昵称/头像）。
+export const updateWalineUserProfile = ({ serverURL, token, data }) => requestWaline({
+  serverURL,
+  lang: 'zh-CN',
+  path: 'user',
+  method: 'PUT',
+  token,
+  body: data
+});
+
 export {
   addComment,
   deleteComment,

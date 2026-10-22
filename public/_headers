@@ -9,6 +9,9 @@
 /comment
   X-Robots-Tag: noindex, nofollow
 
+/reset-password
+  X-Robots-Tag: noindex, nofollow
+
 /download/preview/*
   X-Robots-Tag: noindex, follow
 

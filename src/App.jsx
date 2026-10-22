@@ -50,6 +50,7 @@ import { createViewComponent } from './utils/viewChunks.js';
 
 const LyricsOverlay = lazy(() => import('./components/LyricsOverlay.jsx'));
 const AlbumListOverlay = lazy(() => import('./components/AlbumListOverlay.jsx'));
+const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage.jsx'));
 // 各页面的代码统一由 viewChunks 管理：切视图前会先预取，
 // 预取好了这里就能同步渲染，扫掠揭开的是真页面而不是「加载中」占位
 const VideoPage = createViewComponent('video');
@@ -563,6 +564,15 @@ const App = () => {
     }
     signalBootReady();
   }, [signalBootReady, showLibraryLoading, view]);
+
+  // 重置密码页是独立的整页，不套侧边栏和播放器。
+  if (view === 'reset') {
+    return (
+      <Suspense fallback={<div className="reset-page"><div className="reset-card">加载中…</div></div>}>
+        <ResetPasswordPage serverURL={WALINE_SERVER_URL} />
+      </Suspense>
+    );
+  }
 
   return (
     <>
