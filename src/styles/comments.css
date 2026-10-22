@@ -458,7 +458,7 @@
   height: 40px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  border-radius: 50%;
+  border-radius: var(--waline-avatar-radius, 12px);
   background: var(--sidebar-bg);
   color: var(--text-secondary);
   font-size: 9px;
@@ -488,7 +488,7 @@
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  border-radius: 50%;
+  border-radius: var(--waline-avatar-radius, 12px);
   background: var(--sidebar-bg);
   cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
@@ -696,7 +696,7 @@
   height: 68px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  border-radius: 50%;
+  border-radius: var(--waline-avatar-radius, 12px);
   background: var(--hover-bg);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--hover-bg) 70%, transparent);
 }
@@ -774,7 +774,7 @@
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  border-radius: 50%;
+  border-radius: var(--waline-avatar-radius, 12px);
   background: var(--hover-bg);
   cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
