@@ -400,6 +400,38 @@ const handleLoginSubmit = async (event) => {
   }
 };
 
+// 忘记密码：让服务端给这个邮箱发一封重置邮件。
+// 服务端对「邮箱不存在」也返回失败，所以这里统一用模糊提示，不暴露某个邮箱是否注册过。
+const handleForgotPassword = async () => {
+  const emailField = authOverlayState.fields.loginEmail;
+  const forgotButton = authOverlayState.fields.forgotPasswordButton;
+  const email = emailField?.value?.trim() || '';
+
+  if (!email) {
+    showAuthStatus('请先填写邮箱', 'error');
+    emailField?.focus();
+    return;
+  }
+
+  if (forgotButton) forgotButton.disabled = true;
+  showAuthStatus('');
+
+  try {
+    await requestWaline({
+      serverURL: authOverlayState.serverURL,
+      lang: authOverlayState.lang,
+      path: 'user/password',
+      method: 'PUT',
+      body: { email }
+    });
+    showAuthStatus('重置邮件已发送，请查收（也看一下垃圾箱）', 'success');
+  } catch {
+    showAuthStatus('如果该邮箱已注册，重置邮件会发到你的邮箱，请查收（含垃圾箱）', 'info');
+  } finally {
+    if (forgotButton) forgotButton.disabled = false;
+  }
+};
+
 const handleRegisterSubmit = async (event) => {
   event.preventDefault();
 
@@ -561,6 +593,8 @@ const handleProfileSubmit = async (event) => {
   const currentUserInfo = profileOverlayState.userInfo || readStoredWalineUser();
   const displayName = profileOverlayState.fields.profileNick?.value?.trim() || '';
   const avatar = profileOverlayState.fields.profileAvatar?.value?.trim() || '';
+  const newPassword = profileOverlayState.fields.profileNewPassword?.value || '';
+  const confirmPassword = profileOverlayState.fields.profileConfirmPassword?.value || '';
 
   if (!currentUserInfo?.token) {
     showProfileStatus('请先登录后再更新资料');
@@ -577,6 +611,22 @@ const handleProfileSubmit = async (event) => {
     return;
   }
 
+  // 密码留空 = 只更新资料；只要填了一边，就必须两边都填且一致。
+  if (newPassword || confirmPassword) {
+    if (!newPassword || !confirmPassword) {
+      showProfileStatus('请完整填写新密码和确认密码');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showProfileStatus('新密码至少 6 位');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showProfileStatus('两次输入的新密码不一致');
+      return;
+    }
+  }
+
   setProfileBusy(true);
   showProfileStatus('');
 
@@ -590,7 +640,9 @@ const handleProfileSubmit = async (event) => {
       body: {
         display_name: displayName,
         // 服务端只有拿到非空字符串才会写入 avatar，留空即保持当前头像不变。
-        ...(avatar ? { avatar } : {})
+        ...(avatar ? { avatar } : {}),
+        // 留空不传 password，服务端就不会动密码。
+        ...(newPassword ? { password: newPassword } : {})
       }
     });
 
@@ -604,7 +656,20 @@ const handleProfileSubmit = async (event) => {
     profileOverlayState.userInfo = nextUserInfo;
     persistWalineUser(nextUserInfo);
     emitWalineAuthSuccess(nextUserInfo);
-    closeWalineProfileOverlay();
+
+    if (newPassword) {
+      // 改了密码就留在弹层里给个明确反馈，1.4 秒后再关。
+      if (profileOverlayState.fields.profileNewPassword) {
+        profileOverlayState.fields.profileNewPassword.value = '';
+      }
+      if (profileOverlayState.fields.profileConfirmPassword) {
+        profileOverlayState.fields.profileConfirmPassword.value = '';
+      }
+      showProfileStatus('密码已更新，下次登录请使用新密码', 'success');
+      window.setTimeout(() => closeWalineProfileOverlay(), 1400);
+    } else {
+      closeWalineProfileOverlay();
+    }
   } catch (error) {
     showProfileStatus(error instanceof Error ? error.message : '更新失败，请稍后重试');
   } finally {
@@ -656,6 +721,7 @@ const ensureWalineAuthOverlay = () => {
             <span>密码</span>
             <input type="password" name="password" autocomplete="current-password" placeholder="输入评论账号密码" />
           </label>
+          <button type="button" class="waline-auth-forgot" data-role="forgot-password">忘记密码？</button>
           <label class="waline-auth-field" data-role="code" hidden>
             <span>2FA 验证码</span>
             <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="请输入 6 位验证码" />
@@ -799,6 +865,9 @@ const ensureWalineAuthOverlay = () => {
     void checkTwoFactorRequirement(event.target.value);
   });
 
+  const forgotPasswordButton = loginForm?.querySelector('[data-role="forgot-password"]');
+  forgotPasswordButton?.addEventListener('click', handleForgotPassword);
+
   document.body.appendChild(overlay);
   window.addEventListener('keydown', handleWalineAuthKeydown);
 
@@ -815,6 +884,7 @@ const ensureWalineAuthOverlay = () => {
     loginCodeWrap: loginForm?.querySelector('[data-role="code"]'),
     loginCode: loginForm?.querySelector('input[name="code"]'),
     loginRemember: loginForm?.querySelector('input[name="remember"]'),
+    forgotPasswordButton,
     registerNick: registerForm?.querySelector('input[name="nick"]'),
     registerEmail: registerForm?.querySelector('input[name="email"]'),
     registerAvatar: registerAvatarInput,
@@ -896,6 +966,22 @@ const ensureWalineProfileOverlay = () => {
               <label class="waline-auth-field">
                 <span>邮箱</span>
                 <input type="email" name="email" autocomplete="email" readonly />
+              </label>
+            </div>
+          </section>
+          <section class="waline-profile-details" aria-labelledby="waline-profile-password-title">
+            <div class="waline-profile-details-heading">
+              <span class="waline-profile-details-title" id="waline-profile-password-title">修改密码</span>
+              <span class="waline-profile-details-hint">留空表示不修改</span>
+            </div>
+            <div class="waline-profile-details-fields">
+              <label class="waline-auth-field">
+                <span>新密码</span>
+                <input type="password" name="new-password" autocomplete="new-password" placeholder="至少 6 位" />
+              </label>
+              <label class="waline-auth-field">
+                <span>确认新密码</span>
+                <input type="password" name="confirm-new-password" autocomplete="new-password" placeholder="再次输入新密码" />
               </label>
             </div>
           </section>
@@ -981,7 +1067,9 @@ const ensureWalineProfileOverlay = () => {
   profileOverlayState.fields = {
     profileNick: form?.querySelector('input[name="nick"]'),
     profileEmail: form?.querySelector('input[name="email"]'),
-    profileAvatar: avatarInput
+    profileAvatar: avatarInput,
+    profileNewPassword: form?.querySelector('input[name="new-password"]'),
+    profileConfirmPassword: form?.querySelector('input[name="confirm-new-password"]')
   };
   profileOverlayState.avatarPreviewImage = avatarPreviewImage;
   profileOverlayState.avatarPreviewPlaceholder = avatarPreviewPlaceholder;

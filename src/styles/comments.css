@@ -905,6 +905,29 @@
   accent-color: var(--main-color);
 }
 
+.waline-auth-forgot {
+  justify-self: end;
+  margin-top: -6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--main-color);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.waline-auth-forgot:hover {
+  text-decoration: underline;
+}
+
+.waline-auth-forgot:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .waline-auth-submit {
   min-height: 42px;
   margin-top: 2px;
