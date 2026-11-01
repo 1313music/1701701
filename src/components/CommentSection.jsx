@@ -86,8 +86,8 @@ const CommentSection = ({
   }, []);
 
   const syncHeaderPlaceholders = useCallback(() => {
-    syncWalineHeaderPlaceholders(containerRef.current);
-  }, []);
+    syncWalineHeaderPlaceholders(containerRef.current, { onLogin: openLoginPage });
+  }, [openLoginPage]);
 
   const syncAuthButtons = useCallback(() => {
     syncWalineAuthButtons({
@@ -161,6 +161,7 @@ const CommentSection = ({
       serverURL,
       path: initialPath,
       meta: ['nick', 'mail'],
+      login: 'force',
       lang: 'zh-CN',
       locale: {
         comment: '评论',

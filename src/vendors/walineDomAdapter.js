@@ -6,7 +6,14 @@ export const getWalineHeaderText = (labelText, input) => {
   return '';
 };
 
-export const syncWalineHeaderPlaceholders = (root) => {
+export const isWalineGuest = (root) => {
+  if (!root) return false;
+  const hasLoginInfo = Boolean(root.querySelector('.wl-login-info'));
+  const hasLoginButton = Boolean(root.querySelector('.wl-footer button.wl-btn:not(.primary)'));
+  return !hasLoginInfo && hasLoginButton;
+};
+
+export const syncWalineHeaderPlaceholders = (root, { onLogin } = {}) => {
   if (!root) return;
   const headerItems = root.querySelectorAll('.wl-header-item');
   headerItems.forEach((item) => {
@@ -19,9 +26,24 @@ export const syncWalineHeaderPlaceholders = (root) => {
     input.setAttribute('aria-label', text);
   });
 
+  const guest = isWalineGuest(root);
+
   const textareas = root.querySelectorAll('textarea');
   textareas.forEach((textarea) => {
+    if (guest) {
+      textarea.placeholder = '登录后即可评论';
+      textarea.readOnly = true;
+      textarea.setAttribute('aria-label', '登录后即可评论');
+      if (onLogin && textarea.dataset.walineGuestBridge !== 'true') {
+        textarea.dataset.walineGuestBridge = 'true';
+        textarea.addEventListener('click', onLogin);
+        textarea.addEventListener('focus', onLogin);
+      }
+      return;
+    }
     textarea.placeholder = '说点什么吧';
+    textarea.readOnly = false;
+    textarea.removeAttribute('aria-label');
   });
 };
 

@@ -41,18 +41,43 @@ describe('walineDomAdapter', () => {
     const onLogin = vi.fn();
     const onRegister = vi.fn();
 
-    syncWalineHeaderPlaceholders(root);
+    syncWalineHeaderPlaceholders(root, { onLogin });
     syncWalineAuthButtons({ root, onLogin, onRegister });
 
     expect(root.querySelector('input[name="nick"]')).toHaveAttribute('placeholder', '昵称');
     expect(root.querySelector('input[name="mail"]')).toHaveAttribute('placeholder', '邮箱');
-    expect(root.querySelector('textarea')).toHaveAttribute('placeholder', '说点什么吧');
+
+    const textarea = root.querySelector('textarea');
+    expect(textarea).toHaveAttribute('placeholder', '登录后即可评论');
+    expect(textarea.readOnly).toBe(true);
+
+    fireEvent.click(textarea);
+    expect(onLogin).toHaveBeenCalledTimes(1);
 
     fireEvent.click(root.querySelector('.wl-login-btn'));
     fireEvent.click(root.querySelector('.wl-register-btn'));
 
-    expect(onLogin).toHaveBeenCalledTimes(1);
+    expect(onLogin).toHaveBeenCalledTimes(2);
     expect(onRegister).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores the normal comment placeholder for logged-in users', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <div class="wl-login-info">
+        <a href="#" class="wl-login-nick">谢尔比</a>
+      </div>
+      <textarea></textarea>
+      <div class="wl-footer">
+        <button type="submit" class="primary wl-btn">提交</button>
+      </div>
+    `;
+
+    syncWalineHeaderPlaceholders(root, { onLogin: vi.fn() });
+
+    const textarea = root.querySelector('textarea');
+    expect(textarea).toHaveAttribute('placeholder', '说点什么吧');
+    expect(textarea.readOnly).toBe(false);
   });
 
   it('removes stale register buttons when no controllable login action exists', () => {
